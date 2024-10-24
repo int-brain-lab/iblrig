@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hardware Guide &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Developer Guide" href="reference_developer_guide.html" />
+    <link rel="prev" title="Reference" href="reference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hardware Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#upgrading-xonar-ae-to-bpod-hifi-module">Upgrading Xonar AE to Bpod HiFi Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#background">Background</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upgrade-procedure">Upgrade Procedure</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hardware Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hardware.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hardware-guide">
+<h1>Hardware Guide<a class="headerlink" href="#hardware-guide" title="Link to this heading"></a></h1>
+<section id="upgrading-xonar-ae-to-bpod-hifi-module">
+<h2>Upgrading Xonar AE to Bpod HiFi Module<a class="headerlink" href="#upgrading-xonar-ae-to-bpod-hifi-module" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following guide only concerns behavior rigs using <cite>Asus Xonar AE</cite> sound cards.
+The <cite>Harp</cite> sound cards used in our Ephys and Mesoscope rigs work fine and do not require replacing!</p>
+</div>
+<section id="background">
+<h3>Background<a class="headerlink" href="#background" title="Link to this heading"></a></h3>
+<p>In their original design, IBL’s behavioral training rigs relied on a consumer-grade sound-card - the <a class="reference external" href="https://www.asus.com/motherboards-components/sound-cards/gaming/xonar-ae/">ASUS Xonar AE</a> - for delivering auditory cues to the subject. We have identified the Xonar AE as a weak point in the design of the training rig as this choice of hardware has several severe drawbacks:</p>
+<ul class="simple">
+<li><p>Synchronization between individual components of the rig relies on TTL Signals, a standardized way of communicating between digital devices.
+With the Xonar sound-card, we emulate TTL pulses on one of the soundcard’s analog audio outputs.
+The resulting signal does not conform well to the TTL standard since (a) we cannot guarantee the required signal rise-times, and (b) pulse-amplitude depends on the computer’s audio volume and impedance settings. The effects are increased latencies and accidental misconfigurations.
+The latter have the potential to cause synchronization issues and more problems further down the pipeline.</p></li>
+<li><p>The ASUS Xonar AE does not seem to be a particularly robust piece of equipment - we’ve experienced several catastrophic failures across our rigs at IBL. Replacement hardware is increasingly hard to come by as the Asus Xonar AE is not being produced anymore.</p></li>
+<li><p>The soundcard’s driver has been causing issues with specific Windows updates that require manual intervention / rollback of the respective updates.</p></li>
+<li><p>There is no Windows 11 specific driver available.</p></li>
+</ul>
+<p>For these reasons, we decided to replace the Xonar AE with the <a class="reference external" href="https://sanworks.io/shop/viewproduct?productID=1033">Bpod HiFi Module HD</a> by Sanworks:
+The HiFi Module is capable of delivering high fidelity sound stimuli at low latencies, supports proper TTL signaling as well as serial communication with the Bpod Finite State Machine and does not require any dedicated drivers.
+The upgrade procedure is straightforward and should take no longer than 5-10 minutes.</p>
+</section>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h3>
+<p>To replace your existing Xonar AE with the Bpod HiFi Module HD you will require the following:</p>
+<ul class="simple">
+<li><p>1x Bpod HiFi Module HD</p></li>
+<li><p>1x Micro-USB to USB-A cable</p></li>
+<li><p>1x Ethernet cable (RJ45)</p></li>
+<li><p>1x RCA to 3.5 mm audio adapter</p></li>
+<li><p>1x 3 mm flathead screwdriver</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Support for the Bpod HiFi Module was introduced with IBLRIG 8.16.0 and will not be backported to older version of IBLRIG.
+Make sure to upgrade to the latest version of IBLRIG before continuing with this guide.</p>
+</div>
+</section>
+<section id="upgrade-procedure">
+<h3>Upgrade Procedure<a class="headerlink" href="#upgrade-procedure" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>Use the 3 mm flathead screwdriver to unscrew the BNC to wire adapter from the amplifier board.
+While the adapter itself is not needed anymore we will continue using the BNC cable.
+Leave the other end of the BNC cable plugged into the Bpod as it is.</p>
+<figure class="align-default" id="id1">
+<a class="with-border reference internal image-reference" href="_images/amp2x15_labels.png"><img alt="_images/amp2x15_labels.png" class="with-border" src="_images/amp2x15_labels.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Disconnect the BNC to wire adapter from the amplifier board.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</li>
+<li><p>Unplug the 3.5 mm audio cable from the Xonar AE sound card on the backside of the rig’s computer.
+Leave the other end of the 3.5 mm audio cable connected to the amplifier board.</p>
+<figure class="align-default" id="id2">
+<a class="with-border reference internal image-reference" href="_images/xonar_labels.png"><img alt="_images/xonar_labels.png" class="with-border" src="_images/xonar_labels.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Unplug the 3.5 mm audio cable from the Xonar AE sound card.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</li>
+<li><p>Connect the Bpod HiFi Module as follows:</p>
+<ul class="simple">
+<li><p>the BNC cable connects to TTL In 2 of the Bpod (cf. step 1),</p></li>
+<li><p>the 3.5 mm audio cable connects to the amplifier board via the RCA adapter (cf. step 2),</p></li>
+<li><p>the USB cable connects to the rig’s computer</p></li>
+<li><p>the Ethernet cable connects to one of the Bpod’s Module ports.
+Warning: Bpod uses identical connectors for its Behavior ports - do not mix them up!</p></li>
+</ul>
+<figure class="align-default" id="id3">
+<a class="with-border reference internal image-reference" href="_images/hifi_labels.png"><img alt="_images/hifi_labels.png" class="with-border" src="_images/hifi_labels.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The Bpod HiFi Modules and its connections.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</li>
+<li><p>Open <cite>C:/iblrigv8/settings/hardware_settings.yaml</cite> in a text-editor.
+Find the section <cite>device_sound</cite> and adapt it as follows:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">device_sound</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">OUTPUT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hifi</span>
+<span class="w">  </span><span class="nt">COM_SOUND</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">COMx</span><span class="w">  </span><span class="c1"># replace with the HiFi Module&#39;s actual COM port!</span>
+<span class="w">  </span><span class="nt">AMP_TYPE</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AMP2X15</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use Windows’ device manager to identify the HiFi Module’s COM port.
+The device should show up in the section labelled “Ports (COM &amp; LPT)” after plugging it in.</p>
+</div>
+</li>
+<li><p>Start IBLRIG and make sure that the hardware validation during start-up does not find any issues.
+Finally, start a session and verify that you can hear the audio cues.</p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="reference.html" class="btn btn-neutral float-left" title="Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reference_developer_guide.html" class="btn btn-neutral float-right" title="Developer Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

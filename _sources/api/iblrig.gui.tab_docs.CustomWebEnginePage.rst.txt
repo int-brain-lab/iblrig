@@ -1,0 +1,13 @@
+iblrig.gui.tab\_docs.CustomWebEnginePage
+========================================
+
+.. currentmodule:: iblrig.gui.tab_docs
+
+.. inheritance-diagram:: CustomWebEnginePage
+   :parts: 1
+
+|
+
+.. autoclass:: CustomWebEnginePage
+   :members:
+   :undoc-members:

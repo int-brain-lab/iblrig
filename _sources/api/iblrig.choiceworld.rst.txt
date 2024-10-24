@@ -1,0 +1,18 @@
+iblrig.choiceworld
+==================
+
+.. automodule:: iblrig.choiceworld
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      compute_adaptive_reward_volume
+      contrasts_set
+      draw_training_contrast
+      get_subject_training_info
+      training_contrasts_probabilities
+      training_phase_from_contrast_set
+   

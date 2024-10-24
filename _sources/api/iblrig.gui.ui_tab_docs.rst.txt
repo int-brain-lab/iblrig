@@ -1,0 +1,14 @@
+iblrig.gui.ui\_tab\_docs
+========================
+
+.. automodule:: iblrig.gui.ui_tab_docs
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Ui_TabDocs
+   

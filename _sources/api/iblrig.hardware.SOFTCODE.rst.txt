@@ -1,0 +1,13 @@
+iblrig.hardware.SOFTCODE
+========================
+
+.. currentmodule:: iblrig.hardware
+
+.. inheritance-diagram:: SOFTCODE
+   :parts: 1
+
+|
+
+.. autoclass:: SOFTCODE
+   :members:
+   :undoc-members:

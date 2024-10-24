@@ -1,0 +1,13 @@
+iblrig.gui.ui\_wizard.Ui\_wizard
+================================
+
+.. currentmodule:: iblrig.gui.ui_wizard
+
+.. inheritance-diagram:: Ui_wizard
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_wizard
+   :members:
+   :undoc-members:

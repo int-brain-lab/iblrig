@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.choiceworld &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.choiceworld</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.choiceworld</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Choice World Task related logic and functions that translate the task description in</span>
+<span class="sd">Appendix 2 of the paper into code.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">iblrig.raw_data_loaders</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">iterate_previous_sessions</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">CONTRASTS</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">DEFAULT_TRAINING_PHASE</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">DEFAULT_REWARD_VOLUME</span> <span class="o">=</span> <span class="mf">3.0</span>
+
+
+<div class="viewcode-block" id="compute_adaptive_reward_volume">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.compute_adaptive_reward_volume.html#iblrig.choiceworld.compute_adaptive_reward_volume">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_adaptive_reward_volume</span><span class="p">(</span><span class="n">subject_weight_g</span><span class="p">,</span> <span class="n">reward_volume_ul</span><span class="p">,</span> <span class="n">delivered_volume_ul</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the mouse completed over 200 trials in the previous session, the reward volume is automatically</span>
+<span class="sd">    lowered by 0.1 microliters for the next session, but cannot go lower than a floor of 1.5 microliters.</span>
+<span class="sd">    If the mouse received less than its minimum required daily dose (~1 milliliter/25 grams of body weight)</span>
+<span class="sd">    during the previous session, the reward volume is increased by 0.1 microliters for the next session,</span>
+<span class="sd">     but cannot go above a ceiling of 3 microliters.</span>
+<span class="sd">    :param subject_weight_g: in grams</span>
+<span class="sd">    :param reward_volume_ul: the last reward volume setting in uL</span>
+<span class="sd">    :param delivered_volume_ul: the cumulative water deliverd during the last session in uL</span>
+<span class="sd">    :param n_trials:</span>
+<span class="sd">    :return: adaptive_reward_ul</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">subject_weight_g</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">delivered_volume_ul</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="mi">25</span><span class="p">):</span>
+        <span class="n">reward_volume_ul</span> <span class="o">+=</span> <span class="mf">0.1</span>
+    <span class="k">elif</span> <span class="n">ntrials</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">reward_volume_ul</span> <span class="o">-=</span> <span class="mf">0.1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">reward_volume_ul</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">1.5</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_subject_training_info">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.get_subject_training_info.html#iblrig.choiceworld.get_subject_training_info">[docs]</a>
+<span class="k">def</span> <span class="nf">get_subject_training_info</span><span class="p">(</span>
+    <span class="n">subject_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_tasks_trainingChoiceWorld&#39;</span><span class="p">,</span>
+    <span class="n">stim_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">stim_gain_on_error</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">default_reward</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_REWARD_VOLUME</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;silent&#39;</span><span class="p">,</span> <span class="s1">&#39;raise&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;silent&#39;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Goes through a subject&#39;s history and gets the latest training phase and adaptive reward volume.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject_name : str</span>
+<span class="sd">        Name of the subject.</span>
+<span class="sd">    task_name : str, optional</span>
+<span class="sd">        Name of the protocol to look for in experiment description, defaults to &#39;_iblrig_tasks_trainingChoiceWorld&#39;.</span>
+<span class="sd">    stim_gain: float, optional</span>
+<span class="sd">        Default stimulus gain if no previous session is available, default to None</span>
+<span class="sd">    stim_gain_on_error: float, optional</span>
+<span class="sd">        Default stimulus gain if there was an exception whilst obtaining the previous sessions&#39; info, default to None</span>
+<span class="sd">    default_reward : float, optional</span>
+<span class="sd">        Default reward volume in uL if no previous session is available.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        If &#39;silent&#39; returns default values if no history is found, if &#39;raise&#39; raises ValueError.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Optional arguments to be passed to get_local_and_remote_paths</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    training_info: dict</span>
+<span class="sd">        Dictionary with keys: training_phase, adaptive_reward, adaptive_gain</span>
+<span class="sd">    session_info: dict or None</span>
+<span class="sd">        Dictionary with keys: session_path, experiment_description, task_settings, file_task_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># default values (if no previous session is available)</span>
+    <span class="n">training_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;training_phase&#39;</span><span class="p">:</span> <span class="n">DEFAULT_TRAINING_PHASE</span><span class="p">,</span>
+        <span class="s1">&#39;adaptive_reward&#39;</span><span class="p">:</span> <span class="n">default_reward</span><span class="p">,</span>
+        <span class="s1">&#39;adaptive_gain&#39;</span><span class="p">:</span> <span class="n">stim_gain</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># try to obtain the subject&#39;s previous session&#39;s info</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">session_info</span> <span class="o">=</span> <span class="n">iterate_previous_sessions</span><span class="p">(</span><span class="n">subject_name</span><span class="p">,</span> <span class="n">task_name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">session_info</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">session_info</span> <span class="o">=</span> <span class="n">session_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">task_settings</span> <span class="o">=</span> <span class="n">session_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;task_settings&#39;</span><span class="p">)</span>
+            <span class="n">trials_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">raw_data_loaders</span><span class="o">.</span><span class="n">load_task_jsonable</span><span class="p">(</span><span class="n">session_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;file_task_data&#39;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s1">&#39;Error obtaining training information from previous session!&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stim_gain_on_error</span>
+        <span class="n">session_info</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># handle lack of previous sessions</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">session_info</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;silent&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not determine training status for subject &#39;</span><span class="si">{</span><span class="n">subject_name</span><span class="si">}</span><span class="s2">&#39; - returning default values &quot;</span>
+                <span class="sa">f</span><span class="s1">&#39;(training phase: </span><span class="si">{</span><span class="n">training_info</span><span class="p">[</span><span class="s2">&quot;training_phase&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, adaptive reward: &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">training_info</span><span class="p">[</span><span class="s2">&quot;adaptive_reward&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, adaptive gain: </span><span class="si">{</span><span class="n">training_info</span><span class="p">[</span><span class="s2">&quot;adaptive_gain&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">training_info</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The training status for </span><span class="si">{</span><span class="n">subject_name</span><span class="si">}</span><span class="s1"> could not be determined as no previous sessions were found&#39;</span><span class="p">)</span>
+
+    <span class="c1"># compute reward volume from previous session</span>
+    <span class="n">prev_reward_vol</span> <span class="o">=</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADAPTIVE_REWARD_AMOUNT_UL&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;REWARD_AMOUNT_UL&#39;</span><span class="p">)</span>
+    <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_reward&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_adaptive_reward_volume</span><span class="p">(</span>
+        <span class="n">subject_weight_g</span><span class="o">=</span><span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SUBJECT_WEIGHT&#39;</span><span class="p">),</span>
+        <span class="n">reward_volume_ul</span><span class="o">=</span><span class="n">prev_reward_vol</span><span class="p">,</span>
+        <span class="n">delivered_volume_ul</span><span class="o">=</span><span class="n">trials_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reward_amount&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">ntrials</span><span class="o">=</span><span class="n">trials_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># retrieve training_phase from the previous session&#39;s trials table</span>
+    <span class="k">if</span> <span class="s1">&#39;training_phase&#39;</span> <span class="ow">in</span> <span class="n">trials_data</span><span class="p">:</span>
+        <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;training_phase&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trials_data</span><span class="p">[</span><span class="s1">&#39;training_phase&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># set adaptive gain depending on number of correct trials in previous session.</span>
+    <span class="c1"># also fix negative adaptive gain values (due to a bug in the GUI prior to v8.21.0</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">trials_data</span><span class="p">[</span><span class="s1">&#39;response_side&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+        <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;STIM_GAIN&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADAPTIVE_GAIN_VALUE&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AG_INIT_VALUE&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADAPTIVE_GAIN_VALUE&#39;</span><span class="p">,</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AG_INIT_VALUE&#39;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">training_info</span><span class="p">,</span> <span class="n">session_info</span></div>
+
+
+
+<div class="viewcode-block" id="training_contrasts_probabilities">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.training_contrasts_probabilities.html#iblrig.choiceworld.training_contrasts_probabilities">[docs]</a>
+<span class="k">def</span> <span class="nf">training_contrasts_probabilities</span><span class="p">(</span><span class="n">phase</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">match</span> <span class="n">phase</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Starts with only 100% and 50% contrasts.</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.5</span>
+        <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># The 25% contrast is added to the set.</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.25</span>
+        <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># The 12.5% contrast is added to the set.</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.125</span>
+        <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># The 6.25% contrast is added to the set.</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.0625</span>
+        <span class="k">case</span> <span class="mi">4</span><span class="p">:</span>  <span class="c1"># The 0% contrast is added to the set.</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="k">case</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># The 50% contrast is removed from the set</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">frequencies</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="draw_training_contrast">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.draw_training_contrast.html#iblrig.choiceworld.draw_training_contrast">[docs]</a>
+<span class="k">def</span> <span class="nf">draw_training_contrast</span><span class="p">(</span><span class="n">phase</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="n">training_contrasts_probabilities</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">CONTRASTS</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">probabilities</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="contrasts_set">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.contrasts_set.html#iblrig.choiceworld.contrasts_set">[docs]</a>
+<span class="k">def</span> <span class="nf">contrasts_set</span><span class="p">(</span><span class="n">phase</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="n">training_contrasts_probabilities</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">CONTRASTS</span><span class="p">[</span><span class="n">probabilities</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="training_phase_from_contrast_set">
+<a class="viewcode-back" href="../../api/iblrig.choiceworld.training_phase_from_contrast_set.html#iblrig.choiceworld.training_phase_from_contrast_set">[docs]</a>
+<span class="k">def</span> <span class="nf">training_phase_from_contrast_set</span><span class="p">(</span><span class="n">contrast_set</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">contrast_set</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">contrast_set</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">expected_set</span> <span class="o">=</span> <span class="n">CONTRASTS</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">training_contrasts_probabilities</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">CONTRASTS</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">contrast_set</span><span class="p">,</span> <span class="n">expected_set</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">phase</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not determine training phase from contrast set </span><span class="si">{</span><span class="n">contrast_set</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

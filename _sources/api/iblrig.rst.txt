@@ -1,0 +1,73 @@
+﻿iblrig
+======
+
+.. automodule:: iblrig
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+ 
+   base_choice_world
+    
+   base_tasks
+    
+   choiceworld
+    
+   commands
+    
+   constants
+    
+   ephys
+    
+   frame2ttl
+    
+   graphic
+    
+   gui
+    
+   hardware
+    
+   hardware_validation
+    
+   hifi
+    
+   misc
+    
+   net
+    
+   online_plots
+    
+   path_helper
+    
+   pydantic_definitions
+    
+   raw_data_loaders
+    
+   rig_component
+    
+   scale
+    
+   serial_singleton
+    
+   session_creator
+    
+   sound
+    
+   tools
+    
+   transfer_experiments
+    
+   upgrade_iblrig
+    
+   valve
+    
+   version_management
+    
+   video
+    
+   video_pyspin
+   

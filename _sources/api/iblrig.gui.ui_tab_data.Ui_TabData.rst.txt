@@ -1,0 +1,13 @@
+iblrig.gui.ui\_tab\_data.Ui\_TabData
+====================================
+
+.. currentmodule:: iblrig.gui.ui_tab_data
+
+.. inheritance-diagram:: Ui_TabData
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_TabData
+   :members:
+   :undoc-members:

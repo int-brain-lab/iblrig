@@ -1,0 +1,6 @@
+iblrig.path\_helper.iterate\_collection
+=======================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: iterate_collection

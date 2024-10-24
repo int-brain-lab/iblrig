@@ -1,0 +1,8 @@
+<map id="inheritance7892f415a6" name="inheritance7892f415a6">
+<area shape="rect" id="node1" href="iblrig.base_choice_world.ActiveChoiceWorldTrialData.html#iblrig.base_choice_world.ActiveChoiceWorldTrialData" target="_top" title="Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`." alt="" coords="319,3,442,19"/>
+<area shape="rect" id="node4" href="iblrig.base_choice_world.BiasedChoiceWorldTrialData.html#iblrig.base_choice_world.BiasedChoiceWorldTrialData" target="_top" title="Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`." alt="" coords="471,3,596,19"/>
+<area shape="rect" id="node2" href="iblrig.base_choice_world.ChoiceWorldTrialData.html#iblrig.base_choice_world.ChoiceWorldTrialData" target="_top" title="Pydantic Model for Trial Data." alt="" coords="192,3,290,19"/>
+<area shape="rect" id="node3" title="Usage docs: https://docs.pydantic.dev/2.9/concepts/models/" alt="" coords="3,3,61,19"/>
+<area shape="rect" id="node5" href="iblrig.pydantic_definitions.TrialDataModel.html#iblrig.pydantic_definitions.TrialDataModel" target="_top" title="A data model for trial data that extends BaseModel." alt="" coords="90,3,163,19"/>
+<area shape="rect" id="node6" href="#iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task.NeuroModulatorChoiceTrialData" target="_top" title="NeuroModulatorChoiceTrialData" alt="" coords="625,3,765,19"/>
+</map>

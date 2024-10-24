@@ -1,0 +1,25 @@
+iblrig.gui.wizard
+=================
+
+.. automodule:: iblrig.gui.wizard
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      main
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      LoginWindow
+      RigWizard
+      RigWizardModel
+      UpdateNotice
+   

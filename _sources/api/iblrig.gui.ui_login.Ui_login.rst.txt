@@ -1,0 +1,13 @@
+iblrig.gui.ui\_login.Ui\_login
+==============================
+
+.. currentmodule:: iblrig.gui.ui_login
+
+.. inheritance-diagram:: Ui_login
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_login
+   :members:
+   :undoc-members:

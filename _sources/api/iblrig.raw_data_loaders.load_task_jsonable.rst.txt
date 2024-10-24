@@ -1,0 +1,6 @@
+iblrig.raw\_data\_loaders.load\_task\_jsonable
+==============================================
+
+.. currentmodule:: iblrig.raw_data_loaders
+
+.. autofunction:: load_task_jsonable

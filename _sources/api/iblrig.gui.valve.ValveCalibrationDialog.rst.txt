@@ -1,0 +1,13 @@
+iblrig.gui.valve.ValveCalibrationDialog
+=======================================
+
+.. currentmodule:: iblrig.gui.valve
+
+.. inheritance-diagram:: ValveCalibrationDialog
+   :parts: 1
+
+|
+
+.. autoclass:: ValveCalibrationDialog
+   :members:
+   :undoc-members:

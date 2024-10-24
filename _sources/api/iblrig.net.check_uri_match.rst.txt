@@ -1,0 +1,6 @@
+iblrig.net.check\_uri\_match
+============================
+
+.. currentmodule:: iblrig.net
+
+.. autofunction:: check_uri_match

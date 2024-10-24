@@ -1,0 +1,6 @@
+iblrig.path\_helper.get\_commit\_hash
+=====================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: get_commit_hash

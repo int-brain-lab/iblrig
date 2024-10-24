@@ -1,0 +1,4 @@
+<map id="inheritancea33f65e2d2" name="inheritancea33f65e2d2">
+<area shape="rect" id="node1" title="Usage docs: https://docs.pydantic.dev/2.9/concepts/models/" alt="" coords="5,5,100,31"/>
+<area shape="rect" id="node2" href="#iblrig.pydantic_definitions.TrialDataModel" target="_top" title="A data model for trial data that extends BaseModel." alt="" coords="148,5,268,31"/>
+</map>

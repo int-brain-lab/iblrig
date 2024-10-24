@@ -1,0 +1,15 @@
+iblrig.session\_creator
+=======================
+
+.. automodule:: iblrig.session_creator
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      draw_block_len
+      draw_position
+      make_ephyscw_pc
+   

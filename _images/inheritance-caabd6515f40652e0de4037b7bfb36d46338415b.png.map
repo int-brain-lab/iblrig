@@ -1,0 +1,3 @@
+<map id="inheritance02d28b3a74" name="inheritance02d28b3a74">
+<area shape="rect" id="node1" href="#iblrig.gui.wizard.RigWizardModel" target="_top" title="RigWizardModel(alyx: one.webclient.AlyxClient | None = None, procedures: list | None = None, projects: list | None = None, task_name: str | None = None, user: str | None = None, subject: str | None = None, session_folder: pathlib.Path | None = None, free_reward_time: float | None = None, file_iblrig_settings: pathlib.Path | str | None = None, file_hardware_settings: pathlib.Path | str | None = None)" alt="" coords="5,5,133,31"/>
+</map>

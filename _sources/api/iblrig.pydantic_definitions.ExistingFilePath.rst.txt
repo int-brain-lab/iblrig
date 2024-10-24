@@ -1,0 +1,6 @@
+iblrig.pydantic\_definitions.ExistingFilePath
+=============================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. autodata:: ExistingFilePath

@@ -1,0 +1,6 @@
+iblrig.upgrade\_iblrig.call\_subprocesses
+=========================================
+
+.. currentmodule:: iblrig.upgrade_iblrig
+
+.. autofunction:: call_subprocesses

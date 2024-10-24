@@ -1,0 +1,748 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task.Session" href="api/iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task.Session.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">8.24.7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">8.24.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">8.24.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">8.24.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">8.24.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">8.24.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">8.24.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">8.24.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">8.23.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">8.23.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">8.22.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">8.22.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">8.21.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id14">8.21.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id15">8.21.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id16">8.20.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">8.19.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id18">8.19.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id19">8.19.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id20">8.19.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">8.19.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id22">8.19.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id23">8.19.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id24">8.18.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id25">8.17.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id26">8.16.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id27">8.16.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id28">8.15.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id29">8.15.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id30">8.15.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id31">8.15.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id32">8.15.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id33">8.15.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id34">8.15.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id35">8.14.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id36">8.14.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id37">8.14.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id38">8.13.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id39">8.13.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id40">8.13.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id41">8.13.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id42">8.13.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id43">8.13.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id44">8.12.13</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id45">8.12.12</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id46">8.12.11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id47">8.12.10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id48">8.12.9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id49">8.12.8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id50">8.12.7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id51">8.12.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id52">8.12.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id53">8.12.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id54">8.12.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id55">8.12.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id56">8.12.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id57">8.12.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id58">8.11.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id59">8.11.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id60">8.11.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id61">8.11.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id62">8.11.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id63">8.11.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id64">8.10.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id65">8.10.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id66">8.10.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id67">8.9.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id68">8.9.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id69">8.9.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id70">8.9.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id71">8.9.0</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Changelog</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/changelog.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>8.24.7<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix: debiasing not working in trainingCW</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>8.24.6<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add property getters for feedback delays (for NM custom task)</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>8.24.5<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix: visual stimulus not showing for first trial</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>8.24.4<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix: correct gain for rotary encoder thresholds in trainingChoiceWorld</p></li>
+<li><p>fix: replace <code class="docutils literal notranslate"><span class="pre">np.NaN</span></code> with <code class="docutils literal notranslate"><span class="pre">np.nan</span></code></p></li>
+<li><p>overhaul of rotary encoder object</p></li>
+</ul>
+</section>
+<section id="id5">
+<h2>8.24.3<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix: create the <code class="docutils literal notranslate"><span class="pre">raw_ephys_data</span></code> folder even if there are no probes (when running behavior sessions on ephys rig)</p></li>
+<li><p>move some Qt related code to <code class="docutils literal notranslate"><span class="pre">iblqt</span></code> repository</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2>8.24.2<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>make Frame2TTL validation more robust</p></li>
+</ul>
+</section>
+<section id="id7">
+<h2>8.24.1<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>change UI workflow for appending a session</p></li>
+<li><p>Video QC: changed log level from WARNING to INFO if less than 0.1% of frames have been dropped</p></li>
+<li><p>Valve: Use restricted quadratic fit when converting reward volume to valve opening time</p></li>
+<li><p>TrainingCW: add <code class="docutils literal notranslate"><span class="pre">signed_contrast</span></code> to trials_table definition</p></li>
+</ul>
+</section>
+<section id="id8">
+<h2>8.24.0<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>feature: validate values in <code class="docutils literal notranslate"><span class="pre">trials_table</span></code> using Pydantic</p></li>
+<li><p>feature: add auto-generated API reference to documentation</p></li>
+<li><p>changed: <code class="docutils literal notranslate"><span class="pre">show_trial_log()</span></code> now accepts a dict for including additional log items</p></li>
+<li><p>fix: <code class="docutils literal notranslate"><span class="pre">_ephysChoiceWorld</span></code> - values from the pre-generated sessions were not actually used</p></li>
+<li><p>fix: <code class="docutils literal notranslate"><span class="pre">_ephysChoiceWorld</span></code> - trial fixtures contained inverted values for <code class="docutils literal notranslate"><span class="pre">probability_left</span></code></p></li>
+<li><p>fix: GUI - Subjects and Projects are not being cached</p></li>
+<li><p>add script for validating audio output of Bpod HiFi Module (in <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> folder)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id9">
+<h2>8.23.1<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>feature: post hardware information to alyx</p></li>
+<li><p>generate PDF documentation</p></li>
+<li><p>increase verbosity of error handling in base task</p></li>
+<li><p>remove dead code</p></li>
+</ul>
+</section>
+<section id="id10">
+<h2>8.23.0<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hardware validation: check for unexpected events on Bpod’s digital input ports</p></li>
+<li><p>hardware validation: frame2ttl</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id11">
+<h2>8.22.1<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>get past sessions bugfix when newer sessions are present only on the remote server</p></li>
+</ul>
+</section>
+<section id="id12">
+<h2>8.22.0<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add UI components for selecting remote devices</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id13">
+<h2>8.21.2<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix: remote devices show as task parameters (regression)</p></li>
+</ul>
+</section>
+<section id="id14">
+<h2>8.21.1<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: add DISABLE_BEHAVIOR_INPUT_PORTS key to hardware_settings.yaml</p></li>
+</ul>
+</section>
+<section id="id15">
+<h2>8.21.0<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>display values of automatically inferred task parameters</p></li>
+<li><p>store pause durations to trial info</p></li>
+<li><p>add backend for UDP communication between rig computers</p></li>
+<li><p>use PDM for managing dependencies</p></li>
+<li><p>log session call / commandline parameters to disk</p></li>
+<li><p>fix: potential deadlock with SerialSingleton</p></li>
+<li><p>fix: “galloping” valve during valve calibration</p></li>
+<li><p>fix: values computed by “Get Training Phase” in “Tools” menu</p></li>
+<li><p>fix: incorrect parsing of adaptive gain value in trainingChoiceWorld</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id16">
+<h2>8.20.0<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>tab for displaying local sessions and their respective status</p></li>
+<li><p>additional task parameters for passiveChoiceWorld</p></li>
+<li><p>work on making the GUI code more modular</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id17">
+<h2>8.19.6<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: fix race-condition that caused scrambled online-plots</p></li>
+</ul>
+</section>
+<section id="id18">
+<h2>8.19.5<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: move serial validation from SerialSingleton to Serial</p></li>
+</ul>
+</section>
+<section id="id19">
+<h2>8.19.4<a class="headerlink" href="#id19" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: fix validation for Alyx when no Alyx URL has been set</p></li>
+<li><p>hotfix: fix validation for Bpod HiFi module</p></li>
+<li><p>adapted update instructions in update notification &amp; documentation</p></li>
+</ul>
+</section>
+<section id="id20">
+<h2>8.19.3<a class="headerlink" href="#id20" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: force stimulus to freeze in center of screen during “freeze_reward” state</p></li>
+<li><p>method for copying snapshots to the local server using the SessionCopier</p></li>
+<li><p>documentation for transition to Bpod HiFi</p></li>
+</ul>
+</section>
+<section id="id21">
+<h2>8.19.2<a class="headerlink" href="#id21" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: only register water administrations once per protocol</p></li>
+<li><p>hotfix: reverse wheel contingency now controlled through task parameter STIM_REVERSE</p></li>
+</ul>
+</section>
+<section id="id22">
+<h2>8.19.1<a class="headerlink" href="#id22" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: threading warnings during valve calibration (when used without scale)</p></li>
+<li><p>hotfix: unreliable exit condition for state machine during valve calibration</p></li>
+</ul>
+</section>
+<section id="id23">
+<h2>8.19.0<a class="headerlink" href="#id23" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>automated validation of rig components</p></li>
+<li><p>adaptive reward parameter for trainingPhaseChoiceWorld</p></li>
+<li><p>add validate_video entry-point</p></li>
+<li><p>switch from flake8 to ruff for linting &amp; code-checks</p></li>
+<li><p>automatically set correct trigger-mode when setting up the cameras</p></li>
+<li><p>support rotary encoder on arbitrary module port</p></li>
+<li><p>add ambient sensor reading back to trial log</p></li>
+<li><p>allow negative stimulus gain (reverse wheel contingency)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id24">
+<h2>8.18.0<a class="headerlink" href="#id24" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>valve calibration routine</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id25">
+<h2>8.17.0<a class="headerlink" href="#id25" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>consolidated data transfer routine across all rig computers</p></li>
+<li><p>new video workflow with support for multiple named camera setups</p></li>
+<li><p>various small fixes, work on documentation, unit-tests</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id26">
+<h2>8.16.1<a class="headerlink" href="#id26" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Hoferlab: when bpod returns inconsistent error, time-out or correct, throw the exception after logging</p></li>
+<li><p>add AMP_TYPE field to hardware_settings.yaml (device_sound) to handle the combination of HiFi module and AMP2x15 amplifier</p></li>
+</ul>
+</section>
+<section id="id27">
+<h2>8.16.0<a class="headerlink" href="#id27" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Support for Bpod HiFi Module</p></li>
+<li><p>Support for Zapit Optostim (NM)</p></li>
+<li><p>more robust handling of Bpod’s serial messages: iblrig.hardware._define_message</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id28">
+<h2>8.15.6<a class="headerlink" href="#id28" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Task specifications: The time from the stimulus offset to the quiescence period is targeted to 1 second instead of 1.5 seconds</p></li>
+<li><p>Task specifications: The correct delay time starts running from the start of the reward state, not the end of the reward state.</p></li>
+<li><p>Fixed unit-tests</p></li>
+</ul>
+</section>
+<section id="id29">
+<h2>8.15.5<a class="headerlink" href="#id29" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: show Garbor patch in passive choice-world, GUI option for session ID, no dud detection</p></li>
+</ul>
+</section>
+<section id="id30">
+<h2>8.15.4<a class="headerlink" href="#id30" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: disable prompt for deleting “duds” for appended sessions</p></li>
+</ul>
+</section>
+<section id="id31">
+<h2>8.15.3<a class="headerlink" href="#id31" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: don’t wait for microphone workflow to finish</p></li>
+</ul>
+</section>
+<section id="id32">
+<h2>8.15.2<a class="headerlink" href="#id32" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: pin iblutil to &gt;=1.7.4 to address unicode encoding issue during logging</p></li>
+<li><p>hotfix: allow pass with warning in case where lab validation fails due to Alyx down / server issues</p></li>
+<li><p>change: use QT workers for Frame2TTL calibration steps</p></li>
+<li><p>extra task parameters: support list of strings</p></li>
+<li><p>frame2ttl: raise exception on incorrect port setting</p></li>
+<li><p>convert_ui: add argument for filename glob</p></li>
+</ul>
+</section>
+<section id="id33">
+<h2>8.15.1<a class="headerlink" href="#id33" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: correct parsing of description files and ignore junk sessions in iterate_protocols</p></li>
+</ul>
+</section>
+<section id="id34">
+<h2>8.15.0<a class="headerlink" href="#id34" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>feature: calibration routine for frame2ttl v1-3 in Tools menu</p></li>
+<li><p>feature: debug-flag for IBLRIG Wizard</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id35">
+<h2>8.14.2<a class="headerlink" href="#id35" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: wrong return-type in _iterate_protocols - pt 2</p></li>
+</ul>
+</section>
+<section id="id36">
+<h2>8.14.1<a class="headerlink" href="#id36" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: wrong return-type in _iterate_protocols</p></li>
+</ul>
+</section>
+<section id="id37">
+<h2>8.14.0<a class="headerlink" href="#id37" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>show dialog boxes and plots for appended sessions</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id38">
+<h2>8.13.5<a class="headerlink" href="#id38" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>make sure unused arguments passed up to BaseChoiceWorld do not crash the task (example delay_secs in passiveChoiceWorld)</p></li>
+</ul>
+</section>
+<section id="id39">
+<h2>8.13.4<a class="headerlink" href="#id39" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>pin iblutil to version 1.7.3 or later</p></li>
+<li><p>reworked upgrade script and moved to separate file to avoid file-access issues</p></li>
+<li><p>fixed display of version string in “about” tab</p></li>
+<li><p>revert logging of task events to GUI only</p></li>
+</ul>
+</section>
+<section id="id40">
+<h2>8.13.3<a class="headerlink" href="#id40" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add tests with mock Bonsai to cover for task start methods</p></li>
+<li><p>hotfix: also log to PowerShell (for now)</p></li>
+</ul>
+</section>
+<section id="id41">
+<h2>8.13.2<a class="headerlink" href="#id41" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: ‘WindowsPath’ object has no attribute ‘split’</p></li>
+</ul>
+</section>
+<section id="id42">
+<h2>8.13.1<a class="headerlink" href="#id42" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix: passing non-existent parameter to Bonsai workflow</p></li>
+</ul>
+</section>
+<section id="id43">
+<h2>8.13.0<a class="headerlink" href="#id43" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>restructured user interface</p></li>
+<li><p>script for starting video-session in ephys-rig</p></li>
+<li><p>installer scripts for Spinnaker SDK / PySpin</p></li>
+<li><p>validated parsing of settings files</p></li>
+<li><p>added legend to trials-timeline</p></li>
+<li><p>added button for triggering a free reward (only available outside of running task for now)</p></li>
+<li><p>cleaned-up logging</p></li>
+<li><p>various improvements under the hood, clean-up and unit-tests</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id44">
+<h2>8.12.13<a class="headerlink" href="#id44" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix problem with corrupt acquisition descriptions in history</p></li>
+</ul>
+</section>
+<section id="id45">
+<h2>8.12.12<a class="headerlink" href="#id45" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>skipped</p></li>
+</ul>
+</section>
+<section id="id46">
+<h2>8.12.11<a class="headerlink" href="#id46" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hotfix for creation of bonsai layout-file</p></li>
+<li><p>separated installers for Spinnaker SDK and PySpin</p></li>
+</ul>
+</section>
+<section id="id47">
+<h2>8.12.10<a class="headerlink" href="#id47" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>ignore user-side changes to bonsai layouts (for camera workflows only)</p></li>
+<li><p>error message if rig-name is not defined in Alyx</p></li>
+<li><p>populate delegate users</p></li>
+<li><p>the usual: minor fixes, clean-ups and unit-tests</p></li>
+</ul>
+</section>
+<section id="id48">
+<h2>8.12.9<a class="headerlink" href="#id48" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>usability improvements for “Show Training Level” tool</p></li>
+<li><p>ignore unused behavior ports</p></li>
+<li><p>remove unnecessary dependencies</p></li>
+</ul>
+</section>
+<section id="id49">
+<h2>8.12.8<a class="headerlink" href="#id49" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>fix incorrect limits &amp; unit for adaptive gain in trainingChoiceWorld</p></li>
+<li><p>usability improvements for “Show Training Level” tool</p></li>
+</ul>
+</section>
+<section id="id50">
+<h2>8.12.7<a class="headerlink" href="#id50" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>online plot: fix line colors and add legends</p></li>
+<li><p>do not show Bonsai editor during session</p></li>
+</ul>
+</section>
+<section id="id51">
+<h2>8.12.6<a class="headerlink" href="#id51" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>reverting TTL on trial end introduced with PR #504, release 8.9.0</p></li>
+<li><p>general code maintenance (unit-tests, doc-strings, type-hints, removal of dead code)</p></li>
+</ul>
+</section>
+<section id="id52">
+<h2>8.12.5<a class="headerlink" href="#id52" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add a tools menu in the wizard to get training level from v7 sessions to ease transition</p></li>
+</ul>
+</section>
+<section id="id53">
+<h2>8.12.4<a class="headerlink" href="#id53" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>updated online-plots</p></li>
+</ul>
+</section>
+<section id="id54">
+<h2>8.12.3<a class="headerlink" href="#id54" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: getting training status of subject not present on local server</p></li>
+<li><p>skipping of bpod initialization now optional (used in GUI)</p></li>
+<li><p>disable button for status LED if not supported by hardware</p></li>
+<li><p>tests, type-hints, removal of dead code</p></li>
+</ul>
+</section>
+<section id="id55">
+<h2>8.12.2<a class="headerlink" href="#id55" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: rollback skipping of bpod initialization (possible source of integer overflow)</p></li>
+<li><p>removal of dead code</p></li>
+</ul>
+</section>
+<section id="id56">
+<h2>8.12.1<a class="headerlink" href="#id56" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: remember ability for setting the status LED</p></li>
+</ul>
+</section>
+<section id="id57">
+<h2>8.12.0<a class="headerlink" href="#id57" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add a trainingPhaseChoiceWorld task to fix the training levels</p></li>
+<li><p>bugfix: copy script prompt accepts both upper case and lower case Y to proceed</p></li>
+<li><p>bugfix: update-check used incorrect calls for subprocesses</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id58">
+<h2>8.11.5<a class="headerlink" href="#id58" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: negative time being displayed in the live-plots</p></li>
+</ul>
+</section>
+<section id="id59">
+<h2>8.11.4<a class="headerlink" href="#id59" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: incorrect subprocess-calls in version_management</p></li>
+</ul>
+</section>
+<section id="id60">
+<h2>8.11.3<a class="headerlink" href="#id60" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>bugfix: 0 contrasts argument overwritten for trainingCW</p></li>
+</ul>
+</section>
+<section id="id61">
+<h2>8.11.2<a class="headerlink" href="#id61" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>make custom_tasks optional</p></li>
+<li><p>repair lost entry-point for iblrig wizard</p></li>
+<li><p>fetch remote tags only if connected to internet</p></li>
+</ul>
+</section>
+<section id="id62">
+<h2>8.11.1<a class="headerlink" href="#id62" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add GUI options for AdvancedChoiceWorld</p></li>
+</ul>
+</section>
+<section id="id63">
+<h2>8.11.0<a class="headerlink" href="#id63" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>add check for availability of internet</p></li>
+<li><p>add proper CLI for data transfer scripts</p></li>
+<li><p>add control for disabling Bpod status LED</p></li>
+<li><p>skip initialization of existing Bpod singleton</p></li>
+<li><p>remember settings for status LED and GUI position</p></li>
+<li><p>move update-check to separate thread</p></li>
+<li><p>detect duds (less than 42 trials) and offer deletion</p></li>
+<li><p>various small bugfixes</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id64">
+<h2>8.10.2<a class="headerlink" href="#id64" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hot-fix parsing of path args in transfer_data</p></li>
+<li><p>add install_spinnaker command for … installing spinnaker</p></li>
+<li><p>fixed CI warnings about ports that haven’t been closed</p></li>
+<li><p>draw subject weight for adaptive reward from previous session</p></li>
+<li><p>format reward with 1 decimal on online plot</p></li>
+</ul>
+</section>
+<section id="id65">
+<h2>8.10.1<a class="headerlink" href="#id65" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>more reliable way to check for dirty repository</p></li>
+<li><p>add visual hint for unfilled list-views</p></li>
+</ul>
+</section>
+<section id="id66">
+<h2>8.10.0<a class="headerlink" href="#id66" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>adaptive reward from previous sessions in TrainingChoiceWorld</p></li>
+<li><p>updater: fetch remote changelog to advertise new features</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id67">
+<h2>8.9.4<a class="headerlink" href="#id67" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>correction for version regex</p></li>
+<li><p>fix version strings for compatibility with packaging.version</p></li>
+</ul>
+</section>
+<section id="id68">
+<h2>8.9.3<a class="headerlink" href="#id68" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>re-implemented update notice</p></li>
+<li><p>corrected implementation of end session criteria</p></li>
+<li><p>set adaptive reward to false temporarily</p></li>
+</ul>
+</section>
+<section id="id69">
+<h2>8.9.2<a class="headerlink" href="#id69" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hot-fix for disabling the update-check - this will need work</p></li>
+</ul>
+</section>
+<section id="id70">
+<h2>8.9.1<a class="headerlink" href="#id70" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>hot-fix for missing live-plots</p></li>
+</ul>
+</section>
+<section id="id71">
+<h2>8.9.0<a class="headerlink" href="#id71" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>major rework of the GUI</p></li>
+<li><p>allow pausing between trials</p></li>
+<li><p>task-specific settings</p></li>
+<li><p>new dialogs for weight &amp; droppings</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api/iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task.Session.html" class="btn btn-neutral float-left" title="iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task.Session" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

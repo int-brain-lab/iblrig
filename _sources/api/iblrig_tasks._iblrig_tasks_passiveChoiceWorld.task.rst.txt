@@ -1,0 +1,14 @@
+iblrig\_tasks.\_iblrig\_tasks\_passiveChoiceWorld.task
+======================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Session
+   

@@ -1,0 +1,8 @@
+<map id="inheritanceec569fe41f" name="inheritanceec569fe41f">
+<area shape="rect" id="node1" href="#iblrig.gui.wizard.LoginWindow" target="_top" title="LoginWindow" alt="" coords="660,54,763,78"/>
+<area shape="rect" id="node2" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="545,30,615,54"/>
+<area shape="rect" id="node3" href="iblrig.gui.ui_login.Ui_login.html#iblrig.gui.ui_login.Ui_login" target="_top" title="Ui_login" alt="" coords="545,77,615,100"/>
+<area shape="rect" id="node4" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="425,30,499,54"/>
+<area shape="rect" id="node5" title="QObject(parent: Optional[QObject] = None)" alt="" coords="294,6,364,30"/>
+<area shape="rect" id="node7" title="QPaintDevice()" alt="" coords="277,53,380,77"/>
+</map>

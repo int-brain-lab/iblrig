@@ -1,0 +1,610 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reference &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hardware Guide" href="hardware.html" />
+    <link rel="prev" title="Using IBLRIG v8" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#describing-an-experiment">Describing an Experiment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-description-file">Experiment description file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-down-the-components-of-an-experiment-description-file">Breaking down the components of an experiment description file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#devices">Devices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#procedures">Procedures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#projects">Projects</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sync">Sync</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tasks">Tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#version">Version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-check-the-task-post-usage">Quality check the task post-usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#metrics-definitions">Metrics definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantifying-the-task-qc-outcome-at-the-session-level">Quantifying the task QC outcome at the session level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-check-the-task-qc-outcome">How to check the task QC outcome</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#immediately-after-acquiring-a-session">Immediately after acquiring a session</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#once-the-session-is-registered-on-alyx">Once the session is registered on Alyx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#guide-to-develop-a-custom-task">Guide to develop a custom task</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#iblrigv8-design-inheritance">iblrigv8 design: inheritance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#guide-to-creating-your-own-task">Guide to Creating Your Own Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#example-1-variation-on-biased-choice-world">Example 1: variation on biased choice world</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-2-re-writing-a-state-machine-for-a-biased-choice-world-task">Example 2: re-writing a state-machine for a biased choice world task</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/reference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reference">
+<h1>Reference<a class="headerlink" href="#reference" title="Link to this heading"></a></h1>
+<section id="describing-an-experiment">
+<h2>Describing an Experiment<a class="headerlink" href="#describing-an-experiment" title="Link to this heading"></a></h2>
+<section id="experiment-description-file">
+<h3>Experiment description file<a class="headerlink" href="#experiment-description-file" title="Link to this heading"></a></h3>
+<p>All experiments are described by a file with the name
+<code class="docutils literal notranslate"><span class="pre">_ibl_experiment.description.yaml</span></code>. This description file contains
+details about the experiment such as, information about the devices used
+to collect data, or the behavior tasks run during the experiment. The
+content of this file is used to copy data from the acquisition computer
+to the lab server and also determines the task pipeline that will be
+used to extract the data on the lab servers. It’s accuracy in fully
+describing the experiment is, therefore, very important!</p>
+<p>Here is an example of a complete experiment description file for a
+mesoscope experiment running two consecutive tasks,
+<code class="docutils literal notranslate"><span class="pre">biasedChoiceWorld</span></code> followed by <code class="docutils literal notranslate"><span class="pre">passiveChoiceWorld</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_imaging_data*</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chrono</span>
+<span class="w">  </span><span class="nt">cameras</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">belly</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">      </span><span class="nt">fps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">    </span><span class="nt">left</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">    </span><span class="nt">right</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="nt">procedures</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Imaging</span>
+<span class="nt">projects</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ibl_mesoscope_active</span>
+<span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nidq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">acquisition_software</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">timeline</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_sync_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npy</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">_biasedChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_00</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TrialRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">ChoiceWorldTrialsTimeline</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">TrainingStatus</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">passiveChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_01</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">PassiveRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">PassiveTaskTimeline</span><span class="p p-Indicator">]</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+</pre></div>
+</div>
+</section>
+<section id="breaking-down-the-components-of-an-experiment-description-file">
+<h3>Breaking down the components of an experiment description file<a class="headerlink" href="#breaking-down-the-components-of-an-experiment-description-file" title="Link to this heading"></a></h3>
+<section id="devices">
+<h4>Devices<a class="headerlink" href="#devices" title="Link to this heading"></a></h4>
+<p>The devices section in the experiment description file lists the set of
+devices from which data was collection in the experiment. Supported
+devices are Cameras, Microphone, Mesoscope, Neuropixel, Photometry and
+Widefield.</p>
+<p>The convention for this section is to have the device name followed by a
+list of sub-devices, e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cameras</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">belly</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">      </span><span class="nt">fps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">    </span><span class="nt">left</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">    </span><span class="nt">right</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+</pre></div>
+</div>
+<p>In the above example, <code class="docutils literal notranslate"><span class="pre">cameras</span></code> is the device and the sub-devices are
+<code class="docutils literal notranslate"><span class="pre">belly</span></code>, <code class="docutils literal notranslate"><span class="pre">left</span></code> and <code class="docutils literal notranslate"><span class="pre">right</span></code>.</p>
+<p>If there are no sub-devices, the sub-device is given the same name as
+the device, e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_imaging_data*</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chrono</span>
+</pre></div>
+</div>
+<p>Each sub-device must have at least the following two keys -
+<strong>collection</strong> - the folder containing the data - <strong>sync_label</strong> - the
+name of the common ttl pulses in the channel map used to sync the
+timestamps</p>
+<p>Additional keys can also be specified for specific extractors, e.g. for
+the belly camera the camera metadata passed into the camera extractor
+task is defined in this file.</p>
+</section>
+<section id="procedures">
+<h4>Procedures<a class="headerlink" href="#procedures" title="Link to this heading"></a></h4>
+<p>The procedures section lists the set of procedures that apply to this
+experiment. The list of possible procedures can be found
+<a class="reference external" href="https://alyx.internationalbrainlab.org/admin/actions/proceduretype/">here</a>.</p>
+<p>As many procedure that apply to the experiment can be added e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">procedures</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fiber photometry</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Optical stimulation</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ephys recording with acute probe(s)</span>
+</pre></div>
+</div>
+</section>
+<section id="projects">
+<h4>Projects<a class="headerlink" href="#projects" title="Link to this heading"></a></h4>
+<p>The projects section lists the set of projects that apply to this
+experiment. The list of possible projects can be found
+<a class="reference external" href="https://alyx.internationalbrainlab.org/admin/subjects/project/">here</a>.</p>
+<p>As many projects that apply to the experiment can be added e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">projects</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">ibl_neuropixel_brainwide_01</span>
+<span class="o">-</span> <span class="n">carandiniharris_midbrain_ibl</span>
+</pre></div>
+</div>
+</section>
+<section id="sync">
+<h4>Sync<a class="headerlink" href="#sync" title="Link to this heading"></a></h4>
+<p>The sync section contains information about the device used to collect
+the syncing data and the format of the data. Supported sync devices are
+bpod, nidq, tdms, timeline. Only <strong>one</strong> sync device can be specified
+per experiment description file and act as the main clock to which other
+timeseries are synced.</p>
+<p>An example of an experiment run with bpod as the main syncing device is,</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bpod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_behavior_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bin</span>
+</pre></div>
+</div>
+<p>Another example for spikeglx electrophysiology recordings with
+Neuropixel 1B probes use the nidq as main synchronisation.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nidq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_ephys_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bin</span>
+<span class="w">    </span><span class="nt">acquisition_software</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">spikeglx</span>
+</pre></div>
+</div>
+<p>Each sync device must have at least the following two keys -
+<strong>collection</strong> - the folder containing the data - <strong>extension</strong> - the
+file extension of the sync data</p>
+<p>Optional keys include, for example <code class="docutils literal notranslate"><span class="pre">acquisition_software</span></code>, the
+software used to acquire the sync pulses</p>
+</section>
+<section id="tasks">
+<h4>Tasks<a class="headerlink" href="#tasks" title="Link to this heading"></a></h4>
+<p>The tasks section contains a list of the behavioral protocols run during
+the experiment. The name of the protocol must be given in the list e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tasks</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">_biasedChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_00</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TrialRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">ChoiceWorldTrialsTimeline</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">TrainingStatus</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">passiveChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_01</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">PassiveRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">PassiveTaskTimeline</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Each task must have at least the following two keys - <strong>collection</strong> -
+the folder containing the data - <strong>sync_label</strong> - the name of the common
+ttl pulses in the channel map used to sync the timestamps</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">collection</span></code> must be unique for each task. i.e. Data from two
+tasks cannot be stored in the same folder.</p>
+<p>If the Tasks used to extract the data are not the default tasks, the
+extractors to use must be passed in as an additional key. The order of
+the extractors defines their parent child relationship in the task
+architecture.</p>
+</section>
+<section id="version">
+<h4>Version<a class="headerlink" href="#version" title="Link to this heading"></a></h4>
+<p>The version section gives version number of the experiment description
+file</p>
+</section>
+</section>
+</section>
+<section id="quality-check-the-task-post-usage">
+<h2>Quality check the task post-usage<a class="headerlink" href="#quality-check-the-task-post-usage" title="Link to this heading"></a></h2>
+<p>Once a session is acquired, you can verify whether the trials data is extracted properly and that the sequence of events matches the expected logic of
+the task.</p>
+<section id="metrics-definitions">
+<h3>Metrics definitions<a class="headerlink" href="#metrics-definitions" title="Link to this heading"></a></h3>
+<p>All the metrics computed as part of the Task logic integrity QC (Task QC) are implemented in
+<a class="reference external" href="https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py">ibllib</a>.
+When run at a behavior rig, they are computed using the Bpod data, without alignment to another DAQ’s clock.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The Task QC metrics definitions can be found in this <a class="reference external" href="https://int-brain-lab.github.io/iblenv/_autosummary/ibllib.qc.task_metrics.html">documentation page</a>.
+See <a class="reference external" href="write_your_own_task.html">this page</a> on how to write QC checks for a custom task protocol.</p>
+</div>
+<p>Some are essential, i.e. if they fail you should immediately take action and verify your rig,
+and some are not as critical.</p>
+<p>Essential taskQCs:</p>
+<ul class="simple">
+<li><p>check_audio_pre_trial</p></li>
+<li><p>check_correct_trial_event_sequence</p></li>
+<li><p>check_error_trial_event_sequence</p></li>
+<li><p>check_n_trial_events</p></li>
+<li><p>check_response_feedback_delays</p></li>
+<li><p>check_reward_volume_set</p></li>
+<li><p>check_reward_volumes</p></li>
+<li><p>check_stimOn_goCue_delays</p></li>
+<li><p>check_stimulus_move_before_goCue</p></li>
+<li><p>check_wheel_move_before_feedback</p></li>
+<li><p>check_wheel_freeze_during_quiescence</p></li>
+</ul>
+<p>Non essential taskQCs:</p>
+<ul class="simple">
+<li><p>check_stimOff_itiIn_delays</p></li>
+<li><p>check_positive_feedback_stimOff_delays</p></li>
+<li><p>check_negative_feedback_stimOff_delays</p></li>
+<li><p>check_wheel_move_during_closed_loop</p></li>
+<li><p>check_response_stimFreeze_delays</p></li>
+<li><p>check_detected_wheel_moves</p></li>
+<li><p>check_trial_length</p></li>
+<li><p>check_goCue_delays</p></li>
+<li><p>check_errorCue_delays</p></li>
+<li><p>check_stimOn_delays</p></li>
+<li><p>check_stimOff_delays</p></li>
+<li><p>check_iti_delays</p></li>
+<li><p>check_stimFreeze_delays</p></li>
+<li><p>check_wheel_integrity</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The value returned by each metric is the proportion of trial that fail to pass the given test.
+For example, if the value returned by <code class="docutils literal notranslate"><span class="pre">check_errorCue_delays</span></code> is 0.92, it means 8% of the trials failed this test.</p>
+</div>
+</section>
+<section id="quantifying-the-task-qc-outcome-at-the-session-level">
+<h3>Quantifying the task QC outcome at the session level<a class="headerlink" href="#quantifying-the-task-qc-outcome-at-the-session-level" title="Link to this heading"></a></h3>
+<p>The criteria for whether a session passes the Task QC is:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">NOT_SET</span></code>: default value  (= not run yet)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FAIL</span></code>: if at least one metric is &lt; 95%</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WARNING</span></code>: if all metrics are &gt;=95% , and at least one metric is &lt;99 %</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PASS</span></code>: if all metrics are &gt;= 99%</p></li>
+</ul>
+<p>This aggregation is done on all metrics, regardless if they are essential or not.</p>
+<p>The criteria is defined at
+<a class="reference external" href="https://github.com/int-brain-lab/ibllib/blob/master/ibllib/qc/task_metrics.py#L63">this code line</a></p>
+</section>
+<section id="how-to-check-the-task-qc-outcome">
+<h3>How to check the task QC outcome<a class="headerlink" href="#how-to-check-the-task-qc-outcome" title="Link to this heading"></a></h3>
+<section id="immediately-after-acquiring-a-session">
+<h4>Immediately after acquiring a session<a class="headerlink" href="#immediately-after-acquiring-a-session" title="Link to this heading"></a></h4>
+<p>At the behaviour PC, before the data have been copied, use the <cite>task_qc</cite> command with the session path:</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="go">task_qc C:\iblrigv8_data\Subjects\KS022\2019-12-10\001 --local</span>
+</pre></div>
+</div>
+<p>More information can be found <a class="reference external" href="https://github.com/int-brain-lab/ibllib/tree/master/ibllib/qc/task_qc_viewer#readme">here</a>, or by running <cite>task_qc –help</cite>.</p>
+</section>
+<section id="once-the-session-is-registered-on-alyx">
+<h4>Once the session is registered on Alyx<a class="headerlink" href="#once-the-session-is-registered-on-alyx" title="Link to this heading"></a></h4>
+<ol class="arabic">
+<li><p><strong>Check on the Alyx webpage</strong></p>
+<p>From the <a class="reference external" href="https://alyx.internationalbrainlab.org/ibl_reports/gallery/sessions">session overview page on Alyx</a>,
+find your session click on <code class="docutils literal notranslate"><span class="pre">See</span> <span class="pre">more</span> <span class="pre">session</span> <span class="pre">info</span></code>.
+The session QC is displayed in one of the right panels.</p>
+<p>To get more information regarding which test pass or fail (contributing to this overall session QC),
+you can click on the <code class="docutils literal notranslate"><span class="pre">QC</span></code> menu on the left. Bar-diagrams will appear, with essentials QCs on the
+left, colored in green if passing.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<blockquote>
+<div><p>You can hover over the bars with your mouse to easily know the name of the corresponding metric.
+This is useful if the value of the metric is <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If an <span class="xref std std-ref">essential metric</span> fails, run the Task QC Viewer to investigate why.</p>
+</div>
+</div>
+</li>
+<li><p><strong>Run the taskQC Viewer to investigate</strong></p>
+<blockquote>
+<div><p>The application <a class="reference external" href="https://github.com/int-brain-lab/ibllib/tree/master/ibllib/qc/task_qc_viewer#readme">Task QC Viewer</a>
+enables to visualise the data streams of problematic trials.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Unlike when run at the behaviour PC, after registration the QC is run on the final time-aligned data (if applicable).</p>
+</div>
+<div class="admonition-run-the-task-qc-metrics-and-viewer exercise important admonition" id="exercise-0">
+<p class="admonition-title">Run the task QC metrics and viewer</p>
+<p>Select the <code class="docutils literal notranslate"><span class="pre">eid</span></code> for your session to inspect, and run the following within the iblrig env:</p>
+<blockquote>
+<div><div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="go">task_qc baecbddc-2b86-4eaf-a6f2-b30923225609</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</section>
+</section>
+</section>
+<section id="guide-to-develop-a-custom-task">
+<h2>Guide to develop a custom task<a class="headerlink" href="#guide-to-develop-a-custom-task" title="Link to this heading"></a></h2>
+<section id="iblrigv8-design-inheritance">
+<h3>iblrigv8 design: inheritance<a class="headerlink" href="#iblrigv8-design-inheritance" title="Link to this heading"></a></h3>
+<p>During the lifetime of the IBL project, we realized that multiple task variants combine with multiple hardware configurations and acquisition modalities, leading to a combinatorial explosion of possible tasks and related hardware.</p>
+<p>This left us with the only option of developing a flexible task framework through hierarchical inheritance.</p>
+<dl class="simple">
+<dt>All tasks inherit from the <a class="reference internal" href="api/iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" title="iblrig.base_tasks.BaseSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">iblrig.base_tasks.BaseSession</span></code></a> class, which provides the following functionalities:</dt><dd><ul class="simple">
+<li><p>read hardware parameters and rig parameters</p></li>
+<li><p>optionally interfaces with the <a class="reference external" href="https://github.com/cortex-lab/alyx">Alyx experimental database</a></p></li>
+<li><p>creates the folder structure for the session</p></li>
+<li><p>writes the task and rig parameters, log, and <a class="reference internal" href="reference_description_file.html"><span class="doc">acquisition description files</span></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Additionally the <a class="reference internal" href="api/iblrig.base_tasks.html#module-iblrig.base_tasks" title="iblrig.base_tasks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">iblrig.base_tasks</span></code></a> module provides “hardware mixins”. Those are classes that provide hardware-specific functionalities, such as connecting to a Bpod or a rotary encoder. They are composed with the <a class="reference internal" href="api/iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" title="iblrig.base_tasks.BaseSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSession</span></code></a> class to create a task.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This sounds complicated ? It is !
+Forecasting all possible tasks and hardware add-ons and modification is fool’s errand, however we can go through specific examples of task implementations.</p>
+</div>
+</section>
+<section id="guide-to-creating-your-own-task">
+<h3>Guide to Creating Your Own Task<a class="headerlink" href="#guide-to-creating-your-own-task" title="Link to this heading"></a></h3>
+<p>What Happens When Running an IBL Task?</p>
+<ol class="arabic simple">
+<li><p>The task constructor is invoked, executing the following steps:</p>
+<ul class="simple">
+<li><p>Reading of settings: hardware and IBLRIG configurations.</p></li>
+<li><p>Reading of task parameters.</p></li>
+<li><p>Instantiation of hardware mixins.</p></li>
+</ul>
+</li>
+<li><p>The task initiates the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method. Prior to execution, this
+method:</p>
+<ul class="simple">
+<li><p>Launches the hardware modules.</p></li>
+<li><p>Establishes a session folder.</p></li>
+<li><p>Saves the parameters to disk.</p></li>
+</ul>
+</li>
+<li><p>The experiment unfolds: the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method triggers the <code class="docutils literal notranslate"><span class="pre">_run()</span></code>
+method within the child class:</p>
+<ul class="simple">
+<li><p>Typically, this involves a loop that generates a Bpod state
+machine for each trial and runs it.</p></li>
+</ul>
+</li>
+<li><p>Upon SIGINT or when the maximum trial count is reached, the
+experiment concludes. The end of the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method includes:</p>
+<ul class="simple">
+<li><p>Saving the final parameter file.</p></li>
+<li><p>Recording administered water and session performance on Alyx.</p></li>
+<li><p>Halting the mixins.</p></li>
+<li><p>Initiating local server transfer.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h3>
+<div class="seealso admonition">
+<p class="admonition-title">Where to write your task</p>
+<p>After the <a class="reference internal" href="installation.html"><span class="doc">installation of iblrig</span></a> the <a class="reference external" href="https://github.com/int-brain-lab/project_extraction">project extraction</a> repository is located at the root of the C: drive.
+New tasks should be added to the <code class="docutils literal notranslate"><span class="pre">C:\project_extraction\iblrig_custom_tasks</span></code> folder to be made visible by the <cite>iblrig</cite> GUI.
+We use a convention that the task name starts with the author identifier, followed by an underscore, followed by the task name, such as <cite>olivier_awesomeChoiceWorld</cite>.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>olivier_awesomeChoiceWorld</dt><dd><ul class="simple">
+<li><p>__init__.py</p></li>
+<li><p>task.py</p></li>
+<li><p>README.md</p></li>
+<li><p>task_parameters.yaml</p></li>
+<li><p>test_olivier_awesomeChoiceWorld.py</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+</div>
+<section id="example-1-variation-on-biased-choice-world">
+<h4>Example 1: variation on biased choice world<a class="headerlink" href="#example-1-variation-on-biased-choice-world" title="Link to this heading"></a></h4>
+<p>We will create a a choice world task that modifies a the quiescence period duration random draw policy.
+In the <cite>task.py</cite> file, the first step is to create a new task class that inherits from the <code class="docutils literal notranslate"><span class="pre">BiasedChoiceWorldSession</span></code> class.</p>
+<p>Then we want to make sure that the task bears a distinctive protocol name, <cite>_iblrig_tasks_imagingChoiceWorld</cite>.
+We also create the command line entry point for the task that will be used by the <cite>iblrig</cite> GUI.</p>
+<p>Also, in this case we can leverage the IBL infrastructure to perform extraction of the trials using existing extractors <cite>extractor_tasks = [‘TrialRegisterRaw’, ‘ChoiceWorldTrials’]</cite></p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">iblrig.misc</span>
+<span class="kn">from</span> <span class="nn">iblrig.base_choice_world</span> <span class="kn">import</span> <span class="n">BiasedChoiceWorldSession</span>
+
+
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">BiasedChoiceWorldSession</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s2">&quot;_iblrig_tasks_imagingChoiceWorld&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extractor_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;TrialRegisterRaw&#39;</span><span class="p">,</span> <span class="s1">&#39;ChoiceWorldTrials&#39;</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">get_task_arguments</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">Session</span><span class="o">.</span><span class="n">extra_parser</span><span class="p">()])</span>
+    <span class="n">sess</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>In this case the parent class <cite>BiasedChoiceWorldSession</cite> has a method that draws the quiescence period. We are going to overload this method to add our own policy. This means the parent method will be fully replaced by our implementation.
+The class now looks like this:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">BiasedChoiceWorldSession</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s2">&quot;_iblrig_tasks_imagingChoiceWorld&quot;</span>
+
+    <span class="k">def</span> <span class="nf">draw_quiescent_period</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For this task we double the quiescence period texp draw and remove the absolute</span>
+<span class="sd">        offset of 200ms. The resulting is a truncated exp distribution between 400ms and 1 sec</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">texp</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="mf">0.35</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">min_</span><span class="o">=</span><span class="mf">0.2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">max_</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Et voilà, in a few lines, we re-used the whole biased choice world implementation to add a custom parameter. This is the most trivial and easy example.
+The full code is available <a class="reference external" href="https://github.com/int-brain-lab/iblrig/tree/iblrigv8/iblrig_tasks/_iblrig_tasks_ImagingChoiceWorld">here</a>.</p>
+</section>
+<section id="example-2-re-writing-a-state-machine-for-a-biased-choice-world-task">
+<h4>Example 2: re-writing a state-machine for a biased choice world task<a class="headerlink" href="#example-2-re-writing-a-state-machine-for-a-biased-choice-world-task" title="Link to this heading"></a></h4>
+<p>In some instances changes in the task logic require to go deeper and re-write the sequence of task events. In bpod parlance, we are talking about rewritng the state-machine code.</p>
+<p>Coming, for now here is an example of such a <a class="reference external" href="https://github.com/int-brain-lab/iblrig/tree/iblrigv8/iblrig_tasks/_iblrig_tasks_neuroModulatorChoiceWorld">task</a>.</p>
+<p>#.. include:: reference_developer_guide.rst</p>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Using IBLRIG v8" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hardware.html" class="btn btn-neutral float-right" title="Hardware Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

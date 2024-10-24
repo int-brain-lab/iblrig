@@ -1,0 +1,6 @@
+iblrig.net.install\_alyx\_token
+===============================
+
+.. currentmodule:: iblrig.net
+
+.. autofunction:: install_alyx_token

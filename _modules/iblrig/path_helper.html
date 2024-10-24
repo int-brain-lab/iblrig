@@ -1,0 +1,550 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.path_helper &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.path_helper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.path_helper</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">packaging</span> <span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">ValidationError</span>
+
+<span class="kn">import</span> <span class="nn">iblrig</span>
+<span class="kn">from</span> <span class="nn">ibllib.io</span> <span class="kn">import</span> <span class="n">session_params</span>
+<span class="kn">from</span> <span class="nn">ibllib.io.raw_data_loaders</span> <span class="kn">import</span> <span class="n">load_settings</span>
+<span class="kn">from</span> <span class="nn">iblrig.constants</span> <span class="kn">import</span> <span class="n">HARDWARE_SETTINGS_YAML</span><span class="p">,</span> <span class="n">RIG_SETTINGS_YAML</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettings</span><span class="p">,</span> <span class="n">RigSettings</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">Bunch</span>
+<span class="kn">from</span> <span class="nn">one.alf.spec</span> <span class="kn">import</span> <span class="n">is_session_path</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">BaseModel</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="iterate_previous_sessions">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.iterate_previous_sessions.html#iblrig.path_helper.iterate_previous_sessions">[docs]</a>
+<span class="k">def</span> <span class="nf">iterate_previous_sessions</span><span class="p">(</span><span class="n">subject_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Iterate over the sessions of a given subject in both the remote and local path and search for a given protocol name.</span>
+<span class="sd">    Return the information of the last n found matching protocols in the form of a dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject_name : str</span>
+<span class="sd">        Name of the subject.</span>
+<span class="sd">    task_name : str</span>
+<span class="sd">        Name of the protocol to look for in experiment description.</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        maximum number of protocols to return</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths</span>
+<span class="sd">        If not used, will use the arguments from iblrig/settings/iblrig_settings.yaml</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[dict]</span>
+<span class="sd">        List of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rig_paths</span> <span class="o">=</span> <span class="n">get_local_and_remote_paths</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">rig_paths</span><span class="p">[</span><span class="s1">&#39;local_subjects_folder&#39;</span><span class="p">]</span>
+    <span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">rig_paths</span><span class="p">[</span><span class="s1">&#39;remote_subjects_folder&#39;</span><span class="p">]</span>
+    <span class="n">sessions</span> <span class="o">=</span> <span class="n">_iterate_protocols</span><span class="p">(</span><span class="n">local_subjects_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">subject_name</span><span class="p">),</span> <span class="n">task_name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remote_subjects_folder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">remote_sessions</span> <span class="o">=</span> <span class="n">_iterate_protocols</span><span class="p">(</span><span class="n">remote_subjects_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">subject_name</span><span class="p">),</span> <span class="n">task_name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remote_sessions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sessions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">remote_sessions</span><span class="p">)</span>
+        <span class="c1"># here we rely on the fact that np.unique sort and then we output sessions with the last one first</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ises</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;session_stub&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sessions</span><span class="p">],</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sessions</span> <span class="o">=</span> <span class="p">[</span><span class="n">sessions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">ises</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">sessions</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_iterate_protocols</span><span class="p">(</span><span class="n">subject_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">min_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">43</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return information on the last n sessions with matching protocol.</span>
+
+<span class="sd">    This function iterates over the sessions of a given subject and searches for a given protocol name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject_folder : Path</span>
+<span class="sd">        A subject folder containing dated folders.</span>
+<span class="sd">    task_name : str</span>
+<span class="sd">        The task protocol name to look for.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The number of previous protocols to return.</span>
+<span class="sd">    min_trials : int</span>
+<span class="sd">        Skips sessions with fewer than this number of trials.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[dict]</span>
+<span class="sd">        list of dictionaries with keys: session_stub, session_path, experiment_description,</span>
+<span class="sd">        task_settings, file_task_data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">proc_num</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return protocol number.</span>
+
+<span class="sd">        Use &#39;protocol_number&#39; key if present (unlikely), otherwise use collection name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;collection&#39;</span><span class="p">,</span> <span class="s1">&#39;00&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">collection_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">()</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;protocol_number&#39;</span><span class="p">,</span> <span class="n">collection_int</span><span class="p">)</span>
+
+    <span class="n">protocols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">subject_folder</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">Path</span><span class="p">(</span><span class="n">subject_folder</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">protocols</span>
+    <span class="n">sessions</span> <span class="o">=</span> <span class="n">subject_folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;????-??-??/*/_ibl_experiment.description*.yaml&#39;</span><span class="p">)</span>  <span class="c1"># seq may be X or XXX</span>
+    <span class="c1"># Make extra sure to only include valid sessions</span>
+    <span class="n">sessions</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">is_session_path</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">subject_folder</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="p">),</span> <span class="n">sessions</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">file_experiment</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sessions</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">session_path</span> <span class="o">=</span> <span class="n">file_experiment</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">ad</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="n">file_experiment</span><span class="p">)</span>
+        <span class="c1"># reversed: we look for the last task first if the protocol ran twice</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task_name</span><span class="p">),</span> <span class="n">ad</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tasks&#39;</span><span class="p">,</span> <span class="p">[])))</span>
+        <span class="k">for</span> <span class="n">adt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">proc_num</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">task_settings</span> <span class="o">:=</span> <span class="n">load_settings</span><span class="p">(</span><span class="n">session_path</span><span class="p">,</span> <span class="n">task_collection</span><span class="o">=</span><span class="n">adt</span><span class="p">[</span><span class="s1">&#39;collection&#39;</span><span class="p">])):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">task_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NTRIALS&#39;</span><span class="p">,</span> <span class="n">min_trials</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_trials</span><span class="p">:</span>  <span class="c1"># ignore sessions with too few trials</span>
+                <span class="k">continue</span>
+            <span class="n">protocols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Bunch</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s1">&#39;session_stub&#39;</span><span class="p">:</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_experiment</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]),</span>  <span class="c1"># 2019-01-01_001</span>
+                        <span class="s1">&#39;session_path&#39;</span><span class="p">:</span> <span class="n">file_experiment</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span>
+                        <span class="s1">&#39;task_collection&#39;</span><span class="p">:</span> <span class="n">adt</span><span class="p">[</span><span class="s1">&#39;collection&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;experiment_description&#39;</span><span class="p">:</span> <span class="n">ad</span><span class="p">,</span>
+                        <span class="s1">&#39;task_settings&#39;</span><span class="p">:</span> <span class="n">task_settings</span><span class="p">,</span>
+                        <span class="s1">&#39;file_task_data&#39;</span><span class="p">:</span> <span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">adt</span><span class="p">[</span><span class="s1">&#39;collection&#39;</span><span class="p">],</span> <span class="s1">&#39;_iblrig_taskData.raw.jsonable&#39;</span><span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">protocols</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">protocols</span>
+    <span class="k">return</span> <span class="n">protocols</span>
+
+
+<div class="viewcode-block" id="get_local_and_remote_paths">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.get_local_and_remote_paths.html#iblrig.path_helper.get_local_and_remote_paths">[docs]</a>
+<span class="k">def</span> <span class="nf">get_local_and_remote_paths</span><span class="p">(</span>
+    <span class="n">local_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">lab</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">iblrig_settings</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function used to parse input arguments to transfer commands.</span>
+
+<span class="sd">    If the arguments are None, reads in the settings and returns the values from the files.</span>
+<span class="sd">    local_subjects_path always has a fallback on the home directory / iblrig_data</span>
+<span class="sd">    remote_subjects_path has no fallback and will return None when all options are exhausted</span>
+<span class="sd">    :param local_path:</span>
+<span class="sd">    :param remote_path:</span>
+<span class="sd">    :param lab:</span>
+<span class="sd">    :param iblrig_settings: if provided, settings dictionary, otherwise will load the default settings files</span>
+<span class="sd">    :return: dictionary, with following keys (example output)</span>
+<span class="sd">       {&#39;local_data_folder&#39;: PosixPath(&#39;C:/iblrigv8_data&#39;),</span>
+<span class="sd">        &#39;remote_data_folder&#39;: PosixPath(&#39;Y:/&#39;),</span>
+<span class="sd">        &#39;local_subjects_folder&#39;: PosixPath(&#39;C:/iblrigv8_data/mainenlab/Subjects&#39;),</span>
+<span class="sd">        &#39;remote_subjects_folder&#39;: PosixPath(&#39;Y:/Subjects&#39;)}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we only want to attempt to load the settings file if necessary</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">local_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">remote_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">lab</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">iblrig_settings</span> <span class="o">=</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">RigSettings</span><span class="p">)</span> <span class="k">if</span> <span class="n">iblrig_settings</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">iblrig_settings</span>
+
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">Bunch</span><span class="p">({</span><span class="s1">&#39;local_data_folder&#39;</span><span class="p">:</span> <span class="n">local_path</span><span class="p">,</span> <span class="s1">&#39;remote_data_folder&#39;</span><span class="p">:</span> <span class="n">remote_path</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">:=</span> <span class="n">iblrig_settings</span><span class="p">[</span><span class="s1">&#39;iblrig_local_data_path&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;iblrig_data&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">:=</span> <span class="n">iblrig_settings</span><span class="p">[</span><span class="s1">&#39;iblrig_remote_data_path&#39;</span><span class="p">])</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span><span class="p">)</span>
+
+    <span class="c1"># Get the subjects folders. If not defined in the settings, assume local_data_folder + /Subjects</span>
+    <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="p">(</span><span class="n">iblrig_settings</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iblrig_local_subjects_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">lab</span> <span class="o">=</span> <span class="n">lab</span> <span class="ow">or</span> <span class="p">(</span><span class="n">iblrig_settings</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ALYX_LAB&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Subjects&#39;</span><span class="p">:</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span>
+        <span class="k">elif</span> <span class="n">lab</span><span class="p">:</span>  <span class="c1"># append lab/Subjects part</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="s1">&#39;Subjects&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># NB: case is important here. ALF spec expects lab folder before &#39;Subjects&#39; (capitalized)</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">paths</span><span class="o">.</span><span class="n">local_data_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;subjects&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">local_subjects_folder</span><span class="p">)</span>
+
+    <span class="c1">#  Get the remote subjects folders. If not defined in the settings, assume remote_data_folder + /Subjects</span>
+    <span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="p">(</span><span class="n">iblrig_settings</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iblrig_remote_subjects_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;Subjects&#39;</span><span class="p">:</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">paths</span><span class="o">.</span><span class="n">remote_data_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;Subjects&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">paths</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_load_settings_yaml</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">RIG_SETTINGS_YAML</span><span class="p">,</span> <span class="n">do_raise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bunch</span><span class="p">:</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">iblrig</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;settings&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">do_raise</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Bunch</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">patch_settings</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span> <span class="n">filename</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Bunch</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_pydantic_yaml">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.load_pydantic_yaml.html#iblrig.path_helper.load_pydantic_yaml">[docs]</a>
+<span class="k">def</span> <span class="nf">load_pydantic_yaml</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">do_raise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load YAML data from a specified file or a standard IBLRIG settings file,</span>
+<span class="sd">    validate it using a Pydantic model, and return the validated Pydantic model</span>
+<span class="sd">    instance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : Type[T]</span>
+<span class="sd">        The Pydantic model class to validate the YAML data against.</span>
+<span class="sd">    filename : Path | str | None, optional</span>
+<span class="sd">        The path to the YAML file.</span>
+<span class="sd">        If None (default), the function deduces the appropriate standard IBLRIG</span>
+<span class="sd">        settings file based on the model.</span>
+<span class="sd">    do_raise : bool, optional</span>
+<span class="sd">        If True (default), raise a ValidationError if validation fails.</span>
+<span class="sd">        If False, log the validation error and construct a model instance</span>
+<span class="sd">        with the provided data. Defaults to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    T</span>
+<span class="sd">        An instance of the Pydantic model, validated against the YAML data.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValidationError</span>
+<span class="sd">        If validation fails and do_raise is set to True.</span>
+<span class="sd">        The raised exception contains details about the validation error.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If the filename is None and the model class is not recognized as</span>
+<span class="sd">        HardwareSettings or RigSettings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="n">HardwareSettings</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">HARDWARE_SETTINGS_YAML</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="n">RigSettings</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">RIG_SETTINGS_YAML</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot deduce filename for model `</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">`.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">HARDWARE_SETTINGS_YAML</span><span class="p">,</span> <span class="n">RIG_SETTINGS_YAML</span><span class="p">):</span>
+        <span class="c1"># TODO: We currently skip validation of pydantic models if an extra</span>
+        <span class="c1">#       filename is provided that does NOT correspond to the standard</span>
+        <span class="c1">#       settings files of IBLRIG. This should be re-evaluated.</span>
+        <span class="n">do_raise</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="n">_load_settings_yaml</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">do_raise</span><span class="o">=</span><span class="n">do_raise</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">do_raise</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">model_construct</span><span class="p">(</span><span class="o">**</span><span class="n">rs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
+
+
+<div class="viewcode-block" id="save_pydantic_yaml">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.save_pydantic_yaml.html#iblrig.path_helper.save_pydantic_yaml">[docs]</a>
+<span class="k">def</span> <span class="nf">save_pydantic_yaml</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">HardwareSettings</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">HARDWARE_SETTINGS_YAML</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">RigSettings</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">RIG_SETTINGS_YAML</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot deduce filename for model `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">`.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">yaml_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">yaml_data</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dumping </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">filename</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">yaml_data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="patch_settings">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.patch_settings.html#iblrig.path_helper.patch_settings">[docs]</a>
+<span class="k">def</span> <span class="nf">patch_settings</span><span class="p">(</span><span class="n">rs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update loaded settings files to ensure compatibility with latest version.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rs : dict</span>
+<span class="sd">        A loaded settings file.</span>
+<span class="sd">    filename : str | Path</span>
+<span class="sd">        The filename of the settings file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        The updated settings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">settings_version</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;hardware&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">settings_version</span> <span class="o">&lt;</span> <span class="n">version</span><span class="o">.</span><span class="n">Version</span><span class="p">(</span><span class="s1">&#39;1.0.0&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;device_camera&#39;</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Patching hardware settings; assuming left camera label&#39;</span><span class="p">)</span>
+            <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="n">rs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;device_camera&#39;</span><span class="p">)}</span>
+            <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;device_cameras&#39;</span> <span class="ow">in</span> <span class="n">rs</span> <span class="ow">and</span> <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">}</span>  <span class="c1"># remove empty keys</span>
+            <span class="n">idx_missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">}</span> <span class="ow">and</span> <span class="s1">&#39;INDEX&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">settings_version</span> <span class="o">&lt;</span> <span class="n">version</span><span class="o">.</span><span class="n">Version</span><span class="p">(</span><span class="s1">&#39;1.1.0&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">idx_missing</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Patching hardware settings; assuming left camera index and training workflow&#39;</span><span class="p">)</span>
+                <span class="n">workflow</span> <span class="o">=</span> <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">][</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">bonsai_workflows</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;setup&#39;</span><span class="p">:</span> <span class="s1">&#39;devices/camera_setup/setup_video.bonsai&#39;</span><span class="p">,</span> <span class="s1">&#39;recording&#39;</span><span class="p">:</span> <span class="n">workflow</span><span class="p">}</span>
+                <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;training&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">:</span> <span class="n">bonsai_workflows</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;INDEX&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;SYNC_LABEL&#39;</span><span class="p">:</span> <span class="s1">&#39;audio&#39;</span><span class="p">}}</span>
+                <span class="p">}</span>
+                <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.1.0&#39;</span>
+        <span class="k">if</span> <span class="n">rs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rs</span><span class="p">[</span><span class="s1">&#39;device_cameras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">rs</span></div>
+
+
+
+<div class="viewcode-block" id="get_commit_hash">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.get_commit_hash.html#iblrig.path_helper.get_commit_hash">[docs]</a>
+<span class="k">def</span> <span class="nf">get_commit_hash</span><span class="p">(</span><span class="n">folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">here</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">here</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">out</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Commit hash is empty string&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found commit hash </span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="iterate_collection">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.iterate_collection.html#iblrig.path_helper.iterate_collection">[docs]</a>
+<span class="k">def</span> <span class="nf">iterate_collection</span><span class="p">(</span><span class="n">session_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">collection_name</span><span class="o">=</span><span class="s1">&#39;raw_task_data&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given a session path returns the next numbered collection name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    session_path : str</span>
+<span class="sd">        The session path containing zero or more numbered collections.</span>
+<span class="sd">    collection_name : str</span>
+<span class="sd">        The collection name without the _NN suffix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The next numbered collection name.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    In a folder where there are no raw task data folders</span>
+
+<span class="sd">    &gt;&gt;&gt; iterate_collection(&#39;./subject/2020-01-01/001&#39;)</span>
+<span class="sd">    &#39;raw_task_data_00&#39;</span>
+
+<span class="sd">    In a folder where there is one raw_imaging_data_00 folder</span>
+
+<span class="sd">    &gt;&gt;&gt; iterate_collection(&#39;./subject/2020-01-01/001&#39;, collection_name=&#39;raw_imaging_data&#39;)</span>
+<span class="sd">    &#39;raw_imaging_data_01&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">session_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">collection_name</span><span class="si">}</span><span class="s1">_00&#39;</span>
+    <span class="n">collections</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">session_path</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+    <span class="n">collection_names</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">collections</span><span class="p">)</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">collection_name</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;_[0-9]</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="n">collection_names</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">collection_name</span><span class="si">}</span><span class="s1">_00&#39;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">collection_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">tasks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s1">02</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
+
+
+<div class="viewcode-block" id="create_bonsai_layout_from_template">
+<a class="viewcode-back" href="../../api/iblrig.path_helper.create_bonsai_layout_from_template.html#iblrig.path_helper.create_bonsai_layout_from_template">[docs]</a>
+<span class="k">def</span> <span class="nf">create_bonsai_layout_from_template</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a Bonsai layout file from a template if it does not already exist.</span>
+
+<span class="sd">    If the file with the suffix `.bonsai.layout` does not exist for the given</span>
+<span class="sd">    workflow file, this function will attempt to create it from a template</span>
+<span class="sd">    file with the suffix `.bonsai.layout_template`. If the template file also</span>
+<span class="sd">    does not exist, the function logs that no template layout is available.</span>
+
+<span class="sd">    Background: Bonsai stores dialog settings (window position, control</span>
+<span class="sd">    visibility, etc.) in an XML file with the suffix `.bonsai.layout`. These</span>
+<span class="sd">    layout files are user-specific and may be overwritten locally by the user</span>
+<span class="sd">    according to their preferences. To ensure that a default layout is</span>
+<span class="sd">    available, a template file with the suffix `.bonsai.layout_template` can</span>
+<span class="sd">    be provided as a starting point.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    workflow_file : Path</span>
+<span class="sd">        The path to the Bonsai workflow for which the layout is to be created.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the provided workflow_file does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">workflow_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layout_file</span> <span class="o">:=</span> <span class="n">workflow_file</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.bonsai.layout&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">template_file</span> <span class="o">=</span> <span class="n">workflow_file</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.bonsai.layout_template&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">template_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Creating default </span><span class="si">{</span><span class="n">layout_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">template_file</span><span class="p">,</span> <span class="n">layout_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No template layout for </span><span class="si">{</span><span class="n">workflow_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

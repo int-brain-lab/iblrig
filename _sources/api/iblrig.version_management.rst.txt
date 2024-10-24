@@ -1,0 +1,23 @@
+iblrig.version\_management
+==========================
+
+.. automodule:: iblrig.version_management
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      call_git
+      check_for_updates
+      check_upgrade_prerequisites
+      get_branch
+      get_changelog
+      get_commit_hash
+      get_detailed_version_string
+      get_local_version
+      get_remote_tags
+      get_remote_version
+      is_dirty
+   

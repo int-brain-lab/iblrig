@@ -1,0 +1,26 @@
+iblrig.transfer\_experiments
+============================
+
+.. automodule:: iblrig.transfer_experiments
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      copy_folders
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BehaviorCopier
+      CopyState
+      EphysCopier
+      SessionCopier
+      VideoCopier
+   

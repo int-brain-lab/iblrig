@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.pydantic_definitions &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.pydantic_definitions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.pydantic_definitions</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">abc</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">annotated_types</span> <span class="kn">import</span> <span class="n">Ge</span><span class="p">,</span> <span class="n">Le</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AnyUrl</span><span class="p">,</span>
+    <span class="n">BaseModel</span><span class="p">,</span>
+    <span class="n">ConfigDict</span><span class="p">,</span>
+    <span class="n">DirectoryPath</span><span class="p">,</span>
+    <span class="n">Field</span><span class="p">,</span>
+    <span class="n">FilePath</span><span class="p">,</span>
+    <span class="n">PlainSerializer</span><span class="p">,</span>
+    <span class="n">PositiveFloat</span><span class="p">,</span>
+    <span class="n">PositiveInt</span><span class="p">,</span>
+    <span class="n">field_serializer</span><span class="p">,</span>
+    <span class="n">field_validator</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pydantic_core._pydantic_core</span> <span class="kn">import</span> <span class="n">PydanticUndefined</span>
+
+<span class="kn">from</span> <span class="nn">iblrig.constants</span> <span class="kn">import</span> <span class="n">BASE_PATH</span>
+
+<span class="n">ExistingFilePath</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">FilePath</span><span class="p">,</span> <span class="n">PlainSerializer</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">return_type</span><span class="o">=</span><span class="nb">str</span><span class="p">)]</span>
+<span class="sd">&quot;&quot;&quot;Validate that path exists and is file. Cast to str upon save.&quot;&quot;&quot;</span>
+
+<span class="n">BehaviourInputPort</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Ge</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Le</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+
+
+<div class="viewcode-block" id="BunchModel">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.BunchModel.html#iblrig.pydantic_definitions.BunchModel">[docs]</a>
+<span class="k">class</span> <span class="nc">BunchModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">abc</span><span class="o">.</span><span class="n">MutableMapping</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_fields</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="BunchModel.items">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.BunchModel.html#iblrig.pydantic_definitions.BunchModel.items">[docs]</a>
+    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span></div>
+
+
+<div class="viewcode-block" id="BunchModel.keys">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.BunchModel.html#iblrig.pydantic_definitions.BunchModel.keys">[docs]</a>
+    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_fields</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BunchModel.values">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.BunchModel.html#iblrig.pydantic_definitions.BunchModel.values">[docs]</a>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+
+<div class="viewcode-block" id="RigSettings">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.RigSettings.html#iblrig.pydantic_definitions.RigSettings">[docs]</a>
+<span class="k">class</span> <span class="nc">RigSettings</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">,</span> <span class="n">validate_assignment</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;iblrig_settings.yaml&#39;</span><span class="p">)</span>
+    <span class="n">iblrig_local_data_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;IBLRIG local data path&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The local folder IBLRIG should use for storing data&#39;</span>
+    <span class="p">)</span>
+    <span class="n">iblrig_local_subjects_path</span><span class="p">:</span> <span class="n">DirectoryPath</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;IBLRIG full local data path&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional full local data folder (including /Subjects)&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">iblrig_remote_data_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;IBLRIG remote data path&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The remote folder IBLRIG should use for storing data&#39;</span>
+    <span class="p">)</span>
+    <span class="n">iblrig_remote_subjects_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;IBLRIG full remote data path&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional full remote data folder (including /Subjects)&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ALYX_USER</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Your Alyx username&#39;</span><span class="p">)</span>
+    <span class="n">ALYX_URL</span><span class="p">:</span> <span class="n">AnyUrl</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Alyx URL&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The URL to your Alyx database&#39;</span><span class="p">)</span>
+    <span class="n">ALYX_LAB</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Your lab&#39;s name as registered on the Alyx database&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RigSettings.str_must_not_contain_space">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.RigSettings.html#iblrig.pydantic_definitions.RigSettings.str_must_not_contain_space">[docs]</a>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s1">&#39;ALYX_USER&#39;</span><span class="p">,</span> <span class="s1">&#39;ALYX_LAB&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">str_must_not_contain_space</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>  <span class="c1"># noqa: N805</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39; &#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;must not contain a space&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="RigSettings.validate_remote_data_path">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.RigSettings.html#iblrig.pydantic_definitions.RigSettings.validate_remote_data_path">[docs]</a>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s1">&#39;iblrig_remote_data_path&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">validate_remote_data_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>  <span class="c1"># noqa: N805</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsBpod">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsBpod.html#iblrig.pydantic_definitions.HardwareSettingsBpod">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsBpod</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">COM_BPOD</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">BPOD_TTL_TEST_DATE</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">BPOD_TTL_TEST_STATUS</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SOUND_BOARD_BPOD_PORT</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;Serial1&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial2&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial3&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial4&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial5&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ROTARY_ENCODER_BPOD_PORT</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;Serial1&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial2&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial3&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial4&#39;</span><span class="p">,</span> <span class="s1">&#39;Serial5&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">DISABLE_BEHAVIOR_INPUT_PORTS</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BehaviourInputPort</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsFrame2TTL">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsFrame2TTL.html#iblrig.pydantic_definitions.HardwareSettingsFrame2TTL">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsFrame2TTL</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">COM_F2TTL</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">F2TTL_CALIBRATION_DATE</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">F2TTL_DARK_THRESH</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">F2TTL_LIGHT_THRESH</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsRotaryEncoder">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsRotaryEncoder.html#iblrig.pydantic_definitions.HardwareSettingsRotaryEncoder">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsRotaryEncoder</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">COM_ROTARY_ENCODER</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">WHEEL_DIAMETER_MM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">62.0</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsScreen">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsScreen.html#iblrig.pydantic_definitions.HardwareSettingsScreen">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsScreen</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">DISPLAY_IDX</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># -1 = Default, 0 = First, 1 = Second, 2 = Third, etc</span>
+    <span class="n">SCREEN_FREQ_TARGET</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">SCREEN_FREQ_TEST_DATE</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SCREEN_FREQ_TEST_STATUS</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SCREEN_LUX_DATE</span><span class="p">:</span> <span class="n">date</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">SCREEN_LUX_VALUE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsSound">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsSound.html#iblrig.pydantic_definitions.HardwareSettingsSound">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsSound</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">OUTPUT</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;harp&#39;</span><span class="p">,</span> <span class="s1">&#39;xonar&#39;</span><span class="p">,</span> <span class="s1">&#39;hifi&#39;</span><span class="p">,</span> <span class="s1">&#39;sysdefault&#39;</span><span class="p">]</span>
+    <span class="n">COM_SOUND</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">AMP_TYPE</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;harp&#39;</span><span class="p">,</span> <span class="s1">&#39;AMP2X15&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="c1"># ATTENUATION_DB: float = Field(default=0, le=0)</span>
+
+
+<div class="viewcode-block" id="HardwareSettingsValve">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsValve.html#iblrig.pydantic_definitions.HardwareSettingsValve">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsValve</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">WATER_CALIBRATION_DATE</span><span class="p">:</span> <span class="n">date</span>
+    <span class="n">WATER_CALIBRATION_RANGE</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PositiveFloat</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">WATER_CALIBRATION_N</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">WATER_CALIBRATION_OPEN_TIMES</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PositiveFloat</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">WATER_CALIBRATION_WEIGHT_PERDROP</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">PositiveFloat</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="n">FREE_REWARD_VOLUME_UL</span><span class="p">:</span> <span class="n">PositiveFloat</span> <span class="o">=</span> <span class="mf">1.5</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsScale">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsScale.html#iblrig.pydantic_definitions.HardwareSettingsScale">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsScale</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">COM_SCALE</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsCamera">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsCamera.html#iblrig.pydantic_definitions.HardwareSettingsCamera">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsCamera</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">INDEX</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">FPS</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Camera frame rate&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional frame rate (for camera QC only)&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">WIDTH</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Camera frame width&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional frame width (for camera QC only)&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">HEIGHT</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Camera frame height&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional frame hight (for camera QC only)&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">SYNC_LABEL</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Camera DAQ sync label&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The name of the DAQ channel wired to the camera GPIO&#39;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsCameraWorkflow">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsCameraWorkflow.html#iblrig.pydantic_definitions.HardwareSettingsCameraWorkflow">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsCameraWorkflow</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">setup</span><span class="p">:</span> <span class="n">ExistingFilePath</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Optional camera setup workflow&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;An optional path to the camera setup Bonsai workflow.&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">recording</span><span class="p">:</span> <span class="n">ExistingFilePath</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Camera recording workflow&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;The path to the Bonsai workflow for camera recording.&#39;</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="HardwareSettingsCameraWorkflow.valid_path">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsCameraWorkflow.html#iblrig.pydantic_definitions.HardwareSettingsCameraWorkflow.valid_path">[docs]</a>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s1">&#39;setup&#39;</span><span class="p">,</span> <span class="s1">&#39;recording&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;before&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">valid_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>  <span class="c1"># noqa: N805</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>  <span class="c1"># assume relative to iblrig repo</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">BASE_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HardwareSettingsMicrophone">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsMicrophone.html#iblrig.pydantic_definitions.HardwareSettingsMicrophone">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettingsMicrophone</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">BONSAI_WORKFLOW</span><span class="p">:</span> <span class="n">Path</span>
+
+<div class="viewcode-block" id="HardwareSettingsMicrophone.serialize_path">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettingsMicrophone.html#iblrig.pydantic_definitions.HardwareSettingsMicrophone.serialize_path">[docs]</a>
+    <span class="nd">@field_serializer</span><span class="p">(</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">serialize_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bonsai_workflow</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">_info</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">bonsai_workflow</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HardwareSettings">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.HardwareSettings.html#iblrig.pydantic_definitions.HardwareSettings">[docs]</a>
+<span class="k">class</span> <span class="nc">HardwareSettings</span><span class="p">(</span><span class="n">BunchModel</span><span class="p">):</span>
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;hardware_settings.yaml&#39;</span><span class="p">)</span>
+    <span class="n">RIG_NAME</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">MAIN_SYNC</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">device_bpod</span><span class="p">:</span> <span class="n">HardwareSettingsBpod</span>
+    <span class="n">device_frame2ttl</span><span class="p">:</span> <span class="n">HardwareSettingsFrame2TTL</span>
+    <span class="n">device_rotary_encoder</span><span class="p">:</span> <span class="n">HardwareSettingsRotaryEncoder</span>
+    <span class="n">device_screen</span><span class="p">:</span> <span class="n">HardwareSettingsScreen</span>
+    <span class="n">device_sound</span><span class="p">:</span> <span class="n">HardwareSettingsSound</span>
+    <span class="n">device_valve</span><span class="p">:</span> <span class="n">HardwareSettingsValve</span>
+    <span class="n">device_scale</span><span class="p">:</span> <span class="n">HardwareSettingsScale</span> <span class="o">=</span> <span class="n">HardwareSettingsScale</span><span class="p">()</span>
+    <span class="n">device_cameras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">HardwareSettingsCameraWorkflow</span> <span class="o">|</span> <span class="n">HardwareSettingsCamera</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">device_microphone</span><span class="p">:</span> <span class="n">HardwareSettingsMicrophone</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">VERSION</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+
+<div class="viewcode-block" id="TrialDataModel">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.TrialDataModel.html#iblrig.pydantic_definitions.TrialDataModel">[docs]</a>
+<span class="k">class</span> <span class="nc">TrialDataModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A data model for trial data that extends BaseModel.</span>
+
+<span class="sd">    This model allows for the addition of extra fields beyond those defined in the model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">extra</span><span class="o">=</span><span class="s1">&#39;allow&#39;</span><span class="p">)</span>  <span class="c1"># allow adding extra fields</span>
+
+<div class="viewcode-block" id="TrialDataModel.preallocate_dataframe">
+<a class="viewcode-back" href="../../api/iblrig.pydantic_definitions.TrialDataModel.html#iblrig.pydantic_definitions.TrialDataModel.preallocate_dataframe">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">preallocate_dataframe</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preallocate a DataFrame with specified number of rows, using default values or pandas.NA.</span>
+
+<span class="sd">        This method creates a pandas DataFrame with the same columns as the fields defined in the Pydantic model.</span>
+<span class="sd">        Each column is initialized with the field&#39;s default value if available, otherwise with pandas.NA.</span>
+
+<span class="sd">        We use Pandas.NA for default values rather than NaN, None or Zero. This allows us to clearly indicate missing</span>
+<span class="sd">        values - which will raise a Pydantic ValidationError.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_rows : int</span>
+<span class="sd">            The number of rows to create in the DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            A DataFrame with `n_rows` rows and columns corresponding to the model&#39;s fields.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">field_info</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">default_value</span> <span class="o">=</span> <span class="n">field_info</span><span class="o">.</span><span class="n">default</span> <span class="k">if</span> <span class="n">field_info</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PydanticUndefined</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_value</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_rows</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

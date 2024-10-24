@@ -1,0 +1,5 @@
+<map id="inheritance29d879f603" name="inheritance29d879f603">
+<area shape="rect" id="node1" href="#iblrig.gui.tab_docs.CustomWebEnginePage" target="_top" title="Custom implementation of QWebEnginePage to handle navigation requests." alt="" coords="591,5,763,30"/>
+<area shape="rect" id="node2" title="QWebEnginePage(parent: QObject = None)" alt="" coords="411,5,544,30"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="290,5,364,30"/>
+</map>

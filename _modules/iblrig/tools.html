@@ -1,0 +1,575 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.tools &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.tools</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.tools</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span> <span class="nn">iblrig</span> <span class="kn">import</span> <span class="n">version_management</span>
+<span class="kn">from</span> <span class="nn">iblrig.constants</span> <span class="kn">import</span> <span class="n">BONSAI_EXE</span><span class="p">,</span> <span class="n">IS_GIT</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">create_bonsai_layout_from_template</span><span class="p">,</span> <span class="n">load_pydantic_yaml</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettings</span><span class="p">,</span> <span class="n">RigSettings</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">get_mac</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ask_user">
+<a class="viewcode-back" href="../../api/iblrig.tools.ask_user.html#iblrig.tools.ask_user">[docs]</a>
+<span class="k">def</span> <span class="nf">ask_user</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prompt the user for a yes/no response.</span>
+
+<span class="sd">    This function displays a prompt to the user and expects a yes or no response.</span>
+<span class="sd">    The response is not case-sensitive. If the user presses Enter without</span>
+<span class="sd">    typing anything, the function interprets it as the default response.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    prompt : str</span>
+<span class="sd">        The prompt message to display to the user.</span>
+<span class="sd">    default : bool, optional</span>
+<span class="sd">        The default response when the user presses Enter without typing</span>
+<span class="sd">        anything. If True, the default response is &#39;yes&#39; (Y/y or Enter).</span>
+<span class="sd">        If False, the default response is &#39;no&#39; (N/n or Enter).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the user responds with &#39;yes&#39;</span>
+<span class="sd">        False if the user responds with &#39;no&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s1"> [Y/n] &#39;</span> <span class="k">if</span> <span class="n">default</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s1"> [y/N] &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_input</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">default</span>
+        <span class="k">elif</span> <span class="n">user_input</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;yes&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">user_input</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="get_anydesk_id">
+<a class="viewcode-back" href="../../api/iblrig.tools.get_anydesk_id.html#iblrig.tools.get_anydesk_id">[docs]</a>
+<span class="k">def</span> <span class="nf">get_anydesk_id</span><span class="p">(</span><span class="n">format_id</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the AnyDesk ID of the current machine.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    format_id : bool, optional</span>
+<span class="sd">        If True (default), format the ID in blocks separated by spaces.</span>
+<span class="sd">        If False, return the ID as one continuous block.</span>
+<span class="sd">    silent : bool, optional</span>
+<span class="sd">        If True, suppresses exceptions and logs them instead.</span>
+<span class="sd">        If False (default), raises exceptions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        The AnyDesk ID as a formatted string (e.g., &#39;123 456 789&#39;) if successful,</span>
+<span class="sd">        or None on failure.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the AnyDesk executable is not found.</span>
+<span class="sd">    subprocess.CalledProcessError</span>
+<span class="sd">        If an error occurs while executing the AnyDesk command.</span>
+<span class="sd">    StopIteration</span>
+<span class="sd">        If the subprocess output is empty.</span>
+<span class="sd">    UnicodeDecodeError</span>
+<span class="sd">        If there is an issue decoding the subprocess output.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function attempts to find the AnyDesk executable and retrieve the ID using the command line.</span>
+<span class="sd">    On success, the AnyDesk ID is returned as a formatted string. If silent is True, exceptions are logged,</span>
+<span class="sd">    and None is returned on failure. If silent is False, exceptions are raised on failure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">anydesk_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cmd</span> <span class="o">:=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;anydesk&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PROGRAMFILES(X86)&#39;</span><span class="p">],</span> <span class="s1">&#39;AnyDesk&#39;</span><span class="p">,</span> <span class="s1">&#39;anydesk.exe&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">cmd</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;AnyDesk executable not found&#39;</span><span class="p">)</span>
+
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="n">cmd</span><span class="p">,</span> <span class="s1">&#39;--get-id&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\d</span><span class="si">{10}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">id_string</span> <span class="o">:=</span> <span class="nb">next</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()):</span>
+            <span class="n">anydesk_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">id_string</span><span class="p">)</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">format_id</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">,</span> <span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">UnicodeDecodeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="n">anydesk_id</span></div>
+
+
+
+<div class="viewcode-block" id="static_vars">
+<a class="viewcode-back" href="../../api/iblrig.tools.static_vars.html#iblrig.tools.static_vars">[docs]</a>
+<span class="k">def</span> <span class="nf">static_vars</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to add static variables to a function.</span>
+
+<span class="sd">    This decorator allows you to add static variables to a function by providing</span>
+<span class="sd">    keyword arguments. Static variables are shared across all calls to the</span>
+<span class="sd">    decorated function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Keyword arguments where the keys are variable names and the values are</span>
+<span class="sd">        the initial values of the static variables.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    function</span>
+<span class="sd">        A decorated function with the specified static variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">decorate</span></div>
+
+
+
+<div class="viewcode-block" id="internet_available">
+<a class="viewcode-back" href="../../api/iblrig.tools.internet_available.html#iblrig.tools.internet_available">[docs]</a>
+<span class="nd">@static_vars</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">internet_available</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;8.8.8.8&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">53</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">force_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the internet connection is available.</span>
+
+<span class="sd">    This function checks if an internet connection is available by attempting to</span>
+<span class="sd">    establish a connection to a specified host and port. It will use a cached</span>
+<span class="sd">    result if the latter is available and `force_update` is set to False.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    host : str, optional</span>
+<span class="sd">        The IP address or domain name of the host to check the connection to.</span>
+<span class="sd">        Default is &quot;8.8.8.8&quot; (Google&#39;s DNS server).</span>
+<span class="sd">    port : int, optional</span>
+<span class="sd">        The port to use for the connection check. Default is 53 (DNS port).</span>
+<span class="sd">    timeout : int, optional</span>
+<span class="sd">        The maximum time (in seconds) to wait for the connection attempt.</span>
+<span class="sd">        Default is 3 seconds.</span>
+<span class="sd">    force_update : bool, optional</span>
+<span class="sd">        If True, force an update and recheck the internet connection even if</span>
+<span class="sd">        the result is cached. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if an internet connection is available, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">force_update</span> <span class="ow">and</span> <span class="n">internet_available</span><span class="o">.</span><span class="n">return_value</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">internet_available</span><span class="o">.</span><span class="n">return_value</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+        <span class="n">internet_available</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">internet_available</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">internet_available</span><span class="o">.</span><span class="n">return_value</span></div>
+
+
+
+<div class="viewcode-block" id="alyx_reachable">
+<a class="viewcode-back" href="../../api/iblrig.tools.alyx_reachable.html#iblrig.tools.alyx_reachable">[docs]</a>
+<span class="k">def</span> <span class="nf">alyx_reachable</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if Alyx can be connected to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if Alyx can be connected to, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">settings</span><span class="p">:</span> <span class="n">RigSettings</span> <span class="o">=</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">RigSettings</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">ALYX_URL</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">internet_available</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ALYX_URL</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">443</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_build_bonsai_cmd</span><span class="p">(</span>
+    <span class="n">workflow_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">bootstrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">editor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute a Bonsai workflow within a subprocess call.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    workflow_file : str | Path</span>
+<span class="sd">        Path to the Bonsai workflow file.</span>
+<span class="sd">    parameters : dict[str, str], optional</span>
+<span class="sd">        Parameters to be passed to Bonsai workflow.</span>
+<span class="sd">    start : bool, optional</span>
+<span class="sd">        Start execution of the workflow within Bonsai (default is True).</span>
+<span class="sd">    debug : bool, optional</span>
+<span class="sd">        Enable debugging mode if True (default is False).</span>
+<span class="sd">        Only applies if editor is True.</span>
+<span class="sd">    bootstrap : bool, optional</span>
+<span class="sd">        Enable Bonsai bootstrapping if True (default is True).</span>
+<span class="sd">    editor : bool, optional</span>
+<span class="sd">        Enable Bonsai editor if True (default is True).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of str</span>
+<span class="sd">        The Bonsai command to pass to subprocess.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the Bonsai executable does not exist.</span>
+<span class="sd">        If the specified workflow file does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">BONSAI_EXE</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">BONSAI_EXE</span><span class="p">)</span>
+    <span class="n">workflow_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">workflow_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span>
+    <span class="n">create_bonsai_layout_from_template</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">BONSAI_EXE</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">start</span><span class="p">:</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--start&#39;</span> <span class="k">if</span> <span class="n">debug</span> <span class="k">else</span> <span class="s1">&#39;--start-no-debug&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">editor</span><span class="p">:</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--no-editor&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">bootstrap</span><span class="p">:</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;--no-boot&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;-p:</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cmd</span>
+
+
+<div class="viewcode-block" id="call_bonsai">
+<a class="viewcode-back" href="../../api/iblrig.tools.call_bonsai.html#iblrig.tools.call_bonsai">[docs]</a>
+<span class="k">def</span> <span class="nf">call_bonsai</span><span class="p">(</span>
+    <span class="n">workflow_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">bootstrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">editor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute a Bonsai workflow within a subprocess call.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    workflow_file : str | Path</span>
+<span class="sd">        Path to the Bonsai workflow file.</span>
+<span class="sd">    parameters : dict[str, str], optional</span>
+<span class="sd">        Parameters to be passed to Bonsai workflow.</span>
+<span class="sd">    start : bool, optional</span>
+<span class="sd">        Start execution of the workflow within Bonsai (default is True).</span>
+<span class="sd">    debug : bool, optional</span>
+<span class="sd">        Enable debugging mode if True (default is False).</span>
+<span class="sd">        Only applies if editor is True.</span>
+<span class="sd">    bootstrap : bool, optional</span>
+<span class="sd">        Enable Bonsai bootstrapping if True (default is True).</span>
+<span class="sd">    editor : bool, optional</span>
+<span class="sd">        Enable Bonsai editor if True (default is True).</span>
+<span class="sd">    wait : bool, optional</span>
+<span class="sd">        Wait for Bonsai process to finish (default is True).</span>
+<span class="sd">    check : bool, optional</span>
+<span class="sd">        Raise CalledProcessError if Bonsai process exits with non-zero exit code (default is False).</span>
+<span class="sd">        Only applies if wait is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Popen[bytes] | Popen[str | bytes | Any] | CompletedProcess</span>
+<span class="sd">        Pointer to the Bonsai subprocess if wait is False, otherwise subprocess.CompletedProcess.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the Bonsai executable does not exist.</span>
+<span class="sd">        If the specified workflow file does not exist.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">_build_bonsai_cmd</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span> <span class="n">bootstrap</span><span class="p">,</span> <span class="n">editor</span><span class="p">)</span>
+    <span class="n">cwd</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting Bonsai workflow `</span><span class="si">{</span><span class="n">workflow_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">`&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="n">check</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="call_bonsai_async">
+<a class="viewcode-back" href="../../api/iblrig.tools.call_bonsai_async.html#iblrig.tools.call_bonsai_async">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">call_bonsai_async</span><span class="p">(</span>
+    <span class="n">workflow_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">bootstrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">editor</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Process</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Asynchronously execute a Bonsai workflow within a subprocess call.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    workflow_file : str | Path</span>
+<span class="sd">        Path to the Bonsai workflow file.</span>
+<span class="sd">    parameters : dict[str, str], optional</span>
+<span class="sd">        Parameters to be passed to Bonsai workflow.</span>
+<span class="sd">    start : bool, optional</span>
+<span class="sd">        Start execution of the workflow within Bonsai (default is True).</span>
+<span class="sd">    debug : bool, optional</span>
+<span class="sd">        Enable debugging mode if True (default is False).</span>
+<span class="sd">        Only applies if editor is True.</span>
+<span class="sd">    bootstrap : bool, optional</span>
+<span class="sd">        Enable Bonsai bootstrapping if True (default is True).</span>
+<span class="sd">    editor : bool, optional</span>
+<span class="sd">        Enable Bonsai editor if True (default is True).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    asyncio.subprocess.Process</span>
+<span class="sd">        Pointer to the Bonsai subprocess if wait is False, otherwise subprocess.CompletedProcess.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the Bonsai executable does not exist.</span>
+<span class="sd">        If the specified workflow file does not exist.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">program</span><span class="p">,</span> <span class="o">*</span><span class="n">cmd</span> <span class="o">=</span> <span class="n">_build_bonsai_cmd</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">debug</span><span class="p">,</span> <span class="n">bootstrap</span><span class="p">,</span> <span class="n">editor</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting Bonsai workflow `</span><span class="si">{</span><span class="n">workflow_file</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">`&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)))</span>
+    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">workflow_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_subprocess_exec</span><span class="p">(</span>
+        <span class="n">program</span><span class="p">,</span> <span class="o">*</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">working_dir</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_inheritors">
+<a class="viewcode-back" href="../../api/iblrig.tools.get_inheritors.html#iblrig.tools.get_inheritors">[docs]</a>
+<span class="k">def</span> <span class="nf">get_inheritors</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain a set of all direct inheritors of a class.&quot;&quot;&quot;</span>
+    <span class="n">subclasses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">subclasses</span><span class="p">:</span>
+        <span class="n">subclasses</span> <span class="o">=</span> <span class="n">subclasses</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">get_inheritors</span><span class="p">(</span><span class="n">child</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">subclasses</span></div>
+
+
+
+<div class="viewcode-block" id="ANSI">
+<a class="viewcode-back" href="../../api/iblrig.tools.ANSI.html#iblrig.tools.ANSI">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ANSI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ANSI Codes for formatting text on the CLI.&quot;&quot;&quot;</span>
+
+    <span class="n">WHITE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[37m&#39;</span>
+    <span class="n">PURPLE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[95m&#39;</span>
+    <span class="n">CYAN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[96m&#39;</span>
+    <span class="n">DARKCYAN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[36m&#39;</span>
+    <span class="n">BLUE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[94m&#39;</span>
+    <span class="n">GREEN</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[92m&#39;</span>
+    <span class="n">YELLOW</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[93m&#39;</span>
+    <span class="n">RED</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[91m&#39;</span>
+    <span class="n">BOLD</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[1m&#39;</span>
+    <span class="n">DIM</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[2m&#39;</span>
+    <span class="n">UNDERLINE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[4m&#39;</span>
+    <span class="n">END</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[0m&#39;</span></div>
+
+
+
+<span class="n">cached_check_output</span> <span class="o">=</span> <span class="n">cache</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_lab_location_dict">
+<a class="viewcode-back" href="../../api/iblrig.tools.get_lab_location_dict.html#iblrig.tools.get_lab_location_dict">[docs]</a>
+<span class="k">def</span> <span class="nf">get_lab_location_dict</span><span class="p">(</span><span class="n">hardware_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span><span class="p">,</span> <span class="n">iblrig_settings</span><span class="p">:</span> <span class="n">RigSettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="n">lab_location</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">lab_location</span><span class="p">[</span><span class="s1">&#39;rig_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hardware_settings</span><span class="o">.</span><span class="n">RIG_NAME</span>
+    <span class="n">lab_location</span><span class="p">[</span><span class="s1">&#39;iblrig_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">version_management</span><span class="o">.</span><span class="n">get_local_version</span><span class="p">())</span>
+    <span class="n">lab_location</span><span class="p">[</span><span class="s1">&#39;last_seen&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+
+    <span class="n">machine</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;platform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">platform</span><span class="p">()</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;hostname&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;fqdn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">getfqdn</span><span class="p">()</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;ip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">machine</span><span class="p">[</span><span class="s1">&#39;hostname&#39;</span><span class="p">])</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mac&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_mac</span><span class="p">()</span>
+    <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;anydesk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_anydesk_id</span><span class="p">(</span><span class="n">format_id</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lab_location</span><span class="p">[</span><span class="s1">&#39;machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine</span>
+
+    <span class="n">git</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">git</span><span class="p">[</span><span class="s1">&#39;is_git&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">IS_GIT</span>
+    <span class="n">git</span><span class="p">[</span><span class="s1">&#39;branch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_management</span><span class="o">.</span><span class="n">get_branch</span><span class="p">()</span>
+    <span class="n">git</span><span class="p">[</span><span class="s1">&#39;commit_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_management</span><span class="o">.</span><span class="n">get_commit_hash</span><span class="p">()</span>
+    <span class="n">git</span><span class="p">[</span><span class="s1">&#39;is_dirty&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_management</span><span class="o">.</span><span class="n">is_dirty</span><span class="p">()</span>
+    <span class="n">lab_location</span><span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">git</span>
+
+    <span class="c1"># TODO: add hardware/firmware versions of bpod, soundcard, rotary encoder, frame2ttl, ambient module, etc</span>
+    <span class="c1"># TODO: add validation errors/warnings</span>
+
+    <span class="k">return</span> <span class="n">lab_location</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

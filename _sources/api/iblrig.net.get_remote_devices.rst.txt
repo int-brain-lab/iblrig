@@ -1,0 +1,6 @@
+iblrig.net.get\_remote\_devices
+===============================
+
+.. currentmodule:: iblrig.net
+
+.. autofunction:: get_remote_devices

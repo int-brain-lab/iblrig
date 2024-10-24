@@ -1,0 +1,604 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.gui.valve &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.gui.valve</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.gui.valve</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pyqtgraph</span> <span class="k">as</span> <span class="nn">pg</span>
+<span class="kn">from</span> <span class="nn">PyQt5</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtWidgets</span>
+<span class="kn">from</span> <span class="nn">PyQt5.QtCore</span> <span class="kn">import</span> <span class="n">QThreadPool</span>
+<span class="kn">from</span> <span class="nn">pyqtgraph</span> <span class="kn">import</span> <span class="n">PlotWidget</span>
+<span class="kn">from</span> <span class="nn">serial</span> <span class="kn">import</span> <span class="n">SerialException</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
+
+<span class="kn">from</span> <span class="nn">iblrig.gui.tools</span> <span class="kn">import</span> <span class="n">Worker</span>
+<span class="kn">from</span> <span class="nn">iblrig.gui.ui_valve</span> <span class="kn">import</span> <span class="n">Ui_valve</span>
+<span class="kn">from</span> <span class="nn">iblrig.hardware</span> <span class="kn">import</span> <span class="n">Bpod</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">save_pydantic_yaml</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettings</span>
+<span class="kn">from</span> <span class="nn">iblrig.scale</span> <span class="kn">import</span> <span class="n">Scale</span>
+<span class="kn">from</span> <span class="nn">iblrig.valve</span> <span class="kn">import</span> <span class="n">Valve</span><span class="p">,</span> <span class="n">ValveValues</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.exceptions.bpod_error</span> <span class="kn">import</span> <span class="n">BpodErrorException</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CalibrationPlot">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.CalibrationPlot.html#iblrig.gui.valve.CalibrationPlot">[docs]</a>
+<span class="k">class</span> <span class="nc">CalibrationPlot</span><span class="p">:</span>
+<div class="viewcode-block" id="CalibrationPlot.__init__">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.CalibrationPlot.html#iblrig.gui.valve.CalibrationPlot.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">PlotWidget</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">ValveValues</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span> <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ValveValues</span><span class="p">([],</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_curve</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">PlotCurveItem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_curve</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ScatterPlotItem</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_curve</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValveValues</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
+
+    <span class="nd">@values</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">ValveValues</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CalibrationPlot.update">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.CalibrationPlot.html#iblrig.gui.valve.CalibrationPlot.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">open_times_ms</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">volumes_ul</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">open_times_ms</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_curve</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">[])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_range</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">open_times_ms</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">100</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_curve</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">time_range</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ms2ul</span><span class="p">(</span><span class="n">time_range</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CalibrationPlot.clear">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.CalibrationPlot.html#iblrig.gui.valve.CalibrationPlot.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">clear_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog">[docs]</a>
+<span class="k">class</span> <span class="nc">ValveCalibrationDialog</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDialog</span><span class="p">,</span> <span class="n">Ui_valve</span><span class="p">):</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="n">Scale</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">scale_initialized</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">scale_text_changed</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">scale_stable_changed</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">drop_cleared</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">tared</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">calibration_finished</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">()</span>
+    <span class="n">start_next_calibration</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">()</span>
+    <span class="n">_grams</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+    <span class="n">_stable</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_next_calibration_step</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">_next_calibration_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+    <span class="n">_scale_update_ms</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">_clear_drop_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="ValveCalibrationDialog.__init__">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># state machine for GUI logic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QStateMachine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QStateMachine</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+
+        <span class="c1"># timers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">setTimerType</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">TimerType</span><span class="o">.</span><span class="n">PreciseTimer</span><span class="p">)</span>
+
+        <span class="c1"># hardware</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hw_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hardware_settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span> <span class="o">=</span> <span class="n">Bpod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span><span class="p">,</span> <span class="n">skip_initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">disable_behavior_ports</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valve</span> <span class="o">=</span> <span class="n">Valve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_settings</span><span class="o">.</span><span class="n">device_valve</span><span class="p">)</span>
+
+        <span class="c1"># UI related ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">font_database</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFontDatabase</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">font_database</span><span class="o">.</span><span class="n">addApplicationFont</span><span class="p">(</span><span class="s1">&#39;:/fonts/7-Segment&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s1">&#39;7-Segment&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_grams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s1">&#39;:/images/grams&#39;</span><span class="p">),</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLineEdit</span><span class="o">.</span><span class="n">ActionPosition</span><span class="o">.</span><span class="n">TrailingPosition</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_stable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span>
+            <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s1">&#39;:/images/stable&#39;</span><span class="p">),</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLineEdit</span><span class="o">.</span><span class="n">ActionPosition</span><span class="o">.</span><span class="n">LeadingPosition</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_grams</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_stable</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_DeleteOnClose</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowFlags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">windowFlags</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowContextHelpButtonHint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setModal</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">)</span>
+
+        <span class="c1"># set up plot widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">addLegend</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_calibration</span> <span class="o">=</span> <span class="n">CalibrationPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;previous calibration (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">valve</span><span class="o">.</span><span class="n">calibration_date</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valve</span><span class="o">.</span><span class="n">values</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span> <span class="o">=</span> <span class="n">CalibrationPlot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="p">,</span> <span class="s1">&#39;new calibration&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">hideButtons</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">setMenuEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">setMouseEnabled</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">setBackground</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="s1">&#39;Opening Time [ms]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;Volume [μL]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">getViewBox</span><span class="p">()</span><span class="o">.</span><span class="n">setLimits</span><span class="p">(</span><span class="n">xMin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">yMin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiPlot</span><span class="o">.</span><span class="n">getViewBox</span><span class="p">()</span><span class="o">.</span><span class="n">enableAutoRange</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># signals &amp; slots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_text_changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_scale_text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_stable_changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">display_scale_stable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonPulseValve</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_valve</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggle_valve</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonTareScale</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tare</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonSave</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonCancel</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonRestart</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_initialized</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">define_and_start_state_machine</span><span class="p">)</span>
+
+        <span class="c1"># initialize scale</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initialize_scale</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_settings</span><span class="o">.</span><span class="n">device_scale</span><span class="o">.</span><span class="n">COM_SCALE</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_initialize_scale_result</span><span class="p">)</span>
+        <span class="n">QThreadPool</span><span class="o">.</span><span class="n">globalInstance</span><span class="p">()</span><span class="o">.</span><span class="n">tryStart</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.define_and_start_state_machine">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.define_and_start_state_machine">[docs]</a>
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">define_and_start_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">state_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;beaker&#39;</span><span class="p">,</span> <span class="s1">&#39;beaker2&#39;</span><span class="p">,</span> <span class="s1">&#39;flow&#39;</span><span class="p">,</span> <span class="s1">&#39;clear&#39;</span><span class="p">,</span> <span class="s1">&#39;tare&#39;</span><span class="p">,</span> <span class="s1">&#39;calibrate&#39;</span><span class="p">,</span> <span class="s1">&#39;finished&#39;</span><span class="p">,</span> <span class="s1">&#39;save&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">setInitialState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;start&#39;: welcome the user and explain what&#39;s going on --------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Welcome&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;This is a step-by-step guide for calibrating the valve of your rig. You can abort the process at any time by &#39;</span>
+            <span class="s1">&#39;pressing Cancel or closing this window.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;beaker&#39;: ask user to position beaker on scale ---------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Preparation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Fill the water reservoir to the level used during experiments.</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+            <span class="s1">&#39;Place a small beaker on the scale and position the lick spout directly above.</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+            <span class="s1">&#39;The opening of the spout should be placed at a vertical position identical to the one used during &#39;</span>
+            <span class="s1">&#39;experiments.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">entered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_calibration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonRestart</span><span class="p">,</span> <span class="s1">&#39;visible&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;visible&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonSave</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonTareScale</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="n">use_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonPulseValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker2&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;beaker&#39;: ask user to position beaker on scale ---------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Preparation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Make sure that neither lick spout nor tubing touch the beaker or the scale and that water drops can &#39;</span>
+            <span class="s1">&#39;freely fall into the beaker.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;flow&#39;: prepare flow of water --------------------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Preparation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Use the valve controls above to advance the flow of the water until there are no visible pockets of air within the &#39;</span>
+            <span class="s1">&#39;tubing and first drops start falling into the beaker.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;clear&#39;: try to clear one drop of water to set a defined start point for calibration -------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">entered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_drop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonTareScale</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonPulseValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drop_cleared</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonPulseValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;tare&#39;: tare the scale ---------------------------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonPulseValve</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">entered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tare</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tared</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Tare the scale.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;tare&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;calibrate&#39;: perform the actual measurement ------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">entered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calibrate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_next_calibration</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;clear&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;calibrate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calibration_finished</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;finished&#39;: ask user to save or discard the calibration ------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;Calibration is finished&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Click Save to store the calibration. Close this window or click Cancel to discard the calibration.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandLinkNext</span><span class="p">,</span> <span class="s1">&#39;visible&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonSave</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonRestart</span><span class="p">,</span> <span class="s1">&#39;visible&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonRestart</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;beaker&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;finished&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">addTransition</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pushButtonSave</span><span class="o">.</span><span class="n">clicked</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">])</span>
+
+        <span class="c1"># state &#39;save&#39;: save calibration and quit ----------------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">entered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="s1">&#39;save&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assignProperty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.clear_calibration">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.clear_calibration">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_calibration_time</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.get_next_calibration_time">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.get_next_calibration_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_next_calibration_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">remaining_calibration_times</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valve</span><span class="o">.</span><span class="n">new_calibration_open_times</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">open_times_ms</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining_calibration_times</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">remaining_calibration_times</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.initialize_scale">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.initialize_scale">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groupBoxScale</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Starting&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">Scale</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="n">SerialException</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error initializing OHAUS scale on </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_on_initialize_scale_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonTareScale</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_scale_reading</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_grams</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_scale_reading</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale_update_ms</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Error&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_initialized</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">success</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ValveCalibrationDialog.get_scale_reading">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.get_scale_reading">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_scale_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">grams</span><span class="p">,</span> <span class="n">stable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">get_grams</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">grams</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_grams</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_text_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">grams</span><span class="si">:</span><span class="s1">0.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stable</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stable</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_stable_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">stable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grams</span> <span class="o">=</span> <span class="n">grams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stable</span> <span class="o">=</span> <span class="n">stable</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.display_scale_text">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.display_scale_text">[docs]</a>
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">display_scale_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineEditGrams</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.display_scale_stable">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.display_scale_stable">[docs]</a>
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">display_scale_stable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_stable</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.toggle_valve">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.toggle_valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">toggle_valve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s1">&#39;QPushButton {background-color: rgb(128, 128, 255);}&#39;</span> <span class="k">if</span> <span class="n">state</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">open_valve</span><span class="p">(</span><span class="nb">open</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">BpodErrorException</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pushButtonToggleValve</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.pulse_valve">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.pulse_valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">pulse_valve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">pulse_valve</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.clear_drop">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.clear_drop">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_drop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Calibration&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+                <span class="s2">&quot;Use the &#39;Pulse Valve&#39; button above to clear one drop of water in order to obtain a defined starting point for &quot;</span>
+                <span class="s1">&#39;calibration.&#39;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+                <span class="s1">&#39;Trying to automatically clear one drop of water to obtain a defined starting point for calibration.&#39;</span>
+            <span class="p">)</span>
+            <span class="n">open_time_s</span> <span class="o">=</span> <span class="mf">0.05</span>
+            <span class="n">initial_grams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">get_stable_grams</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_drop_counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">clear_crop_callback</span><span class="p">(</span><span class="n">initial_grams</span><span class="p">,</span> <span class="n">open_time_s</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">500</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">open_time_s</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.clear_crop_callback">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.clear_crop_callback">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_crop_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_grams</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">duration_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">get_grams</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">initial_grams</span> <span class="o">+</span> <span class="mf">0.02</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drop_cleared</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clear_drop_counter</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clear_drop_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">pulse_valve</span><span class="p">(</span><span class="n">duration_s</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.tare">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.tare">[docs]</a>
+    <span class="k">def</span> <span class="nf">tare</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_text_changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;------&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_grams</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">tare</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_tare_finished</span><span class="p">)</span>
+        <span class="n">QThreadPool</span><span class="o">.</span><span class="n">globalInstance</span><span class="p">()</span><span class="o">.</span><span class="n">tryStart</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span></div>
+
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_on_tare_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale_update_ms</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tared</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">success</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ValveCalibrationDialog.calibrate">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.calibrate">[docs]</a>
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valve</span><span class="o">.</span><span class="n">new_calibration_open_times</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Getting </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s1"> samples for a valve opening time of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span><span class="si">}</span><span class="s1"> ms ...&#39;</span>
+        <span class="p">)</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">pulse_valve_repeatedly</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_repeated_pulse_finished</span><span class="p">)</span>
+        <span class="n">QThreadPool</span><span class="o">.</span><span class="n">globalInstance</span><span class="p">()</span><span class="o">.</span><span class="n">tryStart</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span></div>
+
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_on_repeated_pulse_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_pulses</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">scale_reading</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">ok</span> <span class="ow">or</span> <span class="n">scale_reading</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">scale_reading</span><span class="p">,</span> <span class="n">ok</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QInputDialog</span><span class="p">()</span><span class="o">.</span><span class="n">getDouble</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                    <span class="s1">&#39;Enter Scale Reading&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;Enter measured weight in grams:&#39;</span><span class="p">,</span>
+                    <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="nb">max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">),</span>
+                    <span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">flags</span><span class="o">=</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QInputDialog</span><span class="p">()</span><span class="o">.</span><span class="n">windowFlags</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowType</span><span class="o">.</span><span class="n">WindowContextHelpButtonHint</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="n">grams_per_pulse</span> <span class="o">=</span> <span class="n">scale_reading</span> <span class="o">/</span> <span class="n">n_pulses</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scale_reading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">get_stable_grams</span><span class="p">()</span>
+            <span class="n">grams_per_pulse</span> <span class="o">=</span> <span class="n">scale_reading</span> <span class="o">/</span> <span class="n">n_pulses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">add_samples</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span><span class="p">],</span> <span class="p">[</span><span class="n">grams_per_pulse</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_calibration_time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_calibration_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calibration_finished</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_next_calibration</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ValveCalibrationDialog.save">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">valve_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hw_settings</span><span class="o">.</span><span class="n">device_valve</span>
+        <span class="n">valve_settings</span><span class="o">.</span><span class="n">WATER_CALIBRATION_OPEN_TIMES</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">open_times_ms</span><span class="p">]</span>
+        <span class="n">valve_settings</span><span class="o">.</span><span class="n">WATER_CALIBRATION_WEIGHT_PERDROP</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_calibration</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">volumes_ul</span><span class="p">]</span>
+        <span class="n">valve_settings</span><span class="o">.</span><span class="n">WATER_CALIBRATION_DATE</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_valve</span> <span class="o">=</span> <span class="n">valve_settings</span>
+        <span class="n">save_pydantic_yaml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hardware_settings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideHead</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Settings saved.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelGuideText</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="o">.</span><span class="n">singleShot</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ValveCalibrationDialog.closeEvent">
+<a class="viewcode-back" href="../../../api/iblrig.gui.valve.ValveCalibrationDialog.html#iblrig.gui.valve.ValveCalibrationDialog.closeEvent">[docs]</a>
+    <span class="nd">@override</span>
+    <span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">stop_trial</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deleteLater</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

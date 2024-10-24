@@ -1,0 +1,13 @@
+iblrig.base\_choice\_world.TrainingChoiceWorldSession
+=====================================================
+
+.. currentmodule:: iblrig.base_choice_world
+
+.. inheritance-diagram:: TrainingChoiceWorldSession
+   :parts: 1
+
+|
+
+.. autoclass:: TrainingChoiceWorldSession
+   :members:
+   :undoc-members:

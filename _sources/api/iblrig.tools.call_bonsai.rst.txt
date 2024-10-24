@@ -1,0 +1,6 @@
+iblrig.tools.call\_bonsai
+=========================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: call_bonsai

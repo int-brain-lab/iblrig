@@ -1,0 +1,515 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.commands &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.commands</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.commands</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">iblrig</span>
+<span class="kn">from</span> <span class="nn">iblrig.hardware</span> <span class="kn">import</span> <span class="n">Bpod</span>
+<span class="kn">from</span> <span class="nn">iblrig.online_plots</span> <span class="kn">import</span> <span class="n">OnlinePlots</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">get_local_and_remote_paths</span>
+<span class="kn">from</span> <span class="nn">iblrig.transfer_experiments</span> <span class="kn">import</span> <span class="n">BehaviorCopier</span><span class="p">,</span> <span class="n">EphysCopier</span><span class="p">,</span> <span class="n">SessionCopier</span><span class="p">,</span> <span class="n">VideoCopier</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">setup_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">tag2copier</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;behavior&#39;</span><span class="p">:</span> <span class="n">BehaviorCopier</span><span class="p">,</span> <span class="s1">&#39;video&#39;</span><span class="p">:</span> <span class="n">VideoCopier</span><span class="p">,</span> <span class="s1">&#39;ephys&#39;</span><span class="p">:</span> <span class="n">EphysCopier</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_transfer_parser</span><span class="p">(</span><span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an ArgumentParser for transfer scripts.</span>
+
+<span class="sd">    This function creates an ArgumentParser object with specific arguments for a</span>
+<span class="sd">    script related to data transfer. It defines command-line arguments for</span>
+<span class="sd">    defining local and remote data paths and enabling the dry run mode.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    description : str</span>
+<span class="sd">        A brief description of the script&#39;s purpose.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    argparse.ArgumentParser</span>
+<span class="sd">        An ArgumentParser object with pre-defined arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">,</span> <span class="n">argument_default</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;--tag&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;behavior&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;data type to transfer, e.g. &quot;behavior&quot;, &quot;video&quot;&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="s1">&#39;--local&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">dir_path</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;local_path&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;define local data path&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-r&#39;</span><span class="p">,</span> <span class="s1">&#39;--remote&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">dir_path</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;remote_path&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;define remote data path&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--dry&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;dry&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;do not remove local data after copying&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;-c&#39;</span><span class="p">,</span> <span class="s1">&#39;--cleanup-weeks&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;cleanup data older than this many weeks (-1 for no cleanup)&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="s1">&#39;--subject&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;an optional subject name to filter sessions by. Wildcards accepted.&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;*&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;--date&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;an optional date pattern to filter sessions by. Wildcards accepted.&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;*-*-*&#39;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span>
+
+
+<div class="viewcode-block" id="dir_path">
+<a class="viewcode-back" href="../../api/iblrig.commands.dir_path.html#iblrig.commands.dir_path">[docs]</a>
+<span class="k">def</span> <span class="nf">dir_path</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a string to a Path object and check if the directory exists.</span>
+
+<span class="sd">    This function is intended for use as a type conversion function with argparse.</span>
+<span class="sd">    It takes a string argument representing a directory path, converts it into</span>
+<span class="sd">    a Path object, and checks if the directory exists. If the directory exists,</span>
+<span class="sd">    it returns the Path object; otherwise, it raises an argparse.ArgumentError</span>
+<span class="sd">    with an appropriate error message.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    directory : str</span>
+<span class="sd">        A string representing a directory path.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path</span>
+<span class="sd">        A Path object representing the directory.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    argparse.ArgumentError</span>
+<span class="sd">        If the directory does not exist, an argparse.ArgumentError is raised</span>
+<span class="sd">        with an error message indicating that the directory was not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">directory</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">directory</span>
+    <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Directory `</span><span class="si">{</span><span class="n">directory</span><span class="si">}</span><span class="s1">` not found&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transfer_data_cli">
+<a class="viewcode-back" href="../../api/iblrig.commands.transfer_data_cli.html#iblrig.commands.transfer_data_cli">[docs]</a>
+<span class="k">def</span> <span class="nf">transfer_data_cli</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Command-line interface for transferring behavioral data to the local server.&quot;&quot;&quot;</span>
+    <span class="n">setup_logger</span><span class="p">(</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_transfer_parser</span><span class="p">(</span><span class="s1">&#39;Copy data to the local server.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">transfer_data</span><span class="p">(</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transfer_video_data_cli">
+<a class="viewcode-back" href="../../api/iblrig.commands.transfer_video_data_cli.html#iblrig.commands.transfer_video_data_cli">[docs]</a>
+<span class="k">def</span> <span class="nf">transfer_video_data_cli</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Command-line interface for transferring video data to the local server.&quot;&quot;&quot;</span>
+    <span class="n">setup_logger</span><span class="p">(</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s1">&#39;transfer_video_data will be removed in the future. Use &quot;transfer_data video&quot; instead.&#39;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_transfer_parser</span><span class="p">(</span><span class="s1">&#39;Copy video data to the local server.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">transfer_data</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">},</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transfer_ephys_data_cli">
+<a class="viewcode-back" href="../../api/iblrig.commands.transfer_ephys_data_cli.html#iblrig.commands.transfer_ephys_data_cli">[docs]</a>
+<span class="k">def</span> <span class="nf">transfer_ephys_data_cli</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Command-line interface for transferring ephys data to the local server.&quot;&quot;&quot;</span>
+    <span class="n">setup_logger</span><span class="p">(</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+        <span class="s1">&#39;transfer_ephys_data will be removed in the future. Use &quot;transfer_data ephys&quot; instead.&#39;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_transfer_parser</span><span class="p">(</span><span class="s1">&#39;Copy ephys data to the local server.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">transfer_data</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="s1">&#39;ephys&#39;</span><span class="p">},</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_get_subjects_folders</span><span class="p">(</span><span class="n">local_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
+    <span class="n">rig_paths</span> <span class="o">=</span> <span class="n">get_local_and_remote_paths</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">local_path</span> <span class="o">=</span> <span class="n">rig_paths</span><span class="o">.</span><span class="n">local_subjects_folder</span>
+    <span class="n">remote_path</span> <span class="o">=</span> <span class="n">rig_paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remote_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Remote Path is not defined.&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">remote_path</span>
+
+
+<span class="k">def</span> <span class="nf">_get_copiers</span><span class="p">(</span>
+    <span class="n">copier</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SessionCopier</span><span class="p">],</span>
+    <span class="n">local_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">remote_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">lab</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">glob_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;*/????-??-??/*/transfer_me.flag&#39;</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SessionCopier</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    copier : SessionCopier</span>
+<span class="sd">        A SessionCopier class to instantiate for each session.</span>
+<span class="sd">    local_folder : str</span>
+<span class="sd">        The absolute path of the local data directory (the copy root source). If None, loads from</span>
+<span class="sd">        the iblrig settings file.</span>
+<span class="sd">    remote_folder : str</span>
+<span class="sd">        The absolute path of the remote data directory (the copy root destination). If None, loads</span>
+<span class="sd">        from the iblrig settings file.</span>
+<span class="sd">    lab : str</span>
+<span class="sd">        The name of the lab. Only used if &#39;iblrig_local_subjects_path&#39; is not defined in the</span>
+<span class="sd">        settings file. If None, uses &#39;ALYX_LAB&#39; field of iblrig settings.</span>
+<span class="sd">    glob_pattern : str</span>
+<span class="sd">        The filename to recursively search within `local_folder` for determining which sessions to</span>
+<span class="sd">        copy.</span>
+<span class="sd">    interactive : bool</span>
+<span class="sd">        If true, users are prompted to review the sessions to copy before proceeding.</span>
+<span class="sd">    kwargs</span>
+<span class="sd">        Extract arguments such as `tag` to pass to the SessionCopier.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of SessionCopier</span>
+<span class="sd">        A list of SessionCopier objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get local/remote subjects folder</span>
+    <span class="n">rig_paths</span> <span class="o">=</span> <span class="n">get_local_and_remote_paths</span><span class="p">(</span><span class="n">local_path</span><span class="o">=</span><span class="n">local_folder</span><span class="p">,</span> <span class="n">remote_path</span><span class="o">=</span><span class="n">remote_folder</span><span class="p">,</span> <span class="n">lab</span><span class="o">=</span><span class="n">lab</span><span class="p">)</span>
+    <span class="n">local_subjects_folder</span> <span class="o">=</span> <span class="n">local_folder</span> <span class="ow">or</span> <span class="n">rig_paths</span><span class="o">.</span><span class="n">local_subjects_folder</span>
+    <span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">remote_folder</span> <span class="ow">or</span> <span class="n">rig_paths</span><span class="o">.</span><span class="n">remote_subjects_folder</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">local_subjects_folder</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remote_subjects_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Remote Path is not defined.&#39;</span><span class="p">)</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span> <span class="k">if</span> <span class="n">interactive</span> <span class="k">else</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;Local Path: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">local_subjects_folder</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;Remote Path: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="p">)</span>
+
+    <span class="c1"># get copiers</span>
+    <span class="n">copiers</span> <span class="o">=</span> <span class="p">[</span><span class="n">copier</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">local_subjects_folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">glob_pattern</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">copiers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not find any sessions to copy to the local server.&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">interactive</span><span class="p">:</span>
+        <span class="n">_print_status</span><span class="p">(</span><span class="n">copiers</span><span class="p">,</span> <span class="s1">&#39;Session states prior to transfer operation:&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Do you want to continue? [Y/n]  &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="n">copiers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">copiers</span>
+
+
+<span class="k">def</span> <span class="nf">_print_status</span><span class="p">(</span><span class="n">copiers</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">SessionCopier</span><span class="p">],</span> <span class="n">heading</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">heading</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">copier</span> <span class="ow">in</span> <span class="n">copiers</span><span class="p">:</span>
+        <span class="k">match</span> <span class="n">copier</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="k">case</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;not registered on server&#39;</span>
+            <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;copy pending&#39;</span>
+            <span class="k">case</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;copy complete&#39;</span>
+            <span class="k">case</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;copy finalized&#39;</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;undefined&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; * </span><span class="si">{</span><span class="n">copier</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_build_glob_pattern</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="s1">&#39;*-*-*&#39;</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">flag_file</span><span class="o">=</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build the copier glob pattern from filter keyword arguments.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject : str</span>
+<span class="sd">        A subject folder filter pattern.</span>
+<span class="sd">    date : str</span>
+<span class="sd">        A date folder pattern.</span>
+<span class="sd">    number : str</span>
+<span class="sd">        A number (i.e. experiment sequence) folder pattern.</span>
+<span class="sd">    flag_file : str</span>
+<span class="sd">        A flag filename pattern.</span>
+<span class="sd">    glob_pattern : str</span>
+<span class="sd">        The full glob pattern string (if defined, overrides all other arguments).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The full glob pattern.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;glob_pattern&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">subject</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">flag_file</span><span class="p">)))</span>
+
+
+<div class="viewcode-block" id="transfer_data">
+<a class="viewcode-back" href="../../api/iblrig.commands.transfer_data.html#iblrig.commands.transfer_data">[docs]</a>
+<span class="k">def</span> <span class="nf">transfer_data</span><span class="p">(</span>
+    <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">local_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">remote_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cleanup_weeks</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SessionCopier</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copies data from the rig to the local server.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tag : str</span>
+<span class="sd">        The acquisition PC tag to transfer, e.g. &#39;behavior&#39;, &#39;video&#39;, &#39;ephys&#39;, &#39;timeline&#39;, etc.</span>
+<span class="sd">    local_path : Path</span>
+<span class="sd">        Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.</span>
+<span class="sd">    remote_path : Path</span>
+<span class="sd">        Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.</span>
+<span class="sd">    dry : bool</span>
+<span class="sd">        Do not copy or remove local data.</span>
+<span class="sd">    interactive : bool</span>
+<span class="sd">        If true, users are prompted to review the sessions to copy before proceeding.</span>
+<span class="sd">    cleanup_weeks : int, bool</span>
+<span class="sd">        Remove local data older than this number of weeks. If False, do not remove.</span>
+<span class="sd">    kwargs</span>
+<span class="sd">        Optional arguments to pass to SessionCopier constructor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of SessionCopier</span>
+<span class="sd">        A list of the copier objects that were run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tag</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Tag required.&#39;</span><span class="p">)</span>
+    <span class="c1"># Build glob patten based on subject/date/number/flag_file filter</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;glob_pattern&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_glob_pattern</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;subject&#39;</span><span class="p">,</span> <span class="s1">&#39;date&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;flag_file&#39;</span><span class="p">)}</span>
+    <span class="n">local_subject_folder</span><span class="p">,</span> <span class="n">remote_subject_folder</span> <span class="o">=</span> <span class="n">_get_subjects_folders</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">copier</span> <span class="o">=</span> <span class="n">tag2copier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">SessionCopier</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Searching for </span><span class="si">%s</span><span class="s1"> sessions using </span><span class="si">%s</span><span class="s1"> class&#39;</span><span class="p">,</span> <span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">copier</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">expected_devices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;number_of_expected_devices&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">copiers</span> <span class="o">=</span> <span class="n">_get_copiers</span><span class="p">(</span><span class="n">copier</span><span class="p">,</span> <span class="n">local_subject_folder</span><span class="p">,</span> <span class="n">remote_subject_folder</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="n">interactive</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">copier</span> <span class="ow">in</span> <span class="n">copiers</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">copier</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">copier</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+            <span class="n">copier</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">number_of_expected_devices</span><span class="o">=</span><span class="n">expected_devices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">interactive</span><span class="p">:</span>
+        <span class="n">_print_status</span><span class="p">(</span><span class="n">copiers</span><span class="p">,</span> <span class="s1">&#39;States after transfer operation:&#39;</span><span class="p">)</span>
+
+    <span class="c1"># once we copied the data, remove older session for which the data was successfully uploaded</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cleanup_weeks</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cleanup_weeks</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">remove_local_sessions</span><span class="p">(</span>
+            <span class="n">weeks</span><span class="o">=</span><span class="n">cleanup_weeks</span><span class="p">,</span> <span class="n">dry</span><span class="o">=</span><span class="n">dry</span><span class="p">,</span> <span class="n">local_path</span><span class="o">=</span><span class="n">local_subject_folder</span><span class="p">,</span> <span class="n">remote_path</span><span class="o">=</span><span class="n">remote_subject_folder</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">copiers</span></div>
+
+
+
+<div class="viewcode-block" id="remove_local_sessions">
+<a class="viewcode-back" href="../../api/iblrig.commands.remove_local_sessions.html#iblrig.commands.remove_local_sessions">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_local_sessions</span><span class="p">(</span><span class="n">weeks</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">local_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">remote_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;behavior&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove local sessions older than N weeks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    weeks : int</span>
+<span class="sd">        Remove local sessions older than this number of weeks.</span>
+<span class="sd">    local_path : Path</span>
+<span class="sd">        Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.</span>
+<span class="sd">    remote_path : Path</span>
+<span class="sd">        Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.</span>
+<span class="sd">    dry : bool</span>
+<span class="sd">        Do not remove local data if True.</span>
+<span class="sd">    tag : str</span>
+<span class="sd">        The acquisition PC tag to transfer, e.g. &#39;behavior&#39;, &#39;video&#39;, &#39;ephys&#39;, &#39;timeline&#39;, etc.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of Path</span>
+<span class="sd">        A list of removed session paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local_subject_folder</span><span class="p">,</span> <span class="n">remote_subject_folder</span> <span class="o">=</span> <span class="n">_get_subjects_folders</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">remote_path</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">copier</span> <span class="o">=</span> <span class="n">tag2copier</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">SessionCopier</span><span class="p">)</span>
+    <span class="n">removed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">local_subject_folder</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;_ibl_experiment.description_</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s1">.yaml&#39;</span><span class="p">)),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">session_path</span> <span class="o">=</span> <span class="n">flag</span><span class="o">.</span><span class="n">parent</span>
+        <span class="n">days_elapsed</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">session_path</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">days</span>
+        <span class="k">if</span> <span class="n">days_elapsed</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">weeks</span> <span class="o">*</span> <span class="mi">7</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">copier</span> <span class="o">==</span> <span class="n">SessionCopier</span><span class="p">:</span>
+            <span class="n">sc</span> <span class="o">=</span> <span class="n">copier</span><span class="p">(</span><span class="n">session_path</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="o">=</span><span class="n">remote_subject_folder</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sc</span> <span class="o">=</span> <span class="n">copier</span><span class="p">(</span><span class="n">session_path</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="o">=</span><span class="n">remote_subject_folder</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sc</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">session_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">session_path</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">())</span> <span class="o">/</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">3</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sc</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">session_size</span><span class="si">:</span><span class="s1">0.02f</span><span class="si">}</span><span class="s1"> Go&#39;</span><span class="p">)</span>
+            <span class="n">size</span> <span class="o">+=</span> <span class="n">session_size</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dry</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">session_path</span><span class="p">)</span>
+            <span class="n">removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">session_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cleanup size </span><span class="si">{</span><span class="n">size</span><span class="si">:</span><span class="s1">0.02f</span><span class="si">}</span><span class="s1"> Go&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">removed</span></div>
+
+
+
+<div class="viewcode-block" id="view_session">
+<a class="viewcode-back" href="../../api/iblrig.commands.view_session.html#iblrig.commands.view_session">[docs]</a>
+<span class="k">def</span> <span class="nf">view_session</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entry point for command line: usage as below</span>
+<span class="sd">    &gt;&gt;&gt; view_session /full/path/to/jsonable/_iblrig_taskData.raw.jsonable</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">setup_logger</span>
+
+    <span class="n">setup_logger</span><span class="p">(</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;file_jsonable&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;full file path to jsonable file&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;file_settings&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;full file path to settings file&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">online_plots</span> <span class="o">=</span> <span class="n">OnlinePlots</span><span class="p">(</span><span class="n">settings_file</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">file_settings</span><span class="p">)</span>
+    <span class="n">online_plots</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">file_jsonable</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">file_jsonable</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="flush">
+<a class="viewcode-back" href="../../api/iblrig.commands.flush.html#iblrig.commands.flush">[docs]</a>
+<span class="k">def</span> <span class="nf">flush</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flush the valve until the user hits enter.&quot;&quot;&quot;</span>
+    <span class="n">file_settings</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">iblrig</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;settings&#39;</span><span class="p">,</span> <span class="s1">&#39;hardware_settings.yaml&#39;</span><span class="p">)</span>
+    <span class="n">hardware_settings</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file_settings</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="n">bpod</span> <span class="o">=</span> <span class="n">Bpod</span><span class="p">(</span><span class="n">hardware_settings</span><span class="p">[</span><span class="s1">&#39;device_bpod&#39;</span><span class="p">][</span><span class="s1">&#39;COM_BPOD&#39;</span><span class="p">])</span>
+    <span class="n">bpod</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">bpod</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

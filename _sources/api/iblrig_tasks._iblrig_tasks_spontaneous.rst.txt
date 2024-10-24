@@ -1,0 +1,15 @@
+iblrig\_tasks.\_iblrig\_tasks\_spontaneous
+==========================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_spontaneous
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+ 
+   task
+   

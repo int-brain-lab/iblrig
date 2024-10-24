@@ -1,0 +1,13 @@
+iblrig.tools.ANSI
+=================
+
+.. currentmodule:: iblrig.tools
+
+.. inheritance-diagram:: ANSI
+   :parts: 1
+
+|
+
+.. autoclass:: ANSI
+   :members:
+   :undoc-members:

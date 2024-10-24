@@ -1,0 +1,13 @@
+iblrig.gui.frame2ttl.Frame2TTLCalibrationDialog
+===============================================
+
+.. currentmodule:: iblrig.gui.frame2ttl
+
+.. inheritance-diagram:: Frame2TTLCalibrationDialog
+   :parts: 1
+
+|
+
+.. autoclass:: Frame2TTLCalibrationDialog
+   :members:
+   :undoc-members:

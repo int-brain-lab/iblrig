@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Using IBLRIG v8 &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Reference" href="reference.html" />
+    <link rel="prev" title="Installation guide" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Using IBLRIG v8</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-behaviour-experiment">Running a behaviour experiment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-graphical-user-interface">The Graphical User Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#starting-a-task">Starting a Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#supplementary-controls">Supplementary Controls</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interfacing-with-alyx">Interfacing with Alyx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-command-line-interface">The Command Line Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#running-a-single-task">Running a single task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#chaining-several-tasks-together">Chaining several tasks together</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flushing-the-valve">Flushing the valve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#copy-commands">Copy commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#clean-up-local-data">Clean-up local data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#behind-the-copy-scripts">Behind the Copy Scripts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#workflow">Workflow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-of-workflow">Example of workflow</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#video-acquisition-computer">Video acquisition computer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#installing-drivers">Installing drivers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#settings-config">Settings config</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Starting a task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#copy-command">Copy command</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#neuropixel-recording-with-iblrigv8">Neuropixel recording with iblrigv8</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Starting a task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">Copy command</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#look-at-the-raw-data">Look at the raw data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Using IBLRIG v8</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="using-iblrig-v8">
+<h1>Using IBLRIG v8<a class="headerlink" href="#using-iblrig-v8" title="Link to this heading"></a></h1>
+<section id="running-a-behaviour-experiment">
+<h2>Running a behaviour experiment<a class="headerlink" href="#running-a-behaviour-experiment" title="Link to this heading"></a></h2>
+<p>IBLRIG v8 provides users with two distinct interfaces: a command line interface (CLI) and a graphical user interface (GUI).
+The CLI encompasses the complete functionality of IBLRIG, upon which the GUI is constructed to enhance user-friendliness.
+All tasks achievable through the GUI are equally achievable through the CLI.</p>
+<section id="the-graphical-user-interface">
+<h3>The Graphical User Interface<a class="headerlink" href="#the-graphical-user-interface" title="Link to this heading"></a></h3>
+<p>To initiate a task through the graphical user interface, open a Windows PowerShell and enter:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">iblrig</span>
+</pre></div>
+</div>
+<p>These commands activate the necessary environment and launch the IBLRIG Wizard GUI as shown below:</p>
+<figure class="align-center" id="id7">
+<img alt="A screenshot of IBL Rig Wizard" src="_images/gui.png" />
+<figcaption>
+<p><span class="caption-text">A screenshot of IBLRIG Wizard</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="starting-a-task">
+<h4>Starting a Task<a class="headerlink" href="#starting-a-task" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p>Enter your Alyx username, then click on the <em>Connect</em> button. This
+action will automatically populate the GUI fields with information
+pertinent to your lab.</p></li>
+<li><p>Select the desired values from the provided options. Utilize the
+<em>Filter</em> field to swiftly narrow down the list of displayed subjects.
+Note that selections for <em>Project</em> and <em>Procedure</em> are mandatory.</p></li>
+<li><p>Click the <em>Start</em> button to initiate the task.</p></li>
+</ol>
+</section>
+<section id="supplementary-controls">
+<h4>Supplementary Controls<a class="headerlink" href="#supplementary-controls" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>When starting a subsequent task with the same subject, you’ll be asked if
+you want to append to the preceding session. Doing so will result in a
+sequence of connected tasks sharing the same data folder.</p></li>
+<li><p>The <em>Flush</em> button serves to toggle the valve for cleaning purposes.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>IBLRIG’s Graphical User Interface is still work-in-progress. If you have any suggestions to make the GUI
+more usable, please add an <a class="reference external" href="https://github.com/int-brain-lab/iblrig/issues">issue on GitHub</a> or approach the dev-team on Slack!
+We are happy to discuss possible changes with you!</p>
+</div>
+</section>
+</section>
+<section id="interfacing-with-alyx">
+<h3>Interfacing with Alyx<a class="headerlink" href="#interfacing-with-alyx" title="Link to this heading"></a></h3>
+<p>Although this is not mandatory, the IBLRIG GUI is designed to interface with <a class="reference external" href="https://github.com/cortex-lab/alyx">Alyx</a>, the International Brain Laboratory’s database.
+This feature allows users to access their subjects and projects directly from the GUI, without the need to manually enter this information.</p>
+<p>To enable this feature, you must have an Alyx account and have configured your database URL and credentials as mentioned  <a class="reference internal" href="installation.html"><span class="doc">Installation guide</span></a>.</p>
+<ul class="simple">
+<li><p>The <em>subjects</em> available are the set of alyx subjects that are alive, not stock, and belong to the lab defined in the <cite>iblrig_settings.py</cite> file.</p></li>
+<li><p>The <em>projects</em> available are the set of projects of which the current user is a participant. Login to Alyx &gt; Subjects &gt; Projects to check your projects.</p></li>
+</ul>
+</section>
+<section id="the-command-line-interface">
+<h3>The Command Line Interface<a class="headerlink" href="#the-command-line-interface" title="Link to this heading"></a></h3>
+<p>To use the command line interface, open a terminal and activate the
+environment:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+</pre></div>
+</div>
+<section id="running-a-single-task">
+<h4>Running a single task<a class="headerlink" href="#running-a-single-task" title="Link to this heading"></a></h4>
+<p>To run a single task, execute the following command:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_trainingChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span> <span class="p">-</span><span class="n">-user</span> <span class="n">john</span><span class="p">.</span><span class="n">doe</span>
+</pre></div>
+</div>
+</section>
+<section id="chaining-several-tasks-together">
+<h4>Chaining several tasks together<a class="headerlink" href="#chaining-several-tasks-together" title="Link to this heading"></a></h4>
+<p>To chain several tasks together, use the <code class="docutils literal notranslate"><span class="pre">--append</span></code> flag. For
+instance, to run a passive task after an ephys task:</p>
+<ol class="arabic">
+<li><p>Run the ephys task</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_ephysChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run the passive task with the <code class="docutils literal notranslate"><span class="pre">--append</span></code>flag:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_passiveChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span> <span class="p">-</span><span class="n">-append</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="flushing-the-valve">
+<h4>Flushing the valve<a class="headerlink" href="#flushing-the-valve" title="Link to this heading"></a></h4>
+<p>To flush valve 1 of the Bpod, type <code class="docutils literal notranslate"><span class="pre">flush</span></code> and confirm with ENTER. Press ENTER again to close the valve.</p>
+</section>
+</section>
+</section>
+<section id="copy-commands">
+<h2>Copy commands<a class="headerlink" href="#copy-commands" title="Link to this heading"></a></h2>
+<section id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
+<p>To initiate the data transfer from the local server to the remote
+server, open a terminal and type.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">behavior</span>
+</pre></div>
+</div>
+<p>The transfer local and remote directories are set in the
+<code class="docutils literal notranslate"><span class="pre">iblrig/settings/iblrig_settings.py</span></code> file.</p>
+<p>To copy data at another acquisition PC, such as video and ephys, use the relevant tag, e.g.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">video</span>
+</pre></div>
+</div>
+<p>NB: By default the local data that was copied over 2 weeks ago will be automatically removed. To
+avoid this set the cleanup-weeks argument to -1:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="n">behavior</span> <span class="p">-</span><span class="n">-cleanup-weeks</span> <span class="p">-</span><span class="n">1</span>
+</pre></div>
+</div>
+<p>See the ‘Clean-up local data’ section on how to remove data without calling the copy script.</p>
+<p>To view the copy status of your local sessions without actually copying, use the ‘dry’ argument:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="n">behavior</span> <span class="p">-</span><span class="n">-dry</span>
+</pre></div>
+</div>
+<p>For more information on the tranfer_data arguments, use the help flag:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-help</span>
+</pre></div>
+</div>
+</section>
+<section id="clean-up-local-data">
+<h3>Clean-up local data<a class="headerlink" href="#clean-up-local-data" title="Link to this heading"></a></h3>
+<p>To remove sessions fully copied to the server and older than 2 weeks,
+open a terminal and type:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">remove-old</span><span class="n">-sessions</span>
+</pre></div>
+</div>
+<p>Note: the server needs to be up and running or the sessions won’t be
+verified as copied.</p>
+</section>
+<section id="behind-the-copy-scripts">
+<h3>Behind the Copy Scripts<a class="headerlink" href="#behind-the-copy-scripts" title="Link to this heading"></a></h3>
+<section id="workflow">
+<h4>Workflow<a class="headerlink" href="#workflow" title="Link to this heading"></a></h4>
+<ol class="arabic simple">
+<li><p><strong>Initial Stub Creation:</strong> At the start of acquisition, an incomplete
+experiment description file - a <em>‘stub’</em> - is saved to the session
+on, both, the local PC and the lab server in a subfolder called
+<code class="docutils literal notranslate"><span class="pre">_devices</span></code>. The filename of the stub includes the PC’s identifier,
+allowing the copy script to identify its source.</p></li>
+<li><p><strong>Executing the Copy Script:</strong> The copy script is executed on each
+acquisition PC independently and in no particular order.</p></li>
+<li><p><strong>Navigating Local Session Data:</strong> The script systematically
+navigates through local session folders (or optionally a separate
+<code class="docutils literal notranslate"><span class="pre">transfers</span></code> folder) that contain <code class="docutils literal notranslate"><span class="pre">experiment.description</span></code> stubs.</p></li>
+<li><p><strong>Skipping Transferred Sessions:</strong> The script ignores session folders
+containing a file named <code class="docutils literal notranslate"><span class="pre">transferred.flag</span></code> (see 7).</p></li>
+<li><p><strong>Copying Collections:</strong> For each session, the script reads the
+respective stub and uses <code class="docutils literal notranslate"><span class="pre">rsync</span></code> to copy each <code class="docutils literal notranslate"><span class="pre">collection</span></code>.
+Subfolders not specified under a <code class="docutils literal notranslate"><span class="pre">collection</span></code> key are omitted from
+copying.</p></li>
+<li><p><strong>Removing Remote Stubs:</strong> Upon successful copying, the remote stub
+file is merged with the remote <code class="docutils literal notranslate"><span class="pre">experiment.description</span></code> file (or
+copied over if one doesn’t exist already). The remote stub file is
+then deleted.</p></li>
+<li><p><strong>Confirming Transfer Locally:</strong> A <code class="docutils literal notranslate"><span class="pre">transferred.flag</span></code> file is
+created in the local session folder to confirm the transfer’s
+success.</p></li>
+<li><p><strong>Completion and Cleanup:</strong> Once no more remote stub files exist
+for a given session, the empty <code class="docutils literal notranslate"><span class="pre">_devices</span></code> subfolder is removed.
+Additionally, a ‘raw_session.flag’ file is created in the remote session folder,
+indicating the successful transfer of all files.</p></li>
+</ol>
+</section>
+<section id="example-of-workflow">
+<h4>Example of workflow<a class="headerlink" href="#example-of-workflow" title="Link to this heading"></a></h4>
+<p>Example of three sessions each in a different copy state:</p>
+<ul>
+<li><p>The State on the Remote Lab Server</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>lab server/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   └── _devices/
+        │       ├── 2020-01-01_1_subject@taskPC.yaml
+        │       └── 2020-01-01_1_subject@ephysPC.yaml
+        ├── 002/
+        │   ├── _ibl_experiment.description.yaml
+        │   ├── raw_task_data_00/
+        │   └── _devices/
+        │       └── 2020-01-01_1_subject@ephysPC.yaml
+        └── 003/
+            ├── raw_task_data_00/
+            ├── raw_ephys_data/
+            ├── _ibl_experiment.description.yaml
+            └── raw_session.flag
+</pre></div>
+</div>
+</li>
+<li><p>The State on the Local Task Acquisition PC</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>acquisition computer (taskPC)/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   ├── raw_task_data_00/
+        │   └── _ibl_experiment.description_taskPC.yaml
+        ├── 002/
+        │   ├── raw_task_data_00/
+        │   ├── _ibl_experiment.description_taskPC.yaml
+        │   └── transferred.flag
+        └── 003/
+            ├── raw_task_data_00/
+            ├── folder_not_in_desc_file/
+            ├── _ibl_experiment.description_taskPC.yaml
+            └── transferred.flag
+</pre></div>
+</div>
+</li>
+<li><dl>
+<dt>The State on the Local Ephys Acquisition PC</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>acquisition computer (ephysPC)/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   ├── raw_ephys_data/
+        │   └── _ibl_experiment.description_ephysPC.yaml
+        ├── 002/
+        │   ├── raw_ephys_data/
+        │   ├── _ibl_experiment.description_ephysPC.yaml
+        └── 003/
+            ├── raw_ephys_data/
+            ├── folder_not_in_desc_file/
+            ├── _ibl_experiment.description_ephysPC.yaml
+            └── transferred.flag
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<p>With the lab server and acquisition pcs in the states above, the
+sessions are in the following states</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/001</span></code> no data have been copied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/002</span></code> data from <em>taskPC</em> have been copied, data from <em>ephysPC</em> remains to be copied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/003</span></code> data copied from all acquisition PCs.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="video-acquisition-computer">
+<h2>Video acquisition computer<a class="headerlink" href="#video-acquisition-computer" title="Link to this heading"></a></h2>
+<p>Video can be run on a separate computer, which is recommended when recording multiple cameras.</p>
+<section id="setup">
+<h3>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h3>
+<section id="installing-drivers">
+<h4>Installing drivers<a class="headerlink" href="#installing-drivers" title="Link to this heading"></a></h4>
+<p>Both spinnaker and pyspin must be installed before running an experiment:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">install_spinnaker</span>
+<span class="n">install_pyspin</span>
+</pre></div>
+</div>
+</section>
+<section id="settings-config">
+<h4>Settings config<a class="headerlink" href="#settings-config" title="Link to this heading"></a></h4>
+<p>The camera acquisition is configured by parameters in the ‘device_cameras’ key  of the <cite>hardware_settings.yaml</cite> file.
+Below is an overview of the parameters:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">device_cameras</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># The name of the configuration. This is passed to the CLI.</span>
+<span class="w">  </span><span class="nt">default</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># This is required: the Bonsai workflows to be called by the CLI script.</span>
+<span class="w">    </span><span class="nt">BONSAI_WORKFLOW</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># Optional setup (e.g. alignment) workflow</span>
+<span class="w">      </span><span class="nt">setup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">devices/camera_setup/EphysRig_SetupCameras.bonsai</span>
+<span class="w">      </span><span class="c1"># Required workflow to be called when the experiment starts</span>
+<span class="w">      </span><span class="nt">recording</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">devices/camera_recordings/TrainingRig_SaveVideo_TrainingTasks.bonsai</span>
+<span class="w">    </span><span class="c1"># Camera #1 name</span>
+<span class="w">    </span><span class="nt">left</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># Required camera device index (assigned in driver software)</span>
+<span class="w">      </span><span class="nt">INDEX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="c1"># Optional expected frame height. Actual resolution should be set in the driver software.</span>
+<span class="w">      </span><span class="nt">HEIGHT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span>
+<span class="w">      </span><span class="c1"># Optional expected frame width. This is simply used in QC.</span>
+<span class="w">      </span><span class="nt">WIDTH</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1280</span>
+<span class="w">      </span><span class="c1"># Optional expected frame rate (Hz). This is simply used in QC.</span>
+<span class="w">      </span><span class="nt">FPS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+</pre></div>
+</div>
+<p>Multiple configurations can be added, e.g. ‘default’, ‘training’, ‘ephys’, etc. and within each, multiple cameras
+can be added, e.g. ‘left’, ‘right’, ‘body’, etc.  Each configuration requires a <cite>BONSAI_WORKFLOW: recording</cite> key;
+each camera requires an <cite>INDEX</cite> key.</p>
+</section>
+</section>
+<section id="id1">
+<h3>Starting a task<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>Below shows how to start the cameras for the subject ‘example’ with configuration ‘default’:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">start_video_session</span> <span class="n">example</span> <span class="k">default</span>
+</pre></div>
+</div>
+</section>
+<section id="copy-command">
+<h3>Copy command<a class="headerlink" href="#copy-command" title="Link to this heading"></a></h3>
+<section id="id2">
+<h4>Usage<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<p>To initiate the data transfer from the local server to the remote server, open a terminal and type.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">video</span>
+</pre></div>
+</div>
+<p>The transfer local and remote directories are set in the
+<code class="docutils literal notranslate"><span class="pre">iblrig/settings/iblrig_settings.py</span></code> file.</p>
+</section>
+</section>
+</section>
+<section id="neuropixel-recording-with-iblrigv8">
+<h2>Neuropixel recording with iblrigv8<a class="headerlink" href="#neuropixel-recording-with-iblrigv8" title="Link to this heading"></a></h2>
+<p>This document describes how to use the iblrigv8 software to record from the Neuropixel computer.</p>
+<section id="id3">
+<h3>Setup<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<p>Just make sure iblrigv8 is installed according to the instructions and that the iblrig_settings.py
+file is configured with the local folder and remote folder for the data transfer.</p>
+<p>To get access to the viewephys visualizer:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">viewephys</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>Starting a task<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>Below shows how to start the electrophysiology for the subject ‘example’ with 2 probes:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">start_ephys_session</span> <span class="n">example</span> <span class="n">2</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>Copy command<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<section id="id6">
+<h4>Usage<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<p>To initiate the data transfer from the local server to the remote server, open a terminal and type.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">ephys</span>
+</pre></div>
+</div>
+<p>The transfer local and remote directories are set in the
+<code class="docutils literal notranslate"><span class="pre">iblrig/settings/iblrig_settings.py</span></code> file.</p>
+</section>
+</section>
+<section id="look-at-the-raw-data">
+<h3>Look at the raw data<a class="headerlink" href="#look-at-the-raw-data" title="Link to this heading"></a></h3>
+<p>This will launch the viewephys GUI, you can then use file -&gt; open and navigate
+to open the raw data file you wish to display.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">viewephys</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewephys.png"><img alt="Alternative text" src="_images/viewephys.png" style="width: 800px;" />
+</a>
+<p>More information on the viewephys package can be found at: <a class="reference external" href="https://github.com/int-brain-lab/viewephys">https://github.com/int-brain-lab/viewephys</a></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reference.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

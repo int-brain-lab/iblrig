@@ -1,0 +1,768 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.transfer_experiments &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.transfer_experiments</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.transfer_experiments</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">samestat</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">ibllib.pipes.misc</span>
+<span class="kn">import</span> <span class="nn">iblrig</span>
+<span class="kn">import</span> <span class="nn">one.alf.files</span> <span class="k">as</span> <span class="nn">alfiles</span>
+<span class="kn">from</span> <span class="nn">ibllib.io</span> <span class="kn">import</span> <span class="n">raw_data_loaders</span><span class="p">,</span> <span class="n">session_params</span>
+<span class="kn">from</span> <span class="nn">ibllib.pipes.misc</span> <span class="kn">import</span> <span class="n">sleepless</span>
+<span class="kn">from</span> <span class="nn">iblrig.raw_data_loaders</span> <span class="kn">import</span> <span class="n">load_task_jsonable</span>
+<span class="kn">from</span> <span class="nn">iblutil.io</span> <span class="kn">import</span> <span class="n">hashfile</span>
+<span class="kn">from</span> <span class="nn">one.util</span> <span class="kn">import</span> <span class="n">ensure_list</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">ES_CONTINUOUS</span> <span class="o">=</span> <span class="mh">0x80000000</span>
+<span class="n">ES_SYSTEM_REQUIRED</span> <span class="o">=</span> <span class="mh">0x00000001</span>
+
+
+<div class="viewcode-block" id="CopyState">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.CopyState.html#iblrig.transfer_experiments.CopyState">[docs]</a>
+<span class="k">class</span> <span class="nc">CopyState</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="n">HARD_RESET</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">NOT_REGISTERED</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">PENDING</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">COMPLETE</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">FINALIZED</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+
+
+<span class="nd">@sleepless</span>
+<span class="k">def</span> <span class="nf">_copy2_checksum</span><span class="p">(</span><span class="n">src</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dst</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy a file from source to destination with checksum verification.</span>
+
+<span class="sd">    This function copies a file from the source path to the destination path</span>
+<span class="sd">    while verifying the BLAKE2B hash of the source and destination files. If the</span>
+<span class="sd">    BLAKE2B hashes do not match after copying, an OSError is raised.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src : str</span>
+<span class="sd">        The path to the source file.</span>
+<span class="sd">    dst : str</span>
+<span class="sd">        The path to the destination file.</span>
+<span class="sd">    *args, **kwargs</span>
+<span class="sd">        Additional arguments and keyword arguments to pass to `shutil.copy2`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The path to the copied file.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    OSError</span>
+<span class="sd">        If the BLAKE2B hashes of the source and destination files do not match.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Processing `</span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">`:&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - calculating hash of local file&#39;</span><span class="p">)</span>
+    <span class="n">src_md5</span> <span class="o">=</span> <span class="n">hashfile</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span> <span class="ow">and</span> <span class="n">samestat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">src</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">dst</span><span class="p">)):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - file already exists at destination&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - calculating hash of remote file&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">src_md5</span> <span class="o">==</span> <span class="n">hashfile</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - local and remote BLAKE2B hashes match, skipping copy&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dst</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - local and remote hashes DO NOT match&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  - copying file to `</span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s1">`&#39;</span><span class="p">)</span>
+    <span class="n">return_val</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - calculating hash of remote file&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">src_md5</span> <span class="o">==</span> <span class="n">hashfile</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error copying </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">: hash mismatch.&#39;</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  - local and remote hashes match, copy successful&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">return_val</span>
+
+
+<div class="viewcode-block" id="copy_folders">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.copy_folders.html#iblrig.transfer_experiments.copy_folders">[docs]</a>
+<span class="k">def</span> <span class="nf">copy_folders</span><span class="p">(</span><span class="n">local_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">remote_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy folders and files from a local location to a remote location.</span>
+
+<span class="sd">    This function copies all folders and files from a local directory to a</span>
+<span class="sd">    remote directory. It provides options to overwrite existing files in</span>
+<span class="sd">    the remote directory and ignore specific file patterns.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    local_folder : Path</span>
+<span class="sd">        The path to the local folder to copy from.</span>
+<span class="sd">    remote_folder : Path</span>
+<span class="sd">        The path to the remote folder to copy to.</span>
+<span class="sd">    overwrite : bool, optional</span>
+<span class="sd">        If True, overwrite existing files in the remote folder. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the copying is successful, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">remote_folder</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span>
+            <span class="n">local_folder</span><span class="p">,</span>
+            <span class="n">remote_folder</span><span class="p">,</span>
+            <span class="n">dirs_exist_ok</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span>
+            <span class="n">ignore</span><span class="o">=</span><span class="n">shutil</span><span class="o">.</span><span class="n">ignore_patterns</span><span class="p">(</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">),</span>
+            <span class="n">copy_function</span><span class="o">=</span><span class="n">_copy2_checksum</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not copy </span><span class="si">{</span><span class="n">local_folder</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="n">remote_folder</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">status</span></div>
+
+
+
+<div class="viewcode-block" id="SessionCopier">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier">[docs]</a>
+<span class="k">class</span> <span class="nc">SessionCopier</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize and copy session data to a remote server.&quot;&quot;&quot;</span>
+
+    <span class="n">assert_connect_on_init</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;bool: Raise error if unable to write stub file to remote server.&quot;&quot;&quot;</span>
+
+    <span class="n">_experiment_description</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: The experiment description file used for the copy.&quot;&quot;&quot;</span>
+
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">getnode</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str: The device name (adds this to the experiment description stub file on the remote server).&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SessionCopier.__init__">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_path</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize and copy session data to a remote server.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        session_path : str, pathlib.Path</span>
+<span class="sd">            The partial or session path to copy.</span>
+<span class="sd">        remote_subjects_folder : str, pathlib.Path</span>
+<span class="sd">            The remote server path to which to copy the session data.</span>
+<span class="sd">        tag : str</span>
+<span class="sd">            The device name (adds this to the experiment description stub file on the remote server).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">session_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">remote_subjects_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">remote_subjects_folder</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1"> local: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1"> </span><span class="se">\n</span><span class="s1"> remote: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SessionCopier.run">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_expected_devices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the copy of this device experiment.</span>
+
+<span class="sd">        Will try to get as far as possible in the copy process (from states 0 init experiment to state 3 finalize experiment)</span>
+<span class="sd">        if possible, and return earlier if the process can&#39;t be completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">HARD_RESET</span><span class="p">:</span>  <span class="c1"># this case is not implemented automatically and corresponds to a hard reset</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">NOT_REGISTERED</span><span class="p">:</span>  <span class="c1"># the session hasn&#39;t even been initialized: copy the stub to the remote</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">PENDING</span><span class="p">:</span>  <span class="c1"># the session is ready for copy</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">copy_collections</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">finalize_copy</span><span class="p">(</span><span class="n">number_of_expected_devices</span><span class="o">=</span><span class="n">number_of_expected_devices</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">FINALIZED</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionCopier.get_state">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.get_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">CopyState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the current copier state.</span>
+
+<span class="sd">        State 0: this device experiment has not been initialized for this device</span>
+<span class="sd">        State 1: this device experiment is initialized (the experiment description stub is present on the remote)</span>
+<span class="sd">        State 2: this device experiment is copied on the remote server, but other devices copies are still pending</span>
+<span class="sd">        State 3: the whole experiment is finalized and all data is on the server</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Remote subjects folder </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="si">}</span><span class="s1"> set to Null or unreachable&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">CopyState</span><span class="o">.</span><span class="n">NOT_REGISTERED</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;Copy object not registered on server: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="si">}</span><span class="s1"> does not exist&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">status_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">glob_file_remote_copy_status</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">status_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">status_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_pending&#39;</span><span class="p">)</span>
+            <span class="n">status_file</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">status_file</span><span class="si">}</span><span class="s1"> not found and created&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">PENDING</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Copy pending </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">elif</span> <span class="n">status_file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;complete&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Copy complete </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">elif</span> <span class="n">status_file</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;final&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">CopyState</span><span class="o">.</span><span class="n">FINALIZED</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Copy finalized </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">experiment_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_experiment_description</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">remote_session_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="p">:</span>
+            <span class="c1"># padded_sequence ensures session path has zero padded number folder, e.g. 1 -&gt; 001</span>
+            <span class="n">session_parts</span> <span class="o">=</span> <span class="n">alfiles</span><span class="o">.</span><span class="n">padded_sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="o">*</span><span class="n">session_parts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">file_experiment_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the local experiment description file, if none found, returns one with the tag.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;_ibl_experiment.description*&#39;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;_ibl_experiment.description_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="si">}</span><span class="s1">.yaml&#39;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SessionCopier.glob_file_remote_copy_status">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.glob_file_remote_copy_status">[docs]</a>
+    <span class="k">def</span> <span class="nf">glob_file_remote_copy_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;status: pending / complete&quot;&quot;&quot;</span>
+        <span class="n">fr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">fr</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fr</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">.status_</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">fr</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">file_remote_experiment_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the remote path to the remote stub file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">session_params</span><span class="o">.</span><span class="n">get_remote_stub_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="p">,</span> <span class="n">device_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">remote_experiment_description_stub</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_copy_collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Copy collections defined in experiment description file.</span>
+
+<span class="sd">        This is the method to subclass for pre- and post- copy routines.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if transfer successfully completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">exp_pars</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span>
+        <span class="n">collections</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># First glob on each collection pattern to find all folders to transfer</span>
+        <span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="n">session_params</span><span class="o">.</span><span class="n">get_collections</span><span class="p">(</span><span class="n">exp_pars</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">folders</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">collection</span><span class="p">))</span>
+            <span class="n">_collections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="n">folders</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_collections</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No collection(s) matching &quot;</span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s1">&quot; found&#39;</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">continue</span>
+            <span class="n">collections</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_collections</span><span class="p">)</span>
+
+        <span class="c1"># Attempt to copy each folder</span>
+        <span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="n">collections</span><span class="p">:</span>
+            <span class="n">local_collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">local_collection</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="sa">f</span><span class="s1">&#39;local collection &quot;</span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s1">&quot; no longer exists&#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;transferring </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">remote_collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">remote_collection</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="c1"># this is far from ideal: we currently recopy all files even if some already copied</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Collection </span><span class="si">{</span><span class="n">remote_collection</span><span class="si">}</span><span class="s1"> already exists, removing&#39;</span><span class="p">)</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">remote_collection</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">&amp;=</span> <span class="n">copy_folders</span><span class="p">(</span><span class="n">local_collection</span><span class="p">,</span> <span class="n">remote_collection</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">&amp;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_snapshots</span><span class="p">()</span>  <span class="c1"># special case: copy snapshots without deleting or overwriting remote files</span>
+        <span class="k">return</span> <span class="n">status</span>
+
+<div class="viewcode-block" id="SessionCopier.copy_snapshots">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.copy_snapshots">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Copy snapshots files from root session path.</span>
+
+<span class="sd">        Unlike the collection folders defined in the experiment description folder, the snapshots folder is optional and</span>
+<span class="sd">        may exist on multiple acquisition PCs.  This method will copy any files over if the snapshots folder exists,</span>
+<span class="sd">        however it will fail if a file of the same name already exists. This ensures snapshots from multiple computers</span>
+<span class="sd">        don&#39;t get overwritten.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if transfer successfully completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;snapshots&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Snapshots folder </span><span class="si">%s</span><span class="s1"> does not exist&#39;</span><span class="p">,</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;transferring </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1"> - </span><span class="si">{</span><span class="n">snapshots</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">remote_snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">snapshots</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Get set of local and remote snapshot filenames</span>
+        <span class="n">local_files</span><span class="p">,</span> <span class="n">remote_files</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="nb">filter</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">is_file</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">))))</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">snapshots</span><span class="p">,</span> <span class="n">remote_snapshots</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">local_files</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Snapshots folder </span><span class="si">%s</span><span class="s1"> is empty&#39;</span><span class="p">,</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">duplicates</span> <span class="o">:=</span> <span class="n">local_files</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">remote_files</span><span class="p">)):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;The following snapshots already exist in </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">remote_snapshots</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">duplicates</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Could not copy </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">snapshots</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="n">remote_snapshots</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="c1"># &#39;overwrite&#39; actually means &#39;don&#39;t raise if remote folder exists&#39;.</span>
+        <span class="c1"># We&#39;ve already checked that filenames don&#39;t conflict.</span>
+        <span class="k">return</span> <span class="n">copy_folders</span><span class="p">(</span><span class="n">snapshots</span><span class="p">,</span> <span class="n">remote_snapshots</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionCopier.copy_collections">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.copy_collections">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy_collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recursively copies the collection folders into the remote session path.</span>
+
+<span class="sd">        Do not overload, overload _copy_collections instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">glob_file_remote_copy_status</span><span class="p">(</span><span class="s1">&#39;complete&#39;</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;Copy already complete for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">,&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39; remove </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">glob_file_remote_copy_status</span><span class="p">(</span><span class="s2">&quot;complete&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1"> to force&#39;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_copy_collections</span><span class="p">()</span>
+        <span class="c1"># post copy stuff: rename the pending flag to complete</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+            <span class="n">pending_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">glob_file_remote_copy_status</span><span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">)</span>
+            <span class="n">pending_file</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">pending_file</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_complete&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">status</span></div>
+
+
+<div class="viewcode-block" id="SessionCopier.initialize_experiment">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.initialize_experiment">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Copy acquisition description yaml to the server and local transfers folder.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        acquisition_description : dict</span>
+<span class="sd">            The data to write to the experiment.description.yaml file.</span>
+<span class="sd">        overwrite : bool</span>
+<span class="sd">            If true, overwrite any existing file with the new one, otherwise, update the existing file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">acquisition_description</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">acquisition_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span>
+
+        <span class="k">assert</span> <span class="n">acquisition_description</span>
+
+        <span class="c1"># First attempt to add the remote description stub to the _device folder on the remote session</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_subjects_folder</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;The remote path is unspecified and remote experiment.description stub creation is omitted.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remote_stub_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span>
+            <span class="n">previous_description</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="n">remote_stub_file</span><span class="p">)</span> <span class="k">if</span> <span class="n">remote_stub_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">merged_description</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">merge_params</span><span class="p">(</span><span class="n">previous_description</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="p">)</span>
+                <span class="n">session_params</span><span class="o">.</span><span class="n">write_yaml</span><span class="p">(</span><span class="n">remote_stub_file</span><span class="p">,</span> <span class="n">merged_description</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">remote_stub_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">remote_stub_file</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s1">&#39;.status_*&#39;</span><span class="p">):</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="n">remote_stub_file</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_pending&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Written data to remote device at: </span><span class="si">{</span><span class="n">remote_stub_file</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">assert_connect_on_init</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to write data to remote device at: </span><span class="si">{</span><span class="n">remote_stub_file</span><span class="si">}</span><span class="s1">. </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to write data to remote device at: </span><span class="si">{</span><span class="n">remote_stub_file</span><span class="si">}</span><span class="s1">. </span><span class="se">\n</span><span class="s1"> </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># then create on the local machine</span>
+        <span class="n">previous_description</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span>
+            <span class="k">else</span> <span class="p">{}</span>
+        <span class="p">)</span>
+        <span class="n">session_params</span><span class="o">.</span><span class="n">write_yaml</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="p">,</span> <span class="n">session_params</span><span class="o">.</span><span class="n">merge_params</span><span class="p">(</span><span class="n">previous_description</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Written data to local session at : </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionCopier.finalize_copy">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.SessionCopier.html#iblrig.transfer_experiments.SessionCopier.finalize_copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">finalize_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_expected_devices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;At the end of the copy, check if all the files are there and if so, aggregate the device files.&quot;&quot;&quot;</span>
+        <span class="n">ready_to_finalize</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># List the stub files in _devices folder</span>
+        <span class="n">files_stub</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.yaml&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">number_of_expected_devices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">number_of_expected_devices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files_stub</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of expected devices is </span><span class="si">{</span><span class="n">number_of_expected_devices</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">file_stub</span> <span class="ow">in</span> <span class="n">files_stub</span><span class="p">:</span>
+            <span class="n">ready_to_finalize</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_stub</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_complete&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">())</span>
+            <span class="n">ad_stub</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="n">file_stub</span><span class="p">)</span>
+            <span class="c1"># here we check the sync field of the device files</span>
+            <span class="k">if</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">ad_stub</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="p">{})),</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;bpod&#39;</span> <span class="ow">and</span> <span class="n">number_of_expected_devices</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Only bpod is supported for single device sessions, it seems you are &#39;</span>
+                    <span class="s1">&#39;attempting to transfer a session with more than one device.&#39;</span>
+                <span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">ready_to_finalize</span> <span class="o">&gt;</span> <span class="n">number_of_expected_devices</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;More stub files (</span><span class="si">%i</span><span class="s1">) than expected devices (</span><span class="si">%i</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">ready_to_finalize</span><span class="p">,</span> <span class="n">number_of_expected_devices</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ready_to_finalize</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">number_of_expected_devices</span><span class="si">}</span><span class="s1"> copy completion status&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ready_to_finalize</span> <span class="o">==</span> <span class="n">number_of_expected_devices</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">file_stub</span> <span class="ow">in</span> <span class="n">files_stub</span><span class="p">:</span>
+                <span class="n">session_params</span><span class="o">.</span><span class="n">aggregate_device</span><span class="p">(</span><span class="n">file_stub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;_ibl_experiment.description.yaml&#39;</span><span class="p">))</span>
+                <span class="n">file_stub</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_complete&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">file_stub</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.status_final&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_session.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="VideoCopier">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.VideoCopier.html#iblrig.transfer_experiments.VideoCopier">[docs]</a>
+<span class="k">class</span> <span class="nc">VideoCopier</span><span class="p">(</span><span class="n">SessionCopier</span><span class="p">):</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s1">&#39;video&#39;</span>
+    <span class="n">assert_connect_on_init</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="VideoCopier.create_video_stub">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.VideoCopier.html#iblrig.transfer_experiments.VideoCopier.create_video_stub">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_video_stub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">collection</span><span class="o">=</span><span class="s1">&#39;raw_video_data&#39;</span><span class="p">):</span>
+        <span class="n">acquisition_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config2stub</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">collection</span><span class="p">)</span>
+        <span class="n">session_params</span><span class="o">.</span><span class="n">write_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VideoCopier.config2stub">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.VideoCopier.html#iblrig.transfer_experiments.VideoCopier.config2stub">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">config2stub</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;raw_video_data&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate acquisition description stub from a camera config dict.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config : dict</span>
+<span class="sd">            A cameras configuration dictionary, found in `device_cameras` of hardware_settings.yaml.</span>
+<span class="sd">        collection : str</span>
+<span class="sd">            The video output collection.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            An acquisition description file stub.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cameras</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">settings</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">itms</span><span class="p">:</span> <span class="n">itms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">settings_mod</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;INDEX&#39;</span><span class="p">}</span>
+            <span class="n">cameras</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">collection</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span> <span class="o">**</span><span class="n">settings_mod</span><span class="p">)</span>
+        <span class="n">acq_desc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;devices&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cameras&#39;</span><span class="p">:</span> <span class="n">cameras</span><span class="p">},</span> <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">acq_desc</span></div>
+
+
+<div class="viewcode-block" id="VideoCopier.initialize_experiment">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.VideoCopier.html#iblrig.transfer_experiments.VideoCopier.initialize_experiment">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">acquisition_description</span><span class="p">:</span>
+            <span class="c1"># creates the acquisition description stub if not found, and then read it</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="p">)</span>
+            <span class="n">acquisition_description</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_experiment_description</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_experiment_description</span> <span class="o">=</span> <span class="n">acquisition_description</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">(</span><span class="n">acquisition_description</span><span class="o">=</span><span class="n">acquisition_description</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BehaviorCopier">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.BehaviorCopier.html#iblrig.transfer_experiments.BehaviorCopier">[docs]</a>
+<span class="k">class</span> <span class="nc">BehaviorCopier</span><span class="p">(</span><span class="n">SessionCopier</span><span class="p">):</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s1">&#39;behavior&#39;</span>
+    <span class="n">assert_connect_on_init</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">experiment_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_copy_collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Patch settings files before copy.</span>
+
+<span class="sd">        Before copying the collections, this method checks that the behaviour data are valid. The</span>
+<span class="sd">        following checks are made:</span>
+
+<span class="sd">        #. Check at least 1 task collection in experiment description. If not, return.</span>
+<span class="sd">        #. For each collection, check for task settings. If any are missing, return.</span>
+<span class="sd">        #. If SESSION_END_TIME is missing, assumes task crashed. If so and task data missing and</span>
+<span class="sd">           not a chained protocol (i.e. it is the only task collection), assume a dud and remove</span>
+<span class="sd">           the remote stub file.  Otherwise, patch settings with total trials, end time, etc.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if transfer successfully completed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">collections</span> <span class="o">=</span> <span class="n">session_params</span><span class="o">.</span><span class="n">get_task_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">collections</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Skipping: no task collections defined for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">collection</span> <span class="ow">in</span> <span class="p">(</span><span class="n">collections</span> <span class="o">:=</span> <span class="n">ensure_list</span><span class="p">(</span><span class="n">collections</span><span class="p">)):</span>
+            <span class="n">task_settings</span> <span class="o">=</span> <span class="n">raw_data_loaders</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">,</span> <span class="n">task_collection</span><span class="o">=</span><span class="n">collection</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">task_settings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Skipping: no task settings found for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># may also want to remove session here if empty</span>
+            <span class="c1"># here if the session end time has not been labeled we assume that the session crashed, and patch the settings</span>
+            <span class="k">if</span> <span class="n">task_settings</span><span class="p">[</span><span class="s1">&#39;SESSION_END_TIME&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">jsonable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="s1">&#39;_iblrig_taskData.raw.jsonable&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">jsonable</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Skipping: no task data found for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1"># No local data and only behaviour stub in remote; assume dud and remove entire session</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+                        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">collections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_remote_experiment_description</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.yaml&#39;</span><span class="p">)))</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+                    <span class="p">):</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="p">)</span>  <span class="c1"># remove likely dud</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="n">trials</span><span class="p">,</span> <span class="n">bpod_data</span> <span class="o">=</span> <span class="n">load_task_jsonable</span><span class="p">(</span><span class="n">jsonable</span><span class="p">)</span>
+                <span class="n">ntrials</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># We have the case where the session hard crashed.</span>
+                <span class="c1"># Patch the settings file to wrap the session and continue the copying.</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Recovering crashed session </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">settings_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="s1">&#39;_iblrig_taskSettings.raw.json&#39;</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">settings_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">fid</span><span class="p">:</span>
+                    <span class="n">raw_settings</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span>
+                <span class="n">raw_settings</span><span class="p">[</span><span class="s1">&#39;NTRIALS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ntrials</span><span class="p">)</span>
+                <span class="n">raw_settings</span><span class="p">[</span><span class="s1">&#39;NTRIALS_CORRECT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">trials</span><span class="p">[</span><span class="s1">&#39;trial_correct&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                <span class="n">raw_settings</span><span class="p">[</span><span class="s1">&#39;TOTAL_WATER_DELIVERED&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">trials</span><span class="p">[</span><span class="s1">&#39;reward_amount&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                <span class="c1"># cast the timestamp in a datetime object and add the session length to it</span>
+                <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">raw_settings</span><span class="p">[</span><span class="s1">&#39;SESSION_START_TIME&#39;</span><span class="p">],</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">end_time</span> <span class="o">+=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">bpod_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;Trial end timestamp&#39;</span><span class="p">])</span>
+                <span class="n">raw_settings</span><span class="p">[</span><span class="s1">&#39;SESSION_END_TIME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">settings_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fid</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">raw_settings</span><span class="p">,</span> <span class="n">fid</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_copy_collections</span><span class="p">()</span>  <span class="c1"># proceed with copy</span>
+
+<div class="viewcode-block" id="BehaviorCopier.finalize_copy">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.BehaviorCopier.html#iblrig.transfer_experiments.BehaviorCopier.finalize_copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">finalize_copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_expected_devices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If main sync is bpod, expect a single stub file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">number_of_expected_devices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">session_params</span><span class="o">.</span><span class="n">get_sync</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_experiment_description_stub</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;bpod&#39;</span><span class="p">:</span>
+            <span class="n">number_of_expected_devices</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">finalize_copy</span><span class="p">(</span><span class="n">number_of_expected_devices</span><span class="o">=</span><span class="n">number_of_expected_devices</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EphysCopier">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.EphysCopier.html#iblrig.transfer_experiments.EphysCopier">[docs]</a>
+<span class="k">class</span> <span class="nc">EphysCopier</span><span class="p">(</span><span class="n">SessionCopier</span><span class="p">):</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="s1">&#39;ephys&#39;</span>
+    <span class="n">assert_connect_on_init</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="EphysCopier.initialize_experiment">
+<a class="viewcode-back" href="../../api/iblrig.transfer_experiments.EphysCopier.html#iblrig.transfer_experiments.EphysCopier.initialize_experiment">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acquisition_description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nprobes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">main_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">acquisition_description</span><span class="p">:</span>
+            <span class="n">acquisition_description</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;devices&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;neuropixel&#39;</span><span class="p">:</span> <span class="p">{}}}</span>
+            <span class="n">neuropixel</span> <span class="o">=</span> <span class="n">acquisition_description</span><span class="p">[</span><span class="s1">&#39;devices&#39;</span><span class="p">][</span><span class="s1">&#39;neuropixel&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">nprobes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">nprobes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;**/*.ap.bin&#39;</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nprobes</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;probe</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s1">02</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="n">neuropixel</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;collection&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;raw_ephys_data/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;sync_label&#39;</span><span class="p">:</span> <span class="s1">&#39;imec_sync&#39;</span><span class="p">}</span>
+            <span class="n">sync_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">iblrig</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;device_descriptions&#39;</span><span class="p">,</span> <span class="s1">&#39;sync&#39;</span><span class="p">,</span> <span class="s1">&#39;nidq.yaml&#39;</span><span class="p">)</span>
+            <span class="n">acquisition_description</span> <span class="o">=</span> <span class="n">acquisition_description</span> <span class="k">if</span> <span class="n">neuropixel</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">main_sync</span><span class="p">:</span>
+                <span class="n">acquisition_description</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">session_params</span><span class="o">.</span><span class="n">read_params</span><span class="p">(</span><span class="n">sync_file</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_experiment_description</span> <span class="o">=</span> <span class="n">acquisition_description</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">(</span><span class="n">acquisition_description</span><span class="o">=</span><span class="n">acquisition_description</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># once the session folders have been initialized, create the probe folders</span>
+        <span class="p">(</span><span class="n">ephys_path</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_ephys_data&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nprobes</span><span class="p">):</span>
+            <span class="n">ephys_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;probe</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s1">02</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_copy_collections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Here we overload the copy to be able to rename the probes properly and also create the insertions.&quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Transferring ephys session: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">ibllib</span><span class="o">.</span><span class="n">pipes</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">rename_ephys_files</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span>
+        <span class="n">ibllib</span><span class="o">.</span><span class="n">pipes</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">move_ephys_files</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span>
+        <span class="c1"># copy the wiring files from template</span>
+        <span class="n">path_wiring</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">iblrig</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;device_descriptions&#39;</span><span class="p">,</span> <span class="s1">&#39;neuropixel&#39;</span><span class="p">,</span> <span class="s1">&#39;wirings&#39;</span><span class="p">)</span>
+        <span class="n">probe_model</span> <span class="o">=</span> <span class="s1">&#39;3A&#39;</span>
+        <span class="k">for</span> <span class="n">file_nidq_bin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_ephys_data&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.nidq.bin&#39;</span><span class="p">):</span>
+            <span class="n">probe_model</span> <span class="o">=</span> <span class="s1">&#39;3B&#39;</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_wiring</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;nidq.wiring.json&#39;</span><span class="p">),</span> <span class="n">file_nidq_bin</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.wiring.json&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">file_ap_bin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_ephys_data&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">&#39;*.ap.bin&#39;</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">path_wiring</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">probe_model</span><span class="si">}</span><span class="s1">.wiring.json&#39;</span><span class="p">),</span> <span class="n">file_ap_bin</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.wiring.json&#39;</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ibllib</span><span class="o">.</span><span class="n">pipes</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">create_alyx_probe_insertions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">())</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Probe creation failed, please create the probe insertions manually. Continuing transfer...&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">copy_folders</span><span class="p">(</span>
+            <span class="n">local_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_ephys_data&#39;</span><span class="p">),</span>
+            <span class="n">remote_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_session_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_ephys_data&#39;</span><span class="p">),</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+<map id="inheritance9bf7c7ca27" name="inheritance9bf7c7ca27">
+<area shape="rect" id="node1" title="Usage docs: https://docs.pydantic.dev/2.9/concepts/models/" alt="" coords="386,5,474,28"/>
+<area shape="rect" id="node2" href="iblrig.pydantic_definitions.BunchModel.html#iblrig.pydantic_definitions.BunchModel" target="_top" title="BunchModel" alt="" coords="535,28,630,52"/>
+<area shape="rect" id="node9" href="#iblrig.pydantic_definitions.RigSettings" target="_top" title="RigSettings" alt="" coords="674,28,763,52"/>
+<area shape="rect" id="node3" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping" target="_top" title="A MutableMapping is a generic container for associating" alt="" coords="370,51,491,74"/>
+<area shape="rect" id="node4" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection" target="_top" title="Collection" alt="" coords="128,51,208,74"/>
+<area shape="rect" id="node8" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" target="_top" title="A Mapping is a generic container for associating key/value" alt="" coords="253,51,325,74"/>
+<area shape="rect" id="node5" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sized" target="_top" title="Sized" alt="" coords="11,5,78,28"/>
+<area shape="rect" id="node6" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" target="_top" title="Iterable" alt="" coords="11,51,78,74"/>
+<area shape="rect" id="node7" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Container" target="_top" title="Container" alt="" coords="5,96,84,120"/>
+</map>

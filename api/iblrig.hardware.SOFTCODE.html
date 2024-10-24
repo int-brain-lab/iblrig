@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.hardware.SOFTCODE &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="iblrig.hardware_validation" href="iblrig.hardware_validation.html" />
+    <link rel="prev" title="iblrig.hardware.RotaryEncoderModule" href="iblrig.hardware.RotaryEncoderModule.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="iblrig.html">iblrig</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="iblrig.base_choice_world.html">iblrig.base_choice_world</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.base_tasks.html">iblrig.base_tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.choiceworld.html">iblrig.choiceworld</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.commands.html">iblrig.commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.constants.html">iblrig.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.ephys.html">iblrig.ephys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.frame2ttl.html">iblrig.frame2ttl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.graphic.html">iblrig.graphic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.gui.html">iblrig.gui</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="iblrig.hardware.html">iblrig.hardware</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="iblrig.hardware.restart_com_port.html">iblrig.hardware.restart_com_port</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.hardware.sound_device_factory.html">iblrig.hardware.sound_device_factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.hardware.Bpod.html">iblrig.hardware.Bpod</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.hardware.RotaryEncoderModule.html">iblrig.hardware.RotaryEncoderModule</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">iblrig.hardware.SOFTCODE</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hardware_validation.html">iblrig.hardware_validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hifi.html">iblrig.hifi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.misc.html">iblrig.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.net.html">iblrig.net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.online_plots.html">iblrig.online_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.path_helper.html">iblrig.path_helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.pydantic_definitions.html">iblrig.pydantic_definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.raw_data_loaders.html">iblrig.raw_data_loaders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.rig_component.html">iblrig.rig_component</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.scale.html">iblrig.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.serial_singleton.html">iblrig.serial_singleton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.session_creator.html">iblrig.session_creator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.sound.html">iblrig.sound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.tools.html">iblrig.tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.transfer_experiments.html">iblrig.transfer_experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.upgrade_iblrig.html">iblrig.upgrade_iblrig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.valve.html">iblrig.valve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.version_management.html">iblrig.version_management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="iblrig_tasks.html">iblrig_tasks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.html">iblrig</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.hardware.html">iblrig.hardware</a></li>
+      <li class="breadcrumb-item active">iblrig.hardware.SOFTCODE</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/iblrig.hardware.SOFTCODE.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="iblrig-hardware-softcode">
+<h1>iblrig.hardware.SOFTCODE<a class="headerlink" href="#iblrig-hardware-softcode" title="Link to this heading"></a></h1>
+<div class="graphviz"><img src="../_images/inheritance-809220ff255c247bf3575e9051c115bd32d4ebcf.png" alt="Inheritance diagram of SOFTCODE" usemap="#inheritancec23740633e" class="inheritance graphviz" /></div>
+<map id="inheritancec23740633e" name="inheritancec23740633e">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/enum.html#enum.Enum" target="_top" title="Generic enumeration." alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node2" href="https://docs.python.org/3/library/enum.html#enum.IntEnum" target="_top" title="Enum where members are also (and must be) ints" alt="" coords="125,5,201,31"/>
+<area shape="rect" id="node3" href="#iblrig.hardware.SOFTCODE" target="_top" title="An enumeration." alt="" coords="249,5,340,31"/>
+</map><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iblrig.hardware.</span></span><span class="sig-name descname"><span class="pre">SOFTCODE</span></span><a class="headerlink" href="#iblrig.hardware.SOFTCODE" title="Link to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE.__new__">
+<span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#iblrig.hardware.SOFTCODE.__new__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE.PLAY_NOISE">
+<span class="sig-name descname"><span class="pre">PLAY_NOISE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#iblrig.hardware.SOFTCODE.PLAY_NOISE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE.PLAY_TONE">
+<span class="sig-name descname"><span class="pre">PLAY_TONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#iblrig.hardware.SOFTCODE.PLAY_TONE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE.STOP_SOUND">
+<span class="sig-name descname"><span class="pre">STOP_SOUND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#iblrig.hardware.SOFTCODE.STOP_SOUND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.hardware.SOFTCODE.TRIGGER_CAMERA">
+<span class="sig-name descname"><span class="pre">TRIGGER_CAMERA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#iblrig.hardware.SOFTCODE.TRIGGER_CAMERA" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="iblrig.hardware.RotaryEncoderModule.html" class="btn btn-neutral float-left" title="iblrig.hardware.RotaryEncoderModule" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="iblrig.hardware_validation.html" class="btn btn-neutral float-right" title="iblrig.hardware_validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

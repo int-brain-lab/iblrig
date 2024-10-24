@@ -1,0 +1,13 @@
+iblrig.online\_plots.OnlinePlots
+================================
+
+.. currentmodule:: iblrig.online_plots
+
+.. inheritance-diagram:: OnlinePlots
+   :parts: 1
+
+|
+
+.. autoclass:: OnlinePlots
+   :members:
+   :undoc-members:

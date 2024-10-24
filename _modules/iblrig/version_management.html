@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.version_management &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.version_management</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.version_management</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">,</span> <span class="n">SubprocessError</span><span class="p">,</span> <span class="n">check_call</span><span class="p">,</span> <span class="n">check_output</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">packaging</span> <span class="kn">import</span> <span class="n">version</span>
+
+<span class="kn">from</span> <span class="nn">iblrig</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">iblrig.constants</span> <span class="kn">import</span> <span class="n">BASE_DIR</span><span class="p">,</span> <span class="n">IS_GIT</span><span class="p">,</span> <span class="n">IS_VENV</span>
+<span class="kn">from</span> <span class="nn">iblrig.tools</span> <span class="kn">import</span> <span class="n">cached_check_output</span><span class="p">,</span> <span class="n">internet_available</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_for_updates">
+<a class="viewcode-back" href="../../api/iblrig.version_management.check_for_updates.html#iblrig.version_management.check_for_updates">[docs]</a>
+<span class="k">def</span> <span class="nf">check_for_updates</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check for updates to the iblrig software.</span>
+
+<span class="sd">    This function compares the locally installed version of iblrig with the</span>
+<span class="sd">    latest available version to determine if an update is available.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        tuple[bool, Union[str, None]]: A tuple containing two elements.</span>
+<span class="sd">            - A boolean indicating whether an update is available.</span>
+<span class="sd">            - A string representing the latest available version, or None if</span>
+<span class="sd">              no remote version information is available.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking for updates ...&#39;</span><span class="p">)</span>
+
+    <span class="n">update_available</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">v_local</span> <span class="o">=</span> <span class="n">get_local_version</span><span class="p">()</span>
+    <span class="n">v_remote</span> <span class="o">=</span> <span class="n">get_remote_version</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">v_local</span> <span class="ow">and</span> <span class="n">v_remote</span><span class="p">:</span>
+        <span class="n">update_available</span> <span class="o">=</span> <span class="n">v_remote</span><span class="o">.</span><span class="n">base_version</span> <span class="o">&gt;</span> <span class="n">v_local</span><span class="o">.</span><span class="n">base_version</span>
+        <span class="k">if</span> <span class="n">update_available</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Update to iblrig </span><span class="si">{</span><span class="n">v_remote</span><span class="o">.</span><span class="n">base_version</span><span class="si">}</span><span class="s1"> available&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;No update available&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">update_available</span><span class="p">,</span> <span class="n">v_remote</span><span class="o">.</span><span class="n">base_version</span> <span class="k">if</span> <span class="n">v_remote</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span></div>
+
+
+
+<div class="viewcode-block" id="get_local_version">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_local_version.html#iblrig.version_management.get_local_version">[docs]</a>
+<span class="k">def</span> <span class="nf">get_local_version</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">version</span><span class="o">.</span><span class="n">Version</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse the local version string to obtain a Version object.</span>
+
+<span class="sd">    This function attempts to parse the local version string (__version__)</span>
+<span class="sd">    and returns a Version object representing the parsed version. If the</span>
+<span class="sd">    parsing fails, it logs an error and returns None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[version.Version, None]</span>
+<span class="sd">        A Version object representing the parsed local version, or None if</span>
+<span class="sd">        parsing fails.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Parsing local version string&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">InvalidVersion</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not parse local version string: </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="get_detailed_version_string">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_detailed_version_string.html#iblrig.version_management.get_detailed_version_string">[docs]</a>
+<span class="k">def</span> <span class="nf">get_detailed_version_string</span><span class="p">(</span><span class="n">v_basic</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a detailed version string based on a basic version string.</span>
+
+<span class="sd">    This function takes a basic version string (major.minor.patch) and generates</span>
+<span class="sd">    a detailed version string by querying Git for additional version information.</span>
+<span class="sd">    The detailed version includes commit number of commits since the last tag,</span>
+<span class="sd">    and Git status (dirty or broken). It is designed to fail safely.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    v_basic : str</span>
+<span class="sd">        A basic version string in the format &#39;major.minor.patch&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        A detailed version string containing version information retrieved</span>
+<span class="sd">        from Git, or the original basic version string if Git information</span>
+<span class="sd">        cannot be obtained.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This method will only work with installations managed through Git.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">v_basic</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_GIT</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;This installation of IBLRIG is not managed through git.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v_basic</span>
+
+    <span class="c1"># sanitize &amp; check if input only consists of three fields - major, minor and patch - separated by dots</span>
+    <span class="n">v_sanitized</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(\d+\.\d+\.\d+).*$$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1&#39;</span><span class="p">,</span> <span class="n">v_basic</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\d+\.\d+\.\d+$&#39;</span><span class="p">,</span> <span class="n">v_sanitized</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t parse version string: </span><span class="si">{</span><span class="n">v_basic</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v_basic</span>
+
+    <span class="c1"># get details through `git describe`</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">get_remote_tags</span><span class="p">()</span>
+        <span class="n">v_detailed</span> <span class="o">=</span> <span class="n">check_output</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--dirty&#39;</span><span class="p">,</span> <span class="s1">&#39;--broken&#39;</span><span class="p">,</span> <span class="s1">&#39;--match&#39;</span><span class="p">,</span> <span class="n">v_sanitized</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--long&#39;</span><span class="p">],</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">BASE_DIR</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">STDOUT</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">SubprocessError</span><span class="p">,</span> <span class="n">CalledProcessError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v_basic</span>
+
+    <span class="c1"># apply a bit of regex magic for formatting &amp; return the detailed version string</span>
+    <span class="n">v_detailed</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^((?:[\d+\.])+)(-[1-9]\d*)?(?:-0\d*)?(?:-\w+)(-dirty|-broken)?\n?$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1\2\3&#39;</span><span class="p">,</span> <span class="n">v_detailed</span><span class="p">)</span>
+    <span class="n">v_detailed</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;-(\d+)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.post\1&#39;</span><span class="p">,</span> <span class="n">v_detailed</span><span class="p">)</span>
+    <span class="n">v_detailed</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\-(dirty|broken)&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;+\1&#39;</span><span class="p">,</span> <span class="n">v_detailed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v_detailed</span></div>
+
+
+
+<span class="n">OnErrorLiteral</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;raise&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="s1">&#39;silence&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="call_git">
+<a class="viewcode-back" href="../../api/iblrig.version_management.call_git.html#iblrig.version_management.call_git">[docs]</a>
+<span class="k">def</span> <span class="nf">call_git</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cache_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">on_error</span><span class="p">:</span> <span class="n">OnErrorLiteral</span> <span class="o">=</span> <span class="s1">&#39;raise&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call a git command with the specified arguments.</span>
+
+<span class="sd">    This function executes a git command with the provided arguments. It can cache the output of the command</span>
+<span class="sd">    and handle errors based on the specified behavior.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *args : str</span>
+<span class="sd">        The arguments to pass to the git command.</span>
+<span class="sd">    cache_output : bool, optional</span>
+<span class="sd">        Whether to cache the output of the command. Default is True.</span>
+<span class="sd">    on_error : str, optional</span>
+<span class="sd">        The behavior when an error occurs. Either</span>
+<span class="sd">        - &#39;raise&#39;: raise the exception (default),</span>
+<span class="sd">        - &#39;log&#39;: log the exception, or</span>
+<span class="sd">        - &#39;silence&#39;: suppress the exception.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        The output of the git command as a string, or None if an error occurred.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If the installation is not managed through git and on_error is set to &#39;raise&#39;.</span>
+<span class="sd">    SubprocessError</span>
+<span class="sd">        If the command fails and on_error is set to &#39;raise&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">),</span> <span class="s1">&#39;cwd&#39;</span><span class="p">:</span> <span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_GIT</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This installation of iblrig is not managed through git&#39;</span>
+        <span class="k">if</span> <span class="n">on_error</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">on_error</span> <span class="o">==</span> <span class="s1">&#39;log&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">cached_check_output</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">if</span> <span class="n">cache_output</span> <span class="k">else</span> <span class="n">check_output</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">SubprocessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">on_error</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">elif</span> <span class="n">on_error</span> <span class="o">==</span> <span class="s1">&#39;log&#39;</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="get_branch">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_branch.html#iblrig.version_management.get_branch">[docs]</a>
+<span class="k">def</span> <span class="nf">get_branch</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the Git branch of the iblrig installation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        The Git branch of the iblrig installation, or None if it cannot be determined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">call_git</span><span class="p">(</span><span class="s1">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s1">&#39;--abbrev-ref&#39;</span><span class="p">,</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_commit_hash">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_commit_hash.html#iblrig.version_management.get_commit_hash">[docs]</a>
+<span class="k">def</span> <span class="nf">get_commit_hash</span><span class="p">(</span><span class="n">short</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the hash of the currently checked out commit of the iblrig installation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    short : bool, optional</span>
+<span class="sd">        Whether to return the short hash of the commit hash. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        Hash of the currently checked out commit, or None if it cannot be determined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s1">&#39;--short&#39;</span><span class="p">,</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">short</span> <span class="k">else</span> <span class="p">[</span><span class="s1">&#39;rev-parse&#39;</span><span class="p">,</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">call_git</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_remote_tags">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_remote_tags.html#iblrig.version_management.get_remote_tags">[docs]</a>
+<span class="k">def</span> <span class="nf">get_remote_tags</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetch remote Git tags if not already fetched.</span>
+
+<span class="sd">    This function fetches remote Git tags if they have not been fetched already.</span>
+<span class="sd">    If tags are already fetched, it does nothing. If the installation is not</span>
+<span class="sd">    managed through Git, it logs an error.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This method will only work with installations managed through Git.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">branch</span> <span class="o">:=</span> <span class="n">get_branch</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">call_git</span><span class="p">(</span><span class="s1">&#39;fetch&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="n">branch</span><span class="p">,</span> <span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_changelog">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_changelog.html#iblrig.version_management.get_changelog">[docs]</a>
+<span class="nd">@cache</span>
+<span class="k">def</span> <span class="nf">get_changelog</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the changelog for the iblrig installation.</span>
+
+<span class="sd">    This function retrieves and caches the changelog for the iblrig installation</span>
+<span class="sd">    based on the current Git branch. If the changelog is already cached, it</span>
+<span class="sd">    returns the cached value. If not, it attempts to fetch the changelog from</span>
+<span class="sd">    the GitHub repository or read it locally if the remote fetch fails.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The changelog for the iblrig installation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This method relies on the presence of a CHANGELOG.md file either in the</span>
+<span class="sd">    repository or locally.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">branch</span> <span class="o">:=</span> <span class="n">get_branch</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">()</span>
+        <span class="n">changelog</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;https://raw.githubusercontent.com/int-brain-lab/iblrig/</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s1">/CHANGELOG.md&#39;</span><span class="p">,</span> <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">text</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;CHANGELOG.md&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">changelog</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">changelog</span></div>
+
+
+
+<div class="viewcode-block" id="get_remote_version">
+<a class="viewcode-back" href="../../api/iblrig.version_management.get_remote_version.html#iblrig.version_management.get_remote_version">[docs]</a>
+<span class="k">def</span> <span class="nf">get_remote_version</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">version</span><span class="o">.</span><span class="n">Version</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the remote version of iblrig from the Git repository.</span>
+
+<span class="sd">    This function fetches and parses the remote version of the iblrig software</span>
+<span class="sd">    from the Git repository. It uses Git tags to identify available versions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[version.Version, None]</span>
+<span class="sd">        A Version object representing the remote version if successfully obtained,</span>
+<span class="sd">        or None if the remote version cannot be retrieved.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This method will only work with installations managed through Git.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">():</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Cannot obtain remote version: Not connected to internet&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">references</span> <span class="o">=</span> <span class="n">call_git</span><span class="p">(</span><span class="s1">&#39;ls-remote&#39;</span><span class="p">,</span> <span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="s1">&#39;-q&#39;</span><span class="p">,</span> <span class="s1">&#39;--exit-code&#39;</span><span class="p">,</span> <span class="s1">&#39;--refs&#39;</span><span class="p">,</span> <span class="s1">&#39;origin&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Parsing local version string&#39;</span><span class="p">)</span>
+        <span class="n">get_remote_version</span><span class="o">.</span><span class="n">remote_version</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;/(\d+\.\d+\.\d+)&#39;</span><span class="p">,</span> <span class="n">references</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">get_remote_version</span><span class="o">.</span><span class="n">remote_version</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">version</span><span class="o">.</span><span class="n">InvalidVersion</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Could not parse remote version string&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="is_dirty">
+<a class="viewcode-back" href="../../api/iblrig.version_management.is_dirty.html#iblrig.version_management.is_dirty">[docs]</a>
+<span class="k">def</span> <span class="nf">is_dirty</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the Git working directory is dirty (has uncommitted changes).</span>
+
+<span class="sd">    Uses &#39;git diff --quiet&#39; to determine if there are uncommitted changes in the Git repository.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        bool: True if the directory is dirty (has uncommitted changes) or an error occurs during execution,</span>
+<span class="sd">              False if the directory is clean (no uncommitted changes).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">check_call</span><span class="p">([</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;diff&#39;</span><span class="p">,</span> <span class="s1">&#39;--quiet&#39;</span><span class="p">],</span> <span class="n">cwd</span><span class="o">=</span><span class="n">BASE_DIR</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="check_upgrade_prerequisites">
+<a class="viewcode-back" href="../../api/iblrig.version_management.check_upgrade_prerequisites.html#iblrig.version_management.check_upgrade_prerequisites">[docs]</a>
+<span class="k">def</span> <span class="nf">check_upgrade_prerequisites</span><span class="p">(</span><span class="n">exception_handler</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check prerequisites for upgrading IBLRIG.</span>
+
+<span class="sd">    This function verifies the prerequisites necessary for upgrading IBLRIG. It checks for</span>
+<span class="sd">    internet connectivity, whether the IBLRIG installation is managed through Git, and</span>
+<span class="sd">    whether the script is running within the IBLRIG virtual environment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    exception_handler : Callable, optional</span>
+<span class="sd">        An optional callable that handles exceptions if raised during the check.</span>
+<span class="sd">        If provided, it will be called with the exception as the first argument,</span>
+<span class="sd">        followed by any additional positional arguments (*args), and any</span>
+<span class="sd">        additional keyword arguments (**kwargs).</span>
+
+<span class="sd">    *args : Additional positional arguments</span>
+<span class="sd">        Any additional positional arguments needed by the `exception_handler` callable.</span>
+
+<span class="sd">    **kwargs : Additional keyword arguments</span>
+<span class="sd">        Any additional keyword arguments needed by the `exception_handler` callable.</span>
+
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ConnectionError</span>
+<span class="sd">        If there is no connection to the internet.</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If the IBLRIG installation is not managed through Git, or</span>
+<span class="sd">        if the script is not running within the IBLRIG virtual environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s1">&#39;No connection to internet.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_GIT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;This installation of IBLRIG is not managed through Git.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_VENV</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;You need to be in the IBLRIG virtual environment in order to upgrade.&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ConnectionError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">exception_handler</span><span class="p">):</span>
+            <span class="n">exception_handler</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

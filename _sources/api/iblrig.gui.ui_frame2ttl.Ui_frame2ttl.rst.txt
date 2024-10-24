@@ -1,0 +1,13 @@
+iblrig.gui.ui\_frame2ttl.Ui\_frame2ttl
+======================================
+
+.. currentmodule:: iblrig.gui.ui_frame2ttl
+
+.. inheritance-diagram:: Ui_frame2ttl
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_frame2ttl
+   :members:
+   :undoc-members:

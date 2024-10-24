@@ -1,0 +1,6 @@
+<map id="inheritancee50d957985" name="inheritancee50d957985">
+<area shape="rect" id="node1" title="Usage docs: https://docs.pydantic.dev/2.9/concepts/models/" alt="" coords="5,5,100,31"/>
+<area shape="rect" id="node3" href="iblrig.pydantic_definitions.TrialDataModel.html#iblrig.pydantic_definitions.TrialDataModel" target="_top" title="A data model for trial data that extends BaseModel." alt="" coords="148,5,268,31"/>
+<area shape="rect" id="node2" href="iblrig.base_choice_world.ChoiceWorldTrialData.html#iblrig.base_choice_world.ChoiceWorldTrialData" target="_top" title="Pydantic Model for Trial Data." alt="" coords="316,5,477,31"/>
+<area shape="rect" id="node4" href="#iblrig.base_choice_world.HabituationChoiceWorldTrialData" target="_top" title="Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`." alt="" coords="525,5,763,31"/>
+</map>

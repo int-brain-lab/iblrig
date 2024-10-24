@@ -1,0 +1,30 @@
+iblrig.tools
+============
+
+.. automodule:: iblrig.tools
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      alyx_reachable
+      ask_user
+      call_bonsai
+      call_bonsai_async
+      get_anydesk_id
+      get_inheritors
+      get_lab_location_dict
+      internet_available
+      static_vars
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      ANSI
+   

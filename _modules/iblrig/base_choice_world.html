@@ -1,0 +1,1282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.base_choice_world &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.base_choice_world</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.base_choice_world</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Extends the base_tasks modules by providing task logic around the Choice World protocol.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">ascii_letters</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">annotated_types</span> <span class="kn">import</span> <span class="n">Interval</span><span class="p">,</span> <span class="n">IsNan</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">NonNegativeFloat</span><span class="p">,</span> <span class="n">NonNegativeInt</span>
+
+<span class="kn">import</span> <span class="nn">iblrig.base_tasks</span>
+<span class="kn">import</span> <span class="nn">iblrig.graphic</span>
+<span class="kn">from</span> <span class="nn">iblrig</span> <span class="kn">import</span> <span class="n">choiceworld</span><span class="p">,</span> <span class="n">misc</span>
+<span class="kn">from</span> <span class="nn">iblrig.hardware</span> <span class="kn">import</span> <span class="n">SOFTCODE</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">TrialDataModel</span>
+<span class="kn">from</span> <span class="nn">iblutil.io</span> <span class="kn">import</span> <span class="n">jsonable</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">Bunch</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.com.messaging.trial</span> <span class="kn">import</span> <span class="n">Trial</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.protocol</span> <span class="kn">import</span> <span class="n">StateMachine</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">NTRIALS_INIT</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">NBLOCKS_INIT</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="c1"># TODO: task parameters should be verified through a pydantic model</span>
+<span class="c1">#</span>
+<span class="c1"># Probability = Annotated[float, Field(ge=0.0, le=1.0)]</span>
+<span class="c1">#</span>
+<span class="c1"># class ChoiceWorldParams(BaseModel):</span>
+<span class="c1">#     AUTOMATIC_CALIBRATION: bool = True</span>
+<span class="c1">#     ADAPTIVE_REWARD: bool = False</span>
+<span class="c1">#     BONSAI_EDITOR: bool = False</span>
+<span class="c1">#     CALIBRATION_VALUE: float = 0.067</span>
+<span class="c1">#     CONTRAST_SET: list[Probability] = Field([1.0, 0.25, 0.125, 0.0625, 0.0], min_length=1)</span>
+<span class="c1">#     CONTRAST_SET_PROBABILITY_TYPE: Literal[&#39;uniform&#39;, &#39;skew_zero&#39;] = &#39;uniform&#39;</span>
+<span class="c1">#     GO_TONE_AMPLITUDE: float = 0.0272</span>
+<span class="c1">#     GO_TONE_DURATION: float = 0.11</span>
+<span class="c1">#     GO_TONE_IDX: int = Field(2, ge=0)</span>
+<span class="c1">#     GO_TONE_FREQUENCY: float = Field(5000, gt=0)</span>
+<span class="c1">#     FEEDBACK_CORRECT_DELAY_SECS: float = 1</span>
+<span class="c1">#     FEEDBACK_ERROR_DELAY_SECS: float = 2</span>
+<span class="c1">#     FEEDBACK_NOGO_DELAY_SECS: float = 2</span>
+<span class="c1">#     INTERACTIVE_DELAY: float = 0.0</span>
+<span class="c1">#     ITI_DELAY_SECS: float = 0.5</span>
+<span class="c1">#     NTRIALS: int = Field(2000, gt=0)</span>
+<span class="c1">#     PROBABILITY_LEFT: Probability = 0.5</span>
+<span class="c1">#     QUIESCENCE_THRESHOLDS: list[float] = Field(default=[-2, 2], min_length=2, max_length=2)</span>
+<span class="c1">#     QUIESCENT_PERIOD: float = 0.2</span>
+<span class="c1">#     RECORD_AMBIENT_SENSOR_DATA: bool = True</span>
+<span class="c1">#     RECORD_SOUND: bool = True</span>
+<span class="c1">#     RESPONSE_WINDOW: float = 60</span>
+<span class="c1">#     REWARD_AMOUNT_UL: float = 1.5</span>
+<span class="c1">#     REWARD_TYPE: str = &#39;Water 10% Sucrose&#39;</span>
+<span class="c1">#     STIM_ANGLE: float = 0.0</span>
+<span class="c1">#     STIM_FREQ: float = 0.1</span>
+<span class="c1">#     STIM_GAIN: float = 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)</span>
+<span class="c1">#     STIM_POSITIONS: list[float] = [-35, 35]</span>
+<span class="c1">#     STIM_SIGMA: float = 7.0</span>
+<span class="c1">#     STIM_TRANSLATION_Z: Literal[7, 8] = 7  # 7 for ephys, 8 otherwise. -p:Stim.TranslationZ-{STIM_TRANSLATION_Z} bonsai param</span>
+<span class="c1">#     STIM_REVERSE: bool = False</span>
+<span class="c1">#     SYNC_SQUARE_X: float = 1.33</span>
+<span class="c1">#     SYNC_SQUARE_Y: float = -1.03</span>
+<span class="c1">#     USE_AUTOMATIC_STOPPING_CRITERIONS: bool = True</span>
+<span class="c1">#     VISUAL_STIMULUS: str = &#39;GaborIBLTask / Gabor2D.bonsai&#39;  # null / passiveChoiceWorld_passive.bonsai</span>
+<span class="c1">#     WHITE_NOISE_AMPLITUDE: float = 0.05</span>
+<span class="c1">#     WHITE_NOISE_DURATION: float = 0.5</span>
+<span class="c1">#     WHITE_NOISE_IDX: int = 3</span>
+
+
+<div class="viewcode-block" id="ChoiceWorldTrialData">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldTrialData.html#iblrig.base_choice_world.ChoiceWorldTrialData">[docs]</a>
+<span class="k">class</span> <span class="nc">ChoiceWorldTrialData</span><span class="p">(</span><span class="n">TrialDataModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic Model for Trial Data.&quot;&quot;&quot;</span>
+
+    <span class="n">contrast</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)]</span>
+    <span class="n">stim_probability_left</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)]</span>
+    <span class="n">position</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">quiescent_period</span><span class="p">:</span> <span class="n">NonNegativeFloat</span>
+    <span class="n">reward_amount</span><span class="p">:</span> <span class="n">NonNegativeFloat</span>
+    <span class="n">reward_valve_time</span><span class="p">:</span> <span class="n">NonNegativeFloat</span>
+    <span class="n">stim_angle</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=-</span><span class="mf">180.0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mf">180.0</span><span class="p">)]</span>
+    <span class="n">stim_freq</span><span class="p">:</span> <span class="n">NonNegativeFloat</span>
+    <span class="n">stim_gain</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">stim_phase</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)]</span>
+    <span class="n">stim_reverse</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">stim_sigma</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">trial_num</span><span class="p">:</span> <span class="n">NonNegativeInt</span>
+    <span class="n">pause_duration</span><span class="p">:</span> <span class="n">NonNegativeFloat</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># The following variables are only used in ActiveChoiceWorld</span>
+    <span class="c1"># We keep them here with fixed default values for sake of compatibility</span>
+    <span class="c1">#</span>
+    <span class="c1"># TODO: Yes, this should probably be done differently.</span>
+    <span class="n">response_side</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">response_time</span><span class="p">:</span> <span class="n">IsNan</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">trial_correct</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="ChoiceWorldSession">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession">[docs]</a>
+<span class="k">class</span> <span class="nc">ChoiceWorldSession</span><span class="p">(</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">BonsaiRecordingMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">BonsaiVisualStimulusMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">BpodMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">Frame2TTLMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">RotaryEncoderMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">SoundMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">ValveMixin</span><span class="p">,</span>
+    <span class="n">iblrig</span><span class="o">.</span><span class="n">base_tasks</span><span class="o">.</span><span class="n">NetworkSession</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># task_params = ChoiceWorldParams()</span>
+    <span class="n">base_parameters_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;base_choice_world_params.yaml&#39;</span><span class="p">)</span>
+    <span class="n">TrialDataModel</span> <span class="o">=</span> <span class="n">ChoiceWorldTrialData</span>
+
+<div class="viewcode-block" id="ChoiceWorldSession.__init__">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">delay_secs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;SESSION_DELAY_START&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">delay_secs</span>
+        <span class="c1"># init behaviour data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movement_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_rotary_encoder</span><span class="o">.</span><span class="n">THRESHOLD_EVENTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">QUIESCENCE_THRESHOLDS</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movement_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_rotary_encoder</span><span class="o">.</span><span class="n">THRESHOLD_EVENTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">QUIESCENCE_THRESHOLDS</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="c1"># init counter variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_trial_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="c1"># init the tables, there are 2 of them: a trials table and a ambient sensor data table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TrialDataModel</span><span class="o">.</span><span class="n">preallocate_dataframe</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ambient_sensor_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;Temperature_C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s1">&#39;AirPressure_mb&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s1">&#39;RelativeHumidity&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.extra_parser">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.extra_parser">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extra_parser</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;:return: argparse.parser()&quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ChoiceWorldSession</span><span class="p">,</span> <span class="n">ChoiceWorldSession</span><span class="p">)</span><span class="o">.</span><span class="n">extra_parser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--delay_secs&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;delay_secs&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;initial delay before starting the first trial (default: 0s)&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--remote&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;remote_rigs&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;specify one of the remote rigs to interact with over the network&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.start_hardware">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.start_hardware">[docs]</a>
+    <span class="k">def</span> <span class="nf">start_hardware</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        In this step we explicitly run the start methods of the various mixins.</span>
+<span class="sd">        The super class start method is overloaded because we need to start the different hardware pieces in order</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_frame2ttl</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_bpod</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_valve</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_sound</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_rotary_encoder</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_bonsai_cameras</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_bonsai_microphone</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_bonsai_visual_stimulus</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">register_softcodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">softcode_dictionary</span><span class="p">())</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the task with the actual state machine.&quot;&quot;&quot;</span>
+        <span class="n">time_last_trial_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">NTRIALS</span><span class="p">):</span>  <span class="c1"># Main loop</span>
+            <span class="c1"># t_overhead = time.time()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_trial</span><span class="p">()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting trial: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># =============================================================================</span>
+            <span class="c1">#     Start state machine definition</span>
+            <span class="c1"># =============================================================================</span>
+            <span class="n">sma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_machine_trial</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Sending state machine to bpod&#39;</span><span class="p">)</span>
+            <span class="c1"># Send state machine description to Bpod device</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="c1"># t_overhead = time.time() - t_overhead</span>
+            <span class="c1"># The ITI_DELAY_SECS defines the grey screen period within the state machine, where the</span>
+            <span class="c1"># Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next</span>
+            <span class="n">dead_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DEAD_TIME&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">ITI_DELAY_SECS</span> <span class="o">-</span> <span class="n">dead_time</span> <span class="o">-</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_last_trial_end</span><span class="p">)</span>
+            <span class="c1"># wait to achieve the desired ITI duration</span>
+            <span class="k">if</span> <span class="n">dt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+            <span class="c1"># Run state machine</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;running state machine&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>  <span class="c1"># Locks until state machine &#39;exit&#39; is reached</span>
+            <span class="n">time_last_trial_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="c1"># handle pause event</span>
+            <span class="n">flag_pause</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">SESSION_FOLDER</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;.pause&#39;</span><span class="p">)</span>
+            <span class="n">flag_stop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">SESSION_FOLDER</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;.stop&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">flag_pause</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">NTRIALS</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pausing session inbetween trials </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">while</span> <span class="n">flag_pause</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">flag_stop</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;pause_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_last_trial_end</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">flag_stop</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Resuming session&#39;</span><span class="p">)</span>
+
+            <span class="c1"># save trial and update log</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trial_completed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">current_trial</span><span class="o">.</span><span class="n">export</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ambient_sensor_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">get_ambient_sensor_reading</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">show_trial_log</span><span class="p">()</span>
+
+            <span class="c1"># handle stop event</span>
+            <span class="k">if</span> <span class="n">flag_stop</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Stopping session after trial </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">flag_stop</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+                <span class="k">break</span>
+
+<div class="viewcode-block" id="ChoiceWorldSession.mock">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.mock">[docs]</a>
+    <span class="k">def</span> <span class="nf">mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_jsonable_fixture</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiate a state machine and Bpod object to simulate a task&#39;s run.</span>
+
+<span class="sd">        This is useful to test or display the state machine flow.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">mock</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">file_jsonable_fixture</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">task_data</span> <span class="o">=</span> <span class="n">jsonable</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_jsonable_fixture</span><span class="p">)</span>
+            <span class="c1"># pop-out the bpod data from the table</span>
+            <span class="n">bpod_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">td</span> <span class="ow">in</span> <span class="n">task_data</span><span class="p">:</span>
+                <span class="n">bpod_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">td</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;behavior_data&#39;</span><span class="p">))</span>
+
+            <span class="k">class</span> <span class="nc">MockTrial</span><span class="p">(</span><span class="n">Trial</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">class</span> <span class="nc">MockTrial</span><span class="p">(</span><span class="n">Trial</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">trials</span> <span class="o">=</span> <span class="p">[</span><span class="n">MockTrial</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
+
+        <span class="n">daction</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;dummy&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sound</span> <span class="o">=</span> <span class="n">Bunch</span><span class="p">({</span><span class="s1">&#39;GO_TONE&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span> <span class="s1">&#39;WHITE_NOISE&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;play_tone&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;play_noise&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;stop_sound&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;rotary_encoder_reset&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;bonsai_hide_stim&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;bonsai_show_stim&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;bonsai_closed_loop&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;bonsai_freeze_stim&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+                <span class="s1">&#39;bonsai_show_center&#39;</span><span class="p">:</span> <span class="n">daction</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.get_graphviz_task">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.get_graphviz_task">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_graphviz_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the state machine&#39;s states diagram in Digraph format.</span>
+
+<span class="sd">        :param output_file:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">graphviz</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_trial</span><span class="p">()</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_state_machine_trial</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">states_indices</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">state_names</span><span class="p">)}</span>
+        <span class="n">states_indices</span><span class="o">.</span><span class="n">update</span><span class="p">({(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">10000</span><span class="p">):</span> <span class="n">k</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">undeclared</span><span class="p">)})</span>
+        <span class="n">states_letters</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">ascii_letters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">state_names</span><span class="p">)}</span>
+        <span class="n">dot</span> <span class="o">=</span> <span class="n">graphviz</span><span class="o">.</span><span class="n">Digraph</span><span class="p">(</span><span class="n">comment</span><span class="o">=</span><span class="s1">&#39;The Great IBL Task&#39;</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">state_names</span><span class="p">)):</span>
+            <span class="n">letter</span> <span class="o">=</span> <span class="n">states_letters</span><span class="p">[</span><span class="n">sma</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">letter</span><span class="p">,</span> <span class="n">sma</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">state_timer_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">out_state</span> <span class="o">=</span> <span class="n">states_indices</span><span class="p">[</span><span class="n">sma</span><span class="o">.</span><span class="n">state_timer_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">states_letters</span><span class="p">[</span><span class="n">out_state</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">sma</span><span class="o">.</span><span class="n">input_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">letter</span><span class="si">}{</span><span class="n">states_letters</span><span class="p">[</span><span class="n">states_indices</span><span class="p">[</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">dot</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dot</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">view</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">graphviz</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ExecutableNotFound</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Graphviz system executable not found, cannot render the graph&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dot</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_instantiate_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ChoiceWorldSession.get_state_machine_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.get_state_machine_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_state_machine_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="c1"># we define the trial number here for subclasses that may need it</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instantiate_state_machine</span><span class="p">(</span><span class="n">trial_number</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># First trial exception start camera</span>
+            <span class="n">session_delay_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SESSION_DELAY_START&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;First trial initializing, will move to next trial only if:&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;1. camera is detected&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;2. </span><span class="si">{</span><span class="n">session_delay_start</span><span class="si">}</span><span class="s1"> sec have elapsed&#39;</span><span class="p">)</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+                <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;trial_start&#39;</span><span class="p">,</span>
+                <span class="n">state_timer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Port1In&#39;</span><span class="p">:</span> <span class="s1">&#39;delay_initiation&#39;</span><span class="p">},</span>
+                <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="n">SOFTCODE</span><span class="o">.</span><span class="n">TRIGGER_CAMERA</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="p">)</span>  <span class="c1"># start camera</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+                <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;delay_initiation&#39;</span><span class="p">,</span>
+                <span class="n">state_timer</span><span class="o">=</span><span class="n">session_delay_start</span><span class="p">,</span>
+                <span class="n">output_actions</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;reset_rotary_encoder&#39;</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+                <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;trial_start&#39;</span><span class="p">,</span>
+                <span class="n">state_timer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># ~100µs hardware irreducible delay</span>
+                <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;reset_rotary_encoder&#39;</span><span class="p">},</span>
+                <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">stop_sound</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="p">)</span>  <span class="c1"># stop all sounds</span>
+
+        <span class="c1"># Reset the rotary encoder by sending the following opcodes via the modules serial interface</span>
+        <span class="c1"># - &#39;Z&#39; (ASCII 90): Set current rotary encoder position to zero</span>
+        <span class="c1"># - &#39;E&#39; (ASCII 69): Enable all position thresholds (that may have been disabled by a threshold-crossing)</span>
+        <span class="c1"># cf. https://sanworks.github.io/Bpod_Wiki/serial-interfaces/rotary-encoder-module-serial-interface/</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;reset_rotary_encoder&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">rotary_encoder_reset</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;quiescent_period&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Quiescent Period. If the wheel is moved past one of the thresholds: Reset the rotary encoder and start over.</span>
+        <span class="c1"># Continue with the stimulation once the quiescent period has passed without triggering movement thresholds.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;quiescent_period&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quiescent_period</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;stim_on&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">movement_left</span><span class="p">:</span> <span class="s1">&#39;reset_rotary_encoder&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">movement_right</span><span class="p">:</span> <span class="s1">&#39;reset_rotary_encoder&#39;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Show the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary</span>
+        <span class="c1"># Encoder Module&#39;s ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,</span>
+        <span class="c1"># when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;stim_on&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_show_stim</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;BNC1High&#39;</span><span class="p">:</span> <span class="s1">&#39;interactive_delay&#39;</span><span class="p">,</span> <span class="s1">&#39;BNC1Low&#39;</span><span class="p">:</span> <span class="s1">&#39;interactive_delay&#39;</span><span class="p">,</span> <span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;interactive_delay&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Defined delay between visual and auditory cue</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;interactive_delay&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">INTERACTIVE_DELAY</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;play_tone&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Play tone. Move to next state if sound is detected. Use the state-timer as a backup to prevent a stall.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;play_tone&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">play_tone</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;reset2_rotary_encoder&#39;</span><span class="p">,</span> <span class="s1">&#39;BNC2High&#39;</span><span class="p">:</span> <span class="s1">&#39;reset2_rotary_encoder&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reset rotary encoder (see above). Move on after brief delay (to avoid a race conditions in the bonsai flow).</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;reset2_rotary_encoder&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">rotary_encoder_reset</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;closed_loop&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Start the closed loop state in which the animal controls the position of the visual stimulus by means of the</span>
+        <span class="c1"># rotary encoder. The three possible outcomes are:</span>
+        <span class="c1"># 1) wheel has NOT been moved past a threshold: continue with no-go condition</span>
+        <span class="c1"># 2) wheel has been moved in WRONG direction: continue with error condition</span>
+        <span class="c1"># 3) wheel has been moved in CORRECT direction: continue with reward condition</span>
+
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;closed_loop&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">RESPONSE_WINDOW</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_closed_loop</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;no_go&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_error</span><span class="p">:</span> <span class="s1">&#39;freeze_error&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_reward</span><span class="p">:</span> <span class="s1">&#39;freeze_reward&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># No-go: hide the visual stimulus and play white noise. Go to exit_state after FEEDBACK_NOGO_DELAY_SECS.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;no_go&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feedback_nogo_delay</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_hide_stim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">play_noise</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit_state&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Error: Freeze the stimulus and play white noise.</span>
+        <span class="c1"># Continue to hide_stim/exit_state once FEEDBACK_ERROR_DELAY_SECS have passed.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;freeze_error&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_freeze_stim</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;error&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;error&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feedback_error_delay</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">play_noise</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;hide_stim&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reward: open the valve for a defined duration (and set BNC1 to high), freeze stimulus in center of screen.</span>
+        <span class="c1"># Continue to hide_stim/exit_state once FEEDBACK_CORRECT_DELAY_SECS have passed.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;freeze_reward&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_show_center</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;reward&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;reward&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_time</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;Valve1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;correct&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;correct&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feedback_correct_delay</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_time</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;hide_stim&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Hide the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary</span>
+        <span class="c1"># Encoder Module&#39;s ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,</span>
+        <span class="c1"># when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;hide_stim&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_hide_stim</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit_state&#39;</span><span class="p">,</span> <span class="s1">&#39;BNC1High&#39;</span><span class="p">:</span> <span class="s1">&#39;exit_state&#39;</span><span class="p">,</span> <span class="s1">&#39;BNC1Low&#39;</span><span class="p">:</span> <span class="s1">&#39;exit_state&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;exit_state&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">ITI_DELAY_SECS</span><span class="p">,</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sma</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.next_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.next_trial">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_reward_amount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">REWARD_AMOUNT_UL</span>
+
+<div class="viewcode-block" id="ChoiceWorldSession.draw_next_trial_info">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.draw_next_trial_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">draw_next_trial_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pleft</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Draw next trial variables.</span>
+
+<span class="sd">        calls :meth:`send_trial_info_to_bonsai`.</span>
+<span class="sd">        This is called by the `next_trial` method before updating the Bpod state machine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_POSITIONS</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Only two positions are supported&#39;</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">misc</span><span class="o">.</span><span class="n">draw_contrast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">CONTRAST_SET</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">CONTRAST_SET_PROBABILITY_TYPE</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_POSITIONS</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="n">pleft</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">pleft</span><span class="p">]))</span>
+        <span class="n">quiescent_period</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">QUIESCENT_PERIOD</span> <span class="o">+</span> <span class="n">misc</span><span class="o">.</span><span class="n">truncated_exponential</span><span class="p">(</span>
+            <span class="n">scale</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_value</span><span class="o">=</span><span class="mf">0.5</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;quiescent_period&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">quiescent_period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;contrast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contrast</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_phase&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_SIGMA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_angle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_ANGLE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_gain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stimulus_gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_freq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_FREQ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_reverse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_REVERSE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;reward_amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_reward_amount</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;stim_probability_left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pleft</span>
+
+        <span class="c1"># use the kwargs dict to override computed values</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;index&#39;</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_trial_info_to_bonsai</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.trial_completed">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.trial_completed">[docs]</a>
+    <span class="k">def</span> <span class="nf">trial_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpod_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># if the reward state has not been triggered, null the reward</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">][</span><span class="s1">&#39;reward&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;reward_amount&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;reward_valve_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_time</span>
+        <span class="c1"># update cumulative reward value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">TOTAL_WATER_DELIVERED</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;reward_amount&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">NTRIALS</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># SAVE TRIAL DATA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_trial_data_to_json</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">)</span>
+        <span class="c1"># this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality</span>
+        <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;DATA_FILE_PATH&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;new_trial.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">SESSION_FOLDER</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_sync_pulses</span><span class="p">(</span><span class="n">bpod_data</span><span class="o">=</span><span class="n">bpod_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.check_sync_pulses">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.check_sync_pulses">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_sync_pulses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpod_data</span><span class="p">):</span>
+        <span class="c1"># todo move this in the post trial when we have a task flow</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;Events timestamps&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">misc</span><span class="o">.</span><span class="n">get_port_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;BNC1&#39;</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;NO FRAME2TTL PULSES RECEIVED ON BPOD&#39;S TTL INPUT 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">misc</span><span class="o">.</span><span class="n">get_port_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;BNC2&#39;</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;NO SOUND SYNC PULSES RECEIVED ON BPOD&#39;S TTL INPUT 2&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">misc</span><span class="o">.</span><span class="n">get_port_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Port1&#39;</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;NO CAMERA SYNC PULSES RECEIVED ON BPOD&#39;S BEHAVIOR PORT 1&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChoiceWorldSession.show_trial_log">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ChoiceWorldSession.html#iblrig.base_choice_world.ChoiceWorldSession.show_trial_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">show_trial_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the details of the current trial.</span>
+
+<span class="sd">        This method retrieves information about the current trial from the</span>
+<span class="sd">        trials table and logs it. It can also incorporate additional information</span>
+<span class="sd">        provided through the `extra_info` parameter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extra_info : dict[str, Any], optional</span>
+<span class="sd">            A dictionary containing additional information to include in the</span>
+<span class="sd">            log.</span>
+
+<span class="sd">        log_level : int, optional</span>
+<span class="sd">            The logging level to use when logging the trial information.</span>
+<span class="sd">            Default is logging.INFO.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        When overloading, make sure to call the super class and pass additional</span>
+<span class="sd">        log items by means of the extra_info parameter. See the implementation</span>
+<span class="sd">        of :py:meth:`~iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log` in</span>
+<span class="sd">        :mod:`~iblrig.base_choice_world.ActiveChoiceWorldSession` for reference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># construct base info dict</span>
+        <span class="n">trial_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">]</span>
+        <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Stim. Position&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+            <span class="s1">&#39;Stim. Contrast&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">contrast</span><span class="p">,</span>
+            <span class="s1">&#39;Stim. Phase&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trial_info</span><span class="o">.</span><span class="n">stim_phase</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Stim. p Left&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">stim_probability_left</span><span class="p">,</span>
+            <span class="s1">&#39;Water delivered&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">TOTAL_WATER_DELIVERED</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> µl&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Time from Start&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_elapsed</span><span class="p">,</span>
+            <span class="s1">&#39;Temperature&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ambient_sensor_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Temperature_C&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> °C&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Air Pressure&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ambient_sensor_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;AirPressure_mb&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> mb&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Rel. Humidity&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ambient_sensor_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;RelativeHumidity&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> %&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># update info dict with extra_info dict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">info_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_info</span><span class="p">)</span>
+
+        <span class="c1"># log info dict</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">log_level</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Outcome of Trial #</span><span class="si">{</span><span class="n">trial_info</span><span class="o">.</span><span class="n">trial_num</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
+        <span class="n">max_key_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">info_dict</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">spaces</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_key_length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="o">*</span> <span class="s1">&#39; &#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">log_level</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;- </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">spaces</span><span class="si">}{</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">iti_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the ITI time that needs to be set in order to achieve the desired ITI,</span>
+<span class="sd">        by subtracting the time it takes to give a reward from the desired ITI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">ITI_CORRECT</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;REWARD_VALVE_TIME&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Those are the properties that are used in the state machine code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reward_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_reward_time</span><span class="p">(</span><span class="n">amount_ul</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;reward_amount&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">quiescent_period</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;quiescent_period&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">feedback_correct_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;FEEDBACK_CORRECT_DELAY_SECS&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">feedback_error_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;FEEDBACK_ERROR_DELAY_SECS&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">feedback_nogo_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;FEEDBACK_NOGO_DELAY_SECS&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">event_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_rotary_encoder</span><span class="o">.</span><span class="n">THRESHOLD_EVENTS</span><span class="p">[(</span><span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_REVERSE</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">event_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_rotary_encoder</span><span class="o">.</span><span class="n">THRESHOLD_EVENTS</span><span class="p">[(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_REVERSE</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="HabituationChoiceWorldTrialData">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.HabituationChoiceWorldTrialData.html#iblrig.base_choice_world.HabituationChoiceWorldTrialData">[docs]</a>
+<span class="k">class</span> <span class="nc">HabituationChoiceWorldTrialData</span><span class="p">(</span><span class="n">ChoiceWorldTrialData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`.&quot;&quot;&quot;</span>
+
+    <span class="n">delay_to_stim_center</span><span class="p">:</span> <span class="n">NonNegativeFloat</span></div>
+
+
+
+<div class="viewcode-block" id="HabituationChoiceWorldSession">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.HabituationChoiceWorldSession.html#iblrig.base_choice_world.HabituationChoiceWorldSession">[docs]</a>
+<span class="k">class</span> <span class="nc">HabituationChoiceWorldSession</span><span class="p">(</span><span class="n">ChoiceWorldSession</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_tasks_habituationChoiceWorld&#39;</span>
+    <span class="n">TrialDataModel</span> <span class="o">=</span> <span class="n">HabituationChoiceWorldTrialData</span>
+
+<div class="viewcode-block" id="HabituationChoiceWorldSession.next_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.HabituationChoiceWorldSession.html#iblrig.base_choice_world.HabituationChoiceWorldSession.next_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HabituationChoiceWorldSession.draw_next_trial_info">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.HabituationChoiceWorldSession.html#iblrig.base_choice_world.HabituationChoiceWorldSession.draw_next_trial_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">draw_next_trial_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># update trial table fields specific to habituation choice world</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;delay_to_stim_center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">DELAY_TO_STIM_CENTER</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HabituationChoiceWorldSession.get_state_machine_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.HabituationChoiceWorldSession.html#iblrig.base_choice_world.HabituationChoiceWorldSession.get_state_machine_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_state_machine_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># First trial exception start camera</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Waiting for camera pulses...&#39;</span><span class="p">)</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+                <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;iti&#39;</span><span class="p">,</span>
+                <span class="n">state_timer</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
+                <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Port1In&#39;</span><span class="p">:</span> <span class="s1">&#39;stim_on&#39;</span><span class="p">},</span>
+                <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_hide_stim</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="n">SOFTCODE</span><span class="o">.</span><span class="n">TRIGGER_CAMERA</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="p">)</span>  <span class="c1"># start camera</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.</span>
+            <span class="c1"># During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;</span>
+            <span class="c1"># the offset of this state is trial start!</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+                <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;iti&#39;</span><span class="p">,</span>
+                <span class="n">state_timer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Stim off for 1 sec</span>
+                <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;stim_on&#39;</span><span class="p">},</span>
+                <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_hide_stim</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+            <span class="p">)</span>
+        <span class="c1"># This stim_on state is considered the actual trial start</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;stim_on&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;delay_to_stim_center&#39;</span><span class="p">],</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;stim_center&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_show_stim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">play_tone</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;stim_center&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;reward&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">bonsai_show_center</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;reward&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_time</span><span class="p">,</span>  <span class="c1"># the length of time to leave reward valve open, i.e. reward size</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;post_reward&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;Valve1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;BNC1&#39;</span><span class="p">,</span> <span class="mi">255</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="c1"># This state defines the period after reward where Bpod TTL is LOW.</span>
+        <span class="c1"># NB: The stimulus is on throughout this period. The stim off trigger occurs upon exit.</span>
+        <span class="c1"># The stimulus thus remains in the screen centre for 0.5 + ITI_DELAY_SECS seconds.</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;post_reward&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">ITI_DELAY_SECS</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_time</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sma</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ActiveChoiceWorldTrialData">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ActiveChoiceWorldTrialData.html#iblrig.base_choice_world.ActiveChoiceWorldTrialData">[docs]</a>
+<span class="k">class</span> <span class="nc">ActiveChoiceWorldTrialData</span><span class="p">(</span><span class="n">ChoiceWorldTrialData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`.&quot;&quot;&quot;</span>
+
+    <span class="n">response_side</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Interval</span><span class="p">(</span><span class="n">ge</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">response_time</span><span class="p">:</span> <span class="n">NonNegativeFloat</span>
+    <span class="n">trial_correct</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+
+<div class="viewcode-block" id="ActiveChoiceWorldSession">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession">[docs]</a>
+<span class="k">class</span> <span class="nc">ActiveChoiceWorldSession</span><span class="p">(</span><span class="n">ChoiceWorldSession</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions</span>
+<span class="sd">    by turning the wheel. It has the following characteristics</span>
+
+<span class="sd">    -   it is trial based</span>
+<span class="sd">    -   it is decision based</span>
+<span class="sd">    -   left and right simulus are equiprobable: there is no biased block</span>
+<span class="sd">    -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response</span>
+<span class="sd">    -   it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or</span>
+<span class="sd">        habituation protocols.</span>
+
+<span class="sd">    The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TrialDataModel</span> <span class="o">=</span> <span class="n">ActiveChoiceWorldTrialData</span>
+
+<div class="viewcode-block" id="ActiveChoiceWorldSession.__init__">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;stim_probability_left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># starts online plotting</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span><span class="p">:</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;view_session&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;DATA_FILE_PATH&#39;</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SETTINGS_FILE_PATH&#39;</span><span class="p">])],</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+                <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_run</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ActiveChoiceWorldSession.show_trial_log">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">show_trial_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+        <span class="c1"># construct info dict</span>
+        <span class="n">trial_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">]</span>
+        <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Response Time&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">trial_info</span><span class="o">.</span><span class="n">response_time</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> s&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Trial Correct&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">trial_correct</span><span class="p">,</span>
+            <span class="s1">&#39;N Trials Correct&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">NTRIALS_CORRECT</span><span class="p">,</span>
+            <span class="s1">&#39;N Trials Error&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">NTRIALS_CORRECT</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># update info dict with extra_info dict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">info_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_info</span><span class="p">)</span>
+
+        <span class="c1"># call parent method</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">show_trial_log</span><span class="p">(</span><span class="n">extra_info</span><span class="o">=</span><span class="n">info_dict</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ActiveChoiceWorldSession.trial_completed">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession.trial_completed">[docs]</a>
+    <span class="k">def</span> <span class="nf">trial_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpod_data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The purpose of this method is to</span>
+
+<span class="sd">        - update the trials table with information about the behaviour coming from the bpod</span>
+<span class="sd">          Constraints on the state machine data:</span>
+<span class="sd">        - mandatory states: [&#39;correct&#39;, &#39;error&#39;, &#39;no_go&#39;, &#39;reward&#39;]</span>
+<span class="sd">        - optional states : [&#39;omit_correct&#39;, &#39;omit_error&#39;, &#39;omit_no_go&#39;]</span>
+
+<span class="sd">        :param bpod_data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the response time from the behaviour data</span>
+        <span class="n">response_time</span> <span class="o">=</span> <span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">][</span><span class="s1">&#39;closed_loop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">][</span><span class="s1">&#39;stim_on&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;response_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_time</span>
+        <span class="c1"># get the trial outcome</span>
+        <span class="n">state_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;correct&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;no_go&#39;</span><span class="p">,</span> <span class="s1">&#39;omit_correct&#39;</span><span class="p">,</span> <span class="s1">&#39;omit_error&#39;</span><span class="p">,</span> <span class="s1">&#39;omit_no_go&#39;</span><span class="p">]</span>
+        <span class="n">raw_outcome</span> <span class="o">=</span> <span class="p">{</span><span class="n">sn</span><span class="p">:</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">state_names</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">outcome</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">raw_outcome</span> <span class="k">if</span> <span class="n">raw_outcome</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="c1"># Update response buffer -1 for left, 0 for nogo, and 1 for rightward</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;trial_correct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;correct&#39;</span> <span class="ow">in</span> <span class="n">outcome</span>
+            <span class="k">if</span> <span class="s1">&#39;correct&#39;</span> <span class="ow">in</span> <span class="n">outcome</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">NTRIALS_CORRECT</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;response_side&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">outcome</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;response_side&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;no_go&#39;</span> <span class="ow">in</span> <span class="n">outcome</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;response_side&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">trial_completed</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">)</span>
+            <span class="c1"># here we throw potential errors after having written the trial to disk</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">raw_outcome</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">assert</span> <span class="n">position</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;the position value should be either 35 or -35&#39;</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No outcome detected for trial </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;raw_outcome: </span><span class="si">{</span><span class="n">raw_outcome</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;State names: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Assertion Error in trial </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;raw_outcome: </span><span class="si">{</span><span class="n">raw_outcome</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;State names: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BiasedChoiceWorldTrialData">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldTrialData.html#iblrig.base_choice_world.BiasedChoiceWorldTrialData">[docs]</a>
+<span class="k">class</span> <span class="nc">BiasedChoiceWorldTrialData</span><span class="p">(</span><span class="n">ActiveChoiceWorldTrialData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ChoiceWorldTrialData`.&quot;&quot;&quot;</span>
+
+    <span class="n">block_num</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">block_trial_num</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="BiasedChoiceWorldSession">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldSession.html#iblrig.base_choice_world.BiasedChoiceWorldSession">[docs]</a>
+<span class="k">class</span> <span class="nc">BiasedChoiceWorldSession</span><span class="p">(</span><span class="n">ActiveChoiceWorldSession</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Biased choice world session is the instantiation of ActiveChoiceWorld where the notion of biased</span>
+<span class="sd">    blocks is introduced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_parameters_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;base_biased_choice_world_params.yaml&#39;</span><span class="p">)</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_tasks_biasedChoiceWorld&#39;</span>
+    <span class="n">TrialDataModel</span> <span class="o">=</span> <span class="n">BiasedChoiceWorldTrialData</span>
+
+<div class="viewcode-block" id="BiasedChoiceWorldSession.__init__">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldSession.html#iblrig.base_choice_world.BiasedChoiceWorldSession.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s1">&#39;probability_left&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NBLOCKS_INIT</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="s1">&#39;block_length&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NBLOCKS_INIT</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BiasedChoiceWorldSession.new_block">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldSession.html#iblrig.base_choice_world.BiasedChoiceWorldSession.new_block">[docs]</a>
+    <span class="k">def</span> <span class="nf">new_block</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if block_init_5050</span>
+<span class="sd">            First block has 50/50 probability of leftward stim</span>
+<span class="sd">            is 90 trials long</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># the block number is zero based</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_trial_num</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># handles the block length logic</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_INIT_5050</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">block_len</span> <span class="o">=</span> <span class="mi">90</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">block_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">misc</span><span class="o">.</span><span class="n">truncated_exponential</span><span class="p">(</span>
+                    <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_LEN_FACTOR</span><span class="p">,</span>
+                    <span class="n">min_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_LEN_MIN</span><span class="p">,</span>
+                    <span class="n">max_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_LEN_MAX</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pleft</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_INIT_5050</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_PROBABILITY_SET</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_INIT_5050</span><span class="p">:</span>
+            <span class="n">pleft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">BLOCK_PROBABILITY_SET</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># this switches the probability of leftward stim for the next block</span>
+            <span class="n">pleft</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;probability_left&#39;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span> <span class="s1">&#39;block_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span> <span class="s1">&#39;probability_left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pleft</span></div>
+
+
+<div class="viewcode-block" id="BiasedChoiceWorldSession.next_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldSession.html#iblrig.base_choice_world.BiasedChoiceWorldSession.next_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># if necessary update the block number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_trial_num</span> <span class="o">&gt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span> <span class="s1">&#39;block_length&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_block</span><span class="p">()</span>
+        <span class="c1"># get and store probability left</span>
+        <span class="n">pleft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span> <span class="s1">&#39;probability_left&#39;</span><span class="p">]</span>
+        <span class="c1"># update trial table fields specific to biased choice world task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;block_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;block_trial_num&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_trial_num</span>
+        <span class="c1"># save and send trial info to bonsai</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">(</span><span class="n">pleft</span><span class="o">=</span><span class="n">pleft</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BiasedChoiceWorldSession.show_trial_log">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.BiasedChoiceWorldSession.html#iblrig.base_choice_world.BiasedChoiceWorldSession.show_trial_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">show_trial_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+        <span class="c1"># construct info dict</span>
+        <span class="n">trial_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">]</span>
+        <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Block Number&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span>
+            <span class="s1">&#39;Block Length&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">block_num</span><span class="p">,</span> <span class="s1">&#39;block_length&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;N Trials in Block&#39;</span><span class="p">:</span> <span class="n">trial_info</span><span class="o">.</span><span class="n">block_trial_num</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># update info dict with extra_info dict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">info_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_info</span><span class="p">)</span>
+
+        <span class="c1"># call parent method</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">show_trial_log</span><span class="p">(</span><span class="n">extra_info</span><span class="o">=</span><span class="n">info_dict</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldTrialData">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldTrialData.html#iblrig.base_choice_world.TrainingChoiceWorldTrialData">[docs]</a>
+<span class="k">class</span> <span class="nc">TrainingChoiceWorldTrialData</span><span class="p">(</span><span class="n">ActiveChoiceWorldTrialData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pydantic Model for Trial Data, extended from :class:`~.iblrig.base_choice_world.ActiveChoiceWorldTrialData`.&quot;&quot;&quot;</span>
+
+    <span class="n">training_phase</span><span class="p">:</span> <span class="n">NonNegativeInt</span>
+    <span class="n">debias_trial</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">signed_contrast</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession">[docs]</a>
+<span class="k">class</span> <span class="nc">TrainingChoiceWorldSession</span><span class="p">(</span><span class="n">ActiveChoiceWorldSession</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The TrainingChoiceWorldSession corresponds to the first training protocol of the choice world task.</span>
+<span class="sd">    This protocol has a complicated adaptation of the number of contrasts (embodied by the training_phase</span>
+<span class="sd">    property) and the reward amount, embodied by the adaptive_reward property.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_tasks_trainingChoiceWorld&#39;</span>
+    <span class="n">TrialDataModel</span> <span class="o">=</span> <span class="n">TrainingChoiceWorldTrialData</span>
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.__init__">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_phase</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">adaptive_reward</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_gain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">inferred_training_phase</span><span class="p">,</span> <span class="n">inferred_adaptive_reward</span><span class="p">,</span> <span class="n">inferred_adaptive_gain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_subject_training_info</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">training_phase</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got training phase: </span><span class="si">{</span><span class="n">inferred_training_phase</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">=</span> <span class="n">inferred_training_phase</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Training phase manually set to: </span><span class="si">{</span><span class="n">training_phase</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">=</span> <span class="n">training_phase</span>
+        <span class="k">if</span> <span class="n">adaptive_reward</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got Adaptive reward </span><span class="si">{</span><span class="n">inferred_adaptive_reward</span><span class="si">}</span><span class="s1"> uL&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;ADAPTIVE_REWARD_AMOUNT_UL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inferred_adaptive_reward</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adaptive reward manually set to </span><span class="si">{</span><span class="n">adaptive_reward</span><span class="si">}</span><span class="s1"> uL&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;ADAPTIVE_REWARD_AMOUNT_UL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adaptive_reward</span>
+        <span class="k">if</span> <span class="n">adaptive_gain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got Adaptive gain </span><span class="si">{</span><span class="n">inferred_adaptive_gain</span><span class="si">}</span><span class="s1"> degrees/mm&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;ADAPTIVE_GAIN_VALUE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inferred_adaptive_gain</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adaptive gain manually set to </span><span class="si">{</span><span class="n">adaptive_gain</span><span class="si">}</span><span class="s1"> degrees/mm&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;ADAPTIVE_GAIN_VALUE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adaptive_gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;training_phase_trial_counts&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="s1">&#39;last_10_responses_sides&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)}</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">default_reward_amount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADAPTIVE_REWARD_AMOUNT_UL&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">REWARD_AMOUNT_UL</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stimulus_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADAPTIVE_GAIN_VALUE&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.get_subject_training_info">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.get_subject_training_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_subject_training_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the previous session&#39;s according to this session parameters and deduce the</span>
+<span class="sd">        training level, adaptive reward amount and adaptive gain value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        training_info: dict</span>
+<span class="sd">            Dictionary with keys: training_phase, adaptive_reward, adaptive_gain</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">training_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">choiceworld</span><span class="o">.</span><span class="n">get_subject_training_info</span><span class="p">(</span>
+            <span class="n">subject_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="o">.</span><span class="n">SUBJECT_NAME</span><span class="p">,</span>
+            <span class="n">task_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">protocol_name</span><span class="p">,</span>
+            <span class="n">stim_gain</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">AG_INIT_VALUE</span><span class="p">,</span>
+            <span class="n">stim_gain_on_error</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_GAIN</span><span class="p">,</span>
+            <span class="n">default_reward</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">REWARD_AMOUNT_UL</span><span class="p">,</span>
+            <span class="n">local_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="p">[</span><span class="s1">&#39;iblrig_local_data_path&#39;</span><span class="p">],</span>
+            <span class="n">remote_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="p">[</span><span class="s1">&#39;iblrig_remote_data_path&#39;</span><span class="p">],</span>
+            <span class="n">lab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="p">[</span><span class="s1">&#39;ALYX_LAB&#39;</span><span class="p">],</span>
+            <span class="n">iblrig_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;training_phase&#39;</span><span class="p">],</span> <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_reward&#39;</span><span class="p">],</span> <span class="n">training_info</span><span class="p">[</span><span class="s1">&#39;adaptive_gain&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.compute_performance">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.compute_performance">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Aggregate the trials table to compute the performance of the mouse on each contrast.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;signed_contrast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">contrast</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">position</span>
+        <span class="n">performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;signed_contrast&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">last_50_perf</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">NamedAgg</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s1">&#39;trial_correct&#39;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:])</span> <span class="o">/</span> <span class="mi">50</span><span class="p">),</span>
+            <span class="n">ntrials</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">NamedAgg</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s1">&#39;trial_correct&#39;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">performance</span></div>
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.check_training_phase">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.check_training_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_training_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the mouse is ready to move to the next training phase.&quot;&quot;&quot;</span>
+        <span class="n">move_on</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># each of the -1, -.5, .5, 1 contrast should be above 80% perf to switch</span>
+            <span class="n">performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_performance</span><span class="p">()</span>
+            <span class="n">passing</span> <span class="o">=</span> <span class="n">performance</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">performance</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">][</span><span class="s1">&#39;last_50_perf&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">passing</span> <span class="o">&gt;</span> <span class="mf">0.8</span><span class="p">)</span> <span class="ow">and</span> <span class="n">passing</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">move_on</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># each of the -.25, .25 should be above 80% perf to switch</span>
+            <span class="n">performance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_performance</span><span class="p">()</span>
+            <span class="n">passing</span> <span class="o">=</span> <span class="n">performance</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">performance</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.25</span><span class="p">][</span><span class="s1">&#39;last_50_perf&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">passing</span> <span class="o">&gt;</span> <span class="mf">0.8</span><span class="p">)</span> <span class="ow">and</span> <span class="n">passing</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">move_on</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="mi">5</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># for the next phases, always switch after 200 trials</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s1">&#39;training_phase_trial_counts&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">move_on</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">move_on</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Moving on to training phase </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.next_trial">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.next_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># update counters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s1">&#39;training_phase_trial_counts&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># check if the subject graduates to a new training phase</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_training_phase</span><span class="p">()</span>
+        <span class="c1"># draw the next trial</span>
+        <span class="n">signed_contrast</span> <span class="o">=</span> <span class="n">choiceworld</span><span class="o">.</span><span class="n">draw_training_contrast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_POSITIONS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">signed_contrast</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">signed_contrast</span><span class="p">)</span>
+        <span class="c1"># debiasing: if the previous trial was incorrect and easy repeat the trial</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">DEBIAS</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">last_contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;contrast&#39;</span><span class="p">]</span>
+            <span class="n">do_debias_trial</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;trial_correct&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">last_contrast</span> <span class="o">&gt;=</span> <span class="mf">0.5</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;debias_trial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">do_debias_trial</span>
+            <span class="k">if</span> <span class="n">do_debias_trial</span><span class="p">:</span>
+                <span class="n">iresponse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span>
+                    <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;response_side&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;response_side&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
+                <span class="p">)</span>  <span class="c1"># trials that had a response</span>
+                <span class="c1"># takes the average of right responses over last 10 response trials</span>
+                <span class="n">average_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;response_side&#39;</span><span class="p">][</span><span class="n">iresponse</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">iresponse</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="p">:]]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># the next probability of next stimulus being on the left is a draw from a normal distribution</span>
+                <span class="c1"># centered on average right with sigma 0.5. If it is less than 0.5 the next stimulus will be on the left</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">STIM_POSITIONS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">average_right</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">)]</span>
+                <span class="c1"># contrast is the last contrast</span>
+                <span class="n">contrast</span> <span class="o">=</span> <span class="n">last_contrast</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;debias_trial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># save and send trial info to bonsai</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">(</span><span class="n">pleft</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">PROBABILITY_LEFT</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="n">contrast</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;training_phase&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span></div>
+
+
+<div class="viewcode-block" id="TrainingChoiceWorldSession.show_trial_log">
+<a class="viewcode-back" href="../../api/iblrig.base_choice_world.TrainingChoiceWorldSession.html#iblrig.base_choice_world.TrainingChoiceWorldSession.show_trial_log">[docs]</a>
+    <span class="k">def</span> <span class="nf">show_trial_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+        <span class="c1"># construct info dict</span>
+        <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;Contrast Set&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">choiceworld</span><span class="o">.</span><span class="n">contrasts_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="p">))),</span>
+            <span class="s1">&#39;Training Phase&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_phase</span><span class="p">,</span>
+            <span class="s1">&#39;Debias Trial&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span><span class="p">,</span> <span class="s1">&#39;debias_trial&#39;</span><span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="c1"># update info dict with extra_info dict</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra_info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">info_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_info</span><span class="p">)</span>
+
+        <span class="c1"># call parent method</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">show_trial_log</span><span class="p">(</span><span class="n">extra_info</span><span class="o">=</span><span class="n">info_dict</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copy commands &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Copy commands</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage_copy.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="copy-commands">
+<h1>Copy commands<a class="headerlink" href="#copy-commands" title="Link to this heading"></a></h1>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>To initiate the data transfer from the local server to the remote
+server, open a terminal and type.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">behavior</span>
+</pre></div>
+</div>
+<p>The transfer local and remote directories are set in the
+<code class="docutils literal notranslate"><span class="pre">iblrig/settings/iblrig_settings.py</span></code> file.</p>
+<p>To copy data at another acquisition PC, such as video and ephys, use the relevant tag, e.g.</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-tag</span> <span class="n">video</span>
+</pre></div>
+</div>
+<p>NB: By default the local data that was copied over 2 weeks ago will be automatically removed. To
+avoid this set the cleanup-weeks argument to -1:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="n">behavior</span> <span class="p">-</span><span class="n">-cleanup-weeks</span> <span class="p">-</span><span class="n">1</span>
+</pre></div>
+</div>
+<p>See the ‘Clean-up local data’ section on how to remove data without calling the copy script.</p>
+<p>To view the copy status of your local sessions without actually copying, use the ‘dry’ argument:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="n">behavior</span> <span class="p">-</span><span class="n">-dry</span>
+</pre></div>
+</div>
+<p>For more information on the tranfer_data arguments, use the help flag:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">transfer_data</span> <span class="p">-</span><span class="n">-help</span>
+</pre></div>
+</div>
+</section>
+<section id="clean-up-local-data">
+<h2>Clean-up local data<a class="headerlink" href="#clean-up-local-data" title="Link to this heading"></a></h2>
+<p>To remove sessions fully copied to the server and older than 2 weeks,
+open a terminal and type:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">remove-old</span><span class="n">-sessions</span>
+</pre></div>
+</div>
+<p>Note: the server needs to be up and running or the sessions won’t be
+verified as copied.</p>
+</section>
+<section id="behind-the-copy-scripts">
+<h2>Behind the Copy Scripts<a class="headerlink" href="#behind-the-copy-scripts" title="Link to this heading"></a></h2>
+<section id="workflow">
+<h3>Workflow<a class="headerlink" href="#workflow" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Initial Stub Creation:</strong> At the start of acquisition, an incomplete
+experiment description file - a <em>‘stub’</em> - is saved to the session
+on, both, the local PC and the lab server in a subfolder called
+<code class="docutils literal notranslate"><span class="pre">_devices</span></code>. The filename of the stub includes the PC’s identifier,
+allowing the copy script to identify its source.</p></li>
+<li><p><strong>Executing the Copy Script:</strong> The copy script is executed on each
+acquisition PC independently and in no particular order.</p></li>
+<li><p><strong>Navigating Local Session Data:</strong> The script systematically
+navigates through local session folders (or optionally a separate
+<code class="docutils literal notranslate"><span class="pre">transfers</span></code> folder) that contain <code class="docutils literal notranslate"><span class="pre">experiment.description</span></code> stubs.</p></li>
+<li><p><strong>Skipping Transferred Sessions:</strong> The script ignores session folders
+containing a file named <code class="docutils literal notranslate"><span class="pre">transferred.flag</span></code> (see 7).</p></li>
+<li><p><strong>Copying Collections:</strong> For each session, the script reads the
+respective stub and uses <code class="docutils literal notranslate"><span class="pre">rsync</span></code> to copy each <code class="docutils literal notranslate"><span class="pre">collection</span></code>.
+Subfolders not specified under a <code class="docutils literal notranslate"><span class="pre">collection</span></code> key are omitted from
+copying.</p></li>
+<li><p><strong>Removing Remote Stubs:</strong> Upon successful copying, the remote stub
+file is merged with the remote <code class="docutils literal notranslate"><span class="pre">experiment.description</span></code> file (or
+copied over if one doesn’t exist already). The remote stub file is
+then deleted.</p></li>
+<li><p><strong>Confirming Transfer Locally:</strong> A <code class="docutils literal notranslate"><span class="pre">transferred.flag</span></code> file is
+created in the local session folder to confirm the transfer’s
+success.</p></li>
+<li><p><strong>Completion and Cleanup:</strong> Once no more remote stub files exist
+for a given session, the empty <code class="docutils literal notranslate"><span class="pre">_devices</span></code> subfolder is removed.
+Additionally, a ‘raw_session.flag’ file is created in the remote session folder,
+indicating the successful transfer of all files.</p></li>
+</ol>
+</section>
+<section id="example-of-workflow">
+<h3>Example of workflow<a class="headerlink" href="#example-of-workflow" title="Link to this heading"></a></h3>
+<p>Example of three sessions each in a different copy state:</p>
+<ul>
+<li><p>The State on the Remote Lab Server</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>lab server/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   └── _devices/
+        │       ├── 2020-01-01_1_subject@taskPC.yaml
+        │       └── 2020-01-01_1_subject@ephysPC.yaml
+        ├── 002/
+        │   ├── _ibl_experiment.description.yaml
+        │   ├── raw_task_data_00/
+        │   └── _devices/
+        │       └── 2020-01-01_1_subject@ephysPC.yaml
+        └── 003/
+            ├── raw_task_data_00/
+            ├── raw_ephys_data/
+            ├── _ibl_experiment.description.yaml
+            └── raw_session.flag
+</pre></div>
+</div>
+</li>
+<li><p>The State on the Local Task Acquisition PC</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>acquisition computer (taskPC)/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   ├── raw_task_data_00/
+        │   └── _ibl_experiment.description_taskPC.yaml
+        ├── 002/
+        │   ├── raw_task_data_00/
+        │   ├── _ibl_experiment.description_taskPC.yaml
+        │   └── transferred.flag
+        └── 003/
+            ├── raw_task_data_00/
+            ├── folder_not_in_desc_file/
+            ├── _ibl_experiment.description_taskPC.yaml
+            └── transferred.flag
+</pre></div>
+</div>
+</li>
+<li><dl>
+<dt>The State on the Local Ephys Acquisition PC</dt><dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>acquisition computer (ephysPC)/
+└── subject/
+    └── 2020-01-01/
+        ├── 001/
+        │   ├── raw_ephys_data/
+        │   └── _ibl_experiment.description_ephysPC.yaml
+        ├── 002/
+        │   ├── raw_ephys_data/
+        │   ├── _ibl_experiment.description_ephysPC.yaml
+        └── 003/
+            ├── raw_ephys_data/
+            ├── folder_not_in_desc_file/
+            ├── _ibl_experiment.description_ephysPC.yaml
+            └── transferred.flag
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+<p>With the lab server and acquisition pcs in the states above, the
+sessions are in the following states</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/001</span></code> no data have been copied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/002</span></code> data from <em>taskPC</em> have been copied, data from <em>ephysPC</em> remains to be copied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subject/2020-01-01/003</span></code> data copied from all acquisition PCs.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

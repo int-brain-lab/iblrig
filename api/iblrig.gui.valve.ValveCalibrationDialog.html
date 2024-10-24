@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.gui.valve.ValveCalibrationDialog &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="iblrig.gui.wizard" href="iblrig.gui.wizard.html" />
+    <link rel="prev" title="iblrig.gui.valve.CalibrationPlot" href="iblrig.gui.valve.CalibrationPlot.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="iblrig.html">iblrig</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="iblrig.base_choice_world.html">iblrig.base_choice_world</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.base_tasks.html">iblrig.base_tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.choiceworld.html">iblrig.choiceworld</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.commands.html">iblrig.commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.constants.html">iblrig.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.ephys.html">iblrig.ephys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.frame2ttl.html">iblrig.frame2ttl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.graphic.html">iblrig.graphic</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="iblrig.gui.html">iblrig.gui</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.frame2ttl.html">iblrig.gui.frame2ttl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.resources_rc.html">iblrig.gui.resources_rc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.splash.html">iblrig.gui.splash</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.tab_about.html">iblrig.gui.tab_about</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.tab_data.html">iblrig.gui.tab_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.tab_docs.html">iblrig.gui.tab_docs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.tab_log.html">iblrig.gui.tab_log</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.tools.html">iblrig.gui.tools</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_frame2ttl.html">iblrig.gui.ui_frame2ttl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_login.html">iblrig.gui.ui_login</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_splash.html">iblrig.gui.ui_splash</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_tab_about.html">iblrig.gui.ui_tab_about</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_tab_data.html">iblrig.gui.ui_tab_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_tab_docs.html">iblrig.gui.ui_tab_docs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_tab_log.html">iblrig.gui.ui_tab_log</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_tab_session.html">iblrig.gui.ui_tab_session</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_update.html">iblrig.gui.ui_update</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_validation.html">iblrig.gui.ui_validation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_valve.html">iblrig.gui.ui_valve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.ui_wizard.html">iblrig.gui.ui_wizard</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.validation.html">iblrig.gui.validation</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="iblrig.gui.valve.html">iblrig.gui.valve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.gui.wizard.html">iblrig.gui.wizard</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hardware.html">iblrig.hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hardware_validation.html">iblrig.hardware_validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hifi.html">iblrig.hifi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.misc.html">iblrig.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.net.html">iblrig.net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.online_plots.html">iblrig.online_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.path_helper.html">iblrig.path_helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.pydantic_definitions.html">iblrig.pydantic_definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.raw_data_loaders.html">iblrig.raw_data_loaders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.rig_component.html">iblrig.rig_component</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.scale.html">iblrig.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.serial_singleton.html">iblrig.serial_singleton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.session_creator.html">iblrig.session_creator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.sound.html">iblrig.sound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.tools.html">iblrig.tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.transfer_experiments.html">iblrig.transfer_experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.upgrade_iblrig.html">iblrig.upgrade_iblrig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.valve.html">iblrig.valve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.version_management.html">iblrig.version_management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="iblrig_tasks.html">iblrig_tasks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.html">iblrig</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.gui.html">iblrig.gui</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.gui.valve.html">iblrig.gui.valve</a></li>
+      <li class="breadcrumb-item active">iblrig.gui.valve.ValveCalibrationDialog</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/iblrig.gui.valve.ValveCalibrationDialog.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="iblrig-gui-valve-valvecalibrationdialog">
+<h1>iblrig.gui.valve.ValveCalibrationDialog<a class="headerlink" href="#iblrig-gui-valve-valvecalibrationdialog" title="Link to this heading"></a></h1>
+<div class="graphviz"><img src="../_images/inheritance-0c14956a68db2d52a2a3627deee027de912d3360.png" alt="Inheritance diagram of ValveCalibrationDialog" usemap="#inheritancef496570574" class="inheritance graphviz" /></div>
+<map id="inheritancef496570574" name="inheritancef496570574">
+<area shape="rect" id="node8" href="#iblrig.gui.valve.ValveCalibrationDialog" target="_top" title="ValveCalibrationDialog" alt="" coords="615,27,763,49"/>
+<area shape="rect" id="node7" href="iblrig.gui.ui_valve.Ui_valve.html#iblrig.gui.ui_valve.Ui_valve" target="_top" title="Ui_valve" alt="" coords="504,5,573,27"/>
+</map><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iblrig.gui.valve.</span></span><span class="sig-name descname"><span class="pre">ValveCalibrationDialog</span></span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.calibrate">
+<span class="sig-name descname"><span class="pre">calibrate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.calibrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.calibrate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.clear_calibration">
+<span class="sig-name descname"><span class="pre">clear_calibration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.clear_calibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.clear_calibration" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.clear_crop_callback">
+<span class="sig-name descname"><span class="pre">clear_crop_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_grams</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.clear_crop_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.clear_crop_callback" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>initial_grams</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
+<li><p><strong>duration_s</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.clear_drop">
+<span class="sig-name descname"><span class="pre">clear_drop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.clear_drop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.clear_drop" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.closeEvent">
+<span class="sig-name descname"><span class="pre">closeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.closeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.closeEvent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.define_and_start_state_machine">
+<span class="sig-name descname"><span class="pre">define_and_start_state_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.define_and_start_state_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.define_and_start_state_machine" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>use_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.display_scale_stable">
+<span class="sig-name descname"><span class="pre">display_scale_stable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.display_scale_stable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.display_scale_stable" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.display_scale_text">
+<span class="sig-name descname"><span class="pre">display_scale_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.display_scale_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.display_scale_text" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.get_next_calibration_time">
+<span class="sig-name descname"><span class="pre">get_next_calibration_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.get_next_calibration_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.get_next_calibration_time" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.get_scale_reading">
+<span class="sig-name descname"><span class="pre">get_scale_reading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.get_scale_reading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.get_scale_reading" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.initialize_scale">
+<span class="sig-name descname"><span class="pre">initialize_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.initialize_scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.initialize_scale" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.pulse_valve">
+<span class="sig-name descname"><span class="pre">pulse_valve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.pulse_valve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.pulse_valve" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.save" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.tare">
+<span class="sig-name descname"><span class="pre">tare</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.tare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.tare" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.toggle_valve">
+<span class="sig-name descname"><span class="pre">toggle_valve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/gui/valve.html#ValveCalibrationDialog.toggle_valve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.toggle_valve" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.calibration_finished">
+<span class="sig-name descname"><span class="pre">calibration_finished</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.calibration_finished" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id1"><span class="problematic" id="id2">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.drop_cleared">
+<span class="sig-name descname"><span class="pre">drop_cleared</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.drop_cleared" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id3"><span class="problematic" id="id4">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="iblrig.scale.Scale.html#iblrig.scale.Scale" title="iblrig.scale.Scale"><span class="pre">Scale</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.scale" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.scale_initialized">
+<span class="sig-name descname"><span class="pre">scale_initialized</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.scale_initialized" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id5"><span class="problematic" id="id6">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.scale_stable_changed">
+<span class="sig-name descname"><span class="pre">scale_stable_changed</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.scale_stable_changed" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id7"><span class="problematic" id="id8">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.scale_text_changed">
+<span class="sig-name descname"><span class="pre">scale_text_changed</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.scale_text_changed" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id9"><span class="problematic" id="id10">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.start_next_calibration">
+<span class="sig-name descname"><span class="pre">start_next_calibration</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.start_next_calibration" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id11"><span class="problematic" id="id12">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.gui.valve.ValveCalibrationDialog.tared">
+<span class="sig-name descname"><span class="pre">tared</span></span><a class="headerlink" href="#iblrig.gui.valve.ValveCalibrationDialog.tared" title="Link to this definition"></a></dt>
+<dd><p>str = …, revision: int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id13"><span class="problematic" id="id14">*</span></a>types, name</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="iblrig.gui.valve.CalibrationPlot.html" class="btn btn-neutral float-left" title="iblrig.gui.valve.CalibrationPlot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="iblrig.gui.wizard.html" class="btn btn-neutral float-right" title="iblrig.gui.wizard" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

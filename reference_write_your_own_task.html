@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guide to develop a custom task &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Guide to develop a custom task</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/reference_write_your_own_task.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="guide-to-develop-a-custom-task">
+<h1>Guide to develop a custom task<a class="headerlink" href="#guide-to-develop-a-custom-task" title="Link to this heading"></a></h1>
+<section id="iblrigv8-design-inheritance">
+<h2>iblrigv8 design: inheritance<a class="headerlink" href="#iblrigv8-design-inheritance" title="Link to this heading"></a></h2>
+<p>During the lifetime of the IBL project, we realized that multiple task variants combine with multiple hardware configurations and acquisition modalities, leading to a combinatorial explosion of possible tasks and related hardware.</p>
+<p>This left us with the only option of developing a flexible task framework through hierarchical inheritance.</p>
+<dl class="simple">
+<dt>All tasks inherit from the <a class="reference internal" href="api/iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" title="iblrig.base_tasks.BaseSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">iblrig.base_tasks.BaseSession</span></code></a> class, which provides the following functionalities:</dt><dd><ul class="simple">
+<li><p>read hardware parameters and rig parameters</p></li>
+<li><p>optionally interfaces with the <a class="reference external" href="https://github.com/cortex-lab/alyx">Alyx experimental database</a></p></li>
+<li><p>creates the folder structure for the session</p></li>
+<li><p>writes the task and rig parameters, log, and <a class="reference internal" href="reference_description_file.html"><span class="doc">acquisition description files</span></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Additionally the <a class="reference internal" href="api/iblrig.base_tasks.html#module-iblrig.base_tasks" title="iblrig.base_tasks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">iblrig.base_tasks</span></code></a> module provides “hardware mixins”. Those are classes that provide hardware-specific functionalities, such as connecting to a Bpod or a rotary encoder. They are composed with the <a class="reference internal" href="api/iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" title="iblrig.base_tasks.BaseSession"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseSession</span></code></a> class to create a task.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This sounds complicated ? It is !
+Forecasting all possible tasks and hardware add-ons and modification is fool’s errand, however we can go through specific examples of task implementations.</p>
+</div>
+</section>
+<section id="guide-to-creating-your-own-task">
+<h2>Guide to Creating Your Own Task<a class="headerlink" href="#guide-to-creating-your-own-task" title="Link to this heading"></a></h2>
+<p>What Happens When Running an IBL Task?</p>
+<ol class="arabic simple">
+<li><p>The task constructor is invoked, executing the following steps:</p>
+<ul class="simple">
+<li><p>Reading of settings: hardware and IBLRIG configurations.</p></li>
+<li><p>Reading of task parameters.</p></li>
+<li><p>Instantiation of hardware mixins.</p></li>
+</ul>
+</li>
+<li><p>The task initiates the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method. Prior to execution, this
+method:</p>
+<ul class="simple">
+<li><p>Launches the hardware modules.</p></li>
+<li><p>Establishes a session folder.</p></li>
+<li><p>Saves the parameters to disk.</p></li>
+</ul>
+</li>
+<li><p>The experiment unfolds: the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method triggers the <code class="docutils literal notranslate"><span class="pre">_run()</span></code>
+method within the child class:</p>
+<ul class="simple">
+<li><p>Typically, this involves a loop that generates a Bpod state
+machine for each trial and runs it.</p></li>
+</ul>
+</li>
+<li><p>Upon SIGINT or when the maximum trial count is reached, the
+experiment concludes. The end of the <code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code> method includes:</p>
+<ul class="simple">
+<li><p>Saving the final parameter file.</p></li>
+<li><p>Recording administered water and session performance on Alyx.</p></li>
+<li><p>Halting the mixins.</p></li>
+<li><p>Initiating local server transfer.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<div class="seealso admonition">
+<p class="admonition-title">Where to write your task</p>
+<p>After the <a class="reference internal" href="installation.html"><span class="doc">installation of iblrig</span></a> the <a class="reference external" href="https://github.com/int-brain-lab/project_extraction">project extraction</a> repository is located at the root of the C: drive.
+New tasks should be added to the <code class="docutils literal notranslate"><span class="pre">C:\project_extraction\iblrig_custom_tasks</span></code> folder to be made visible by the <cite>iblrig</cite> GUI.
+We use a convention that the task name starts with the author identifier, followed by an underscore, followed by the task name, such as <cite>olivier_awesomeChoiceWorld</cite>.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>olivier_awesomeChoiceWorld</dt><dd><ul class="simple">
+<li><p>__init__.py</p></li>
+<li><p>task.py</p></li>
+<li><p>README.md</p></li>
+<li><p>task_parameters.yaml</p></li>
+<li><p>test_olivier_awesomeChoiceWorld.py</p></li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+</div>
+<section id="example-1-variation-on-biased-choice-world">
+<h3>Example 1: variation on biased choice world<a class="headerlink" href="#example-1-variation-on-biased-choice-world" title="Link to this heading"></a></h3>
+<p>We will create a a choice world task that modifies a the quiescence period duration random draw policy.
+In the <cite>task.py</cite> file, the first step is to create a new task class that inherits from the <code class="docutils literal notranslate"><span class="pre">BiasedChoiceWorldSession</span></code> class.</p>
+<p>Then we want to make sure that the task bears a distinctive protocol name, <cite>_iblrig_tasks_imagingChoiceWorld</cite>.
+We also create the command line entry point for the task that will be used by the <cite>iblrig</cite> GUI.</p>
+<p>Also, in this case we can leverage the IBL infrastructure to perform extraction of the trials using existing extractors <cite>extractor_tasks = [‘TrialRegisterRaw’, ‘ChoiceWorldTrials’]</cite></p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">iblrig.misc</span>
+<span class="kn">from</span> <span class="nn">iblrig.base_choice_world</span> <span class="kn">import</span> <span class="n">BiasedChoiceWorldSession</span>
+
+
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">BiasedChoiceWorldSession</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s2">&quot;_iblrig_tasks_imagingChoiceWorld&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extractor_tasks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;TrialRegisterRaw&#39;</span><span class="p">,</span> <span class="s1">&#39;ChoiceWorldTrials&#39;</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">get_task_arguments</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">Session</span><span class="o">.</span><span class="n">extra_parser</span><span class="p">()])</span>
+    <span class="n">sess</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>In this case the parent class <cite>BiasedChoiceWorldSession</cite> has a method that draws the quiescence period. We are going to overload this method to add our own policy. This means the parent method will be fully replaced by our implementation.
+The class now looks like this:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">BiasedChoiceWorldSession</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s2">&quot;_iblrig_tasks_imagingChoiceWorld&quot;</span>
+
+    <span class="k">def</span> <span class="nf">draw_quiescent_period</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For this task we double the quiescence period texp draw and remove the absolute</span>
+<span class="sd">        offset of 200ms. The resulting is a truncated exp distribution between 400ms and 1 sec</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">texp</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="mf">0.35</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">min_</span><span class="o">=</span><span class="mf">0.2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">max_</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Et voilà, in a few lines, we re-used the whole biased choice world implementation to add a custom parameter. This is the most trivial and easy example.
+The full code is available <a class="reference external" href="https://github.com/int-brain-lab/iblrig/tree/iblrigv8/iblrig_tasks/_iblrig_tasks_ImagingChoiceWorld">here</a>.</p>
+</section>
+<section id="example-2-re-writing-a-state-machine-for-a-biased-choice-world-task">
+<h3>Example 2: re-writing a state-machine for a biased choice world task<a class="headerlink" href="#example-2-re-writing-a-state-machine-for-a-biased-choice-world-task" title="Link to this heading"></a></h3>
+<p>In some instances changes in the task logic require to go deeper and re-write the sequence of task events. In bpod parlance, we are talking about rewritng the state-machine code.</p>
+<p>Coming, for now here is an example of such a <a class="reference external" href="https://github.com/int-brain-lab/iblrig/tree/iblrigv8/iblrig_tasks/_iblrig_tasks_neuroModulatorChoiceWorld">task</a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

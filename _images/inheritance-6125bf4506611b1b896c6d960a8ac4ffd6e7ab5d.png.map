@@ -1,0 +1,5 @@
+<map id="inheritancef578891cbd" name="inheritancef578891cbd">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/typing.html#typing.Generic" target="_top" title="Abstract base class for generic types." alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node3" href="https://docs.python.org/3/library/typing.html#typing.Protocol" target="_top" title="Base class for protocol classes." alt="" coords="125,5,200,31"/>
+<area shape="rect" id="node2" href="#iblrig.base_tasks.HasBpod" target="_top" title="HasBpod" alt="" coords="248,5,328,31"/>
+</map>

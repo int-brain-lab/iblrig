@@ -1,0 +1,6 @@
+iblrig.hardware\_validation.ValidateHardwareError
+=================================================
+
+.. currentmodule:: iblrig.hardware_validation
+
+.. autoexception:: ValidateHardwareError

@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.gui.frame2ttl &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.gui.frame2ttl</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.gui.frame2ttl</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="kn">from</span> <span class="nn">PyQt5</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtWidgets</span>
+<span class="kn">from</span> <span class="nn">PyQt5.QtCore</span> <span class="kn">import</span> <span class="n">QTimer</span><span class="p">,</span> <span class="n">pyqtProperty</span><span class="p">,</span> <span class="n">pyqtSignal</span><span class="p">,</span> <span class="n">pyqtSlot</span>
+<span class="kn">from</span> <span class="nn">PyQt5.QtWidgets</span> <span class="kn">import</span> <span class="n">QWidget</span>
+
+<span class="kn">from</span> <span class="nn">iblrig.frame2ttl</span> <span class="kn">import</span> <span class="n">Frame2TTL</span>
+<span class="kn">from</span> <span class="nn">iblrig.gui.ui_frame2ttl</span> <span class="kn">import</span> <span class="n">Ui_frame2ttl</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">save_pydantic_yaml</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettings</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Frame2TTLCalibrationDialog">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationDialog.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationDialog">[docs]</a>
+<span class="k">class</span> <span class="nc">Frame2TTLCalibrationDialog</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDialog</span><span class="p">,</span> <span class="n">Ui_frame2ttl</span><span class="p">):</span>
+    <span class="n">_success</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_waitForScreen</span> <span class="o">=</span> <span class="mi">500</span>
+
+<div class="viewcode-block" id="Frame2TTLCalibrationDialog.__init__">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationDialog.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationDialog.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">hardware_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_DeleteOnClose</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowFlags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">windowFlags</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowContextHelpButtonHint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span> <span class="o">=</span> <span class="n">hardware_settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span> <span class="o">=</span> <span class="n">Frame2TTL</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">COM_F2TTL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">light</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_success</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelPortValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">portstr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelHardwareValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">hw_version</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelFirmwareValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">fw_version</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttonBox</span><span class="o">.</span><span class="n">buttons</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="c1"># start calibration of light value (use timer to allow for drawing of target)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelLightValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;calibrating ...&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">Frame2TTLCalibrationTarget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColorConstants</span><span class="o">.</span><span class="n">White</span><span class="p">)</span>
+        <span class="n">QTimer</span><span class="o">.</span><span class="n">singleShot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_waitForScreen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calibrateLight</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_calibrateLight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="n">condition</span><span class="o">=</span><span class="s1">&#39;light&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelLightValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">unit_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColorConstants</span><span class="o">.</span><span class="n">Black</span><span class="p">)</span>
+
+        <span class="c1"># start calibration of dark value (use timer to allow for drawing of target)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelDarkValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;calibrating ...&#39;</span><span class="p">)</span>
+        <span class="n">QTimer</span><span class="o">.</span><span class="n">singleShot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_waitForScreen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calibrateDark</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_calibrateDark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">calibrate</span><span class="p">(</span><span class="n">condition</span><span class="o">=</span><span class="s1">&#39;dark&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelDarkValue</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">unit_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">set_thresholds</span><span class="p">(</span><span class="n">light</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">light</span><span class="p">,</span> <span class="n">dark</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dark</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">F2TTL_DARK_THRESH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dark</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">F2TTL_LIGHT_THRESH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">light</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">F2TTL_CALIBRATION_DATE</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+            <span class="n">save_pydantic_yaml</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelResult</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Calibration successful.</span><span class="se">\n</span><span class="s1">Settings have been updated.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uiLabelResult</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;Calibration failed.</span><span class="se">\n</span><span class="s1">Verify that sensor is placed correctly.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttonBox</span><span class="o">.</span><span class="n">buttons</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="Frame2TTLCalibrationTarget">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget">[docs]</a>
+<span class="k">class</span> <span class="nc">Frame2TTLCalibrationTarget</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDialog</span><span class="p">):</span>
+    <span class="n">colorChanged</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Frame2TTLCalibrationTarget.__init__">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parent</span><span class="p">:</span> <span class="n">QWidget</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QColorConstants</span><span class="o">.</span><span class="n">White</span><span class="p">,</span>
+        <span class="n">screen_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rel_pos_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.33</span><span class="p">,</span>
+        <span class="n">rel_pos_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.03</span><span class="p">,</span>
+        <span class="n">rel_extent_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">rel_extent_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># try to detect screen_index, get screen dimensions</span>
+        <span class="k">if</span> <span class="n">screen_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">screen</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">screens</span><span class="p">()):</span>
+                <span class="n">screen_index</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="k">if</span> <span class="n">screen</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2048</span> <span class="ow">and</span> <span class="n">screen</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">height</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1536</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># if no break statement occurred, i.e. no iPad screen was found</span>
+                <span class="n">screen_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">screen</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">screens</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Could not identify iPad screen (2048x1536) - defaulting to Screen </span><span class="si">{</span><span class="n">screen_index</span><span class="si">}</span><span class="s1"> &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">screen</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span><span class="o">.</span><span class="n">width</span><span class="p">()</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">screen</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span><span class="o">.</span><span class="n">height</span><span class="p">()</span><span class="si">}</span><span class="s1">).&#39;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># convert relative parameters (used in bonsai scripts) to width and height</span>
+        <span class="k">if</span> <span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">screen_width</span> <span class="o">=</span> <span class="n">screen</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span><span class="o">.</span><span class="n">width</span><span class="p">()</span>
+            <span class="n">screen_height</span> <span class="o">=</span> <span class="n">screen</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span><span class="o">.</span><span class="n">height</span><span class="p">()</span>
+            <span class="n">aspect_ratio</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">screen_width</span> <span class="o">/</span> <span class="n">screen_height</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># the default relative parameters are meant for 4:3 screens and need to be adapted for other aspect ratios</span>
+            <span class="k">if</span> <span class="n">rel_pos_x</span> <span class="o">==</span> <span class="mf">1.33</span> <span class="ow">and</span> <span class="n">aspect_ratio</span> <span class="o">!=</span> <span class="n">rel_pos_x</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Screen </span><span class="si">{</span><span class="n">screen_index</span><span class="si">}</span><span class="s1"> has an unexpected aspect ratio of </span><span class="si">{</span><span class="n">aspect_ratio</span><span class="si">:</span><span class="s1">0.2f</span><span class="si">}</span><span class="s1">:1 - &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;setting rel_pos_x to </span><span class="si">{</span><span class="n">aspect_ratio</span><span class="si">}</span><span class="s1"> instead of </span><span class="si">{</span><span class="n">rel_pos_x</span><span class="si">}</span><span class="s1"> accordingly.&#39;</span>
+                <span class="p">)</span>
+                <span class="n">rel_pos_x</span> <span class="o">=</span> <span class="n">aspect_ratio</span>
+
+            <span class="n">width</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">screen_width</span> <span class="o">-</span> <span class="p">(</span><span class="n">screen_width</span> <span class="o">+</span> <span class="p">(</span><span class="n">rel_pos_x</span> <span class="o">-</span> <span class="n">rel_extent_x</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">screen_height</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">screen_height</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rel_pos_y</span> <span class="o">-</span> <span class="n">rel_extent_y</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">screen_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># display frameless QDialog with given color</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">NonModal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowFlags</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">FramelessWindowHint</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowStaysOnTopHint</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Dialog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFixedSize</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+        <span class="n">screen_geometry</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">desktop</span><span class="p">()</span><span class="o">.</span><span class="n">screenGeometry</span><span class="p">(</span><span class="n">screen_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span>
+            <span class="n">QtCore</span><span class="o">.</span><span class="n">QPoint</span><span class="p">(</span>
+                <span class="n">screen_geometry</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">screen_geometry</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">-</span> <span class="n">width</span><span class="p">,</span> <span class="n">screen_geometry</span><span class="o">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span> <span class="n">screen_geometry</span><span class="o">.</span><span class="n">height</span><span class="p">()</span> <span class="o">-</span> <span class="n">height</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAutoFillBackground</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">focusWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">color</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Frame2TTLCalibrationTarget.setColor">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.setColor">[docs]</a>
+    <span class="nd">@pyqtSlot</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">setColor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">):</span>
+        <span class="n">palette</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="p">()</span>
+        <span class="n">palette</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Window</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">palette</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repaint</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colorChanged</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">processEvents</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Frame2TTLCalibrationTarget.getColor">
+<a class="viewcode-back" href="../../../api/iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.html#iblrig.gui.frame2ttl.Frame2TTLCalibrationTarget.getColor">[docs]</a>
+    <span class="k">def</span> <span class="nf">getColor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="p">()</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Window</span><span class="p">)</span></div>
+
+
+    <span class="n">color</span> <span class="o">=</span> <span class="n">pyqtProperty</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">,</span> <span class="n">fget</span><span class="o">=</span><span class="n">getColor</span><span class="p">,</span> <span class="n">fset</span><span class="o">=</span><span class="n">setColor</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

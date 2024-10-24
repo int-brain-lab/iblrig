@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">iblrig.misc</span>
+<span class="kn">from</span> <span class="nn">iblrig.base_choice_world</span> <span class="kn">import</span> <span class="n">NTRIALS_INIT</span><span class="p">,</span> <span class="n">ActiveChoiceWorldSession</span>
+
+<span class="c1"># read defaults from task_parameters.yaml</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;task_parameters.yaml&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">DEFAULTS</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Session">
+<a class="viewcode-back" href="../../../api/iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.html#iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session">[docs]</a>
+<span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="n">ActiveChoiceWorldSession</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Advanced Choice World is the ChoiceWorld task using fixed 50/50 probability for the side</span>
+<span class="sd">    and contrasts defined in the parameters.</span>
+<span class="sd">    It differs from TrainingChoiceWorld in that it does not implement adaptive contrasts or debiasing,</span>
+<span class="sd">    and it differs from BiasedChoiceWorld in that it does not implement biased blocks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_tasks_advancedChoiceWorld&#39;</span>
+
+<div class="viewcode-block" id="Session.__init__">
+<a class="viewcode-back" href="../../../api/iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.html#iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">contrast_set</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;CONTRAST_SET&#39;</span><span class="p">],</span>
+        <span class="n">probability_set</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;PROBABILITY_SET&#39;</span><span class="p">],</span>
+        <span class="n">reward_set_ul</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;REWARD_SET_UL&#39;</span><span class="p">],</span>
+        <span class="n">position_set</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;POSITION_SET&#39;</span><span class="p">],</span>
+        <span class="n">stim_gain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;STIM_GAIN&#39;</span><span class="p">],</span>
+        <span class="n">stim_reverse</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;STIM_REVERSE&#39;</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">contrast_set</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">probability_set</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">nc</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;probability_set must be a scalar or have the same length as contrast_set&#39;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">reward_set_ul</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">nc</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;reward_set_ul must be a scalar or have the same length as contrast_set&#39;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">position_set</span><span class="p">)</span> <span class="o">==</span> <span class="n">nc</span><span class="p">,</span> <span class="s1">&#39;position_set must have the same length as contrast_set&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;CONTRAST_SET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contrast_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;PROBABILITY_SET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">probability_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;REWARD_SET_UL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward_set_ul</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;POSITION_SET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">position_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;STIM_GAIN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stim_gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;STIM_REVERSE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stim_reverse</span>
+        <span class="c1"># it is easier to work with parameters as a dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;contrast&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">,</span> <span class="s1">&#39;reward_amount_ul&#39;</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;contrast&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contrast_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">probability_set</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">probability_set</span><span class="p">)</span> <span class="o">==</span> <span class="n">nc</span> <span class="k">else</span> <span class="n">probability_set</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;reward_amount_ul&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reward_set_ul</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reward_set_ul</span><span class="p">)</span> <span class="o">==</span> <span class="n">nc</span> <span class="k">else</span> <span class="n">reward_set_ul</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">position_set</span>
+        <span class="c1"># normalize the probabilities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s1">&#39;probability&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># update the PROBABILITY LEFT field to reflect the probabilities in the parameters above</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="p">[</span><span class="s1">&#39;PROBABILITY_LEFT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;probability&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trials_table</span><span class="p">[</span><span class="s1">&#39;debias_trial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">NTRIALS_INIT</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Session.draw_next_trial_info">
+<a class="viewcode-back" href="../../../api/iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.html#iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.draw_next_trial_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">draw_next_trial_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nc</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="p">[</span><span class="s1">&#39;probability&#39;</span><span class="p">])</span>
+        <span class="c1"># now calling the super class with the proper parameters</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">(</span>
+            <span class="n">pleft</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">PROBABILITY_LEFT</span><span class="p">,</span>
+            <span class="n">contrast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ic</span><span class="p">,</span> <span class="s1">&#39;contrast&#39;</span><span class="p">],</span>
+            <span class="n">position</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ic</span><span class="p">,</span> <span class="s1">&#39;position&#39;</span><span class="p">],</span>
+            <span class="n">reward_amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df_contingencies</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ic</span><span class="p">,</span> <span class="s1">&#39;reward_amount_ul&#39;</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reward_amount</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">REWARD_AMOUNTS_UL</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Session.extra_parser">
+<a class="viewcode-back" href="../../../api/iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.html#iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.extra_parser">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">extra_parser</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;:return: argparse.parser()&quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Session</span><span class="p">,</span> <span class="n">Session</span><span class="p">)</span><span class="o">.</span><span class="n">extra_parser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--contrast_set&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--contrast_set&#39;</span><span class="p">],</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;contrast_set&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;CONTRAST_SET&#39;</span><span class="p">],</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Set of contrasts to present&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--probability_set&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--probability_set&#39;</span><span class="p">],</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;probability_set&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;PROBABILITY_SET&#39;</span><span class="p">],</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Probabilities of each contrast in contrast_set. If scalar all contrasts are equiprobable&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--reward_set_ul&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--reward_set_ul&#39;</span><span class="p">],</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;reward_set_ul&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;REWARD_SET_UL&#39;</span><span class="p">],</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Reward for contrast in contrast set.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--position_set&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--position_set&#39;</span><span class="p">],</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;position_set&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;POSITION_SET&#39;</span><span class="p">],</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Position for each contrast in contrast set.&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--stim_gain&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--stim_gain&#39;</span><span class="p">],</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;stim_gain&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s1">&#39;STIM_GAIN&#39;</span><span class="p">],</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Visual angle/wheel displacement &#39;</span> <span class="sa">f</span><span class="s1">&#39;(deg/mm, default: </span><span class="si">{</span><span class="n">DEFAULTS</span><span class="p">[</span><span class="s2">&quot;STIM_GAIN&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--stim_reverse&#39;</span><span class="p">,</span>
+            <span class="n">option_strings</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;--stim_reverse&#39;</span><span class="p">],</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;stim_reverse&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Inverse relationship of wheel to stimulus movement&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="Session.next_trial">
+<a class="viewcode-back" href="../../../api/iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.html#iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task.Session.next_trial">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># update counters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># save and send trial info to bonsai</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw_next_trial_info</span><span class="p">(</span><span class="n">pleft</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_params</span><span class="o">.</span><span class="n">PROBABILITY_LEFT</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">iblrig</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">get_task_arguments</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">Session</span><span class="o">.</span><span class="n">extra_parser</span><span class="p">()])</span>
+    <span class="n">sess</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

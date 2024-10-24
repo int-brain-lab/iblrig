@@ -1,0 +1,13 @@
+iblrig.gui.validation.StatusItem
+================================
+
+.. currentmodule:: iblrig.gui.validation
+
+.. inheritance-diagram:: StatusItem
+   :parts: 1
+
+|
+
+.. autoclass:: StatusItem
+   :members:
+   :undoc-members:

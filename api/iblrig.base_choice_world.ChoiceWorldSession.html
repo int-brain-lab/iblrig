@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.base_choice_world.ChoiceWorldSession &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="iblrig.base_choice_world.ChoiceWorldTrialData" href="iblrig.base_choice_world.ChoiceWorldTrialData.html" />
+    <link rel="prev" title="iblrig.base_choice_world.BiasedChoiceWorldTrialData" href="iblrig.base_choice_world.BiasedChoiceWorldTrialData.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="iblrig.html">iblrig</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="iblrig.base_choice_world.html">iblrig.base_choice_world</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.ActiveChoiceWorldSession.html">iblrig.base_choice_world.ActiveChoiceWorldSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.ActiveChoiceWorldTrialData.html">iblrig.base_choice_world.ActiveChoiceWorldTrialData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.BiasedChoiceWorldSession.html">iblrig.base_choice_world.BiasedChoiceWorldSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.BiasedChoiceWorldTrialData.html">iblrig.base_choice_world.BiasedChoiceWorldTrialData</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">iblrig.base_choice_world.ChoiceWorldSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.ChoiceWorldTrialData.html">iblrig.base_choice_world.ChoiceWorldTrialData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.HabituationChoiceWorldSession.html">iblrig.base_choice_world.HabituationChoiceWorldSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.HabituationChoiceWorldTrialData.html">iblrig.base_choice_world.HabituationChoiceWorldTrialData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.TrainingChoiceWorldSession.html">iblrig.base_choice_world.TrainingChoiceWorldSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iblrig.base_choice_world.TrainingChoiceWorldTrialData.html">iblrig.base_choice_world.TrainingChoiceWorldTrialData</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.base_tasks.html">iblrig.base_tasks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.choiceworld.html">iblrig.choiceworld</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.commands.html">iblrig.commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.constants.html">iblrig.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.ephys.html">iblrig.ephys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.frame2ttl.html">iblrig.frame2ttl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.graphic.html">iblrig.graphic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.gui.html">iblrig.gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hardware.html">iblrig.hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hardware_validation.html">iblrig.hardware_validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.hifi.html">iblrig.hifi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.misc.html">iblrig.misc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.net.html">iblrig.net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.online_plots.html">iblrig.online_plots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.path_helper.html">iblrig.path_helper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.pydantic_definitions.html">iblrig.pydantic_definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.raw_data_loaders.html">iblrig.raw_data_loaders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.rig_component.html">iblrig.rig_component</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.scale.html">iblrig.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.serial_singleton.html">iblrig.serial_singleton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.session_creator.html">iblrig.session_creator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.sound.html">iblrig.sound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.tools.html">iblrig.tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.transfer_experiments.html">iblrig.transfer_experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.upgrade_iblrig.html">iblrig.upgrade_iblrig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.valve.html">iblrig.valve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iblrig.version_management.html">iblrig.version_management</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="iblrig_tasks.html">iblrig_tasks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.html">iblrig</a></li>
+          <li class="breadcrumb-item"><a href="iblrig.base_choice_world.html">iblrig.base_choice_world</a></li>
+      <li class="breadcrumb-item active">iblrig.base_choice_world.ChoiceWorldSession</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/iblrig.base_choice_world.ChoiceWorldSession.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="iblrig-base-choice-world-choiceworldsession">
+<h1>iblrig.base_choice_world.ChoiceWorldSession<a class="headerlink" href="#iblrig-base-choice-world-choiceworldsession" title="Link to this heading"></a></h1>
+<div class="graphviz"><img src="../_images/inheritance-50f7af40a4e2647a669e9190a17ef297f4f9b62a.png" alt="Inheritance diagram of ChoiceWorldSession" usemap="#inheritance03bacae0ce" class="inheritance graphviz" /></div>
+<map id="inheritance03bacae0ce" name="inheritance03bacae0ce">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/abc.html#abc.ABC" target="_top" title="Helper class that provides a standard way to create an ABC using" alt="" coords="121,170,189,195"/>
+<area shape="rect" id="node2" href="iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" target="_top" title="BaseSession" alt="" coords="237,170,336,195"/>
+<area shape="rect" id="node3" href="iblrig.base_tasks.BonsaiRecordingMixin.html#iblrig.base_tasks.BonsaiRecordingMixin" target="_top" title="BonsaiRecordingMixin" alt="" coords="397,193,556,217"/>
+<area shape="rect" id="node4" href="iblrig.base_tasks.BonsaiVisualStimulusMixin.html#iblrig.base_tasks.BonsaiVisualStimulusMixin" target="_top" title="BonsaiVisualStimulusMixin" alt="" coords="381,5,571,29"/>
+<area shape="rect" id="node5" href="iblrig.base_tasks.BpodMixin.html#iblrig.base_tasks.BpodMixin" target="_top" title="BpodMixin" alt="" coords="433,52,519,76"/>
+<area shape="rect" id="node7" href="iblrig.base_tasks.Frame2TTLMixin.html#iblrig.base_tasks.Frame2TTLMixin" target="_top" title="Frame 2 TTL interface for state machine." alt="" coords="414,99,538,123"/>
+<area shape="rect" id="node8" href="iblrig.base_tasks.RotaryEncoderMixin.html#iblrig.base_tasks.RotaryEncoderMixin" target="_top" title="Rotary encoder interface for state machine." alt="" coords="403,240,549,264"/>
+<area shape="rect" id="node9" href="iblrig.base_tasks.SoundMixin.html#iblrig.base_tasks.SoundMixin" target="_top" title="Sound interface methods for state machine." alt="" coords="429,287,523,312"/>
+<area shape="rect" id="node10" href="iblrig.base_tasks.ValveMixin.html#iblrig.base_tasks.ValveMixin" target="_top" title="ValveMixin" alt="" coords="431,334,521,359"/>
+<area shape="rect" id="node11" href="iblrig.base_tasks.NetworkSession.html#iblrig.base_tasks.NetworkSession" target="_top" title="A mixin for communicating to auxiliary acquisition PC over a network." alt="" coords="416,146,537,170"/>
+<area shape="rect" id="node6" href="#iblrig.base_choice_world.ChoiceWorldSession" target="_top" title="ChoiceWorldSession" alt="" coords="617,170,763,195"/>
+<area shape="rect" id="node12" href="https://docs.python.org/3/library/typing.html#typing.Generic" target="_top" title="Abstract base class for generic types." alt="" coords="5,287,74,312"/>
+<area shape="rect" id="node14" href="https://docs.python.org/3/library/typing.html#typing.Protocol" target="_top" title="Base class for protocol classes." alt="" coords="120,287,191,312"/>
+<area shape="rect" id="node13" href="iblrig.base_tasks.HasBpod.html#iblrig.base_tasks.HasBpod" target="_top" title="HasBpod" alt="" coords="248,287,324,312"/>
+</map><div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">iblrig.base_choice_world.</span></span><span class="sig-name descname"><span class="pre">ChoiceWorldSession</span></span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.TrialDataModel">
+<span class="sig-name descname"><span class="pre">TrialDataModel</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.TrialDataModel" title="Link to this definition"></a></dt>
+<dd><p>alias of <a class="reference internal" href="iblrig.base_choice_world.ChoiceWorldTrialData.html#iblrig.base_choice_world.ChoiceWorldTrialData" title="iblrig.base_choice_world.ChoiceWorldTrialData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChoiceWorldTrialData</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.check_sync_pulses">
+<span class="sig-name descname"><span class="pre">check_sync_pulses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bpod_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.check_sync_pulses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.check_sync_pulses" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.draw_next_trial_info">
+<span class="sig-name descname"><span class="pre">draw_next_trial_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pleft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.draw_next_trial_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.draw_next_trial_info" title="Link to this definition"></a></dt>
+<dd><p>Draw next trial variables.</p>
+<p>calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">send_trial_info_to_bonsai()</span></code>.
+This is called by the <cite>next_trial</cite> method before updating the Bpod state machine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.extra_parser">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extra_parser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.extra_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.extra_parser" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>argparse.parser()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.get_graphviz_task">
+<span class="sig-name descname"><span class="pre">get_graphviz_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.get_graphviz_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.get_graphviz_task" title="Link to this definition"></a></dt>
+<dd><p>Get the state machine’s states diagram in Digraph format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_file</strong></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.get_state_machine_trial">
+<span class="sig-name descname"><span class="pre">get_state_machine_trial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.get_state_machine_trial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.get_state_machine_trial" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.mock">
+<span class="sig-name descname"><span class="pre">mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_jsonable_fixture</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.mock" title="Link to this definition"></a></dt>
+<dd><p>Instantiate a state machine and Bpod object to simulate a task’s run.</p>
+<p>This is useful to test or display the state machine flow.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.next_trial">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">next_trial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.next_trial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.next_trial" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.show_trial_log">
+<span class="sig-name descname"><span class="pre">show_trial_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.show_trial_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.show_trial_log" title="Link to this definition"></a></dt>
+<dd><p>Log the details of the current trial.</p>
+<p>This method retrieves information about the current trial from the
+trials table and logs it. It can also incorporate additional information
+provided through the <cite>extra_info</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>extra_info</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Any]</span></code>, <em>optional</em>) – A dictionary containing additional information to include in the
+log.</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – The logging level to use when logging the trial information.
+Default is logging.INFO.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>extra_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>When overloading, make sure to call the super class and pass additional
+log items by means of the extra_info parameter. See the implementation
+of <a class="reference internal" href="iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log" title="iblrig.base_choice_world.ActiveChoiceWorldSession.show_trial_log"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show_trial_log()</span></code></a> in
+<a class="reference internal" href="iblrig.base_choice_world.ActiveChoiceWorldSession.html#iblrig.base_choice_world.ActiveChoiceWorldSession" title="iblrig.base_choice_world.ActiveChoiceWorldSession"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ActiveChoiceWorldSession</span></code></a> for reference.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.start_hardware">
+<span class="sig-name descname"><span class="pre">start_hardware</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.start_hardware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.start_hardware" title="Link to this definition"></a></dt>
+<dd><p>In this step we explicitly run the start methods of the various mixins.
+The super class start method is overloaded because we need to start the different hardware pieces in order</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.trial_completed">
+<span class="sig-name descname"><span class="pre">trial_completed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bpod_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/iblrig/base_choice_world.html#ChoiceWorldSession.trial_completed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.trial_completed" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bpod_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><em>Any</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.base_parameters_file">
+<span class="sig-name descname"><span class="pre">base_parameters_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">PosixPath('/home/runner/work/iblrig/iblrig/iblrig/base_choice_world_params.yaml')</span></em><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.base_parameters_file" title="Link to this definition"></a></dt>
+<dd><p>A YAML file containing base, default task parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.default_reward_amount">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_reward_amount</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.default_reward_amount" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.event_error">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event_error</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.event_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.event_reward">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event_reward</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.event_reward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.feedback_correct_delay">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feedback_correct_delay</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.feedback_correct_delay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.feedback_error_delay">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feedback_error_delay</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.feedback_error_delay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.feedback_nogo_delay">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">feedback_nogo_delay</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.feedback_nogo_delay" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.iti_reward">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iti_reward</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.iti_reward" title="Link to this definition"></a></dt>
+<dd><p>Returns the ITI time that needs to be set in order to achieve the desired ITI,
+by subtracting the time it takes to give a reward from the desired ITI.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.position" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.quiescent_period">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">quiescent_period</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.quiescent_period" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="iblrig.base_choice_world.ChoiceWorldSession.reward_time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reward_time</span></span><a class="headerlink" href="#iblrig.base_choice_world.ChoiceWorldSession.reward_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="iblrig.base_choice_world.BiasedChoiceWorldTrialData.html" class="btn btn-neutral float-left" title="iblrig.base_choice_world.BiasedChoiceWorldTrialData" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="iblrig.base_choice_world.ChoiceWorldTrialData.html" class="btn btn-neutral float-right" title="iblrig.base_choice_world.ChoiceWorldTrialData" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

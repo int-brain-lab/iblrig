@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.net &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.net</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.net</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Network communication between rigs.</span>
+
+<span class="sd">An example of a remote_rigs.yaml file:</span>
+
+<span class="sd">```yaml</span>
+<span class="sd">neuropixel: &#39;12.134.270.1&#39;</span>
+<span class="sd">&#39;cameras:left&#39;: &#39;tcp://0.123.456.7:9998&#39;</span>
+<span class="sd">&#39;cameras:right&#39;: &#39;tcp://0.123.456.6:9998&#39;</span>
+<span class="sd">tasks: &#39;udp://123.654.8.8&#39;</span>
+<span class="sd">```</span>
+
+<span class="sd">Todo</span>
+<span class="sd">----</span>
+<span class="sd">TODO case study: starts services but times out due to one service.</span>
+<span class="sd"> How to restart without stopping services? Perhaps it can throw a</span>
+<span class="sd"> warning if the status is running but continue on anyway?</span>
+<span class="sd">TODO perhaps confirmed_send should ensure that data is list with</span>
+<span class="sd"> element 1 being an exp message</span>
+<span class="sd">TODO Rewrite video session function with loop</span>
+<span class="sd">TODO Implement video end and cleanups</span>
+<span class="sd">TODO tests for clear_callbacks cancel future</span>
+<span class="sd">TODO test error_received and connection_lost</span>
+<span class="sd">TODO Services init alyx callback</span>
+<span class="sd">TODO await all timeout tests</span>
+<span class="sd">TODO test individual CammeraSession methods</span>
+<span class="sd">TODO Test for keyboard input</span>
+<span class="sd">TODO Process keyboard input</span>
+<span class="sd">TODO Document read stdin</span>
+<span class="sd">TODO Finish prep ephys session</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+<span class="sd">Send a standard message (e.g. start) to all rigs and await their responses:</span>
+
+<span class="sd">&gt;&gt;&gt; responses = await services.start(exp_ref)</span>
+
+<span class="sd">Send a standard message to all rigs without awaiting responses:</span>
+
+<span class="sd">&gt;&gt;&gt; for service in services.values():</span>
+<span class="sd">...     await service.init()</span>
+
+<span class="sd">Send exp info message to all rigs and await their responses:</span>
+
+<span class="sd">&gt;&gt;&gt; responses = await self.services._signal(ExpMessage.EXPINFO, &#39;confirmed_send&#39;, [ExpMessage.EXPINFO, ...])</span>
+
+<span class="sd">Send exp info message to all rigs without awaiting responses:</span>
+
+<span class="sd">&gt;&gt;&gt; for service in services.values():</span>
+<span class="sd">...     await service.confirmed_send([ExpMessage.EXPINFO, ...])</span>
+
+<span class="sd">Request status from a single service (await echo):</span>
+
+<span class="sd">&gt;&gt;&gt; await services[&#39;cameras&#39;].confirmed_send([ExpMessage.EXPSTATUS])</span>
+
+<span class="sd">Send message to a single service without awaiting echo:</span>
+<span class="sd">NB: use with causion: can cause infinite loops if both not correctly configured</span>
+
+<span class="sd">&gt;&gt;&gt; services[&#39;cameras&#39;].send([ExpMessage.EXPSTATUS])</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">one.params</span>
+<span class="kn">from</span> <span class="nn">iblrig</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">get_local_and_remote_paths</span>
+<span class="kn">from</span> <span class="nn">iblutil.io</span> <span class="kn">import</span> <span class="n">net</span>
+<span class="kn">from</span> <span class="nn">iblutil.io.params</span> <span class="kn">import</span> <span class="n">FileLock</span>
+<span class="kn">from</span> <span class="nn">one.api</span> <span class="kn">import</span> <span class="n">OneAlyx</span>
+<span class="kn">from</span> <span class="nn">one.webclient</span> <span class="kn">import</span> <span class="n">AlyxClient</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Auxiliaries">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries">[docs]</a>
+<span class="k">class</span> <span class="nc">Auxiliaries</span><span class="p">:</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;iblutil.io.net.app.Services: A map of remote services.&quot;&quot;&quot;</span>
+    <span class="n">refresh_rate</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: How long to wait between checking message queue.&quot;&quot;&quot;</span>
+    <span class="n">_clients</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: Map of remote service names and their corresponding URI.&quot;&quot;&quot;</span>
+    <span class="n">_queued</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: The messages queued for delivery by async thread.&quot;&quot;&quot;</span>
+    <span class="n">_awaiting</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">]</span>
+    <span class="n">_log</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: Map of request times and the remote responses.&quot;&quot;&quot;</span>
+    <span class="n">stop_event</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;threading.Event: A thread event. Once set, thread stops listening and clean up services.&quot;&quot;&quot;</span>
+    <span class="n">response_received</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;threading.Event: A thread event. Notified each time the async thread receives all responses.&quot;&quot;&quot;</span>
+    <span class="n">connected</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;threading.Event: A thread event. Set by async thread once all services connected.&quot;&quot;&quot;</span>
+    <span class="n">_thread</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;threading.Thread: An async thread handle.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Auxiliaries.__new__">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.__new__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">response_received</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Condition</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Condition</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">stop_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.__init__">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clients</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Connect to and communicate with one or more remote rigs synchronously.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        clients : dict[str, str]</span>
+<span class="sd">            A map of name to URI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Load clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span> <span class="o">=</span> <span class="n">clients</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clients</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">listen</span><span class="p">(),),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;network_coms&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;bool: True if successfully connected to services.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">services</span> <span class="ow">or</span> <span class="p">[])</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">is_connected</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;bool: True if listen is running on another thread.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_event</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Auxiliaries.clear_message_queue">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.clear_message_queue">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_message_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear queued messages.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of aborted messages.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_aborted</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">n_aborted</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1"> remote service messages aborted&#39;</span><span class="p">,</span> <span class="n">n_aborted</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n_aborted</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.cleanup">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.cleanup">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notify_services</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close connections and cleanup services.</span>
+
+<span class="sd">        This method closes all service communicators and cancels any pending callbacks.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        notify_services : bool</span>
+<span class="sd">            If true, send EXPCLEANUP message to remote devices before cleanup.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">notify_services</span><span class="p">:</span>  <span class="c1"># Send cleanup message to services without await response</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">_signal</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPCLEANUP</span><span class="p">,</span> <span class="s1">&#39;cleanup&#39;</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">concurrent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.close">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.close">[docs]</a>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close communicators and wait for thread to terminate.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_message_queue</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># wait for thread to exit</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.create">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.create">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create remote services object.</span>
+
+<span class="sd">        Instantiates communicator objects which establish the UDP connections, wraps them in the</span>
+<span class="sd">        Service class for bulk messaging, sets connected property to True and assigns some logging</span>
+<span class="sd">        callbacks. This should be called from a daemon thread.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="n">remote_rigs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">net</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">EchoProtocol</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">uri</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clients</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">services</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">Services</span><span class="p">(</span><span class="n">remote_rigs</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connected</span><span class="o">.</span><span class="n">notify</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Connected...&#39;</span><span class="p">)</span>
+        <span class="c1"># Assign a callback to all clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">assign_callback</span><span class="p">(</span><span class="s1">&#39;EXPSTART&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">,</span> <span class="n">addr</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1"> started&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">addr</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.listen">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.listen">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Listen for messages in queue and push to remote services.</span>
+
+<span class="sd">        Creates service communicators then awaits messages added to the queue. Once added, these</span>
+<span class="sd">        are sent to the remote services and the collated responses are added to the log.</span>
+<span class="sd">        Exits only after stop event is set. This should be called from a daemon thread.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">queue</span> <span class="o">:=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">)):</span>
+                <span class="n">request_time</span> <span class="o">=</span> <span class="n">queue</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">t_str</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">request_time</span><span class="p">))</span>
+                <span class="n">event</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">[</span><span class="n">request_time</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;invalid message cued at &#39;</span> <span class="o">+</span> <span class="n">t_str</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Sending </span><span class="si">%s</span><span class="s1"> message requested at </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">t_str</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">match</span> <span class="n">event</span><span class="p">:</span>
+                        <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPSTART</span><span class="p">:</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPINIT</span><span class="p">:</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPEND</span> <span class="o">|</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPINTERRUPT</span><span class="p">:</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">immediately</span><span class="o">=</span><span class="n">event</span> <span class="ow">is</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPINTERRUPT</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">EXPINFO</span><span class="p">:</span>
+                            <span class="c1"># TODO Instead of waiting for all responses, cancel futures when main sync responds?</span>
+                            <span class="c1"># async def first(aiterable, condition=lambda i: True):</span>
+                            <span class="c1">#     for x in aiterable:</span>
+                            <span class="c1">#         x = await x</span>
+                            <span class="c1">#         if condition(x):</span>
+                            <span class="c1">#             yield x</span>
+                            <span class="c1">#</span>
+                            <span class="c1"># res = await anext(first(asyncio.as_completed(tasks), lambda r: r[-1][&#39;main_sync&#39;]))</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">ALYX</span><span class="p">:</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">alyx</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                            <span class="n">responses</span> <span class="o">=</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>  <span class="c1"># TODO broaden exception</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Timeout error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
+                    <span class="n">responses</span> <span class="o">=</span> <span class="n">ex</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_received</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">[</span><span class="n">request_time</span><span class="p">]</span> <span class="o">=</span> <span class="n">responses</span>
+                    <span class="k">if</span> <span class="n">request_time</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">:</span>  <span class="c1"># may have been removed if `close` called</span>
+                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">[</span><span class="n">request_time</span><span class="p">]</span>  <span class="c1"># remove from queue</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">response_received</span><span class="o">.</span><span class="n">notify</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_rate</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Auxiliaries.push">
+<a class="viewcode-back" href="../../api/iblrig.net.Auxiliaries.html#iblrig.net.Auxiliaries.push">[docs]</a>
+    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Queue message for dispatch to remote services.</span>
+
+<span class="sd">        This method synchronously logs the request time and pushes the message to the queue for the</span>
+<span class="sd">        asynchronous thread to handle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        message : iblutil.io.net.base.ExpMessage</span>
+<span class="sd">            An experiment message to send to remote services.</span>
+<span class="sd">        args : any</span>
+<span class="sd">            One or more optional variables to send.</span>
+<span class="sd">        wait : bool</span>
+<span class="sd">            If True, this method is blocking and once all messages are received (or timed out) the</span>
+<span class="sd">            collated responses are returned. Otherwise the request timestamp is returned for use as</span>
+<span class="sd">            a log key when fetching the responses in a non-blocking manner.</span>
+<span class="sd">        kwargs</span>
+<span class="sd">            Optional keyword arguments to use in calling communicator methods (currently unused).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Exception | dict | float</span>
+<span class="sd">            An exception if failed to receive all responses in time, otherwise a map of service</span>
+<span class="sd">            name and response if wait is true, or the request time if wait is false.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            The async thread failed to return a response, most likely due to an error in the listen</span>
+<span class="sd">            method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">request_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">allow_bitwise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">request_time</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">,</span> <span class="s1">&#39;too many requests sent at once&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span>
+        <span class="c1"># The expected max time for the thread to return control</span>
+        <span class="n">thread_timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">timeout</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_rate</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_received</span><span class="p">:</span>  <span class="c1"># lock thread so it can&#39;t process the message before we can wait on it (very unlikely)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queued</span><span class="p">[</span><span class="n">request_time</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">message</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">wait</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">request_time</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_received</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">request_time</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">thread_timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                <span class="c1"># probably a timeout or other failure</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Thread failed to return&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="p">[</span><span class="n">request_time</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="install_alyx_token">
+<a class="viewcode-back" href="../../api/iblrig.net.install_alyx_token.html#iblrig.net.install_alyx_token">[docs]</a>
+<span class="k">def</span> <span class="nf">install_alyx_token</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save Alyx token sent from remote device.</span>
+
+<span class="sd">    Saves an Alyx token into the ONE params for a given database instance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    base_url : str</span>
+<span class="sd">        The Alyx database URL.</span>
+<span class="sd">    token : dict[str, dict]</span>
+<span class="sd">        The token in the form {username: {&#39;token&#39;: token}}.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the token was far a user not already cached.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">par</span> <span class="o">=</span> <span class="n">one</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+    <span class="n">is_new_user</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">token</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">par</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TOKEN&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">par</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;TOKEN&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="n">one</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">is_new_user</span></div>
+
+
+
+<div class="viewcode-block" id="update_alyx_token">
+<a class="viewcode-back" href="../../api/iblrig.net.update_alyx_token.html#iblrig.net.update_alyx_token">[docs]</a>
+<span class="k">def</span> <span class="nf">update_alyx_token</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">alyx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback to update instance with Alyx token.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : (str, dict)</span>
+<span class="sd">        Tuple containing the Alyx database URL and token dict.</span>
+<span class="sd">    addr : (str, int)</span>
+<span class="sd">        The address of the remote host that sent the Alyx data (unused).</span>
+<span class="sd">    alyx : one.webclient.AlyxClient</span>
+<span class="sd">        An optional instance of Alyx to update with the token.</span>
+<span class="sd">    one.api.OneAlyx</span>
+<span class="sd">        An optional instance of ONE to update with the token.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        If True, the provided alyx or one instance was successfully updated with the token.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_url</span><span class="p">,</span> <span class="n">token</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">base_url</span> <span class="ow">and</span> <span class="n">token</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">alyx</span> <span class="ow">or</span> <span class="n">one</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">one</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">OneAlyx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">username</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">token</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">alyx</span><span class="p">:</span>
+        <span class="n">alyx</span> <span class="o">=</span> <span class="n">one</span><span class="o">.</span><span class="n">_web_client</span> <span class="ow">or</span> <span class="n">AlyxClient</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Update alyx object</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">_par</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">alyx</span><span class="o">.</span><span class="n">_par</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ALYX_URL&#39;</span><span class="p">,</span> <span class="n">base_url</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ALYX_LOGIN&#39;</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;TOKEN&#39;</span><span class="p">,</span> <span class="p">{</span><span class="o">**</span><span class="n">alyx</span><span class="o">.</span><span class="n">_par</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TOKEN&#39;</span><span class="p">,</span> <span class="p">{}),</span> <span class="o">**</span><span class="n">token</span><span class="p">})</span>
+    <span class="p">)</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">alyx</span><span class="o">.</span><span class="n">_par</span><span class="o">.</span><span class="n">TOKEN</span><span class="p">[</span><span class="n">username</span><span class="p">]</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">_headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Token </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">alyx</span><span class="o">.</span><span class="n">_token</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;Accept&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">}</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">username</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">base_url</span> <span class="o">=</span> <span class="n">base_url</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">silent</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># ensure Alyx doesn&#39;t attempt to prompt user for input</span>
+    <span class="c1"># Update ONE object</span>
+    <span class="k">if</span> <span class="n">one</span><span class="p">:</span>
+        <span class="n">one</span><span class="o">.</span><span class="n">_web_client</span> <span class="o">=</span> <span class="n">alyx</span>
+        <span class="n">one</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;remote&#39;</span> <span class="k">if</span> <span class="n">alyx</span><span class="o">.</span><span class="n">is_logged_in</span> <span class="k">else</span> <span class="s1">&#39;local&#39;</span>
+    <span class="k">return</span> <span class="n">alyx</span><span class="o">.</span><span class="n">is_logged_in</span></div>
+
+
+
+<div class="viewcode-block" id="ExpInfo">
+<a class="viewcode-back" href="../../api/iblrig.net.ExpInfo.html#iblrig.net.ExpInfo">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ExpInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A standard experiment information structure.&quot;&quot;&quot;</span>
+
+    <span class="n">exp_ref</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">main_sync</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">experiment_description</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">master</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">rig_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">__version__</span>
+    <span class="n">spec_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">__version__</span>
+
+<div class="viewcode-block" id="ExpInfo.to_dict">
+<a class="viewcode-back" href="../../api/iblrig.net.ExpInfo.html#iblrig.net.ExpInfo.to_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_remote_devices_file">
+<a class="viewcode-back" href="../../api/iblrig.net.get_remote_devices_file.html#iblrig.net.get_remote_devices_file">[docs]</a>
+<span class="k">def</span> <span class="nf">get_remote_devices_file</span><span class="p">(</span><span class="n">iblrig_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the location of the remote devices YAML file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    iblrig_settings : dict</span>
+<span class="sd">        A settings dictionary, otherwise will load the default settings from file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path, None</span>
+<span class="sd">        The full path to the remote devices YAML file in the remote data folder, or None if the folder is not defined.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">remote_data_folder</span> <span class="o">:=</span> <span class="n">get_local_and_remote_paths</span><span class="p">(</span><span class="n">iblrig_settings</span><span class="o">=</span><span class="n">iblrig_settings</span><span class="p">)[</span><span class="s1">&#39;remote_data_folder&#39;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">remote_data_folder</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;remote_devices.yaml&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_remote_devices">
+<a class="viewcode-back" href="../../api/iblrig.net.get_remote_devices.html#iblrig.net.get_remote_devices">[docs]</a>
+<span class="k">def</span> <span class="nf">get_remote_devices</span><span class="p">(</span><span class="n">remote_devices_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iblrig_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return map of device name to network URI.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    remote_devices_file : pathlib.Path</span>
+<span class="sd">        Optional remote data path.</span>
+<span class="sd">    iblrig_settings : dict</span>
+<span class="sd">        A settings dictionary, otherwise will load the default settings from file. Used to</span>
+<span class="sd">        determine the remote data path (the remote_data_folder param).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, str]</span>
+<span class="sd">        A map of device name to network URI, e.g. {&#39;cameras&#39;: &#39;udp://127.0.0.1:11001&#39;}.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">remote_devices</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">remote_devices_file</span><span class="p">:</span>
+        <span class="n">remote_devices_file</span> <span class="o">=</span> <span class="n">get_remote_devices_file</span><span class="p">(</span><span class="n">iblrig_settings</span><span class="o">=</span><span class="n">iblrig_settings</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">remote_devices_file</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">remote_devices_file</span> <span class="o">/=</span> <span class="s1">&#39;remote_devices.yaml&#39;</span>
+    <span class="k">if</span> <span class="n">remote_devices_file</span> <span class="ow">and</span> <span class="n">remote_devices_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">remote_devices_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">remote_devices</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">remote_devices</span></div>
+
+
+
+<div class="viewcode-block" id="get_server_communicator">
+<a class="viewcode-back" href="../../api/iblrig.net.get_server_communicator.html#iblrig.net.get_server_communicator">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_server_communicator</span><span class="p">(</span><span class="n">service_uri</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    service_uri : bool, None, str</span>
+<span class="sd">    name : str</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iblutil.io.net.app.EchoProtocol, None</span>
+<span class="sd">        A Communicator instance, or None if server_uri is False.</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the URI matches the one in the file, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">service_uri</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">service_uri</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">lan_ip</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">hostname2ip</span><span class="p">()</span>  <span class="c1"># Local area network IP of this PC</span>
+        <span class="n">service_uri</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">validate_uri</span><span class="p">(</span><span class="n">lan_ip</span><span class="p">)</span>  <span class="c1"># Listen for server message on this local port</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">check_uri_match</span><span class="p">(</span><span class="k">await</span> <span class="n">net</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">EchoProtocol</span><span class="o">.</span><span class="n">server</span><span class="p">(</span><span class="n">service_uri</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="check_uri_match">
+<a class="viewcode-back" href="../../api/iblrig.net.check_uri_match.html#iblrig.net.check_uri_match">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_uri_match</span><span class="p">(</span><span class="n">com</span><span class="p">:</span> <span class="n">net</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">EchoProtocol</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">EchoProtocol</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log warning if URI in remote devices is wrong.</span>
+
+<span class="sd">    NB: Currently does not check if the protocol matches, and does not resolve hostnames.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    com : iblutil.io.net.app.EchoProtocol</span>
+<span class="sd">        A Communicator instance to compare to the devices file.</span>
+<span class="sd">    update : bool, None</span>
+<span class="sd">        If True, update the remote devices YAML file. If False, do not update the remote devices YAML file. If None,</span>
+<span class="sd">        only updates if the file exists.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iblutil.io.net.app.EchoProtocol</span>
+<span class="sd">        The same Communicator instance.</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the URI matches the one in the file, False otherwise.  When update is True, True should always be</span>
+<span class="sd">        returned.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        Raised when update is True but the remote devices YAML file does not exist on disk.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">remote_devices</span> <span class="o">=</span> <span class="n">get_remote_devices</span><span class="p">()</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">expected</span> <span class="o">:=</span> <span class="n">remote_devices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">com</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">validate_uri</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span>
+        <span class="n">ip</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">port</span><span class="p">))</span> <span class="o">==</span> <span class="p">(</span><span class="n">com</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">com</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;remote devices specifies </span><span class="si">%s</span><span class="s1"> as </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">, communicator listening on </span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">com</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">com</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">port</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">remote_devices_file</span> <span class="o">=</span> <span class="n">get_remote_devices_file</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">update</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">remote_devices_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;Remote data folder not defined.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remote_devices_file</span><span class="p">:</span>
+            <span class="n">remote_devices_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">async</span> <span class="k">with</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">remote_devices_file</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">remote_devices_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                    <span class="n">remote_devices</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">com</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">com</span><span class="o">.</span><span class="n">server_uri</span><span class="p">})</span>
+                    <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">remote_devices</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">com</span><span class="p">,</span> <span class="n">match</span></div>
+
+
+
+<div class="viewcode-block" id="read_stdin">
+<a class="viewcode-back" href="../../api/iblrig.net.read_stdin.html#iblrig.net.read_stdin">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">read_stdin</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Asynchronously reads lines from standard input.</span>
+
+<span class="sd">    Allows asynchronous reading of user keyboard input. Currently there is no cross-platform way to listen to</span>
+<span class="sd">    keypresses, but this function comes close.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    loop : asyncio.AbstractEventLoop</span>
+<span class="sd">        An optional event loop to use.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    str</span>
+<span class="sd">        A line of text from the standard input, if available.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span> <span class="ow">or</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+    <span class="k">while</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">readable</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">line</span> <span class="o">:=</span> <span class="k">await</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">readline</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">line</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">lan_ip</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">hostname2ip</span><span class="p">()</span>
+    <span class="n">remote_rigs</span> <span class="o">=</span> <span class="n">Auxiliaries</span><span class="p">({</span><span class="s1">&#39;cameras&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">lan_ip</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:99998&#39;</span><span class="p">,</span> <span class="s1">&#39;timeline&#39;</span><span class="p">:</span> <span class="s1">&#39;192.168.1.236:99998&#39;</span><span class="p">})</span>
+    <span class="n">alyx</span> <span class="o">=</span> <span class="n">AlyxClient</span><span class="p">()</span>
+    <span class="n">alyx</span><span class="o">.</span><span class="n">authenticate</span><span class="p">(</span><span class="s1">&#39;miles&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">alyx</span><span class="o">.</span><span class="n">is_logged_in</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rigs</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s1">&#39;ALYX&#39;</span><span class="p">,</span> <span class="n">alyx</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rigs</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s1">&#39;EXPINFO&#39;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="s1">&#39;subject&#39;</span><span class="p">),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># assert sum(x[-1][&#39;main_sync&#39;] for x in r.values()), &#39;one main sync expected&#39;</span>
+    <span class="c1">#</span>
+    <span class="c1">#</span>
+    <span class="c1"># while remote_rigs.started is False:</span>
+    <span class="c1">#     time.sleep(1)</span>
+    <span class="c1"># assert remote_rigs.started is True</span>
+
+    <span class="c1"># Thread(target = func2).start()</span>
+    <span class="c1"># send a token</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    [net.base.ExpMessage.ALYX, alyx.base_url, {alyx.user: alyx._token}]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.ephys &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.ephys</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.ephys</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">iblatlas</span> <span class="kn">import</span> <span class="n">atlas</span>
+<span class="kn">from</span> <span class="nn">iblrig.base_tasks</span> <span class="kn">import</span> <span class="n">EmptySession</span>
+<span class="kn">from</span> <span class="nn">iblrig.transfer_experiments</span> <span class="kn">import</span> <span class="n">EphysCopier</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">setup_logger</span>
+
+
+<div class="viewcode-block" id="prepare_ephys_session_cmd">
+<a class="viewcode-back" href="../../api/iblrig.ephys.prepare_ephys_session_cmd.html#iblrig.ephys.prepare_ephys_session_cmd">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare_ephys_session_cmd</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;start_video_session&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Prepare video PC for video recording session.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;subject_name&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of subject&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;nprobes&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;number of probes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;enable debugging mode&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">setup_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span> <span class="k">else</span> <span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="n">prepare_ephys_session</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">subject_name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">nprobes</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="prepare_ephys_session">
+<a class="viewcode-back" href="../../api/iblrig.ephys.prepare_ephys_session.html#iblrig.ephys.prepare_ephys_session">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare_ephys_session</span><span class="p">(</span><span class="n">subject_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nprobes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setup electrophysiology recordings.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject_name : str</span>
+<span class="sd">        A subject name.</span>
+<span class="sd">    nprobes : int</span>
+<span class="sd">        Number of probes to be used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize a session for paths and settings</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">EmptySession</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">subject_name</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">session_path</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">SESSION_FOLDER</span>
+    <span class="n">copier</span> <span class="o">=</span> <span class="n">EphysCopier</span><span class="p">(</span><span class="n">session_path</span><span class="o">=</span><span class="n">session_path</span><span class="p">,</span> <span class="n">remote_subjects_folder</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">REMOTE_SUBJECT_FOLDER</span><span class="p">)</span>
+    <span class="n">copier</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">(</span><span class="n">nprobes</span><span class="o">=</span><span class="n">nprobes</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="neuropixel24_micromanipulator_coordinates">
+<a class="viewcode-back" href="../../api/iblrig.ephys.neuropixel24_micromanipulator_coordinates.html#iblrig.ephys.neuropixel24_micromanipulator_coordinates">[docs]</a>
+<span class="k">def</span> <span class="nf">neuropixel24_micromanipulator_coordinates</span><span class="p">(</span><span class="n">ref_shank</span><span class="p">,</span> <span class="n">pname</span><span class="p">,</span> <span class="n">ba</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shank_spacings_um</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">600</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provide the micro-manipulator coordinates of the first shank.</span>
+
+<span class="sd">    This function returns the relative coordinates of all shanks, labeled as probe01a, probe01b, etc.</span>
+
+<span class="sd">    :param ref_shank: dictionary with keys x, y, z, phi, theta, depth, roll</span>
+<span class="sd">    example: {&#39;x&#39;: 2594.2, &#39;y&#39;: -3123.7, &#39;z&#39;: -711, &#39;phi&#39;: 0 + 15, &#39;theta&#39;: 15, &#39;depth&#39;: 1250.4, &#39;roll&#39;: 0}</span>
+<span class="sd">    :param pname: str</span>
+<span class="sd">    :param ba: brain atlas object</span>
+<span class="sd">    :param shank_spacings_um: list of shank spacings in micrometers</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># this only works if the roll is 0, ie. the probe is facing upwards</span>
+    <span class="k">assert</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;roll&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">ba</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">NeedlesAtlas</span><span class="p">()</span> <span class="k">if</span> <span class="n">ba</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ba</span>
+    <span class="n">trajectories</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shank_spacings_um</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span>
+        <span class="n">shank</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+            <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="s1">&#39;phi&#39;</span><span class="p">:</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;theta&#39;</span><span class="p">:</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;roll&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">insertion</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">Insertion</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">shank</span><span class="p">,</span> <span class="n">brain_atlas</span><span class="o">=</span><span class="n">ba</span><span class="p">)</span>
+        <span class="n">xyz_entry</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">Insertion</span><span class="o">.</span><span class="n">get_brain_entry</span><span class="p">(</span><span class="n">insertion</span><span class="o">.</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">ba</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">xyz_ref</span> <span class="o">=</span> <span class="n">xyz_entry</span>
+        <span class="n">shank</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz_entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">shank</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref_shank</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">xyz_entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">xyz_ref</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e6</span>
+        <span class="n">trajectories</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">pname</span><span class="si">}{</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shank</span>
+    <span class="k">return</span> <span class="n">trajectories</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

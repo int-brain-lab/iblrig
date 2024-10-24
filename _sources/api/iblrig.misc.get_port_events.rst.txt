@@ -1,0 +1,6 @@
+iblrig.misc.get\_port\_events
+=============================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: get_port_events

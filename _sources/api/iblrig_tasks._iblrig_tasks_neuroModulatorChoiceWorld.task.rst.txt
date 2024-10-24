@@ -1,0 +1,16 @@
+iblrig\_tasks.\_iblrig\_tasks\_neuroModulatorChoiceWorld.task
+=============================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      NeuroModulatorChoiceTrialData
+      Session
+      SessionRelatedBlocks
+   

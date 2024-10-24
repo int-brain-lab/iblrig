@@ -1,0 +1,7 @@
+<map id="inheritanceb9405e5914" name="inheritanceb9405e5914">
+<area shape="rect" id="node1" href="#iblrig.gui.tools.LineEditAlyxUser" target="_top" title="A custom QLineEdit widget for managing user login with an AlyxObject." alt="" coords="643,29,763,52"/>
+<area shape="rect" id="node2" title="QLineEdit(parent: Optional[QWidget] = None)" alt="" coords="523,29,599,52"/>
+<area shape="rect" id="node3" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="409,29,480,52"/>
+<area shape="rect" id="node4" title="QObject(parent: Optional[QObject] = None)" alt="" coords="282,6,350,29"/>
+<area shape="rect" id="node6" title="QPaintDevice()" alt="" coords="266,51,365,74"/>
+</map>

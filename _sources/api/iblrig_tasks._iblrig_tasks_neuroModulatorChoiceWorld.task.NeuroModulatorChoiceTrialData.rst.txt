@@ -1,0 +1,13 @@
+iblrig\_tasks.\_iblrig\_tasks\_neuroModulatorChoiceWorld.task.NeuroModulatorChoiceTrialData
+===========================================================================================
+
+.. currentmodule:: iblrig_tasks._iblrig_tasks_neuroModulatorChoiceWorld.task
+
+.. inheritance-diagram:: NeuroModulatorChoiceTrialData
+   :parts: 1
+
+|
+
+.. autoclass:: NeuroModulatorChoiceTrialData
+   :members:
+   :undoc-members:

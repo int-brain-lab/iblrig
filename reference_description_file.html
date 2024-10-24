@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Describing an Experiment &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Describing an Experiment</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/reference_description_file.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="describing-an-experiment">
+<h1>Describing an Experiment<a class="headerlink" href="#describing-an-experiment" title="Link to this heading"></a></h1>
+<section id="experiment-description-file">
+<h2>Experiment description file<a class="headerlink" href="#experiment-description-file" title="Link to this heading"></a></h2>
+<p>All experiments are described by a file with the name
+<code class="docutils literal notranslate"><span class="pre">_ibl_experiment.description.yaml</span></code>. This description file contains
+details about the experiment such as, information about the devices used
+to collect data, or the behavior tasks run during the experiment. The
+content of this file is used to copy data from the acquisition computer
+to the lab server and also determines the task pipeline that will be
+used to extract the data on the lab servers. It’s accuracy in fully
+describing the experiment is, therefore, very important!</p>
+<p>Here is an example of a complete experiment description file for a
+mesoscope experiment running two consecutive tasks,
+<code class="docutils literal notranslate"><span class="pre">biasedChoiceWorld</span></code> followed by <code class="docutils literal notranslate"><span class="pre">passiveChoiceWorld</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_imaging_data*</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chrono</span>
+<span class="w">  </span><span class="nt">cameras</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">belly</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">      </span><span class="nt">fps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">    </span><span class="nt">left</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">    </span><span class="nt">right</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="nt">procedures</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Imaging</span>
+<span class="nt">projects</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ibl_mesoscope_active</span>
+<span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nidq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">acquisition_software</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">timeline</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_sync_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">npy</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">_biasedChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_00</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TrialRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">ChoiceWorldTrialsTimeline</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">TrainingStatus</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">passiveChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_01</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">PassiveRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">PassiveTaskTimeline</span><span class="p p-Indicator">]</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0.0</span>
+</pre></div>
+</div>
+</section>
+<section id="breaking-down-the-components-of-an-experiment-description-file">
+<h2>Breaking down the components of an experiment description file<a class="headerlink" href="#breaking-down-the-components-of-an-experiment-description-file" title="Link to this heading"></a></h2>
+<section id="devices">
+<h3>Devices<a class="headerlink" href="#devices" title="Link to this heading"></a></h3>
+<p>The devices section in the experiment description file lists the set of
+devices from which data was collection in the experiment. Supported
+devices are Cameras, Microphone, Mesoscope, Neuropixel, Photometry and
+Widefield.</p>
+<p>The convention for this section is to have the device name followed by a
+list of sub-devices, e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cameras</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">belly</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512</span>
+<span class="w">      </span><span class="nt">fps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">    </span><span class="nt">left</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+<span class="w">    </span><span class="nt">right</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_video_data</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio</span>
+</pre></div>
+</div>
+<p>In the above example, <code class="docutils literal notranslate"><span class="pre">cameras</span></code> is the device and the sub-devices are
+<code class="docutils literal notranslate"><span class="pre">belly</span></code>, <code class="docutils literal notranslate"><span class="pre">left</span></code> and <code class="docutils literal notranslate"><span class="pre">right</span></code>.</p>
+<p>If there are no sub-devices, the sub-device is given the same name as
+the device, e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">devices</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">mesoscope</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_imaging_data*</span>
+<span class="w">      </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chrono</span>
+</pre></div>
+</div>
+<p>Each sub-device must have at least the following two keys -
+<strong>collection</strong> - the folder containing the data - <strong>sync_label</strong> - the
+name of the common ttl pulses in the channel map used to sync the
+timestamps</p>
+<p>Additional keys can also be specified for specific extractors, e.g. for
+the belly camera the camera metadata passed into the camera extractor
+task is defined in this file.</p>
+</section>
+<section id="procedures">
+<h3>Procedures<a class="headerlink" href="#procedures" title="Link to this heading"></a></h3>
+<p>The procedures section lists the set of procedures that apply to this
+experiment. The list of possible procedures can be found
+<a class="reference external" href="https://alyx.internationalbrainlab.org/admin/actions/proceduretype/">here</a>.</p>
+<p>As many procedure that apply to the experiment can be added e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">procedures</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fiber photometry</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Optical stimulation</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ephys recording with acute probe(s)</span>
+</pre></div>
+</div>
+</section>
+<section id="projects">
+<h3>Projects<a class="headerlink" href="#projects" title="Link to this heading"></a></h3>
+<p>The projects section lists the set of projects that apply to this
+experiment. The list of possible projects can be found
+<a class="reference external" href="https://alyx.internationalbrainlab.org/admin/subjects/project/">here</a>.</p>
+<p>As many projects that apply to the experiment can be added e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">projects</span><span class="p">:</span>
+<span class="o">-</span> <span class="n">ibl_neuropixel_brainwide_01</span>
+<span class="o">-</span> <span class="n">carandiniharris_midbrain_ibl</span>
+</pre></div>
+</div>
+</section>
+<section id="sync">
+<h3>Sync<a class="headerlink" href="#sync" title="Link to this heading"></a></h3>
+<p>The sync section contains information about the device used to collect
+the syncing data and the format of the data. Supported sync devices are
+bpod, nidq, tdms, timeline. Only <strong>one</strong> sync device can be specified
+per experiment description file and act as the main clock to which other
+timeseries are synced.</p>
+<p>An example of an experiment run with bpod as the main syncing device is,</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bpod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_behavior_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bin</span>
+</pre></div>
+</div>
+<p>Another example for spikeglx electrophysiology recordings with
+Neuropixel 1B probes use the nidq as main synchronisation.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sync</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nidq</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_ephys_data</span>
+<span class="w">    </span><span class="nt">extension</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bin</span>
+<span class="w">    </span><span class="nt">acquisition_software</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">spikeglx</span>
+</pre></div>
+</div>
+<p>Each sync device must have at least the following two keys -
+<strong>collection</strong> - the folder containing the data - <strong>extension</strong> - the
+file extension of the sync data</p>
+<p>Optional keys include, for example <code class="docutils literal notranslate"><span class="pre">acquisition_software</span></code>, the
+software used to acquire the sync pulses</p>
+</section>
+<section id="tasks">
+<h3>Tasks<a class="headerlink" href="#tasks" title="Link to this heading"></a></h3>
+<p>The tasks section contains a list of the behavioral protocols run during
+the experiment. The name of the protocol must be given in the list e.g.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">tasks</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">_biasedChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_00</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TrialRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">ChoiceWorldTrialsTimeline</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">TrainingStatus</span><span class="p p-Indicator">]</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">passiveChoiceWorld</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">collection</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">raw_task_data_01</span>
+<span class="w">    </span><span class="nt">sync_label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bpod</span>
+<span class="w">    </span><span class="nt">extractors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">PassiveRegisterRaw</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">PassiveTaskTimeline</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<p>Each task must have at least the following two keys - <strong>collection</strong> -
+the folder containing the data - <strong>sync_label</strong> - the name of the common
+ttl pulses in the channel map used to sync the timestamps</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">collection</span></code> must be unique for each task. i.e. Data from two
+tasks cannot be stored in the same folder.</p>
+<p>If the Tasks used to extract the data are not the default tasks, the
+extractors to use must be passed in as an additional key. The order of
+the extractors defines their parent child relationship in the task
+architecture.</p>
+</section>
+<section id="version">
+<h3>Version<a class="headerlink" href="#version" title="Link to this heading"></a></h3>
+<p>The version section gives version number of the experiment description
+file</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+iblrig.commands
+===============
+
+.. automodule:: iblrig.commands
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      dir_path
+      flush
+      remove_local_sessions
+      transfer_data
+      transfer_data_cli
+      transfer_ephys_data_cli
+      transfer_video_data_cli
+      view_session
+   

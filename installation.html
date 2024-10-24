@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation guide &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Using IBLRIG v8" href="usage.html" />
+    <link rel="prev" title="IBLRIG" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-windows-powershell">Preparing Windows PowerShell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-visual-c-redistributable">Installing Visual C++ Redistributable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-python-3-10">Installing Python 3.10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-iblrigv8">Installing iblrigv8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-instructions">Configuration Instructions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rig-configuration-files">Rig Configuration Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-one">Setting up ONE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#updating-iblrigv8">Updating iblrigv8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#switch-to-specific-iblrig-version">Switch to specific iblrig version</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation-guide">
+<h1>Installation guide<a class="headerlink" href="#installation-guide" title="Link to this heading"></a></h1>
+<div class="admonition-prerequisites prerequisites admonition" id="prerequisites-0">
+<p class="admonition-title">Prerequisites</p>
+<ul class="simple">
+<li><p>A computer running Windows 10 or 11,</p></li>
+<li><p>A working installation of <a class="reference external" href="https://gitforwindows.org">git for windows</a>, and</p></li>
+<li><p><a class="reference external" href="https://notepad-plus-plus.org">Notepad++</a> or some other decent text editor.</p></li>
+</ul>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>iblrigv8 can be installed alongside older versions of iblrig without affecting the latter.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you believe this guide is incomplete or requires improvements, please don’t hesitate to reach out and
+<span class="xref std std-ref">submit a bug report</span>.</p>
+</div>
+<section id="preparing-windows-powershell">
+<h2>Preparing Windows PowerShell<a class="headerlink" href="#preparing-windows-powershell" title="Link to this heading"></a></h2>
+<p>Open Windows PowerShell in administrator mode:</p>
+<ul class="simple">
+<li><p>Click on the Windows Start button or press the Windows key on your keyboard.</p></li>
+<li><p>Type “PowerShell” into the search bar.</p></li>
+<li><p>You should see “Windows PowerShell” or “PowerShell” in the search results.</p></li>
+<li><p>Right-click on it.</p></li>
+<li><p>In the context menu that appears, select “Run as administrator.”</p></li>
+</ul>
+<p>Now, run the following command at the prompt of Windows PowerShell:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Set-ExecutionPolicy</span> <span class="n">RemoteSigned</span> <span class="n">-Force</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Keep the Administrator PowerShell open for the next step.</p>
+</div>
+<div class="seealso admonition">
+<p class="admonition-title">Background</p>
+<p>In PowerShell, there are execution policies that determine the level of security for running scripts. The default execution
+policy is often set to <code class="docutils literal notranslate"><span class="pre">Restricted</span></code>, which means that scripts are not allowed to run. However, to install Python or run
+certain scripts, you need to adjust the execution policy. By setting the execution policy to <code class="docutils literal notranslate"><span class="pre">RemoteSigned</span></code>, you are
+allowing the execution of locally created scripts without any digital signature while requiring that remotely downloaded
+scripts (from the internet) must be digitally signed by a trusted source to run. This strikes a balance between security
+and usability.</p>
+</div>
+</section>
+<section id="installing-visual-c-redistributable">
+<h2>Installing Visual C++ Redistributable<a class="headerlink" href="#installing-visual-c-redistributable" title="Link to this heading"></a></h2>
+<p>With the Administrator PowerShell still open, run the following commands:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">New-Item</span> <span class="n">-ItemType</span> <span class="n">Directory</span> <span class="n">-Force</span> <span class="n">-Path</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span>
+<span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="n">https</span><span class="p">://</span><span class="n">download</span><span class="p">.</span><span class="n">microsoft</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">download</span><span class="p">/</span><span class="n">1</span><span class="p">/</span><span class="n">6</span><span class="p">/</span><span class="n">B</span><span class="p">/</span><span class="n">16B06F60</span><span class="p">-</span><span class="n">3B20</span><span class="p">-</span><span class="n">4FF2-B699</span><span class="p">-</span><span class="n">5E9B7962F9AE</span><span class="p">/</span><span class="n">VSU_4</span><span class="p">/</span><span class="n">vcredist_x64</span><span class="p">.</span><span class="n">exe</span>  <span class="n">-OutFile</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">vcredist_x64</span><span class="p">.</span><span class="n">exe</span>
+<span class="nb">Start-Process</span> <span class="n">-NoNewWindow</span> <span class="n">-Wait</span> <span class="n">-FilePath</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">vcredist_x64</span><span class="p">.</span><span class="n">exe</span> <span class="n">-ArgumentList</span> <span class="s2">&quot;/install&quot;</span><span class="p">,</span> <span class="s2">&quot;/quiet&quot;</span><span class="p">,</span> <span class="s2">&quot;/norestart&quot;</span>
+<span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="n">https</span><span class="p">://</span><span class="n">aka</span><span class="p">.</span><span class="n">ms</span><span class="p">/</span><span class="n">vs</span><span class="p">/</span><span class="n">17</span><span class="p">/</span><span class="n">release</span><span class="p">/</span><span class="n">vc_redist</span><span class="p">.</span><span class="n">x64</span><span class="p">.</span><span class="n">exe</span>  <span class="n">-OutFile</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">vc_redist</span><span class="p">.</span><span class="n">x64</span><span class="p">.</span><span class="n">exe</span>
+<span class="nb">Start-Process</span> <span class="n">-NoNewWindow</span> <span class="n">-Wait</span> <span class="n">-FilePath</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">vc_redist</span><span class="p">.</span><span class="n">x64</span><span class="p">.</span><span class="n">exe</span> <span class="n">-ArgumentList</span> <span class="s2">&quot;/install&quot;</span><span class="p">,</span> <span class="s2">&quot;/quiet&quot;</span><span class="p">,</span> <span class="s2">&quot;/norestart&quot;</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Make sure you exit the Administrator PowerShell before continuing with the next steps!</p>
+</div>
+<div class="seealso admonition">
+<p class="admonition-title">Background</p>
+<p>These commands will create a temporary directory, download and install the Visual C++ Redistributable package for
+64-bit Windows systems. The installer is retrieved from a Microsoft server and executed with parameters to ensure a seamless
+and unobtrusive installation process.</p>
+</div>
+</section>
+<section id="installing-python-3-10">
+<h2>Installing Python 3.10<a class="headerlink" href="#installing-python-3-10" title="Link to this heading"></a></h2>
+<p>Open a <cite>new</cite> Windows Powershell prompt (no administrator mode) and run the following:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">New-Item</span> <span class="n">-ItemType</span> <span class="n">Directory</span> <span class="n">-Force</span> <span class="n">-Path</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span>
+<span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="n">https</span><span class="p">://</span><span class="n">www</span><span class="p">.</span><span class="n">python</span><span class="p">.</span><span class="n">org</span><span class="p">/</span><span class="n">ftp</span><span class="p">/</span><span class="n">python</span><span class="p">/</span><span class="n">3</span><span class="p">.</span><span class="n">10</span><span class="p">.</span><span class="n">11</span><span class="p">/</span><span class="n">python</span><span class="p">-</span><span class="n">3</span><span class="p">.</span><span class="n">10</span><span class="p">.</span><span class="n">11-amd64</span><span class="p">.</span><span class="n">exe</span> <span class="n">-OutFile</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">python</span><span class="p">-</span><span class="n">3</span><span class="p">.</span><span class="n">10</span><span class="p">.</span><span class="n">11-amd64</span><span class="p">.</span><span class="n">exe</span>
+<span class="nb">Start-Process</span> <span class="n">-NoNewWindow</span> <span class="n">-Wait</span> <span class="n">-FilePath</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">python</span><span class="p">-</span><span class="n">3</span><span class="p">.</span><span class="n">10</span><span class="p">.</span><span class="n">11-amd64</span><span class="p">.</span><span class="n">exe</span> <span class="n">-ArgumentList</span> <span class="s2">&quot;/passive&quot;</span><span class="p">,</span> <span class="s2">&quot;InstallAllUsers=0&quot;</span><span class="p">,</span> <span class="s2">&quot;Include_launcher=0&quot;</span><span class="p">,</span> <span class="s2">&quot;Include_test=0&quot;</span>
+</pre></div>
+</div>
+<p>Check that everything worked by running the following command:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">&amp;</span><span class="nv">$env:UserProfile</span><span class="p">\</span><span class="n">AppData</span><span class="p">\</span><span class="n">Local</span><span class="p">\</span><span class="n">Programs</span><span class="p">\</span><span class="n">Python</span><span class="p">\</span><span class="n">Python310</span><span class="p">\</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="p">-</span><span class="n">-version</span>
+</pre></div>
+</div>
+<p>The command should return <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.10.11</span></code></p>
+<div class="seealso admonition">
+<p class="admonition-title">Background</p>
+<p>These commands will create a temporary directory, download the Python installer from a specific URL, and then execute the
+installer with specific installation options, all in a controlled and automated manner.</p>
+</div>
+</section>
+<section id="installing-iblrigv8">
+<h2>Installing iblrigv8<a class="headerlink" href="#installing-iblrigv8" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>From the Powershell command line, clone the <cite>iblrigv8</cite> branch of iblrig to <code class="docutils literal notranslate"><span class="pre">C:\iblrigv8</span></code>:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">-b</span> <span class="n">iblrigv8</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">int-brain-lab</span><span class="p">/</span><span class="n">iblrig</span><span class="p">.</span><span class="n">git</span> <span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install a new virtual environment and update pip:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">&amp;</span><span class="nv">$env:UserProfile</span><span class="p">\</span><span class="n">AppData</span><span class="p">\</span><span class="n">Local</span><span class="p">\</span><span class="n">Programs</span><span class="p">\</span><span class="n">Python</span><span class="p">\</span><span class="n">Python310</span><span class="p">\</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">-m</span> <span class="n">venv</span> <span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span>
+<span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">-m</span> <span class="n">pip</span> <span class="n">install</span> <span class="p">-</span><span class="n">-upgrade</span> <span class="n">pip</span> <span class="n">wheel</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install iblrig in editable mode:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="p">.</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install Spinnaker SDK and PySpin:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">install_spinnaker</span>
+<span class="n">install_pyspin</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install Bonsai in portable mode:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">Bonsai</span>
+<span class="n">powershell</span><span class="p">.</span><span class="n">exe</span> <span class="p">.\</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">cd </span><span class="p">..</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install additional tasks and extractors for personal projects (optional):</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">://</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">int-brain-lab</span><span class="p">/</span><span class="n">project_extraction</span><span class="p">.</span><span class="n">git</span> <span class="n">C</span><span class="p">:\</span><span class="n">project_extraction</span>
+<span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">project_extraction</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="p">.</span>
+</pre></div>
+</div>
+</li>
+<li><p>Continue with <span class="xref std std-ref">the next section</span>.</p></li>
+</ol>
+</section>
+<section id="configuration-instructions">
+<h2>Configuration Instructions<a class="headerlink" href="#configuration-instructions" title="Link to this heading"></a></h2>
+<section id="rig-configuration-files">
+<h3>Rig Configuration Files<a class="headerlink" href="#rig-configuration-files" title="Link to this heading"></a></h3>
+<p>Copy the template settings files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">C</span><span class="p">:</span>\<span class="n">iblrigv8</span>\<span class="n">settings</span>
+<span class="n">cp</span> <span class="n">hardware_settings_template</span><span class="o">.</span><span class="n">yaml</span> <span class="n">hardware_settings</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">cp</span> <span class="n">iblrig_settings_template</span><span class="o">.</span><span class="n">yaml</span> <span class="n">iblrig_settings</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">explorer</span> <span class="n">C</span><span class="p">:</span>\<span class="n">iblrigv8</span>\<span class="n">settings</span>
+</pre></div>
+</div>
+<p>Update the two settings files using a text-editor:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">iblrig_settings.yaml</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hardware_settings.yaml</span></code></p></li>
+</ul>
+<p>If the computer has been used with IBLRIG version 7 or earlier, the correct values can likely be found in <code class="docutils literal notranslate"><span class="pre">C:\iblrig_params\</span>
+<span class="pre">.iblrig_params.json</span></code>.</p>
+</section>
+<section id="setting-up-one">
+<h3>Setting up ONE<a class="headerlink" href="#setting-up-one" title="Link to this heading"></a></h3>
+<p>Setup ONE to connect to <a class="reference external" href="https://alyx.internationalbrainlab.org">https://alyx.internationalbrainlab.org</a>, you will need your Alyx username and password.</p>
+<p>See instructions for that here: <a class="reference external" href="https://int-brain-lab.github.io/iblenv/notebooks_external/one_quickstart.html">https://int-brain-lab.github.io/iblenv/notebooks_external/one_quickstart.html</a></p>
+<div class="admonition-make-sure-you-can-connect-to-alyx exercise important admonition" id="exercise-0">
+<p class="admonition-title">Make sure you can connect to Alyx !</p>
+<p>Open a Python shell in the environment and connect to Alyx (you may have to setup ONE)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">iblrigv8</span>\<span class="n">venv</span>\<span class="n">scripts</span>\<span class="n">Activate</span><span class="o">.</span><span class="n">ps1</span>
+<span class="n">ipython</span>
+</pre></div>
+</div>
+<p>Then at the IPython prompt</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">one.api</span> <span class="kn">import</span> <span class="n">ONE</span>
+<span class="n">one</span> <span class="o">=</span> <span class="n">ONE</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;your_username&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;your_password&#39;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s1">&#39;https://alyx.internationalbrainlab.org&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition-you-can-check-that-everything-went-fine-by-running-the-test-suite exercise important admonition" id="exercise-1">
+<p class="admonition-title">You can check that everything went fine by running the test suite:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span>
+<span class="n">python</span> <span class="n">-m</span> <span class="n">unittest</span> <span class="n">discover</span>
+</pre></div>
+</div>
+<p>The tests should pass to completion after around 40 seconds</p>
+</div>
+</section>
+</section>
+<section id="updating-iblrigv8">
+<h2>Updating iblrigv8<a class="headerlink" href="#updating-iblrigv8" title="Link to this heading"></a></h2>
+<p>To update iblrigv8 to the newest version:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span>
+<span class="n">git</span> <span class="n">pull</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="p">-</span><span class="n">-upgrade</span> <span class="n">-e</span> <span class="p">.</span>
+</pre></div>
+</div>
+<p>To update the additional tasks and extractors (see <span class="xref std std-ref">Installing iblrigv8</span>, point 5):</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">project_extraction</span>
+<span class="n">git</span> <span class="n">pull</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>While usually quite snappy, upgrading the virtual environment in some instances can take longer than expected.
+Please be patient during the upgrade procedure.</p>
+</div>
+</section>
+<section id="switch-to-specific-iblrig-version">
+<h2>Switch to specific iblrig version<a class="headerlink" href="#switch-to-specific-iblrig-version" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Downgrading is not recommended and may not work as some releases break compatibility with earlier versions.</p>
+</div>
+<p>First fetch all available version tags and list them:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="p">-</span><span class="n">-all</span> <span class="p">-</span><span class="n">-tags</span> <span class="p">-</span><span class="n">-prune</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="p">-</span><span class="n">-list</span> <span class="s1">&#39;8.*&#39;</span>
+</pre></div>
+</div>
+<p>Then switch to the desired version, for example <cite>8.15.5</cite>:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">tags</span><span class="p">/</span><span class="n">8</span><span class="p">.</span><span class="n">15</span><span class="p">.</span><span class="n">5</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="p">-</span><span class="n">-upgrade</span> <span class="n">-e</span> <span class="p">.</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="IBLRIG" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Using IBLRIG v8" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

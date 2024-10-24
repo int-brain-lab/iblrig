@@ -1,0 +1,6 @@
+iblrig.version\_management.call\_git
+====================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: call_git

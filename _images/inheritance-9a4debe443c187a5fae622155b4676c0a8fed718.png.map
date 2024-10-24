@@ -1,0 +1,7 @@
+<map id="inheritancec8ab547afd" name="inheritancec8ab547afd">
+<area shape="rect" id="node1" title="QObject(parent: Optional[QObject] = None)" alt="" coords="312,29,387,55"/>
+<area shape="rect" id="node5" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="457,55,535,80"/>
+<area shape="rect" id="node3" title="QPaintDevice()" alt="" coords="295,79,404,104"/>
+<area shape="rect" id="node6" href="#iblrig.gui.tab_log.TabLog" target="_top" title="TabLog" alt="" coords="588,31,660,56"/>
+<area shape="rect" id="node7" href="iblrig.gui.ui_tab_log.Ui_TabLog.html#iblrig.gui.ui_tab_log.Ui_TabLog" target="_top" title="Ui_TabLog" alt="" coords="452,5,540,31"/>
+</map>

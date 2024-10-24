@@ -1,0 +1,6 @@
+iblrig.choiceworld.training\_phase\_from\_contrast\_set
+=======================================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: training_phase_from_contrast_set

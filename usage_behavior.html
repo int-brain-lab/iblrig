@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running a behaviour experiment &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Running a behaviour experiment</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage_behavior.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="running-a-behaviour-experiment">
+<h1>Running a behaviour experiment<a class="headerlink" href="#running-a-behaviour-experiment" title="Link to this heading"></a></h1>
+<p>IBLRIG v8 provides users with two distinct interfaces: a command line interface (CLI) and a graphical user interface (GUI).
+The CLI encompasses the complete functionality of IBLRIG, upon which the GUI is constructed to enhance user-friendliness.
+All tasks achievable through the GUI are equally achievable through the CLI.</p>
+<section id="the-graphical-user-interface">
+<h2>The Graphical User Interface<a class="headerlink" href="#the-graphical-user-interface" title="Link to this heading"></a></h2>
+<p>To initiate a task through the graphical user interface, open a Windows PowerShell and enter:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span><span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">iblrig</span>
+</pre></div>
+</div>
+<p>These commands activate the necessary environment and launch the IBLRIG Wizard GUI as shown below:</p>
+<figure class="align-center" id="id1">
+<img alt="A screenshot of IBL Rig Wizard" src="_images/gui.png" />
+<figcaption>
+<p><span class="caption-text">A screenshot of IBLRIG Wizard</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<section id="starting-a-task">
+<h3>Starting a Task<a class="headerlink" href="#starting-a-task" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Enter your Alyx username, then click on the <em>Connect</em> button. This
+action will automatically populate the GUI fields with information
+pertinent to your lab.</p></li>
+<li><p>Select the desired values from the provided options. Utilize the
+<em>Filter</em> field to swiftly narrow down the list of displayed subjects.
+Note that selections for <em>Project</em> and <em>Procedure</em> are mandatory.</p></li>
+<li><p>Click the <em>Start</em> button to initiate the task.</p></li>
+</ol>
+</section>
+<section id="supplementary-controls">
+<h3>Supplementary Controls<a class="headerlink" href="#supplementary-controls" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>When starting a subsequent task with the same subject, you’ll be asked if
+you want to append to the preceding session. Doing so will result in a
+sequence of connected tasks sharing the same data folder.</p></li>
+<li><p>The <em>Flush</em> button serves to toggle the valve for cleaning purposes.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>IBLRIG’s Graphical User Interface is still work-in-progress. If you have any suggestions to make the GUI
+more usable, please add an <a class="reference external" href="https://github.com/int-brain-lab/iblrig/issues">issue on GitHub</a> or approach the dev-team on Slack!
+We are happy to discuss possible changes with you!</p>
+</div>
+</section>
+</section>
+<section id="interfacing-with-alyx">
+<h2>Interfacing with Alyx<a class="headerlink" href="#interfacing-with-alyx" title="Link to this heading"></a></h2>
+<p>Although this is not mandatory, the IBLRIG GUI is designed to interface with <a class="reference external" href="https://github.com/cortex-lab/alyx">Alyx</a>, the International Brain Laboratory’s database.
+This feature allows users to access their subjects and projects directly from the GUI, without the need to manually enter this information.</p>
+<p>To enable this feature, you must have an Alyx account and have configured your database URL and credentials as mentioned  <a class="reference internal" href="installation.html"><span class="doc">Installation guide</span></a>.</p>
+<ul class="simple">
+<li><p>The <em>subjects</em> available are the set of alyx subjects that are alive, not stock, and belong to the lab defined in the <cite>iblrig_settings.py</cite> file.</p></li>
+<li><p>The <em>projects</em> available are the set of projects of which the current user is a participant. Login to Alyx &gt; Subjects &gt; Projects to check your projects.</p></li>
+</ul>
+</section>
+<section id="the-command-line-interface">
+<h2>The Command Line Interface<a class="headerlink" href="#the-command-line-interface" title="Link to this heading"></a></h2>
+<p>To use the command line interface, open a terminal and activate the
+environment:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">C</span><span class="p">:\</span><span class="n">iblrigv8</span><span class="p">\</span>
+<span class="n">venv</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+</pre></div>
+</div>
+<section id="running-a-single-task">
+<h3>Running a single task<a class="headerlink" href="#running-a-single-task" title="Link to this heading"></a></h3>
+<p>To run a single task, execute the following command:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_trainingChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span> <span class="p">-</span><span class="n">-user</span> <span class="n">john</span><span class="p">.</span><span class="n">doe</span>
+</pre></div>
+</div>
+</section>
+<section id="chaining-several-tasks-together">
+<h3>Chaining several tasks together<a class="headerlink" href="#chaining-several-tasks-together" title="Link to this heading"></a></h3>
+<p>To chain several tasks together, use the <code class="docutils literal notranslate"><span class="pre">--append</span></code> flag. For
+instance, to run a passive task after an ephys task:</p>
+<ol class="arabic">
+<li><p>Run the ephys task</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_ephysChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run the passive task with the <code class="docutils literal notranslate"><span class="pre">--append</span></code>flag:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="p">.\</span><span class="n">iblrig_tasks</span><span class="p">\</span><span class="n">_iblrig_tasks_passiveChoiceWorld</span><span class="p">\</span><span class="n">task</span><span class="p">.</span><span class="n">py</span> <span class="p">-</span><span class="n">-subject</span> <span class="n">algernon</span> <span class="p">-</span><span class="n">-append</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="flushing-the-valve">
+<h3>Flushing the valve<a class="headerlink" href="#flushing-the-valve" title="Link to this heading"></a></h3>
+<p>To flush valve 1 of the Bpod, type <code class="docutils literal notranslate"><span class="pre">flush</span></code> and confirm with ENTER. Press ENTER again to close the valve.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

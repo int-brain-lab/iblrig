@@ -1,0 +1,13 @@
+iblrig.gui.tab\_data.DataItemDelegate
+=====================================
+
+.. currentmodule:: iblrig.gui.tab_data
+
+.. inheritance-diagram:: DataItemDelegate
+   :parts: 1
+
+|
+
+.. autoclass:: DataItemDelegate
+   :members:
+   :undoc-members:

@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.hardware &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.hardware</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.hardware</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Hardware classes used to interact with modules.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">serial</span>
+<span class="kn">import</span> <span class="nn">sounddevice</span> <span class="k">as</span> <span class="nn">sd</span>
+<span class="kn">from</span> <span class="nn">annotated_types</span> <span class="kn">import</span> <span class="n">Ge</span><span class="p">,</span> <span class="n">Le</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">PositiveFloat</span><span class="p">,</span> <span class="n">PositiveInt</span><span class="p">,</span> <span class="n">validate_call</span>
+<span class="kn">from</span> <span class="nn">serial.serialutil</span> <span class="kn">import</span> <span class="n">SerialException</span>
+<span class="kn">from</span> <span class="nn">serial.tools</span> <span class="kn">import</span> <span class="n">list_ports</span>
+
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettingsRotaryEncoder</span>
+<span class="kn">from</span> <span class="nn">iblrig.tools</span> <span class="kn">import</span> <span class="n">static_vars</span>
+<span class="kn">from</span> <span class="nn">iblutil.util</span> <span class="kn">import</span> <span class="n">Bunch</span>
+<span class="kn">from</span> <span class="nn">pybpod_rotaryencoder_module.module</span> <span class="kn">import</span> <span class="n">RotaryEncoder</span> <span class="k">as</span> <span class="n">PybpodRotaryEncoder</span>
+<span class="kn">from</span> <span class="nn">pybpod_rotaryencoder_module.module_api</span> <span class="kn">import</span> <span class="n">RotaryEncoderModule</span> <span class="k">as</span> <span class="n">PybpodRotaryEncoderModule</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.bpod.bpod_io</span> <span class="kn">import</span> <span class="n">BpodIO</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.bpod_modules.bpod_module</span> <span class="kn">import</span> <span class="n">BpodModule</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.state_machine</span> <span class="kn">import</span> <span class="n">StateMachine</span>
+
+<span class="n">SOFTCODE</span> <span class="o">=</span> <span class="n">IntEnum</span><span class="p">(</span><span class="s1">&#39;SOFTCODE&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;STOP_SOUND&#39;</span><span class="p">,</span> <span class="s1">&#39;PLAY_TONE&#39;</span><span class="p">,</span> <span class="s1">&#39;PLAY_NOISE&#39;</span><span class="p">,</span> <span class="s1">&#39;TRIGGER_CAMERA&#39;</span><span class="p">])</span>
+
+<span class="c1"># some annotated types</span>
+<span class="n">Uint8</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Ge</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">Le</span><span class="p">(</span><span class="mi">255</span><span class="p">)]</span>
+<span class="n">ActionIdx</span> <span class="o">=</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Ge</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Le</span><span class="p">(</span><span class="mi">255</span><span class="p">)]</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Bpod">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod">[docs]</a>
+<span class="k">class</span> <span class="nc">Bpod</span><span class="p">(</span><span class="n">BpodIO</span><span class="p">):</span>
+    <span class="n">can_control_led</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">softcodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_instances</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+    <span class="n">_is_initialized</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Bpod.__new__">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.__new__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">serial_port</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">serial_port</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;serial_port&#39;</span><span class="p">,</span> <span class="n">serial_port</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">Bpod</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">serial_port</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">instance</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">instance</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+            <span class="n">Bpod</span><span class="o">.</span><span class="n">_instances</span><span class="p">[</span><span class="n">serial_port</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+            <span class="k">return</span> <span class="n">instance</span></div>
+
+
+<div class="viewcode-block" id="Bpod.__init__">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">skip_initialization</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># skip initialization if it has already been performed before</span>
+        <span class="c1"># IMPORTANT: only use this for non-critical tasks (e.g., flushing valve from GUI)</span>
+        <span class="k">if</span> <span class="n">skip_initialization</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_initialized</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># try to instantiate once for nothing</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t instantiate BPOD, retrying once...&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">serial</span><span class="o">.</span><span class="n">serialutil</span><span class="o">.</span><span class="n">SerialException</span><span class="p">,</span> <span class="ne">UnicodeDecodeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">serial</span><span class="o">.</span><span class="n">serialutil</span><span class="o">.</span><span class="n">SerialException</span><span class="p">(</span>
+                    <span class="s1">&#39;The communication with Bpod is established but the Bpod is not responsive. &#39;</span>
+                    <span class="s1">&#39;This is usually indicated by the device with a green light. &#39;</span>
+                    <span class="s1">&#39;Please unplug the Bpod USB cable from the computer and plug it back in to start the task. &#39;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serial_messages</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">Bunch</span><span class="p">({})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">can_control_led</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_status_led</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_initialized</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="Bpod.close">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.close">[docs]</a>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_initialized</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span> <span class="ow">in</span> <span class="n">Bpod</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
+                <span class="n">Bpod</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rotary_encoder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_module</span><span class="p">(</span><span class="s1">&#39;rotary_encoder&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sound_card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_module</span><span class="p">(</span><span class="s1">&#39;sound_card&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ambient_module</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_module</span><span class="p">(</span><span class="s1">&#39;^AmbientModule&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Bpod.get_module">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.get_module">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BpodModule</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get module by name.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        module_name : str</span>
+<span class="sd">            Regular Expression for matching a module name</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BpodModule | None</span>
+<span class="sd">            First matching module or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">module_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;re&#39;</span><span class="p">,</span> <span class="s1">&#39;rotary_encoder&#39;</span><span class="p">]:</span>
+            <span class="n">module_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^RotaryEncoder&#39;</span>
+        <span class="k">elif</span> <span class="n">module_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sc&#39;</span><span class="p">,</span> <span class="s1">&#39;sound_card&#39;</span><span class="p">]:</span>
+            <span class="n">module_name</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;^SoundCard&#39;</span>
+        <span class="n">modules</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found several Bpod modules matching `</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s1">`. Using first match: `</span><span class="si">{</span><span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">`&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">modules</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+    <span class="nd">@validate_call</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;arbitrary_types_allowed&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">_define_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">BpodModule</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Uint8</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ActionIdx</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define a serial message to be sent to a Bpod module as an output action within a state.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        module : BpodModule | int</span>
+<span class="sd">            The targeted module, defined as a BpodModule instance or the module&#39;s port index</span>
+<span class="sd">        message : list[int]</span>
+<span class="sd">            The message to be sent - a list of up to three 8-bit integers</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The index of the serial message (1-255)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If module is not an instance of BpodModule or int</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; id_msg_bonsai_show_stim = self._define_message(self.rotary_encoder, [ord(&quot;#&quot;), 2])</span>
+<span class="sd">        will then be used as such in StateMachine:</span>
+<span class="sd">        &gt;&gt;&gt; output_actions=[(&quot;Serial1&quot;, id_msg_bonsai_show_stim)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">BpodModule</span><span class="p">):</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">serial_port</span>
+        <span class="n">message_id</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serial_messages</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_serial_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">message_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serial_messages</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">message_id</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;target_module&#39;</span><span class="p">:</span> <span class="n">module</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">message</span><span class="p">}})</span>
+        <span class="k">return</span> <span class="n">message_id</span>
+
+<div class="viewcode-block" id="Bpod.define_xonar_sounds_actions">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.define_xonar_sounds_actions">[docs]</a>
+    <span class="nd">@validate_call</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;arbitrary_types_allowed&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">define_xonar_sounds_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;play_tone&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="n">SOFTCODE</span><span class="o">.</span><span class="n">PLAY_TONE</span><span class="p">),</span>
+                <span class="s1">&#39;play_noise&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="n">SOFTCODE</span><span class="o">.</span><span class="n">PLAY_NOISE</span><span class="p">),</span>
+                <span class="s1">&#39;stop_sound&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="n">SOFTCODE</span><span class="o">.</span><span class="n">STOP_SOUND</span><span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.define_harp_sounds_actions">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.define_harp_sounds_actions">[docs]</a>
+    <span class="k">def</span> <span class="nf">define_harp_sounds_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">BpodModule</span><span class="p">,</span> <span class="n">go_tone_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">noise_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">module_port</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Serial</span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">serial_port</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;play_tone&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">),</span> <span class="n">go_tone_index</span><span class="p">])),</span>
+                <span class="s1">&#39;play_noise&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">),</span> <span class="n">noise_index</span><span class="p">])),</span>
+                <span class="s1">&#39;stop_sound&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.define_rotary_encoder_actions">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.define_rotary_encoder_actions">[docs]</a>
+    <span class="k">def</span> <span class="nf">define_rotary_encoder_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">BpodModule</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotary_encoder</span>
+        <span class="n">module_port</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Serial</span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">serial_port</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="kc">None</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;rotary_encoder_reset&#39;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="n">module_port</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span>
+                        <span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="n">PybpodRotaryEncoder</span><span class="o">.</span><span class="n">COM_SETZEROPOS</span><span class="p">,</span> <span class="n">PybpodRotaryEncoder</span><span class="o">.</span><span class="n">COM_ENABLE_ALLTHRESHOLDS</span><span class="p">]</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="s1">&#39;bonsai_hide_stim&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">),</span> <span class="mi">1</span><span class="p">])),</span>
+                <span class="s1">&#39;bonsai_show_stim&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">),</span> <span class="mi">8</span><span class="p">])),</span>
+                <span class="s1">&#39;bonsai_closed_loop&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">),</span> <span class="mi">3</span><span class="p">])),</span>
+                <span class="s1">&#39;bonsai_freeze_stim&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">),</span> <span class="mi">4</span><span class="p">])),</span>
+                <span class="s1">&#39;bonsai_show_center&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">module_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_message</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">),</span> <span class="mi">5</span><span class="p">])),</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.get_ambient_sensor_reading">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.get_ambient_sensor_reading">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ambient_sensor_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ambient_module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;Temperature_C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s1">&#39;AirPressure_mb&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                <span class="s1">&#39;RelativeHumidity&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ambient_module</span><span class="o">.</span><span class="n">start_module_relay</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bpod_modules</span><span class="o">.</span><span class="n">module_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ambient_module</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bpod_modules</span><span class="o">.</span><span class="n">module_read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ambient_module</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ambient_module</span><span class="o">.</span><span class="n">stop_module_relay</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;Temperature_C&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">reply</span><span class="p">[:</span><span class="mi">4</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;AirPressure_mb&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">,</span>
+            <span class="s1">&#39;RelativeHumidity&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="mi">8</span><span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="Bpod.flush">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.flush">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flushes valve 1.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_valve</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Bpod.toggle_valve">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.toggle_valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">toggle_valve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flush valve 1 for specified duration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration : int, optional</span>
+<span class="sd">            Duration of valve opening in seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">open_valve</span><span class="p">(</span><span class="nb">open</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">valve_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Press ENTER when done.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">open_valve</span><span class="p">(</span><span class="nb">open</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">valve_number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pulse_valve</span><span class="p">(</span><span class="n">open_time_s</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.open_valve">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.open_valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">open_valve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">open</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">valve_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manual_override</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ChannelTypes</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ChannelNames</span><span class="o">.</span><span class="n">VALVE</span><span class="p">,</span> <span class="n">valve_number</span><span class="p">,</span> <span class="nb">open</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.pulse_valve">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.pulse_valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">pulse_valve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">open_time_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">valve</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Valve1&#39;</span><span class="p">):</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;flush&#39;</span><span class="p">,</span> <span class="n">state_timer</span><span class="o">=</span><span class="n">open_time_s</span><span class="p">,</span> <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">},</span> <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="n">valve</span><span class="p">,</span> <span class="mi">255</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.pulse_valve_repeatedly">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.pulse_valve_repeatedly">[docs]</a>
+    <span class="nd">@validate_call</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">pulse_valve_repeatedly</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">repetitions</span><span class="p">:</span> <span class="n">PositiveInt</span><span class="p">,</span> <span class="n">open_time_s</span><span class="p">:</span> <span class="n">PositiveFloat</span><span class="p">,</span> <span class="n">close_time_s</span><span class="p">:</span> <span class="n">PositiveFloat</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">valve</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Valve1&#39;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span> <span class="nf">softcode_handler</span><span class="p">(</span><span class="n">softcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">counter</span><span class="p">,</span> <span class="n">repetitions</span>
+            <span class="k">if</span> <span class="n">softcode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">softcode</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="n">repetitions</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop_trial</span><span class="p">()</span>
+
+        <span class="n">original_softcode_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">softcode_handler_function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softcode_handler_function</span> <span class="o">=</span> <span class="n">softcode_handler</span>
+
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="n">open_time_s</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;close&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="n">valve</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;close&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="n">close_time_s</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;open&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">softcode_handler_function</span> <span class="o">=</span> <span class="n">original_softcode_handler</span>
+        <span class="k">return</span> <span class="n">counter</span></div>
+
+
+<div class="viewcode-block" id="Bpod.set_status_led">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.set_status_led">[docs]</a>
+    <span class="nd">@static_vars</span><span class="p">(</span><span class="n">supported</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">set_status_led</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_control_led</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arcom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="s2">&quot;en&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;dis&quot;</span><span class="si">}</span><span class="s1">abling Bpod Status LED&#39;</span><span class="p">)</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;cB&#39;</span><span class="p">,</span> <span class="sa">b</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_arcom</span><span class="o">.</span><span class="n">serial_object</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arcom</span><span class="o">.</span><span class="n">read_uint8</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="n">serial</span><span class="o">.</span><span class="n">SerialException</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_arcom</span><span class="o">.</span><span class="n">serial_object</span><span class="o">.</span><span class="n">reset_input_buffer</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_arcom</span><span class="o">.</span><span class="n">serial_object</span><span class="o">.</span><span class="n">reset_output_buffer</span><span class="p">()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Bpod device does not support control of the status LED. Please update firmware.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Bpod.valve">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.valve">[docs]</a>
+    <span class="k">def</span> <span class="nf">valve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valve_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manual_override</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ChannelTypes</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ChannelNames</span><span class="o">.</span><span class="n">VALVE</span><span class="p">,</span> <span class="n">valve_id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Bpod.register_softcodes">
+<a class="viewcode-back" href="../../api/iblrig.hardware.Bpod.html#iblrig.hardware.Bpod.register_softcodes">[docs]</a>
+    <span class="nd">@validate_call</span>
+    <span class="k">def</span> <span class="nf">register_softcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">softcode_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register softcodes to be used in the state machine.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        softcode_dict : dict[int, Callable]</span>
+<span class="sd">            dictionary of int keys with callables as values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softcodes</span> <span class="o">=</span> <span class="n">softcode_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softcode_handler_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">code</span><span class="p">:</span> <span class="n">softcode_dict</span><span class="p">[</span><span class="n">code</span><span class="p">]()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RotaryEncoderModule">
+<a class="viewcode-back" href="../../api/iblrig.hardware.RotaryEncoderModule.html#iblrig.hardware.RotaryEncoderModule">[docs]</a>
+<span class="k">class</span> <span class="nc">RotaryEncoderModule</span><span class="p">(</span><span class="n">PybpodRotaryEncoderModule</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Rotary Encoder Module&#39;</span>
+
+    <span class="n">ENCODER_EVENTS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">THRESHOLD_EVENTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RotaryEncoderModule.__init__">
+<a class="viewcode-back" href="../../api/iblrig.hardware.RotaryEncoderModule.html#iblrig.hardware.RotaryEncoderModule.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">HardwareSettingsRotaryEncoder</span><span class="p">,</span> <span class="n">thresholds_deg</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">gain</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wheel_degree_per_mm</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">WHEEL_DIAMETER_MM</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thresholds_deg</span> <span class="o">=</span> <span class="n">thresholds_deg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="n">gain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ENCODER_EVENTS</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;RotaryEncoder1_</span><span class="si">{</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thresholds_deg</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">THRESHOLD_EVENTS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">thresholds_deg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ENCODER_EVENTS</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="RotaryEncoderModule.open">
+<a class="viewcode-back" href="../../api/iblrig.hardware.RotaryEncoderModule.html#iblrig.hardware.RotaryEncoderModule.open">[docs]</a>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;The value for device_rotary_encoder:COM_ROTARY_ENCODER in settings/hardware_settings.yaml is null. &#39;</span>
+                <span class="s1">&#39;Please provide a valid port name.&#39;</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SerialException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SerialException</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;The </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s1"> on port </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span><span class="si">}</span><span class="s1"> is already in use. This is &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;usually due to a Bonsai process running on the computer. Make sure all Bonsai windows are closed &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;prior to running the task.&#39;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s1"> on port </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span><span class="si">}</span><span class="s1"> did not return the handshake.&#39;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Successfully opened serial connection to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s1"> on port </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RotaryEncoderModule.write_parameters">
+<a class="viewcode-back" href="../../api/iblrig.hardware.RotaryEncoderModule.html#iblrig.hardware.RotaryEncoderModule.write_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scaled_thresholds_deg</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wheel_degree_per_mm</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">thresholds_deg</span><span class="p">]</span>
+        <span class="n">enabled_thresholds</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">scaled_thresholds_deg</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">)]</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Thresholds for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s1"> scaled to </span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">scaled_thresholds_deg</span><span class="p">])</span><span class="si">}</span><span class="s1"> &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;using gain of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gain</span><span class="si">:</span><span class="s1">0.1f</span><span class="si">}</span><span class="s1"> deg/mm and wheel diameter of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">WHEEL_DIAMETER_MM</span><span class="si">:</span><span class="s1">0.1f</span><span class="si">}</span><span class="s1"> mm.&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_zero_position</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_thresholds</span><span class="p">(</span><span class="n">scaled_thresholds_deg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_thresholds</span><span class="p">(</span><span class="n">enabled_thresholds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_evt_transmission</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RotaryEncoderModule.close">
+<a class="viewcode-back" href="../../api/iblrig.hardware.RotaryEncoderModule.html#iblrig.hardware.RotaryEncoderModule.close">[docs]</a>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;arcom&#39;</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Closing serial connection to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s1"> on port </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="sound_device_factory">
+<a class="viewcode-back" href="../../api/iblrig.hardware.sound_device_factory.html#iblrig.hardware.sound_device_factory">[docs]</a>
+<span class="k">def</span> <span class="nf">sound_device_factory</span><span class="p">(</span><span class="n">output</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;xonar&#39;</span><span class="p">,</span> <span class="s1">&#39;harp&#39;</span><span class="p">,</span> <span class="s1">&#39;hifi&#39;</span><span class="p">,</span> <span class="s1">&#39;sysdefault&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sysdefault&#39;</span><span class="p">,</span> <span class="n">samplerate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Will import, configure, and return sounddevice module to play sounds using onboard sound card.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output</span>
+<span class="sd">        defaults to &quot;sysdefault&quot;, should be &#39;xonar&#39; or &#39;harp&#39;</span>
+<span class="sd">    samplerate</span>
+<span class="sd">        audio sample rate, defaults to 44100</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">match</span> <span class="n">output</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s1">&#39;xonar&#39;</span><span class="p">:</span>
+            <span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span> <span class="k">if</span> <span class="n">samplerate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">192000</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">query_devices</span><span class="p">()</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;XONAR SOUND CARD(64)&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="s1">&#39;low&#39;</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="s1">&#39;L+TTL&#39;</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span>
+        <span class="k">case</span> <span class="s1">&#39;harp&#39;</span><span class="p">:</span>
+            <span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span> <span class="k">if</span> <span class="n">samplerate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">96000</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="s1">&#39;stereo&#39;</span>
+        <span class="k">case</span> <span class="s1">&#39;hifi&#39;</span><span class="p">:</span>
+            <span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span> <span class="k">if</span> <span class="n">samplerate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">192000</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="s1">&#39;stereo&#39;</span>
+        <span class="k">case</span> <span class="s1">&#39;sysdefault&#39;</span><span class="p">:</span>
+            <span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span> <span class="k">if</span> <span class="n">samplerate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">44100</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">latency</span> <span class="o">=</span> <span class="s1">&#39;low&#39;</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">default</span><span class="o">.</span><span class="n">samplerate</span> <span class="o">=</span> <span class="n">samplerate</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="s1">&#39;stereo&#39;</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">sd</span><span class="p">,</span> <span class="n">samplerate</span><span class="p">,</span> <span class="n">channels</span></div>
+
+
+
+<div class="viewcode-block" id="restart_com_port">
+<a class="viewcode-back" href="../../api/iblrig.hardware.restart_com_port.html#iblrig.hardware.restart_com_port">[docs]</a>
+<span class="k">def</span> <span class="nf">restart_com_port</span><span class="p">(</span><span class="n">regexp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Restart the communication port(s) matching the specified regular expression.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    regexp : str</span>
+<span class="sd">        A regular expression used to match the communication port(s).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        Returns True if all matched ports are successfully restarted, False otherwise.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If the operating system is not Windows.</span>
+
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If the required &#39;pnputil.exe&#39; executable is not found.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; restart_com_port(&quot;COM3&quot;)  # Restart the communication port with serial number &#39;COM3&#39;</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &gt;&gt;&gt; restart_com_port(&quot;COM[1-3]&quot;)  # Restart communication ports with serial numbers &#39;COM1&#39;, &#39;COM2&#39;, &#39;COM3&#39;</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Only implemented for Windows OS.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">file_pnputil</span> <span class="o">:=</span> <span class="n">Path</span><span class="p">(</span><span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;pnputil&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;Could not find pnputil.exe&#39;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">list_ports</span><span class="o">.</span><span class="n">grep</span><span class="p">(</span><span class="n">regexp</span><span class="p">):</span>
+        <span class="n">pnputil_output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">file_pnputil</span><span class="p">,</span> <span class="s1">&#39;/enum-devices&#39;</span><span class="p">,</span> <span class="s1">&#39;/connected&#39;</span><span class="p">,</span> <span class="s1">&#39;/class&#39;</span><span class="p">,</span> <span class="s1">&#39;ports&#39;</span><span class="p">])</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">rf</span><span class="s1">&#39;(\S*</span><span class="si">{</span><span class="n">port</span><span class="o">.</span><span class="n">serial_number</span><span class="si">}</span><span class="s1">\S*)&#39;</span><span class="p">,</span> <span class="n">pnputil_output</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">instance_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">file_pnputil</span><span class="p">,</span> <span class="s1">&#39;/restart-device&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">instance_id</span><span class="o">.</span><span class="n">group</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span>
+            <span class="p">)</span>
+            <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

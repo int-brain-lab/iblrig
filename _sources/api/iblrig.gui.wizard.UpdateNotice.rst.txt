@@ -1,0 +1,13 @@
+iblrig.gui.wizard.UpdateNotice
+==============================
+
+.. currentmodule:: iblrig.gui.wizard
+
+.. inheritance-diagram:: UpdateNotice
+   :parts: 1
+
+|
+
+.. autoclass:: UpdateNotice
+   :members:
+   :undoc-members:

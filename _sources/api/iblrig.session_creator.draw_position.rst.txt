@@ -1,0 +1,6 @@
+iblrig.session\_creator.draw\_position
+======================================
+
+.. currentmodule:: iblrig.session_creator
+
+.. autofunction:: draw_position

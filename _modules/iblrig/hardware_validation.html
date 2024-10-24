@@ -1,0 +1,1062 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.hardware_validation &mdash; iblrig 8.24.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=0c089442" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=43b36fd3"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference_developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.hardware_validation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.hardware_validation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Generator</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isabstract</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">isclose</span>
+<span class="kn">from</span> <span class="nn">struct</span> <span class="kn">import</span> <span class="n">unpack</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sounddevice</span>
+<span class="kn">import</span> <span class="nn">usb</span>
+<span class="kn">from</span> <span class="nn">dateutil.relativedelta</span> <span class="kn">import</span> <span class="n">relativedelta</span>
+<span class="kn">from</span> <span class="nn">PyQt5.QtGui</span> <span class="kn">import</span> <span class="n">QColorConstants</span>
+<span class="kn">from</span> <span class="nn">PyQt5.QtWidgets</span> <span class="kn">import</span> <span class="n">QApplication</span>
+<span class="kn">from</span> <span class="nn">serial</span> <span class="kn">import</span> <span class="n">Serial</span><span class="p">,</span> <span class="n">SerialException</span>
+<span class="kn">from</span> <span class="nn">serial.serialutil</span> <span class="kn">import</span> <span class="n">SerialTimeoutException</span>
+<span class="kn">from</span> <span class="nn">serial.tools</span> <span class="kn">import</span> <span class="n">list_ports</span>
+<span class="kn">from</span> <span class="nn">serial.tools.list_ports_common</span> <span class="kn">import</span> <span class="n">ListPortInfo</span>
+
+<span class="kn">from</span> <span class="nn">iblrig.base_tasks</span> <span class="kn">import</span> <span class="n">BpodMixin</span><span class="p">,</span> <span class="n">SoundMixin</span>
+<span class="kn">from</span> <span class="nn">iblrig.constants</span> <span class="kn">import</span> <span class="n">BASE_PATH</span><span class="p">,</span> <span class="n">HAS_PYSPIN</span><span class="p">,</span> <span class="n">HAS_SPINNAKER</span><span class="p">,</span> <span class="n">IS_GIT</span>
+<span class="kn">from</span> <span class="nn">iblrig.frame2ttl</span> <span class="kn">import</span> <span class="n">Frame2TTL</span>
+<span class="kn">from</span> <span class="nn">iblrig.hardware</span> <span class="kn">import</span> <span class="n">Bpod</span>
+<span class="kn">from</span> <span class="nn">iblrig.path_helper</span> <span class="kn">import</span> <span class="n">load_pydantic_yaml</span>
+<span class="kn">from</span> <span class="nn">iblrig.pydantic_definitions</span> <span class="kn">import</span> <span class="n">HardwareSettings</span><span class="p">,</span> <span class="n">RigSettings</span>
+<span class="kn">from</span> <span class="nn">iblrig.serial_singleton</span> <span class="kn">import</span> <span class="n">SerialSingleton</span><span class="p">,</span> <span class="n">filter_ports</span>
+<span class="kn">from</span> <span class="nn">iblrig.tools</span> <span class="kn">import</span> <span class="n">ANSI</span><span class="p">,</span> <span class="n">get_inheritors</span><span class="p">,</span> <span class="n">internet_available</span>
+<span class="kn">from</span> <span class="nn">iblrig.version_management</span> <span class="kn">import</span> <span class="n">get_branch</span><span class="p">,</span> <span class="n">is_dirty</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.bpod_modules.bpod_module</span> <span class="kn">import</span> <span class="n">BpodModule</span>
+<span class="kn">from</span> <span class="nn">pybpodapi.state_machine</span> <span class="kn">import</span> <span class="n">StateMachine</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Status">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Status.html#iblrig.hardware_validation.Status">[docs]</a>
+<span class="k">class</span> <span class="nc">Status</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Possible status codes of hardware validations.&quot;&quot;&quot;</span>
+
+    <span class="n">PEND</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Test pending</span>
+    <span class="n">SKIP</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Test not applicable (e.g., device not present)</span>
+    <span class="n">PASS</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Test passed</span>
+    <span class="n">WARN</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># Test passed with warning</span>
+    <span class="n">INFO</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># Secondary information yielded from tests (e.g., firmware version)</span>
+    <span class="n">FAIL</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># Test failed</span></div>
+
+
+
+<div class="viewcode-block" id="Result">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Result.html#iblrig.hardware_validation.Result">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Result</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dataclass holding the results of a single validation.&quot;&quot;&quot;</span>
+
+    <span class="n">status</span><span class="p">:</span> <span class="n">Status</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">ext_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">solution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="ValidateHardwareError">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidateHardwareError.html#iblrig.hardware_validation.ValidateHardwareError">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidateHardwareError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Result</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="Validator">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Validator.html#iblrig.hardware_validation.Validator">[docs]</a>
+<span class="k">class</span> <span class="nc">Validator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="n">log_results</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">raise_fail_as_exception</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">iblrig_settings</span><span class="p">:</span> <span class="n">RigSettings</span>
+    <span class="n">hardware_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span>
+    <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Validator.__init__">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Validator.html#iblrig.hardware_validation.Validator.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">iblrig_settings</span><span class="p">:</span> <span class="n">RigSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">hardware_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span> <span class="o">=</span> <span class="n">iblrig_settings</span> <span class="ow">or</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">RigSettings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span> <span class="o">=</span> <span class="n">hardware_settings</span> <span class="ow">or</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">HardwareSettings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="o">=</span> <span class="n">interactive</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Result</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="Validator.run">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Validator.html#iblrig.hardware_validation.Validator.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Result</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">success</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_bpod</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Result</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Bpod</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Cannot complete validation of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> without Bpod&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">disabled_ports</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="p">[</span><span class="s1">&#39;device_bpod&#39;</span><span class="p">][</span><span class="s1">&#39;DISABLE_BEHAVIOR_INPUT_PORTS&#39;</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">Bpod</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span><span class="p">,</span> <span class="n">skip_initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">disable_behavior_ports</span><span class="o">=</span><span class="n">disabled_ports</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Cannot complete validation of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">: connection to Bpod failed&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_get_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bpod</span><span class="p">:</span> <span class="n">Bpod</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Result</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">BpodModule</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">bpod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">bpod</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bpod</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bpod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">module</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">bpod</span><span class="o">.</span><span class="n">modules</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">next</span><span class="p">((</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">bpod</span><span class="o">.</span><span class="n">modules</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">module_name</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> is connected to Bpod on module port #</span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">serial_port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Firmware Version: </span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">firmware_version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">module</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not connected to Bpod&#39;s module port&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Connect </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to one of Bpod&#39;s module ports&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Validator.process">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.Validator.html#iblrig.hardware_validation.Validator.process">[docs]</a>
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Result</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_results</span><span class="p">:</span>
+            <span class="k">match</span> <span class="n">results</span><span class="o">.</span><span class="n">status</span><span class="p">:</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">:</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">:</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">log_level</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raise_fail_as_exception</span> <span class="ow">and</span> <span class="n">results</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">exception</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidateHardwareError</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">results.exception</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ValidateHardwareError</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ValidatorSerial">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorSerial.html#iblrig.hardware_validation.ValidatorSerial">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorSerial</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">port_properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">serial_queries</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ValidatorSerial.__init__">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorSerial.html#iblrig.hardware_validation.ValidatorSerial.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ListPortInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">list_ports</span><span class="o">.</span><span class="n">grep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;No serial port defined for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check serial port setting in hardware_settings.yaml&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">next</span><span class="p">((</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">list_ports</span><span class="o">.</span><span class="n">comports</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s1"> is not a valid serial port&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check serial port setting in hardware_settings.yaml&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Serial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Serial device on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s1"> can be connected to&#39;</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                    <span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s1">&#39;USB ID: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="o">.</span><span class="n">vid</span><span class="si">:</span><span class="s1">04X</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="o">.</span><span class="n">pid</span><span class="si">:</span><span class="s1">04X</span><span class="si">}</span><span class="s1">, &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;Serial Number: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port_info</span><span class="o">.</span><span class="n">serial_number</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">SerialException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                    <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s1">&#39;Serial device on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s1"> cannot be connected to&#39;</span><span class="p">,</span>
+                    <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Try power-cycling the device&#39;</span><span class="p">,</span>
+                    <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># first, test for properties of the serial port without opening the latter (VID, PID, etc)</span>
+        <span class="n">passed</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">in</span> <span class="n">filter_ports</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">port_properties</span><span class="p">)</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;port_properties&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># query the devices for characteristic responses</span>
+        <span class="k">if</span> <span class="n">passed</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;serial_queries&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Serial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">write_timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">ser</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">query</span><span class="p">,</span> <span class="n">regex_pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_queries</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">query</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">return_string</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">query</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="n">ser</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">passed</span> <span class="o">:=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regex_pattern</span><span class="p">,</span> <span class="n">return_string</span><span class="p">))):</span>
+                            <span class="k">break</span>
+                <span class="k">except</span> <span class="n">SerialTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                        <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;Writing to serial device on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s1"> timed out&#39;</span><span class="p">,</span>
+                        <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Try power-cycling the device&#39;</span><span class="p">,</span>
+                        <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">passed</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Serial device positively identified as </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;Serial device on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s1"> does NOT seem to be a </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check serial port setting in hardware_settings.yaml&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorRotaryEncoderModule">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorRotaryEncoderModule.html#iblrig.hardware_validation.ValidatorRotaryEncoderModule">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorRotaryEncoderModule</span><span class="p">(</span><span class="n">ValidatorSerial</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Bpod Rotary Encoder Module&#39;</span>
+    <span class="n">port_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vid&#39;</span><span class="p">:</span> <span class="mh">0x16C0</span><span class="p">}</span>
+    <span class="n">serial_queries</span> <span class="o">=</span> <span class="p">{(</span><span class="sa">b</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="sa">b</span><span class="s1">&#39;^..$&#39;</span><span class="p">,</span> <span class="p">(</span><span class="sa">b</span><span class="s1">&#39;P00&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01</span><span class="s1">&#39;</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_rotary_encoder</span><span class="o">.</span><span class="n">COM_ROTARY_ENCODER</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># invoke ValidateSerialDevice._run()</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="k">yield from</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_run</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># obtain hardware version</span>
+        <span class="k">with</span> <span class="n">SerialSingleton</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span> <span class="k">as</span> <span class="n">ser</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;1.x&#39;</span> <span class="k">if</span> <span class="n">ser</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;Ix&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01</span><span class="s1">&#39;</span> <span class="k">else</span> <span class="s1">&#39;2+&#39;</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Hardware Version: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># try to get Bpod</span>
+        <span class="n">bpod</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bpod</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bpod</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># try to get Bpod module</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_module</span><span class="p">(</span><span class="s1">&#39;RotaryEncoder&#39;</span><span class="p">,</span> <span class="n">bpod</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">module</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+        <span class="c1"># log_fun(&#39;info&#39;, f&#39;firmware version: {bpod.modules[0].firmware_version}&#39;)</span>
+        <span class="c1">#</span>
+        <span class="c1"># s.write(b&#39;Z&#39;)</span>
+        <span class="c1"># p = np.frombuffer(query(s, b&#39;Q&#39;, 2), dtype=np.int16)[0]</span>
+        <span class="c1"># log_fun(&#39;warn&#39;, &quot;please move the wheel to the left (animal&#39;s POV) by a quarter turn&quot;)</span>
+        <span class="c1"># while np.abs(p) &lt; 200:</span>
+        <span class="c1">#     p = np.frombuffer(query(s, b&#39;Q&#39;, 2), dtype=np.int16)[0]</span>
+        <span class="c1"># if p &gt; 0:</span>
+        <span class="c1">#     log_fun(&#39;fail&#39;, &#39;Rotary encoder seems to be wired incorrectly - try swapping A and B&#39;, last=True)</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     log_fun(&#39;pass&#39;, &#39;rotary encoder is wired correctly&#39;, last=True)</span>
+        <span class="c1"># s.close()</span>
+
+
+<span class="c1"># class ValidatorScreen(Validator):</span>
+<span class="c1">#     device_name = &#39;Screen&#39;</span>
+<span class="c1">#</span>
+<span class="c1">#     def _run(self):</span>
+<span class="c1">#         pass</span>
+<span class="c1">#         # if os.name == &#39;nt&#39;:</span>
+<span class="c1">#         #     import ctypes</span>
+<span class="c1">#         #</span>
+<span class="c1">#         #     from win32api import EnumDisplayMonitors, EnumDisplaySettingsEx, GetMonitorInfo</span>
+<span class="c1">#         #</span>
+<span class="c1">#         #     display_idx = self.hardware_settings.device_screen.DISPLAY_IDX</span>
+<span class="c1">#         #     monitors = EnumDisplayMonitors()</span>
+<span class="c1">#         #     monitor = monitors[display_idx]</span>
+<span class="c1">#         #     display_handle = monitor[0]</span>
+<span class="c1">#         #     scale_factor = ctypes.windll.shcore.GetScaleFactorForDevice(display_idx)</span>
+<span class="c1">#         #     display_info = GetMonitorInfo(display_handle)</span>
+<span class="c1">#         #     display_settings = EnumDisplaySettingsEx(display_info[&#39;Device&#39;])</span>
+<span class="c1">#         #     # TODO: Implementation ...</span>
+
+
+<div class="viewcode-block" id="ValidatorAmbientModule">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorAmbientModule.html#iblrig.hardware_validation.ValidatorAmbientModule">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorAmbientModule</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Bpod Ambient Module&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># yield Bpod&#39;s connection status</span>
+        <span class="n">bpod</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bpod</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bpod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># yield module&#39;s connection status</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_module</span><span class="p">(</span><span class="s1">&#39;AmbientModule&#39;</span><span class="p">,</span> <span class="n">bpod</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># yield sensor values</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">start_module_relay</span><span class="p">()</span>
+        <span class="n">bpod</span><span class="o">.</span><span class="n">bpod_modules</span><span class="o">.</span><span class="n">module_write</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;3f&#39;</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">bpod</span><span class="o">.</span><span class="n">bpod_modules</span><span class="o">.</span><span class="n">module_read</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="mi">12</span><span class="p">)))</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">stop_module_relay</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Temperature: </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> °C&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Air pressure: </span><span class="si">{</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">100</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> mbar&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Rel. humidity: </span><span class="si">{</span><span class="n">h</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorBpod">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorBpod.html#iblrig.hardware_validation.ValidatorBpod">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorBpod</span><span class="p">(</span><span class="n">ValidatorSerial</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Bpod&#39;</span>
+    <span class="n">port_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vid&#39;</span><span class="p">:</span> <span class="mh">0x16C0</span><span class="p">}</span>
+    <span class="n">serial_queries</span> <span class="o">=</span> <span class="p">{(</span><span class="sa">b</span><span class="s1">&#39;6&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="sa">b</span><span class="s1">&#39;5&#39;</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># close existing Bpod singleton</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">bpod</span> <span class="o">:=</span> <span class="n">Bpod</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># invoke ValidateSerialDevice._run()</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="k">yield from</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_run</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check hardware and firmware version</span>
+        <span class="k">with</span> <span class="n">SerialSingleton</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span><span class="p">)</span> <span class="k">as</span> <span class="n">ser</span><span class="p">:</span>
+            <span class="n">v_major</span><span class="p">,</span> <span class="n">machine_type</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;F&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;2H&#39;</span><span class="p">)</span>
+            <span class="n">firmware_version</span> <span class="o">=</span> <span class="p">(</span><span class="n">v_major</span><span class="p">,</span> <span class="n">ser</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;H&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">v_major</span> <span class="o">&gt;</span> <span class="mi">22</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">machine_str</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;v0.5&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;r07+&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;r2.0-2.5&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;2+ r1.0&#39;</span><span class="p">}[</span><span class="n">machine_type</span><span class="p">]</span>
+            <span class="n">machine_str</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;, PCB revision</span><span class="si">{</span><span class="n">ser</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&lt;B&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">v_major</span> <span class="o">&gt;</span> <span class="mi">22</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Hardware version: </span><span class="si">{</span><span class="n">machine_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Firmware version: </span><span class="si">{</span><span class="n">firmware_version</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">firmware_version</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">firmware_version</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">22</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="s1">&#39;Firmware version greater than 22 are not supported by IBLRIG&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Downgrade the Bpod&#39;</span> <span class="s1">&#39;s firmware to version 22&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># try to connect to Bpod</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">disabled_ports</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="p">[</span><span class="s1">&#39;device_bpod&#39;</span><span class="p">][</span><span class="s1">&#39;DISABLE_BEHAVIOR_INPUT_PORTS&#39;</span><span class="p">]]</span>
+            <span class="n">bpod</span> <span class="o">=</span> <span class="n">Bpod</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_bpod</span><span class="o">.</span><span class="n">COM_BPOD</span><span class="p">,</span> <span class="n">skip_initialization</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">disable_behavior_ports</span><span class="o">=</span><span class="n">disabled_ports</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;Successfully connected to Bpod using pybpod&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="s1">&#39;Could not connect to Bpod using pybpod&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Try power-cycling the Bpod&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># return connected modules</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">bpod</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Module on port #</span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">serial_port</span><span class="si">}</span><span class="s1">: &quot;</span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># run a simple state machine to collect events on digital inputs</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="n">bpod</span><span class="p">)</span>
+            <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">}))</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="n">bpod_data</span> <span class="o">=</span> <span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">current_trial</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
+            <span class="n">events</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bpod_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Events timestamps&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="s1">&#39;Error running state-machine&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check for (un)expected input events</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">timestamps</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">event_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Out&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">event_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Low&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">event_name</span> <span class="o">==</span> <span class="s1">&#39;Tup&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">timestamps</span><span class="p">))</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;(In)|(High)&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">event_name</span><span class="p">)</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;Port&#39;</span><span class="p">,</span> <span class="s1">&#39;Behavior Port &#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;BNC&#39;</span><span class="p">,</span> <span class="s1">&#39;BNC Input &#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">event_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Port1In&#39;</span><span class="p">]:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected input events on Bpod&#39;s &#39;</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&#39; at ~</span><span class="si">{</span><span class="n">rate</span><span class="si">:</span><span class="s2">0.0f</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                    <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unexpected input events on Bpod&#39;s &#39;</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&#39; at ~</span><span class="si">{</span><span class="n">rate</span><span class="si">:</span><span class="s2">0.0f</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">,</span>
+                    <span class="n">solution</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Check wiring / device connected on &#39;</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorCamera">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorCamera.html#iblrig.hardware_validation.ValidatorCamera">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorCamera</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Camera&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_cameras</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_cameras</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_cameras</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">SKIP</span><span class="p">,</span> <span class="s1">&#39;No cameras defined in hardware_settings.yaml - skipping validation&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">HAS_SPINNAKER</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;Spinnaker SDK is installed&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span> <span class="s1">&#39;Spinnaker SDK is not installed&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Use install_spinnaker command to install Spinnaker SDK&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">HAS_PYSPIN</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;PySpin is installed&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span> <span class="s1">&#39;PySpin is not installed&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Use install_pyspin command to install PySpin&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">HAS_SPINNAKER</span> <span class="ow">and</span> <span class="n">HAS_PYSPIN</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">iblrig.video_pyspin</span> <span class="kn">import</span> <span class="n">Cameras</span><span class="p">,</span> <span class="n">enable_camera_trigger</span>
+
+            <span class="k">with</span> <span class="n">Cameras</span><span class="p">()</span> <span class="k">as</span> <span class="n">cameras</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                        <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                        <span class="s1">&#39;Could not find a camera connected to the computer&#39;</span><span class="p">,</span>
+                        <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Connect a camera on one of the computers USB ports&#39;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                        <span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span><span class="si">}</span><span class="s1"> camera</span><span class="si">{</span><span class="s2">&quot;s&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="si">}</span><span class="s1"> connected to the computer&#39;</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+                        <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                            <span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s1">&#39;Camera </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">cameras</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">DeviceModelName</span><span class="o">.</span><span class="n">ToString</span><span class="p">()</span><span class="si">}</span><span class="s1">, &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;Serial #</span><span class="si">{</span><span class="n">cameras</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">DeviceID</span><span class="o">.</span><span class="n">ToString</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">cameras</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+        <span class="c1"># yield Bpod&#39;s connection status</span>
+        <span class="n">bpod</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bpod</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bpod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="n">bpod</span><span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;collect&#39;</span><span class="p">,</span> <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">})</span>
+        <span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+        <span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+        <span class="n">triggers</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">host_timestamp</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">current_trial</span><span class="o">.</span><span class="n">events_occurrences</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">content</span> <span class="o">==</span> <span class="s1">&#39;Port1In&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">triggers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="s2">&quot;No TTL detected on Bpod&#39;s behavior port #1&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check the wiring between camera and valve driver board and make sure the latter is connected &#39;</span>
+                <span class="s2">&quot;to Bpod&#39;s behavior port #1&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s2">&quot;Detected camera TTL on Bpod&#39;s behavior port #1&quot;</span><span class="p">)</span>
+            <span class="n">trigger_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">triggers</span><span class="p">))</span>
+            <span class="n">target_rate</span> <span class="o">=</span> <span class="mi">30</span>
+            <span class="k">if</span> <span class="n">isclose</span><span class="p">(</span><span class="n">trigger_rate</span><span class="p">,</span> <span class="n">target_rate</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Measured TTL rate: </span><span class="si">{</span><span class="n">trigger_rate</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> Hz&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Measured TTL rate: </span><span class="si">{</span><span class="n">trigger_rate</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> Hz (expecting </span><span class="si">{</span><span class="n">target_rate</span><span class="si">}</span><span class="s1"> Hz)&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorAlyx">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorAlyx.html#iblrig.hardware_validation.ValidatorAlyx">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorAlyx</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Alyx&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Validate ALYX_URL</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_URL</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">SKIP</span><span class="p">,</span> <span class="s1">&#39;ALYX_URL has not been set in hardware_settings.yaml - skipping validation&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Cannot connect to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_URL</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check your Internet connection&#39;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">internet_available</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_URL</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">443</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;Cannot connect to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_URL</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check ALYX_URL in hardware_settings.yaml and make sure that your computer is allowed to connect&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_URL</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s1"> can be connected to&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Validate ALYX_LAB</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iblrig_settings</span><span class="o">.</span><span class="n">ALYX_LAB</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="s1">&#39;ALYX_LAB has not been set&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Set ALYX_LAB in hardware_settings.yaml&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorValve">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorValve.html#iblrig.hardware_validation.ValidatorValve">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorValve</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Valve&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">calibration_date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_valve</span><span class="o">.</span><span class="n">WATER_CALIBRATION_DATE</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="n">delta_warn</span> <span class="o">=</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">delta_fail</span> <span class="o">=</span> <span class="n">relativedelta</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">days_passed</span> <span class="o">=</span> <span class="p">(</span><span class="n">today</span> <span class="o">-</span> <span class="n">calibration_date</span><span class="p">)</span><span class="o">.</span><span class="n">days</span>
+        <span class="k">if</span> <span class="n">calibration_date</span> <span class="o">&gt;</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="s1">&#39;Date of last valve calibration is in the future&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Calibrate valve&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">calibration_date</span> <span class="o">+</span> <span class="n">delta_warn</span> <span class="o">&lt;</span> <span class="n">today</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Valve has not been calibrated in </span><span class="si">{</span><span class="n">days_passed</span><span class="si">}</span><span class="s1"> days&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Calibrate valve&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">calibration_date</span> <span class="o">+</span> <span class="n">delta_fail</span> <span class="o">&lt;</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Valve has not been calibrated in </span><span class="si">{</span><span class="n">days_passed</span><span class="si">}</span><span class="s1"> days&#39;</span><span class="p">,</span> <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Calibrate valve&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">days_passed</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Valve has been calibrated </span><span class="si">{</span><span class="n">days_passed</span><span class="si">}</span><span class="s1"> days ago&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Valve has been calibrated </span><span class="si">{</span><span class="s2">&quot;yesterday&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">days_passed</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;today&quot;</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorMic">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorMic.html#iblrig.hardware_validation.ValidatorMic">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorMic</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Microphone&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_microphone</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">SKIP</span><span class="p">,</span> <span class="s1">&#39;No workflow defined for microphone&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">sounddevice</span><span class="o">.</span><span class="n">_terminate</span><span class="p">()</span>
+        <span class="n">sounddevice</span><span class="o">.</span><span class="n">_initialize</span><span class="p">()</span>
+
+        <span class="n">devices</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sounddevice</span><span class="o">.</span><span class="n">query_devices</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;UltraMic 200K&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;Found UltraMic 200K microphone&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="s1">&#39;Could not find UltraMic 200K microphone&#39;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Make sure that the microphone is connected to the PC via USB&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorFrame2TTL">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorFrame2TTL.html#iblrig.hardware_validation.ValidatorFrame2TTL">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorFrame2TTL</span><span class="p">(</span><span class="n">ValidatorSerial</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Frame2TTL&#39;</span>
+    <span class="n">serial_queries</span> <span class="o">=</span> <span class="p">{(</span><span class="sa">b</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xda</span><span class="s1">&#39;</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">COM_F2TTL</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># invoke ValidateSerialDevice._run()</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="k">yield from</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_run</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># obtain information on versions and thresholds</span>
+        <span class="k">with</span> <span class="n">Frame2TTL</span><span class="p">(</span>
+            <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">threshold_light</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">F2TTL_LIGHT_THRESH</span><span class="p">,</span>
+            <span class="n">threshold_dark</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_frame2ttl</span><span class="o">.</span><span class="n">F2TTL_DARK_THRESH</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">frame2ttl</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Hardware Version: </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">hw_version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Firmware Version: </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">fw_version</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Light Threshold: </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">threshold_light</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">unit_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Dark Threshold: </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">threshold_dark</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">frame2ttl</span><span class="o">.</span><span class="n">unit_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># try to get Bpod</span>
+        <span class="n">bpod</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bpod</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bpod</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># prepare test of TTL output</span>
+        <span class="kn">from</span> <span class="nn">iblrig.gui.frame2ttl</span> <span class="kn">import</span> <span class="n">Frame2TTLCalibrationTarget</span>
+
+        <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">app_created</span> <span class="o">:=</span> <span class="p">(</span><span class="n">app</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">([])</span>
+
+        <span class="c1"># show calibration target</span>
+        <span class="n">calibration_target</span> <span class="o">=</span> <span class="n">Frame2TTLCalibrationTarget</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">QColorConstants</span><span class="o">.</span><span class="n">Black</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># allow for screen to update</span>
+
+        <span class="c1"># Define state-machine</span>
+        <span class="k">def</span> <span class="nf">softcode_handler</span><span class="p">(</span><span class="n">softcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">calibration_target</span>
+            <span class="n">calibration_target</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">QColorConstants</span><span class="o">.</span><span class="n">White</span> <span class="k">if</span> <span class="n">softcode</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">QColorConstants</span><span class="o">.</span><span class="n">Black</span>
+
+        <span class="n">original_softcode_handler</span> <span class="o">=</span> <span class="n">bpod</span><span class="o">.</span><span class="n">softcode_handler_function</span>
+        <span class="n">bpod</span><span class="o">.</span><span class="n">softcode_handler_function</span> <span class="o">=</span> <span class="n">softcode_handler</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="n">bpod</span><span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;black&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span>
+            <span class="n">state_timer</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">state_change_conditions</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">},</span>
+            <span class="n">output_actions</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;SoftCode&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Run state-machine</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="n">bpod_data</span> <span class="o">=</span> <span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">current_trial</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
+            <span class="n">events</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">bpod_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Events timestamps&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span> <span class="s1">&#39;Error running state-machine&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">bpod</span><span class="o">.</span><span class="n">softcode_handler_function</span> <span class="o">=</span> <span class="n">original_softcode_handler</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># allow state machine to finish</span>
+            <span class="n">calibration_target</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">app_created</span><span class="p">:</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+
+        <span class="c1"># Evaluate results</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">n_events</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BNC1High&#39;</span><span class="p">,</span> <span class="p">[]))</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BNC1Low&#39;</span><span class="p">,</span> <span class="p">[])))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s2">&quot;Detected the correct number of events on Bpod&#39;s &#39;TTL Input 1&#39;&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="p">(</span><span class="s1">&#39;No&#39;</span> <span class="k">if</span> <span class="n">n_events</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;too few&#39;</span> <span class="k">if</span> <span class="n">n_events</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="s1">&#39;too many&#39;</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot; events detected on Bpod&#39;s &#39;BNC Input 1&#39;&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s1">&#39;Check for proper installation and calibration of Frame2TTL module&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="ValidatorGit">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorGit.html#iblrig.hardware_validation.ValidatorGit">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorGit</span><span class="p">(</span><span class="n">Validator</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Git&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_GIT</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">SKIP</span><span class="p">,</span> <span class="s1">&#39;Your copy of IBLRIG is not managed through Git&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">return_status</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">main_branch</span> <span class="o">=</span> <span class="s1">&#39;iblrigv8&#39;</span>
+        <span class="n">this_branch</span> <span class="o">=</span> <span class="n">get_branch</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">this_branch</span> <span class="o">!=</span> <span class="n">main_branch</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;Working tree of IBLRIG is on Git branch &#39;</span><span class="si">{</span><span class="n">this_branch</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Issue &#39;git checkout </span><span class="si">{</span><span class="n">main_branch</span><span class="si">}</span><span class="s2">&#39; to switch to &#39;</span><span class="si">{</span><span class="n">main_branch</span><span class="si">}</span><span class="s2">&#39; branch&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">return_status</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Working tree of IBLRIG is on Git branch &#39;</span><span class="si">{</span><span class="n">main_branch</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_dirty</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">,</span>
+                <span class="s2">&quot;Working tree of IBLRIG contains local changes - don&#39;t expect things to work as intended!&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s2">&quot;To list files that have been changed locally, issue &#39;git diff --name-only&#39;. &quot;</span>
+                <span class="s2">&quot;Issue &#39;git reset --hard&#39; to reset the repository to its default state&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">return_status</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;Working tree of IBLRIG does not contain local changes&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">return_status</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">_SoundCheckTask</span><span class="p">(</span><span class="n">BpodMixin</span><span class="p">,</span> <span class="n">SoundMixin</span><span class="p">):</span>
+    <span class="n">protocol_name</span> <span class="o">=</span> <span class="s1">&#39;hardware_check_harp&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">param_file</span> <span class="o">=</span> <span class="n">BASE_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="s1">&#39;base_choice_world_params.yaml&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">task_parameter_file</span><span class="o">=</span><span class="n">param_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">start_hardware</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_bpod</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_mixin_sound</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sma</span> <span class="o">=</span> <span class="n">StateMachine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="p">)</span>
+        <span class="n">sma</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;tone&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Tup&#39;</span><span class="p">:</span> <span class="s1">&#39;exit&#39;</span><span class="p">},</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">actions</span><span class="o">.</span><span class="n">play_tone</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">sma</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">create_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">send_spacers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="ValidatorSound">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorSound.html#iblrig.hardware_validation.ValidatorSound">[docs]</a>
+<span class="k">class</span> <span class="nc">ValidatorSound</span><span class="p">(</span><span class="n">ValidatorSerial</span><span class="p">):</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Sound&#39;</span>
+    <span class="n">_module_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ValidatorSound.__init__">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.ValidatorSound.html#iblrig.hardware_validation.ValidatorSound.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">output_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;hardware_settings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">OUTPUT</span>
+        <span class="k">match</span> <span class="n">output_type</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s1">&#39;harp&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;HARP Sound Card&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span> <span class="o">=</span> <span class="s1">&#39;SoundCard&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vid&#39;</span><span class="p">:</span> <span class="mh">0x0403</span><span class="p">,</span> <span class="s1">&#39;pid&#39;</span><span class="p">:</span> <span class="mh">0x6001</span><span class="p">}</span>
+            <span class="k">case</span> <span class="s1">&#39;hifi&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Bpod HiFi Module&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span> <span class="o">=</span> <span class="s1">&#39;HiFi&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">serial_queries</span> <span class="o">=</span> <span class="p">{(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xf3</span><span class="s1">&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\xf4</span><span class="s1">&#39;</span><span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vid&#39;</span><span class="p">:</span> <span class="mh">0x16C0</span><span class="p">,</span> <span class="s1">&#39;pid&#39;</span><span class="p">:</span> <span class="mh">0x0483</span><span class="p">}</span>
+            <span class="k">case</span> <span class="s1">&#39;xonar&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s1">&#39;Xonar Sound Card&#39;</span>
+        <span class="k">if</span> <span class="n">output_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;harp&#39;</span><span class="p">,</span> <span class="s1">&#39;hifi&#39;</span><span class="p">]:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># call ValidatorSerial.__init__()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">ValidatorSerial</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># call Validator.__init__()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s1">&#39;harp&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">com_port</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">com_port</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">COM_SOUND</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">filter_ports</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">port_properties</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">case</span> <span class="s1">&#39;hifi&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">COM_SOUND</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">success</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;sysdefault&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                <span class="s2">&quot;Sound output device &#39;sysdefault&#39; is intended for testing purposes only&quot;</span><span class="p">,</span>
+                <span class="n">solution</span><span class="o">=</span><span class="s2">&quot;Set device_sound.OUTPUT to &#39;hifi&#39;, &#39;harp&#39; or &#39;xonar&#39;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check serial device</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">OUTPUT</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;harp&#39;</span><span class="p">,</span> <span class="s1">&#39;hifi&#39;</span><span class="p">]:</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="k">yield from</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_run</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># device-specific validations</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_sound</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s1">&#39;harp&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">dev</span> <span class="o">:=</span> <span class="n">usb</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">manufacturer</span><span class="o">=</span><span class="s1">&#39;Champalimaud Foundation&#39;</span><span class="p">,</span> <span class="n">product</span><span class="o">=</span><span class="s1">&#39;Harp Sound Card&#39;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                        <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                        <span class="s1">&#39;Cannot find USB sound device&#39;</span><span class="p">,</span>
+                        <span class="n">solution</span><span class="o">=</span><span class="s2">&quot;Connect both of the sound card&#39;s USB ports and make sure that the HARP drivers are &quot;</span>
+                        <span class="s1">&#39;installed&#39;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s1">&#39;Found USB sound device&#39;</span><span class="p">)</span>
+                    <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;USB ID: </span><span class="si">{</span><span class="n">dev</span><span class="o">.</span><span class="n">idVendor</span><span class="si">:</span><span class="s1">04X</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">dev</span><span class="o">.</span><span class="n">idProduct</span><span class="si">:</span><span class="s1">04X</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># yield module&#39;s connection status</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_module_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># run state machine</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">_SoundCheckTask</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="s1">&#39;toto&#39;</span><span class="p">)</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">start_hardware</span><span class="p">()</span>
+            <span class="n">sma</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get_state_machine</span><span class="p">()</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">send_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="s1">&#39;Playing audible sound - can you hear it?&#39;</span><span class="p">)</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">run_state_machine</span><span class="p">(</span><span class="n">sma</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">)</span>
+            <span class="n">bpod_data</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">bpod</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">current_trial</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">n_events</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="s1">&#39;Events timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BNC2High&#39;</span><span class="p">,</span> <span class="p">[])))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                    <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                    <span class="s2">&quot;No event detected on Bpod&#39;s BNC In 2&quot;</span><span class="p">,</span>
+                    <span class="n">solution</span><span class="o">=</span><span class="s2">&quot;Make sure to connect the sound-card to Bpod&#39;s TTL Input 2&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">n_events</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span><span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">,</span> <span class="s2">&quot;Detected Event on Bpod&#39;s &#39;TTL Input 2&#39;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Result</span><span class="p">(</span>
+                    <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">,</span>
+                    <span class="s2">&quot;Multiple events detected on Bpod&#39;s BNC Input 2&quot;</span><span class="p">,</span>
+                    <span class="n">solution</span><span class="o">=</span><span class="s2">&quot;Make sure to connect the sound-card to Bpod&#39;s TTL Input 2&quot;</span><span class="p">,</span>
+                <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_all_validators">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.get_all_validators.html#iblrig.hardware_validation.get_all_validators">[docs]</a>
+<span class="k">def</span> <span class="nf">get_all_validators</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">Validator</span><span class="p">]]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">cast</span><span class="p">(</span><span class="nb">type</span><span class="p">[</span><span class="n">Validator</span><span class="p">],</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">get_inheritors</span><span class="p">(</span><span class="n">Validator</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">isabstract</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span></div>
+
+
+
+<div class="viewcode-block" id="run_all_validators">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.run_all_validators.html#iblrig.hardware_validation.run_all_validators">[docs]</a>
+<span class="k">def</span> <span class="nf">run_all_validators</span><span class="p">(</span>
+    <span class="n">iblrig_settings</span><span class="p">:</span> <span class="n">RigSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">hardware_settings</span><span class="p">:</span> <span class="n">HardwareSettings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interactive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Result</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="n">validators</span> <span class="o">=</span> <span class="n">get_all_validators</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="n">validators</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">validator</span><span class="p">(</span><span class="n">iblrig_settings</span><span class="o">=</span><span class="n">iblrig_settings</span><span class="p">,</span> <span class="n">hardware_settings</span><span class="o">=</span><span class="n">hardware_settings</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="n">interactive</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="run_all_validators_cli">
+<a class="viewcode-back" href="../../api/iblrig.hardware_validation.run_all_validators_cli.html#iblrig.hardware_validation.run_all_validators_cli">[docs]</a>
+<span class="k">def</span> <span class="nf">run_all_validators_cli</span><span class="p">():</span>
+    <span class="n">validators</span> <span class="o">=</span> <span class="n">get_all_validators</span><span class="p">()</span>
+    <span class="n">hardware_settings</span> <span class="o">=</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">HardwareSettings</span><span class="p">)</span>
+    <span class="n">iblrig_settings</span> <span class="o">=</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">RigSettings</span><span class="p">)</span>
+    <span class="n">fail</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">warn</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="n">validators</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">validator</span><span class="p">(</span><span class="n">hardware_settings</span><span class="o">=</span><span class="n">hardware_settings</span><span class="p">,</span> <span class="n">iblrig_settings</span><span class="o">=</span><span class="n">iblrig_settings</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ANSI</span><span class="o">.</span><span class="n">UNDERLINE</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">ANSI</span><span class="o">.</span><span class="n">END</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">run</span><span class="p">():</span>
+            <span class="k">match</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">:</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">PASS</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">GREEN</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;✓&#39;</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">FAIL</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span>
+                    <span class="n">fail</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;✗&#39;</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">WARN</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">YELLOW</span> <span class="o">+</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span>
+                    <span class="n">warn</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;!&#39;</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BLUE</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;i&#39;</span>
+                <span class="k">case</span> <span class="n">Status</span><span class="o">.</span><span class="n">SKIP</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">WHITE</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;∅&#39;</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">END</span>
+                    <span class="n">symbol</span> <span class="o">=</span> <span class="s1">&#39;?&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s1">  </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s1">  </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="si">}{</span><span class="n">ANSI</span><span class="o">.</span><span class="n">END</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">solution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">solution</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s1">     Suggestion: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">solution</span><span class="si">}{</span><span class="n">ANSI</span><span class="o">.</span><span class="n">END</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fail</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">ANSI</span><span class="o">.</span><span class="n">RED</span> <span class="o">+</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fail</span><span class="si">}</span><span class="s1"> validation</span><span class="si">{</span><span class="s2">&quot;s&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">fail</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="si">}</span><span class="s1"> failed.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">warn</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">ANSI</span><span class="o">.</span><span class="n">YELLOW</span> <span class="o">+</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;Validations passed with </span><span class="si">{</span><span class="n">warn</span><span class="si">}</span><span class="s1"> warning</span><span class="si">{</span><span class="s2">&quot;s&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">warn</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">warn</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">fail</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">ANSI</span><span class="o">.</span><span class="n">GREEN</span> <span class="o">+</span> <span class="n">ANSI</span><span class="o">.</span><span class="n">BOLD</span> <span class="o">+</span> <span class="s1">&#39;All validations were passed - no issues found.&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2024 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

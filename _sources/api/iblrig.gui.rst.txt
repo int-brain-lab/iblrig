@@ -1,0 +1,63 @@
+iblrig.gui
+==========
+
+.. automodule:: iblrig.gui
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+ 
+   frame2ttl
+    
+   micromanipulator
+    
+   resources_rc
+    
+   splash
+    
+   tab_about
+    
+   tab_data
+    
+   tab_docs
+    
+   tab_log
+    
+   tools
+    
+   ui_frame2ttl
+    
+   ui_login
+    
+   ui_micromanipulator
+    
+   ui_splash
+    
+   ui_tab_about
+    
+   ui_tab_data
+    
+   ui_tab_docs
+    
+   ui_tab_log
+    
+   ui_tab_session
+    
+   ui_update
+    
+   ui_validation
+    
+   ui_valve
+    
+   ui_wizard
+    
+   validation
+    
+   valve
+    
+   wizard
+   

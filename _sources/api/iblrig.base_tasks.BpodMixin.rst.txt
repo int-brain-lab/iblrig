@@ -1,0 +1,13 @@
+iblrig.base\_tasks.BpodMixin
+============================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: BpodMixin
+   :parts: 1
+
+|
+
+.. autoclass:: BpodMixin
+   :members:
+   :undoc-members:

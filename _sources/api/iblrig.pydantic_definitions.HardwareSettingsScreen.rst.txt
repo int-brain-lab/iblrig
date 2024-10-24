@@ -1,0 +1,13 @@
+iblrig.pydantic\_definitions.HardwareSettingsScreen
+===================================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. inheritance-diagram:: HardwareSettingsScreen
+   :parts: 1
+
+|
+
+.. autoclass:: HardwareSettingsScreen
+   :members:
+   :undoc-members:

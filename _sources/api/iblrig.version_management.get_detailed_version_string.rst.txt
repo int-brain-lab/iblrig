@@ -1,0 +1,6 @@
+iblrig.version\_management.get\_detailed\_version\_string
+=========================================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: get_detailed_version_string

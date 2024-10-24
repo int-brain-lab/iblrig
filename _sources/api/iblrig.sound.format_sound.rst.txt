@@ -1,0 +1,6 @@
+iblrig.sound.format\_sound
+==========================
+
+.. currentmodule:: iblrig.sound
+
+.. autofunction:: format_sound

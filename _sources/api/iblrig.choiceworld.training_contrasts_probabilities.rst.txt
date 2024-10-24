@@ -1,0 +1,6 @@
+iblrig.choiceworld.training\_contrasts\_probabilities
+=====================================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: training_contrasts_probabilities

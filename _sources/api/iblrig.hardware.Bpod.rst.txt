@@ -1,0 +1,13 @@
+iblrig.hardware.Bpod
+====================
+
+.. currentmodule:: iblrig.hardware
+
+.. inheritance-diagram:: Bpod
+   :parts: 1
+
+|
+
+.. autoclass:: Bpod
+   :members:
+   :undoc-members:

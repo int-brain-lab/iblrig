@@ -1,0 +1,6 @@
+iblrig.commands.view\_session
+=============================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: view_session

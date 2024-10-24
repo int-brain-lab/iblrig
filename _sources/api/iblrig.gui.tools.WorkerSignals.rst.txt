@@ -1,0 +1,13 @@
+iblrig.gui.tools.WorkerSignals
+==============================
+
+.. currentmodule:: iblrig.gui.tools
+
+.. inheritance-diagram:: WorkerSignals
+   :parts: 1
+
+|
+
+.. autoclass:: WorkerSignals
+   :members:
+   :undoc-members:

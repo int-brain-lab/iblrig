@@ -1,0 +1,6 @@
+iblrig.commands.transfer\_ephys\_data\_cli
+==========================================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: transfer_ephys_data_cli
