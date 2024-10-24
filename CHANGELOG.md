@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.24.7
+------
+* fix: debiasing not working in trainingCW
+
 8.24.6
 ------
 * add property getters for feedback delays (for NM custom task)

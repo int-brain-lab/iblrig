@@ -1010,7 +1010,9 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
             do_debias_trial = (self.trials_table.loc[self.trial_num - 1, 'trial_correct'] != 1) and last_contrast >= 0.5
             self.trials_table.at[self.trial_num, 'debias_trial'] = do_debias_trial
             if do_debias_trial:
-                iresponse = self.trials_table['response_side'] != 0  # trials that had a response
+                iresponse = np.logical_and(
+                    ~self.trials_table['response_side'].isna(), self.trials_table['response_side'] != 0
+                )  # trials that had a response
                 # takes the average of right responses over last 10 response trials
                 average_right = np.mean(self.trials_table['response_side'][iresponse[-np.maximum(10, iresponse.size) :]] == 1)
                 # the next probability of next stimulus being on the left is a draw from a normal distribution
@@ -1029,6 +1031,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         info_dict = {
             'Contrast Set': np.unique(np.abs(choiceworld.contrasts_set(self.training_phase))),
             'Training Phase': self.training_phase,
+            'Debias Trial': self.trials_table.at[self.trial_num, 'debias_trial'],
         }
 
         # update info dict with extra_info dict
