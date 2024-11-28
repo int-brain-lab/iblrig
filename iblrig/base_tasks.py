@@ -130,15 +130,7 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
-        if hardware_settings is not None:
-            self.hardware_settings.update(hardware_settings)
-            HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
-        if iblrig_settings is not None:
-            self.iblrig_settings.update(iblrig_settings)
-            RigSettings.model_validate(self.iblrig_settings)
-
+        self._load_settings(file_hardware_settings=file_hardware_settings, hardware_settings=hardware_settings, file_iblrig_settings=file_iblrig_settings, iblrig_settings=iblrig_settings)
         self.wizard = wizard
 
         # Load the tasks settings, from the task folder or override with the input argument
@@ -173,6 +165,16 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    def _load_settings(self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_):
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        if hardware_settings is not None:
+            self.hardware_settings.update(hardware_settings)
+            HardwareSettings.model_validate(self.hardware_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        if iblrig_settings is not None:
+            self.iblrig_settings.update(iblrig_settings)
+            RigSettings.model_validate(self.iblrig_settings)
 
     @classmethod
     def get_task_file(cls) -> Path:
@@ -1211,7 +1213,8 @@ class NetworkSession(BaseSession):
         if isinstance(remote_rigs, list):
             # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
             remote_rigs = list(filter(None, flatten(remote_rigs)))
-            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings'))
+            self._load_settings(**kwargs)
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=self.iblrig_settings)
             if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                 raise ValueError('Selected remote rigs not in remote rigs list')
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
