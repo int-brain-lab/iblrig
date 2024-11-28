@@ -1302,11 +1302,12 @@ class NetworkSession(BaseSession):
         assert self.exp_ref
         paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
         paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
-        if append == paths.TASK_COLLECTION.endswith('00'):
-            raise ValueError(
-                f'Append value incorrect. Either remove previous task collections from '
-                f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
-            )
+        # if append == paths.TASK_COLLECTION.endswith('00'):
+        #     raise ValueError(
+        #         f'Append value incorrect. Either remove previous task collections from '
+        #         f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
+        #     )
+        log.critical('This is task number %i for %s', int(paths.TASK_COLLECTION.split('_')[-1]) + 1, self.exp_ref)
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
@@ -1405,6 +1406,7 @@ class NetworkSession(BaseSession):
                 f'Running past or future sessions not currently supported. \n'
                 f'Please check the system date time settings on each rig.'
             )
+        # TODO How to handle folder already existing before running UDP experiment?
 
         # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
         exp_ref = self.one.dict2ref(self.exp_ref)
