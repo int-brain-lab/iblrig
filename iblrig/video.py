@@ -775,7 +775,8 @@ class CameraSessionNetworked(CameraSession):
     async def on_init(self, data, addr):
         """Process init command from remote rig."""
         self.logger.info('INIT message received')
-        assert (exp_ref := (data or {}).get('exp_ref')), 'No experiment reference found'
+        data = data[0] if any(data) else {}
+        assert (exp_ref := data.get('exp_ref')), 'No experiment reference found'  # FIXME graceful error (stop thread somehow so there's no hanging)
         if isinstance(exp_ref, str):
             exp_ref = self.one.ref2dict(exp_ref)
         # NB: Only the first match case for which predicate is true will be run so we can update the status dynamically
@@ -807,7 +808,7 @@ class CameraSessionNetworked(CameraSession):
             case _:
                 raise NotImplementedError(f'Unexpected status "{self.status}"')
         data = ExpInfo(self.exp_ref, False, self.experiment_description)
-        await self.communicator.init(self.status, data.to_dict(), addr=addr)
+        await self.communicator.init([self.status, data.to_dict()], addr=addr)
 
     async def on_start(self, data, addr):
         """Process init command from remote rig."""
