@@ -191,15 +191,17 @@ def prepare_video_session_cmd():
     if args.subject_name is None and args.service_uri is False:
         parser.error('--subject-name is mandatory if --service-uri has not been provided.')
 
-    setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
+    log_level = 'DEBUG' if args.debug else 'INFO'
+    setup_logger(name='iblrig', level=log_level)
     service_uri = args.service_uri
     # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
     # False but until fully tested, let's call the old function
     if service_uri is False:
         # TODO Use CameraSession object and remove prepare_video_session and prepare_video_service
-        prepare_video_session(args.subject_name, args.profile, debug=args.debug)
+        # prepare_video_session(args.subject_name, args.profile, debug=args.debug)
+        session = CameraSession(subject=args.subject_name, config_name=args.profile, log_level=log_level)
+        session.run()
     else:
-        log_level = 'DEBUG' if args.debug else 'INFO'
         session = CameraSessionNetworked(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         asyncio.run(session.run(service_uri))
 
