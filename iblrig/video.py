@@ -596,7 +596,7 @@ class CameraSession(EmptySession):
             os.removedirs(self.paths['SESSION_RAW_DATA_FOLDER'])
 
     def stop_recording(self):
-        if self.bonsai_process and self.bonsai_process.poll() is None:
+        if self.bonsai_process and self.bonsai_process.returncode is None:
             self.bonsai_process.terminate()
             self._status = net.base.ExpStatus.STOPPED
         self.logger.info('Video acquisition session finished.')
