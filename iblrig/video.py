@@ -669,6 +669,14 @@ class CameraSessionNetworked(CameraSession):
         assert task and not task.done(), 'No Bonsai process found!'
         return super().start_recording()
 
+    async def stop_recording(self):
+        if self.bonsai_process and self.bonsai_process.returncode is None:
+            self.bonsai_process.terminate()
+            await self.bonsai_process.wait()
+            self._status = net.base.ExpStatus.STOPPED
+        self.logger.info('Video acquisition session finished.')
+        self.finalize_recording()
+
     @property
     def is_connected(self) -> bool:
         """bool: True if communicator is connected."""
@@ -760,12 +768,12 @@ class CameraSessionNetworked(CameraSession):
         self.logger.info('Received keyboard event: %s', line)
         match line:
             case 'STOP':
-                self.stop_recording()
+                await self.stop_recording()
             case 'QUIT':
                 self.communicator.close()
                 process_finished = self.bonsai_process and self.bonsai_process.returncode is not None
                 if not (self.status is net.base.ExpStatus.STOPPED and process_finished):
-                    self.stop_recording()
+                    await self.stop_recording()
             case line if line.startswith('QUIT!'):
                 self.close()
             case 'START':
