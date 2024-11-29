@@ -1210,6 +1210,7 @@ class NetworkSession(BaseSession):
             Optional args such as 'file_iblrig_settings' for defining location of remote data folder
             when loading remote devices file.
         """
+        kwargs['log_level'] = 'DEBUG'
         if isinstance(remote_rigs, list):
             # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
             remote_rigs = list(filter(None, flatten(remote_rigs)))
@@ -1319,7 +1320,9 @@ class NetworkSession(BaseSession):
         """Run session and report exceptions to remote services."""
         self.start_mixin_network()
         try:
-            return super().run()
+            ret = super().run()
+            # self.cleanup_mixin_network()
+            return ret
         except Exception as e:
             # Communicate error to services
             if self.remote_rigs.is_connected:
@@ -1433,6 +1436,7 @@ class NetworkSession(BaseSession):
 
     def cleanup_mixin_network(self):
         """Clean up services."""
+        log.critical('cleanup called')
         self.remote_rigs.close()
         if self.remote_rigs.is_connected:
             log.warning('Failed to properly clean up network mixin')

@@ -65,6 +65,7 @@ import logging
 import sys
 import threading
 import time
+import signal
 from dataclasses import dataclass, field
 from urllib.parse import urlparse
 
@@ -102,6 +103,7 @@ class Auxiliaries:
     """threading.Event: A thread event. Set by async thread once all services connected."""
     _thread = None
     """threading.Thread: An async thread handle."""
+    stopped = False
 
     def __new__(cls, *args, **kwargs):
         cls.response_received = threading.Condition()
@@ -203,7 +205,22 @@ class Auxiliaries:
         """
         with self.connected:
             await self.create()
+        task = None
         while not self.stop_event.is_set():
+            log.critical('refresh')
+            if task is None:
+                task = asyncio.create_task(anext(read_stdin()), name='keyboard')
+            if task.done():
+                log.critical('STDIN task done')
+                if net.base.is_success(task) and task.result().strip().casefold() == 'stop':
+                    self.stop_event.set()
+                    self.stopped = True
+                    cb = signal.getsignal(signal.SIGINT)
+                    if callable(cb):
+                        log.critical('executing SIGINT callback')
+                        cb()
+                task = None
+
             if any(queue := sorted(self._queued)):
                 request_time = queue[0]
                 t_str = time.strftime('%H:%M:%S', time.localtime(request_time))
@@ -243,6 +260,8 @@ class Auxiliaries:
                     self.response_received.notify()
             if not self.stop_event.is_set():
                 await asyncio.sleep(self.refresh_rate)
+        if task:
+            task.cancel()
         await self.cleanup()
 
     def push(self, message: net.base.ExpMessage, *args, wait=False, **kwargs):

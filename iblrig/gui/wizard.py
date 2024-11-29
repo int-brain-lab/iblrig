@@ -1063,6 +1063,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tabLog))
             case 'Stop':
                 self.uiPushStart.setEnabled(False)
+                log.critical('Writing STOP to subprocess')
+                self.running_task_process.write('STOP\n'.encode())
                 if self.model.session_folder and self.model.session_folder.exists():
                     self.model.session_folder.joinpath('.stop').touch()
 
