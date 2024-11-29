@@ -709,6 +709,7 @@ class CameraSessionNetworked(CameraSession):
                         else:
                             self.logger.info('Bonsai camera acquisition stopped')
                         self._status = net.base.ExpStatus.STOPPED
+                        self.finalize_recording()
                         # TODO We could send a message to remote here
                     case _:
                         raise NotImplementedError(f'Unexpected task "{task.get_name()}"')
@@ -756,8 +757,13 @@ class CameraSessionNetworked(CameraSession):
             return
         self.logger.info('Received keyboard event: %s', line)
         match line:
+            case 'STOP':
+                self.stop_recording()
             case 'QUIT':
                 self.communicator.close()
+                process_finished = self.bonsai_process and self.bonsai_process.returncode is not None
+                if not (self.status is net.base.ExpStatus.STOPPED and process_finished):
+                    self.stop_recording()
             case line if line.startswith('QUIT!'):
                 self.close()
             case 'START':
