@@ -130,7 +130,12 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        self._load_settings(file_hardware_settings=file_hardware_settings, hardware_settings=hardware_settings, file_iblrig_settings=file_iblrig_settings, iblrig_settings=iblrig_settings)
+        self._load_settings(
+            file_hardware_settings=file_hardware_settings,
+            hardware_settings=hardware_settings,
+            file_iblrig_settings=file_iblrig_settings,
+            iblrig_settings=iblrig_settings,
+        )
         self.wizard = wizard
 
         # Load the tasks settings, from the task folder or override with the input argument
@@ -166,7 +171,9 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _load_settings(self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_):
+    def _load_settings(
+        self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
+    ):
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)

@@ -197,8 +197,6 @@ def prepare_video_session_cmd():
     # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
     # False but until fully tested, let's call the old function
     if service_uri is False:
-        # TODO Use CameraSession object and remove prepare_video_session and prepare_video_service
-        # prepare_video_session(args.subject_name, args.profile, debug=args.debug)
         session = CameraSession(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         session.run()
     else:
@@ -296,174 +294,6 @@ def validate_video(video_path, config):
                 if ch:
                     log.log(30 if len(ch['indices']) < min_events else 20, '%i event(s) on GPIO #%i', len(ch['indices']), i + 1)
     return ok
-
-
-def prepare_video_session(subject_name: str, config_name: str, debug: bool = False):
-    """
-    Setup and record video.
-
-    Parameters
-    ----------
-    subject_name : str
-        A subject name.
-    config_name : str
-        Camera configuration name, found in "device_cameras" map of hardware_settings.yaml.
-    debug : bool
-        Bonsai debug mode and verbose logging.
-    """
-    assert HAS_SPINNAKER
-    assert HAS_PYSPIN
-
-    # Initialize a session for paths and settings
-    session = EmptySession(subject=subject_name, interactive=False)
-    session_path = session.paths.SESSION_FOLDER
-    raw_data_folder = session_path.joinpath('raw_video_data')
-
-    # Fetch camera configuration from hardware settings file
-    try:
-        config = session.hardware_settings.device_cameras[config_name]
-    except AttributeError as ex:
-        if hasattr(value_error := ValueError('"No camera config in hardware_settings.yaml file."'), 'add_note'):
-            value_error.add_note(str(HARDWARE_SETTINGS_YAML))  # py 3.11
-        raise value_error from ex
-    except KeyError as ex:
-        raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
-    workflows = config.pop('BONSAI_WORKFLOW')
-    cameras = [k for k in config if k != 'BONSAI_WORKFLOW']
-    params = {f'{k.capitalize()}CameraIndex': config[k].INDEX for k in cameras}
-    raw_data_folder.mkdir(parents=True, exist_ok=True)
-
-    # align cameras
-    if workflows.setup:
-        video_pyspin.enable_camera_trigger(enable=False)
-        call_bonsai(workflows.setup, params, debug=debug)
-
-    # record video
-    filenamevideo = '_iblrig_{}Camera.raw.avi'
-    filenameframedata = '_iblrig_{}Camera.frameData.bin'
-    for k in map(str.capitalize, cameras):
-        params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
-        params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
-    video_pyspin.enable_camera_trigger(enable=True)
-    bonsai_process = call_bonsai(workflows.recording, params, wait=False, debug=debug)
-    input('PRESS ENTER TO START CAMERAS')
-    # Save the stub files locally and in the remote repo for future copy script to use
-    copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
-
-    video_pyspin.enable_camera_trigger(enable=False)
-    log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
-    bonsai_process.wait()
-    log.info('Video acquisition session finished.')
-
-    # Check video files were saved and configured correctly
-    for video_file in (Path(v) for v in params.values() if isinstance(v, str) and v.endswith('.avi')):
-        validate_video(video_file, config[label_from_path(video_file)])
-
-    session_path.joinpath('transfer_me.flag').touch()
-    # remove empty-folders and parent-folders
-    if not any(raw_data_folder.iterdir()):
-        os.removedirs(raw_data_folder)
-
-
-async def prepare_video_service(config_name: str, debug: bool = False, service_uri=None, subject_name=None):
-    """
-    Setup and record video.
-
-    Parameters
-    ----------
-    config_name : str
-        Camera configuration name, found in "device_cameras" map of hardware_settings.yaml.
-    debug : bool
-        Bonsai debug mode and verbose logging.
-    service_uri : str
-        The service URI.
-    """
-    assert HAS_SPINNAKER
-    assert HAS_PYSPIN
-
-    com, _ = await get_server_communicator(service_uri, 'cameras')
-
-    if not (com or subject_name):
-        raise ValueError('Please provide a subject name or service_uri.')
-
-    # Initialize a session for paths and settings
-    session = EmptySession(subject=subject_name or '', interactive=False)
-
-    # Fetch camera configuration from hardware settings file
-    try:
-        config = session.hardware_settings.device_cameras[config_name]
-    except AttributeError as ex:
-        if hasattr(value_error := ValueError('"No camera config in hardware_settings.yaml file."'), 'add_note'):
-            value_error.add_note(HARDWARE_SETTINGS_YAML)  # py 3.11
-        raise value_error from ex
-    except KeyError as ex:
-        raise ValueError(f'Config "{config_name}" not in "device_cameras" hardware settings.') from ex
-    workflows = config.pop('BONSAI_WORKFLOW')
-    cameras = [k for k in config if k != 'BONSAI_WORKFLOW']
-    params = {f'{k.capitalize()}CameraIndex': config[k].INDEX for k in cameras}
-
-    # align cameras
-    if workflows.setup:
-        video_pyspin.enable_camera_trigger(enable=False)
-        call_bonsai(workflows.setup, params, debug=debug)
-
-    # Wait for initialization
-    if com:
-        # TODO Add exp info callback for main sync determination
-        data, addr = await com.on_event(net.base.ExpMessage.EXPINIT)
-        exp_ref = (data or {}).get('exp_ref')
-        assert exp_ref, 'No experiment reference found'
-        if isinstance(exp_ref, str):
-            exp_ref = ConversionMixin.ref2dict(exp_ref)
-        assert not subject_name or (subject_name == exp_ref['subject'])
-        session_path = session.paths.LOCAL_SUBJECT_FOLDER.joinpath(
-            exp_ref['subject'], str(exp_ref['date']), f'{exp_ref["sequence"]:03}'
-        )
-    else:
-        session_path = session.paths.SESSION_FOLDER
-
-    raw_data_folder = session_path.joinpath('raw_video_data')
-    raw_data_folder.mkdir(parents=True, exist_ok=True)
-
-    # initialize video
-    filenamevideo = '_iblrig_{}Camera.raw.avi'
-    filenameframedata = '_iblrig_{}Camera.frameData.bin'
-    for k in map(str.capitalize, cameras):
-        params[f'FileName{k}'] = str(raw_data_folder / filenamevideo.format(k.lower()))
-        params[f'FileName{k}Data'] = str(raw_data_folder / filenameframedata.format(k.lower()))
-    video_pyspin.enable_camera_trigger(enable=True)
-    bonsai_process = call_bonsai(workflows.recording, params, wait=False, debug=debug)
-
-    copier = VideoCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
-    description = copier.config2stub(config, raw_data_folder.name)
-    if com:
-        await com.init({'experiment_description': description}, addr=addr)
-        log.info('initialized.')
-        # Wait for task to begin
-        data, addr = await com.on_event(net.base.ExpMessage.EXPSTART)
-    else:
-        input('PRESS ENTER TO START CAMERAS')
-
-    # Save the stub files locally and in the remote repo for future copy script to use
-    copier.initialize_experiment(acquisition_description=copier.config2stub(config, raw_data_folder.name))
-
-    video_pyspin.enable_camera_trigger(enable=False)
-    if com:
-        await com.start(ConversionMixin.dict2ref(exp_ref), addr=addr)  # Let behaviour PC know acquisition has started
-    log.info('To terminate video acquisition, please stop and close Bonsai workflow.')
-    bonsai_process.wait()
-    log.info('Video acquisition session finished.')
-
-    # Check video files were saved and configured correctly
-    for video_file in (Path(v) for v in params.values() if isinstance(v, str) and v.endswith('.avi')):
-        validate_video(video_file, config[label_from_path(video_file)])
-
-    session_path.joinpath('transfer_me.flag').touch()
-    # remove empty-folders and parent-folders
-    if not any(raw_data_folder.iterdir()):
-        os.removedirs(raw_data_folder)
-    com.close()
 
 
 class CameraSession(EmptySession):
@@ -792,7 +622,9 @@ class CameraSessionNetworked(CameraSession):
         """Process init command from remote rig."""
         self.logger.info('INIT message received')
         data = data[0] if any(data) else {}
-        assert (exp_ref := data.get('exp_ref')), 'No experiment reference found'  # FIXME graceful error (stop thread somehow so there's no hanging)
+        assert (
+            exp_ref := data.get('exp_ref')
+        ), 'No experiment reference found'  # FIXME graceful error (stop thread somehow so there's no hanging)
         if isinstance(exp_ref, str):
             exp_ref = self.one.ref2dict(exp_ref)
         # NB: Only the first match case for which predicate is true will be run so we can update the status dynamically

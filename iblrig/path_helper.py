@@ -148,7 +148,7 @@ def get_local_and_remote_paths(
     if iblrig_settings is None and ((local_path is None) or (remote_path is None) or (lab is None)):
         iblrig_settings = load_pydantic_yaml(RigSettings)
     if isinstance(iblrig_settings, RigSettings):
-            iblrig_settings = iblrig_settings.model_dump()
+        iblrig_settings = iblrig_settings.model_dump()
 
     paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
     if paths.local_data_folder is None:
