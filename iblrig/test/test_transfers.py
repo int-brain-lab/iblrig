@@ -145,7 +145,7 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry.csv', index=False)
 
     def test_copier(self):
-        session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
+        # session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
         self.create_fake_data()
 
         # the workaround to find the settings.yaml
@@ -153,12 +153,14 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             mocker.side_effect = self.side_effect
             # the actual code to test
             iblrig.neurophotometrics.init_neurophotometrics_subject(
-                session_stub=session.paths['SESSION_FOLDER'],
+                session_stub=f'test_subject/{datetime.today().strftime('%Y-%m-%d')}/001',
                 rois=['Region00', 'Region01'],
                 locations=['VTA', 'SNc'],
             )
-            iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
-
+            # iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
+            sc, = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(sc.state, 2)
+            
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
     """This test emulates the `transfer_data` command as run on the rig."""

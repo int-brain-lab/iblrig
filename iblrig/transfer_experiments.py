@@ -23,6 +23,7 @@ from ibllib.pipes.misc import sleepless
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.io import hashfile
 from iblutil.util import ensure_list
+import iblphotometry.io as fpio
 
 log = logging.getLogger(__name__)
 
@@ -679,11 +680,13 @@ class NeurophotometricsCopier(SessionCopier):
         description['fibers'] = {roi: {'location': location} for roi, location in zip(rois, locations, strict=False)}
         return {'neurophotometrics': description}
 
-    def _copy_collections(self, folder_neurophotometric: Path) -> bool:
+    def _copy_collections(self, folder_neurophotometric: Path | None = None) -> bool:
         ed = self.experiment_description['neurophotometrics']
         dt = datetime.datetime.fromisoformat(ed['datetime'])
         # Here we find the first photometry folder after the start_time. In case this is failing
         # we can feed a custom start_time to go to the desired folder, or just rename the folder
+        # FIXME TODO
+        folder_neurophotometric = self.session_path.parents[4].joinpath('neurophotometrics') if folder_neurophotometric is None else folder_neurophotometric
         folder_day = next(folder_neurophotometric.glob(ed['datetime'][:10]), None)
         assert folder_day is not None, f"Neurophotometrics folder {folder_neurophotometric} doesn't contain data"
         folder_times = list(folder_day.glob('T*'))
@@ -694,32 +697,14 @@ class NeurophotometricsCopier(SessionCopier):
         csv_digital_inputs = folder_day.joinpath(f'T{hhmmss[i]}', 'digital_inputs.csv')
         assert csv_raw_photometry.exists(), f'Raw photometry file {csv_raw_photometry} not found'
         assert csv_digital_inputs.exists(), f'Digital inputs file {csv_digital_inputs} not found'
+
         # Copy the raw and digital inputs files to the server
-        # TODO move this into a data loader ? Especially the schemas will apply to both the csv and parquet format
-        df_raw_photometry = pd.read_csv(csv_raw_photometry)
-        df_digital_inputs = pd.read_csv(csv_digital_inputs, header=None)
-        df_digital_inputs.columns = ['ChannelName', 'Channel', 'AlwaysTrue', 'SystemTimestamp', 'ComputerTimestamp']
-        # this will ensure the columns are present, and that there was no magic new format on a new Bonsai version
-        schema_raw_data = pandera.DataFrameSchema(
-            columns=dict(
-                FrameCounter=pandera.Column(pandera.Int64),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                LedState=pandera.Column(pandera.Int16, coerce=True),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-                **{k: pandera.Column(pandera.Float64) for k in ed['fibers']},
-            )
-        )
-        schema_digital_inputs = pandera.DataFrameSchema(
-            columns=dict(
-                ChannelName=pandera.Column(str, coerce=True),
-                Channel=pandera.Column(pandera.Int8, coerce=True),
-                AlwaysTrue=pandera.Column(bool, coerce=True),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-            )
-        )
-        df_raw_photometry = schema_raw_data.validate(df_raw_photometry)
-        df_digital_inputs = schema_digital_inputs.validate(df_digital_inputs)
+        # read in and 
+        df_raw_photometry = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
+        # explicitly explicitly with the data from the experiment description file
+        cols = ed['fibers'].keys()
+        df_raw_photometry = fpio.validate_neurophotometrics_df(df_raw_photometry, data_columns=cols)
+        df_digital_inputs = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
         remote_photometry_path = self.remote_session_path.joinpath(ed['collection'])
         remote_photometry_path.mkdir(parents=True, exist_ok=True)
         df_raw_photometry.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))

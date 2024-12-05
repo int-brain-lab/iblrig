@@ -28,6 +28,7 @@ dependencies = [
     "iblqt>=0.3.1",
     "ONE-api>=2.11.1",
     "tycmd-wrapper>=0.2.1",
+    "ibl-photometry @ git+https://github.com/int-brain-lab/ibl-photometry@main"
     #
     # Everything else
     "annotated-types>=0.7.0",
