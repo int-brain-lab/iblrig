@@ -5,7 +5,7 @@
 groups = ["default", "ci", "dev", "doc", "project-extraction", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:929627e3cbf02e2d0e6981063bcea0ca78239f62528cfd70c906d929786bbb98"
+content_hash = "sha256:53d0e1a0887da72fdb394bc536560b1456d42f9f417d9cf7316960f85fdfea21"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -783,6 +783,9 @@ files = [
 name = "ibllib"
 version = "3.1.0"
 requires_python = ">=3.10"
+git = "https://github.com/int-brain-lab/ibllib"
+ref = "develop"
+revision = "3c82b302118408c6ec1228ad2e76ba1939f7e278"
 summary = "IBL libraries"
 groups = ["default"]
 dependencies = [
@@ -819,9 +822,23 @@ dependencies = [
     "sparse",
     "tqdm>=4.32.1",
 ]
-files = [
-    {file = "ibllib-3.1.0-py3-none-any.whl", hash = "sha256:489adba69fd5b87fa92aacc11c053a462848e1df54eccb1bfe42baebd1157d89"},
-    {file = "ibllib-3.1.0.tar.gz", hash = "sha256:c099e1e9062dd72915e86da6bbe2621b043022c62656a96490fbacd06c41d21f"},
+
+[[package]]
+name = "iblphotometry"
+version = "1.0.0"
+requires_python = ">=3.10"
+git = "https://github.com/int-brain-lab/ibl-photometry"
+ref = "main"
+revision = "09983f65394a6eb914e4a1e7c18a8ec7e0913454"
+summary = "IBL photometry module"
+groups = ["default"]
+dependencies = [
+    "ibllib @ git+https://github.com/int-brain-lab/ibllib@develop",
+    "matplotlib",
+    "numpy",
+    "pandera",
+    "pytest",
+    "scipy",
 ]
 
 [[package]]
