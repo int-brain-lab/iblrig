@@ -158,9 +158,9 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
                 locations=['VTA', 'SNc'],
             )
             # iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
-            sc, = iblrig.commands.transfer_data(tag='neurophotometrics')
+            (sc,) = iblrig.commands.transfer_data(tag='neurophotometrics')
             self.assertEqual(sc.state, 2)
-            
+
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
     """This test emulates the `transfer_data` command as run on the rig."""

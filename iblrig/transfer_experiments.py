@@ -12,10 +12,9 @@ from os.path import samestat
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
-import pandera
 
 import ibllib.pipes.misc
+import iblphotometry.io as fpio
 import iblrig
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
@@ -23,7 +22,6 @@ from ibllib.pipes.misc import sleepless
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.io import hashfile
 from iblutil.util import ensure_list
-import iblphotometry.io as fpio
 
 log = logging.getLogger(__name__)
 
@@ -686,7 +684,11 @@ class NeurophotometricsCopier(SessionCopier):
         # Here we find the first photometry folder after the start_time. In case this is failing
         # we can feed a custom start_time to go to the desired folder, or just rename the folder
         # FIXME TODO
-        folder_neurophotometric = self.session_path.parents[4].joinpath('neurophotometrics') if folder_neurophotometric is None else folder_neurophotometric
+        folder_neurophotometric = (
+            self.session_path.parents[4].joinpath('neurophotometrics')
+            if folder_neurophotometric is None
+            else folder_neurophotometric
+        )
         folder_day = next(folder_neurophotometric.glob(ed['datetime'][:10]), None)
         assert folder_day is not None, f"Neurophotometrics folder {folder_neurophotometric} doesn't contain data"
         folder_times = list(folder_day.glob('T*'))
@@ -699,7 +701,7 @@ class NeurophotometricsCopier(SessionCopier):
         assert csv_digital_inputs.exists(), f'Digital inputs file {csv_digital_inputs} not found'
 
         # Copy the raw and digital inputs files to the server
-        # read in and 
+        # read in and
         df_raw_photometry = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
         # explicitly explicitly with the data from the experiment description file
         cols = ed['fibers'].keys()
