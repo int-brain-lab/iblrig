@@ -35,9 +35,7 @@ ACTUAL_DB = {
 # -------------------------------------------------------------------------------------------------
 
 def plot_trajectories(ax, names, trajectories, atlas=None):
-    if not atlas:
-        atlas = AllenAtlas(25)
-        atlas.compute_surface()
+    assert atlas
     top = atlas.top
     extent = np.hstack((atlas.bc.xlim, atlas.bc.ylim))
     ax.imshow(top, extent=extent, cmap='Greys_r')
@@ -62,9 +60,10 @@ def plot_trajectories(ax, names, trajectories, atlas=None):
 # -------------------------------------------------------------------------------------------------
 
 class TrajectoryLoader:
-    def __init__(self):
+    def __init__(self, atlas=None):
         self.alyx = AlyxClient(**TEST_DB)
         # self.alyx = AlyxClient(**ACTUAL_DB)
+        self.atlas = atlas
 
     def _save_rest(self, n, v='read', pk=None):
         d = self.alyx.rest(n, v, id=pk)
@@ -100,7 +99,7 @@ class TrajectoryLoader:
         trajectory = sorted(
             trajectories,
             key=lambda t: priorities.get(t['provenance'], 0))[-1]
-        ins = Insertion.from_dict(trajectory, brain_atlas=ATLAS)
+        ins = Insertion.from_dict(trajectory, brain_atlas=self.atlas)
         return np.vstack((ins.entry, ins.tip))
 
     def get_trajectories(self, subject):
@@ -118,6 +117,9 @@ class TrajectoryLoader:
 class MainWindow(QMainWindow):
     def __init__(self, nickname=None, names=None, trajectories=None):
         super().__init__()
+
+        self.atlas = AllenAtlas(25)
+        self.atlas.compute_surface()
 
         self.nickname = nickname
         self.names = names
@@ -176,7 +178,7 @@ class MainWindow(QMainWindow):
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
 
-        plot_trajectories(self.ax, self.names, self.trajectories)
+        plot_trajectories(self.ax, self.names, self.trajectories, atlas=self.atlas)
 
 
 if __name__ == '__main__':
