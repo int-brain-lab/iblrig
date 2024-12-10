@@ -1036,7 +1036,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
                     if key == '--delay_secs':
-                        value = str(int(value) * 60)
+                        value = str(int(value) * 60)  # noqa: PLW2901
                     if isinstance(value, list):
                         cmd.extend([key] + value)
                     elif isinstance(value, bool) and value is True:
