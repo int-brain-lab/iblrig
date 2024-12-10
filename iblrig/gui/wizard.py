@@ -863,8 +863,8 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMaximum(11)
 
                 case 'delay_secs':
-                    label = 'Initial Delay, s'
-                    widget.setMaximum(86400)
+                    label = 'Initial Delay, min'
+                    widget.setMaximum(60)
 
                 case 'training_phase':
                     widget.setSpecialValueText('automatic')
@@ -1035,13 +1035,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if len(remotes := self.listViewRemoteDevices.getDevices()) > 0:
                     cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
+                    if key == '--delay_secs':
+                        value = str(int(value) * 60)  # noqa: PLW2901
                     if isinstance(value, list):
                         cmd.extend([key] + value)
-                    elif isinstance(value, bool):
-                        if value is True:
-                            cmd.append(key)
-                        else:
-                            pass
+                    elif isinstance(value, bool) and value is True:
+                        cmd.append(key)
                     else:
                         cmd.extend([key, value])
                 cmd.extend(['--weight', f'{weight}'])

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.26.1
+------
+* changed: initial delay uses minutes instead of seconds
+
 8.26.0
 ------
 * feature: added GUI field for session narrative
