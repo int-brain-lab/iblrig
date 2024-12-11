@@ -5,17 +5,18 @@
 import json
 import sys
 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
+from PyQt5.QtGui import QColor, QPalette
+from PyQt5.QtWidgets import (
+    QApplication, QFormLayout, QLabel, QLineEdit, QMainWindow, QVBoxLayout, QWidget,
+)
+
 from ibllib.atlas import AllenAtlas, Insertion
 from ibllib.tests import TEST_DB
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from one.webclient import AlyxClient
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import (QApplication, QFormLayout, QLabel, QLineEdit,
-                             QMainWindow, QVBoxLayout, QWidget)
 
 
 # -------------------------------------------------------------------------------------------------
