@@ -139,7 +139,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
     norm_div = np.log(norm_max / norm_min)
     color_correct = QColor(44, 162, 95)
     color_error = QColor(227, 74, 51)
-    color_nogo = QColor(220, 220, 220)
+    color_nogo = QColor(192, 192, 192)
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
@@ -165,7 +165,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         painter.drawRect(filled_rect)
 
         # Draw the value text
-        painter.setPen(Qt.black)
+        painter.setPen(option.palette.text().color())
         value_text = f'{value:.2f}' if outcome != 'no-go' else 'N/A'
         painter.drawText(option.rect, Qt.AlignVCenter | Qt.AlignCenter, value_text)
 
@@ -348,9 +348,9 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        # self.trials.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.trials.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.trials.setStyleSheet('QHeaderView::section { border: none; background-color: white; }')
+        self.trials.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.trials.setStyleSheet('QHeaderView::section { border: none; background-color: white; }'
+                                  'QTableView::item:selected { color: black; background-color: lightgray; }')
         self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.stimulusDelegate = StimulusDelegate()
