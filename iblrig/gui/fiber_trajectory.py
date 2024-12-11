@@ -3,11 +3,10 @@
 # -------------------------------------------------------------------------------------------------
 
 import json
-from pprint import pprint
 import sys
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QFormLayout
 from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QFormLayout
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,6 +33,7 @@ ACTUAL_DB = {
 # Plotting functions
 # -------------------------------------------------------------------------------------------------
 
+
 def plot_trajectories(ax, names, trajectories, atlas=None):
     assert atlas
     top = atlas.top
@@ -44,7 +44,7 @@ def plot_trajectories(ax, names, trajectories, atlas=None):
 
     prop_cycle = plt.rcParams['axes.prop_cycle']
     colors = prop_cycle.by_key()['color']
-    eps = .0001
+    eps = 0.0001
     for name, traj, color in zip(names, trajectories, colors):
         x = traj[0, 0]
         y = traj[0, 1]
@@ -58,6 +58,7 @@ def plot_trajectories(ax, names, trajectories, atlas=None):
 # -------------------------------------------------------------------------------------------------
 # Trajectory loader
 # -------------------------------------------------------------------------------------------------
+
 
 class TrajectoryLoader:
     def __init__(self, atlas=None):
@@ -79,32 +80,28 @@ class TrajectoryLoader:
     def save_insertion(self, pk):
         self._save_rest(self, 'insertions', pk=pk)
 
-    def save_trajectories(self, ):
+    def save_trajectories(self):
         self._save_rest(self, 'trajectories', v='list')
 
     def create(self, name, path):
-        with open(path, 'r') as f:
+        with open(path) as f:
             self.alyx.rest(name, 'create', data=json.load(f))
 
     def get_trajectory(self, chronic_insertion):
         # retrieve planned/micromanip (priority) trajectory of chronic insertion
-        trajectories = self.alyx.rest(
-            'trajectories', 'list', chronic_insertion=chronic_insertion)
+        trajectories = self.alyx.rest('trajectories', 'list', chronic_insertion=chronic_insertion)
         if not trajectories:
             return
         priorities = {
             'Planned': 1,
             'Micro-manipulator': 2,
         }
-        trajectory = sorted(
-            trajectories,
-            key=lambda t: priorities.get(t['provenance'], 0))[-1]
+        trajectory = sorted(trajectories, key=lambda t: priorities.get(t['provenance'], 0))[-1]
         ins = Insertion.from_dict(trajectory, brain_atlas=self.atlas)
         return np.vstack((ins.entry, ins.tip))
 
     def get_trajectories(self, subject):
-        chronic_insertions = self.alyx.rest(
-            'chronic-insertions', 'list', subject=subject, model='fiber')
+        chronic_insertions = self.alyx.rest('chronic-insertions', 'list', subject=subject, model='fiber')
         names = [i['name'] for i in chronic_insertions]
         trajectories = [self.get_trajectory(i['id']) for i in chronic_insertions]
         return names, trajectories
@@ -113,6 +110,7 @@ class TrajectoryLoader:
 # -------------------------------------------------------------------------------------------------
 # GUI
 # -------------------------------------------------------------------------------------------------
+
 
 class MainWindow(QMainWindow):
     def __init__(self, nickname=None, names=None, trajectories=None):
@@ -125,7 +123,7 @@ class MainWindow(QMainWindow):
         self.names = names
         self.trajectories = trajectories
 
-        self.setWindowTitle("Fiber insertions")
+        self.setWindowTitle('Fiber insertions')
 
         # Main widget
         main_widget = QWidget()
@@ -148,7 +146,7 @@ class MainWindow(QMainWindow):
             self.textboxes.append(QLineEdit())
             rl = QFormLayout()
             c = self.trajectories[i][0]  # 0 is entry point, 1 is tip
-            s = f"{self.names[i]}: AP {c[0]:.4f}, ML {c[1]:.4f}, DV {c[2]:.4f}"
+            s = f'{self.names[i]}: AP {c[0]:.4f}, ML {c[1]:.4f}, DV {c[2]:.4f}'
             label = QLabel(s)
             palette = label.palette()
             palette.setColor(QPalette.WindowText, QColor(color))
@@ -199,12 +197,8 @@ if __name__ == '__main__':
     # NOTE: the unit should be meter, but the trajectory numbers below were given in millimeters
     # hence the `*1e-3`
     trajectories = [
-        np.array([
-            [-0.70, +1.75, -4.15],
-            [+0.70, -1.75, +4.15]]) * 1e-3,
-        np.array([
-            [-4.72, -1.25, -2.75],
-            [+4.72, +1.25, +2.75]]) * 1e-3,
+        np.array([[-0.70, +1.75, -4.15], [+0.70, -1.75, +4.15]]) * 1e-3,
+        np.array([[-4.72, -1.25, -2.75], [+4.72, +1.25, +2.75]]) * 1e-3,
     ]
 
     app = QApplication(sys.argv)
