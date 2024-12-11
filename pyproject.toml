@@ -55,7 +55,7 @@ project-extraction = [
 
 [project.scripts]
 view_session        = "iblrig.commands:view_session"
-view_session2       = "iblrig.commands:view_session2"
+view_session2       = "iblrig.gui.online_plots:online_plots_cli"
 transfer_data       = "iblrig.commands:transfer_data_cli"
 transfer_video_data = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
