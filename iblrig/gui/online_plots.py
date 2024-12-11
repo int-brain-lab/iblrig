@@ -173,18 +173,15 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         return ''
 
 
-class StateRegionItem(pg.LinearRegionItem):
+class StateMeshItem(pg.PColorMeshItem):
     statusMessage = Signal(str)
+    stateIndex = Signal(int)
 
-    def __init__(self, *args, stateName: str, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setMovable(False)
-        self.stateName = stateName
 
     def hoverEvent(self, ev):
-        if ev.enter:
-            self.statusMessage.emit(f'State: "{self.stateName}"')
-        elif ev.exit:
+        if ev.exit:
             if not hasattr(ev, '_scenePos'):
                 self.statusMessage.emit('')
             else:
@@ -192,12 +189,23 @@ class StateRegionItem(pg.LinearRegionItem):
                 if not isinstance(item, QGraphicsRectItem):
                     self.statusMessage.emit('')
 
+        try:
+            x = self.mapFromParent(ev.pos()).x()
+        except AttributeError:
+            return
+        try:
+            i = self.z[:, np.where(self.x[0, :] <= x)[0][-1]][0]
+        except IndexError:
+            return
+        self.stateIndex.emit(i)
+        # self.statusMessage.emit(f'State: "{self.stateName}"')
+
 
 class BpodWidget(pg.GraphicsLayoutWidget):
     data = pd.DataFrame()
-    colors = pg.colormap.get('glasbey_light', source='colorcet')
     labels: dict[str, pg.LabelItem] = dict()
     plots: dict[str, pg.PlotDataItem] = dict()
+    meshes: dict[str, StateMeshItem] = dict()
     viewBoxes: dict[str, pg.ViewBox] = dict()
 
     def __init__(self, *args, title: str | None = None, **kwargs):
@@ -206,6 +214,11 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.setRenderHints(QPainter.Antialiasing)
         self.setBackground('white')
         self.centralWidget.setSpacing(0)
+
+        colormap = pg.colormap.get('glasbey_light', source='colorcet')
+        colors = colormap.getLookupTable(0, 1, 256, alpha=True)
+        colors[:, 3] = 64  # set alpha
+        self.colormap = pg.ColorMap(colormap.pos, colors)
 
         # add title
         if title is not None:
@@ -227,9 +240,13 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         label = channel if label is None else label
         self.centralWidget.nextRow()
         self.labels[channel] = self.addLabel(label, col=0, color='k')
+        self.meshes[channel] = StateMeshItem(colorMap=self.colormap)
+        self.meshes[channel].statusMessage.connect(self.showStatusMessage)
+        self.meshes[channel].stateIndex.connect(self.showStatusState)
         self.plots[channel] = pg.PlotDataItem(pen='k', stepMode='right')
         self.plots[channel].setSkipFiniteCheck(True)
         self.viewBoxes[channel] = self.addViewBox(col=1)
+        self.viewBoxes[channel].addItem(self.meshes[channel])
         self.viewBoxes[channel].addItem(self.plots[channel])
         self.viewBoxes[channel].setMouseEnabled(x=True, y=False)
         self.viewBoxes[channel].sigXRangeChanged.connect(self.updateXRange)
@@ -237,57 +254,44 @@ class BpodWidget(pg.GraphicsLayoutWidget):
     def setData(self, data: pd.DataFrame):
         self.data = data
         self.showTrial()
-        self.drawStateRegionItems()
-
-    def drawStateRegionItems(self):
-        start = self.data[self.data.Type == 'TrialStart'].index[0]
-        t0 = self.data[self.data.Type == 'StateStart']
-        t1 = self.data[self.data.Type == 'StateEnd']
-
-        # remove existing regions
-        for view_box in self.viewBoxes.values():
-            for item in view_box.allChildren():
-                if isinstance(item, StateRegionItem):
-                    view_box.removeItem(item)
-                    item.deleteLater()
-
-        pen = (0, 0, 0, 0)
-        for state_idx, state in enumerate(self.data['State'].cat.categories):
-            state_mask = t0['State'] == state
-            t0_state = (t0.index[state_mask] - start).total_seconds().to_list()
-            t1_state = (t1.index[state_mask] - start).total_seconds().to_list()
-            brush = self.colors.getByIndex(state_idx)
-            brush.setAlphaF(0.2)
-
-            for times in zip(t0_state, t1_state, strict=False):
-                for view_box in self.viewBoxes.values():
-                    r = StateRegionItem(times, stateName=state, brush=brush, pen=pen)
-                    r.statusMessage.connect(self.showStatusMessage)
-                    view_box.addItem(r)
 
     @Slot(str)
     def showStatusMessage(self, string: str):
         self.window().statusBar().showMessage(string)
 
+    @Slot(int)
+    def showStatusState(self, index: int):
+        self.window().statusBar().showMessage(f'State: {self.data.State.cat.categories[index]}')
+
     def showTrial(self):
         limits = self.data[self.data['Type'].isin(['TrialStart', 'TrialEnd'])]
         limits = limits.index.total_seconds()
-        self.limits = {'xMin': 0, 'xMax': limits[1] - limits[0], 'minXRange': 0.001}
+        self.limits = {'xMin': 0, 'xMax': limits[1] - limits[0], 'minXRange': 0.001, 'yMin': -0.2, 'yMax': 1.2}
+
+        t0 = self.data[self.data.Type == 'StateStart']
+        t1 = self.data[self.data.Type == 'StateEnd']
+        mesh_x = np.append(t0.index.total_seconds(), t1.index[-1].total_seconds()) - limits[0]
+        mesh_x = np.tile(mesh_x, (2, 1))
+        mesh_y = np.zeros(mesh_x.shape) - 0.2
+        mesh_y[1, :] = 1.2
+        mesh_z = t0.State.cat.codes.to_numpy()
+        mesh_z = mesh_z[np.newaxis, :]
 
         for channel in self.plots:
             values = self.data.loc[self.data.Channel == channel, 'Value']
-            x = values.index.total_seconds().to_numpy() - limits[0]
-            y = values.to_numpy()
+            plot_x = values.index.total_seconds().to_numpy() - limits[0]
+            plot_y = values.to_numpy()
 
             # Since Bpod only supports *changes* in the digital signals, we need
             # to extend the plots to the axes limits.
-            if len(x) > 0:
-                x = np.insert(x, 0, 0)
-                x = np.append(x, limits[1])
-                y = np.insert(y, 0, not y[0])
-                y = np.append(y, y[-1])
+            if len(plot_x) > 0:
+                plot_x = np.insert(plot_x, 0, 0)
+                plot_x = np.append(plot_x, limits[1])
+                plot_y = np.insert(plot_y, 0, not plot_y[0])
+                plot_y = np.append(plot_y, plot_y[-1])
 
-            self.plots[channel].setData(x, y)
+            self.plots[channel].setData(plot_x, plot_y)
+            self.meshes[channel].setData(mesh_x, mesh_y, mesh_z)
             self.viewBoxes[channel].setLimits(**self.limits)
 
         list(self.viewBoxes.values())[0].setXRange(
@@ -349,8 +353,10 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        self.trials.setStyleSheet('QHeaderView::section { border: none; background-color: white; }'
-                                  'QTableView::item:selected { color: black; background-color: lightgray; }')
+        self.trials.setStyleSheet(
+            'QHeaderView::section { border: none; background-color: white; }'
+            'QTableView::item:selected { color: black; background-color: lightgray; }'
+        )
         self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.stimulusDelegate = StimulusDelegate()
