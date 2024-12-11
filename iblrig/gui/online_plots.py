@@ -146,11 +146,11 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
         # Get the float value from the model
         value = index.data()
-        status = index.sibling(index.row(), 2).data()
+        outcome = index.sibling(index.row(), 3).data()
 
         # Draw the progress bar
         painter.fillRect(option.rect, option.backgroundBrush)
-        if status == 'no-go':
+        if outcome == 'no-go':
             filled_rect = QRectF(option.rect)
             painter.setBrush(self.color_nogo)
         else:
@@ -159,14 +159,14 @@ class ResponseTimeDelegate(QStyledItemDelegate):
             filled_rect.setWidth(filled_rect.width() * norm_value)
             gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
             gradient.setColorAt(0, QColor(255, 255, 255, 0))
-            gradient.setColorAt(1, self.color_correct if status == 'correct' else self.color_error)
+            gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
             painter.setBrush(gradient)
         painter.setPen(Qt.NoPen)
         painter.drawRect(filled_rect)
 
         # Draw the value text
         painter.setPen(Qt.black)
-        value_text = f'{value:.2f}' if status != 'no-go' else 'N/A'
+        value_text = f'{value:.2f}' if outcome != 'no-go' else 'N/A'
         painter.drawText(option.rect, Qt.AlignVCenter | Qt.AlignCenter, value_text)
 
     def displayText(self, value, locale):
