@@ -93,6 +93,8 @@ class StimulusDelegate(QStyledItemDelegate):
     pen = QColor(0, 0, 0, 128)
 
     def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+
         value = index.data()
         color = QColor()
         color.setHslF(0, 0, 1.0 - abs(value))
@@ -107,16 +109,21 @@ class StimulusDelegate(QStyledItemDelegate):
         painter.setPen(self.pen)
         painter.drawEllipse(x_pos, y_pos, diameter, diameter)  # Draw circle
 
+    def displayText(self, value, locale):
+        return ''
+
 
 class ResponseTimeDelegate(QStyledItemDelegate):
     norm_min = 0.1
     norm_max = 60.0
     norm_div = np.log(norm_max / norm_min)
-    color_correct = QColor(90, 180, 172)
-    color_error = QColor(216, 179, 101)
+    color_correct = QColor(44, 162, 95)
+    color_error = QColor(227, 74, 51)
     color_nogo = QColor(220, 220, 220)
 
     def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+
         # Get the float value from the model
         value = index.data()
         status = index.sibling(index.row(), 2).data()
@@ -138,6 +145,9 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         painter.setPen(Qt.black)
         value_text = f'{value:.2f}' if status != 'no-go' else 'N/A'
         painter.drawText(option.rect, Qt.AlignVCenter | Qt.AlignCenter, value_text)
+
+    def displayText(self, value, locale):
+        return ''
 
 
 class StateRegionItem(pg.LinearRegionItem):
