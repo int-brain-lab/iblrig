@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 
 import iblrig
+from iblrig.gui.online_plots import online_plots_cli
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
@@ -16,7 +17,6 @@ from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, Neurophotom
 from iblutil.util import setup_logger
 
 logger = logging.getLogger(__name__)
-
 
 tag2copier = {
     'behavior': BehaviorCopier,
@@ -356,6 +356,10 @@ def view_session():
 
     online_plots = OnlinePlots(settings_file=args.file_settings)
     online_plots.run(file_jsonable=args.file_jsonable)
+
+
+def view_session2():
+    online_plots_cli()
 
 
 def flush():

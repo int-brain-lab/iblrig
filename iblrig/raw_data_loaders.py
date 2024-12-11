@@ -43,7 +43,7 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> 
     return trials_table, bpod_data
 
 
-def bpod_session_data_to_dataframe(bpod_data: list[dict[str, Any]], trials: int | list[int] | slice | None = None):
+def bpod_session_data_to_dataframe(bpod_data: list[dict[str, Any]], existing_data: pd.DataFrame | None = None) -> pd.DataFrame:
     """
     Convert Bpod session data into a single Pandas DataFrame.
 
@@ -51,8 +51,8 @@ def bpod_session_data_to_dataframe(bpod_data: list[dict[str, Any]], trials: int 
     ----------
     bpod_data : list of dict
         A list of dictionaries as returned by load_task_jsonable, where each dictionary contains data for a single trial.
-    trials : int, list of int, slice, or None, optional
-        Specifies which trials to include in the DataFrame. All trials are included by default.
+    existing_data : pd.DataFrame
+        Existing dataframe that the incoming data will be appended to.
 
     Returns
     -------
@@ -75,17 +75,14 @@ def bpod_session_data_to_dataframe(bpod_data: list[dict[str, Any]], trials: int 
               value of the event (only for a subset of InputEvents)
     """
     # define trial index
-    if trials is None:
-        trials = range(len(bpod_data))
-    elif isinstance(trials, int):
-        return bpod_trial_data_to_dataframe(bpod_data[trials], trials)
-    elif isinstance(trials, slice):
-        trials = range(len(bpod_data))[trials]
+    trials = np.arange(len(bpod_data))
+    if existing_data is not None and 'Trial' in existing_data:
+        trials += existing_data.iloc[-1].Trial + 1
 
     # loop over requested trials
-    dataframes = []
-    for trial in trials:
-        dataframes.append(bpod_trial_data_to_dataframe(bpod_data[trial], trial))
+    dataframes = [] if existing_data is None or len(existing_data) == 0 else [existing_data]
+    for index, trial in enumerate(trials):
+        dataframes.append(bpod_trial_data_to_dataframe(bpod_data[index], trial))
 
     # combine trials into a single dataframe
     categories_type = union_categoricals([df['Type'] for df in dataframes])

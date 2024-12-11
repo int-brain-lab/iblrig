@@ -45,6 +45,8 @@ dependencies = [
     "PyYAML>=6.0.2",
     "scipy>=1.14.1",
     "sounddevice>=0.5.0",
+    "pydantic-settings>=2.6.1",
+    "qtpy>=2.4.2",
 ]
 [project.optional-dependencies]
 project-extraction = [
@@ -53,6 +55,7 @@ project-extraction = [
 
 [project.scripts]
 view_session        = "iblrig.commands:view_session"
+view_session2       = "iblrig.commands:view_session2"
 transfer_data       = "iblrig.commands:transfer_data_cli"
 transfer_video_data = "iblrig.commands:transfer_video_data_cli"
 transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
