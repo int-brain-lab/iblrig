@@ -27,17 +27,20 @@ from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_js
 
 
 class TrialsTableModel(DataFrameTableModel):
+    """Child of :class:`~iblqt.core.DataFrameTableModel` that displays status tips for entries in the trials table."""
+
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any | None:
         if index.isValid() and role == Qt.ItemDataRole.StatusTipRole:
-            trial = self.data(index.siblingAtColumn(0), Qt.ItemDataRole.DisplayRole)
-            stim = self.data(index.siblingAtColumn(1), Qt.ItemDataRole.DisplayRole)
-            outcome = self.data(index.siblingAtColumn(2), Qt.ItemDataRole.DisplayRole)
-            timing = self.data(index.siblingAtColumn(3), Qt.ItemDataRole.DisplayRole)
+            trial = index.siblingAtColumn(0).data()
+            position = index.siblingAtColumn(1).data()
+            contrast = index.siblingAtColumn(2).data() * 100
+            outcome = index.siblingAtColumn(3).data()
+            timing = index.siblingAtColumn(4).data()
             tip = (
-                f'Trial {trial}: {abs(stim) * 100:g}% contrast on {"right" if np.sign(stim) == 1 else "left"} side '
-                f'of screen, {outcome}'
+                f'Trial {trial}: stimulus with {contrast:g}% contrast on {"right" if position == 1 else "left"} '
+                f'side of screen, {outcome}'
             )
-            return tip if outcome == 'no-go' else f'{tip} after {timing:0.2f} s'
+            return f'{tip}.' if outcome == 'no-go' else f'{tip} after {timing:0.2f} s.'
         return super().data(index, role)
 
 
@@ -78,7 +81,8 @@ class OnlinePlotsModel(QObject):
 
         table = pd.DataFrame()
         table['Trial'] = self._trial_data.trial_num
-        table['Stimulus'] = np.sign(self._trial_data.position) * self._trial_data.contrast
+        table['Stimulus'] = np.sign(self._trial_data.position)
+        table['Contrast'] = self._trial_data.contrast
         table['Outcome'] = self._trial_data.apply(
             lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
         )
@@ -108,16 +112,16 @@ class OnlinePlotsModel(QObject):
 class StimulusDelegate(QStyledItemDelegate):
     pen = QColor(0, 0, 0, 128)
 
-    def paint(self, painter, option, index):
+    def paint(self, painter, option, index: QModelIndex):
         super().paint(painter, option, index)
-
-        value = index.data()
+        location = index.siblingAtColumn(1).data()
+        contrast = index.siblingAtColumn(2).data()
         color = QColor()
-        color.setHslF(0, 0, 1.0 - abs(value))
+        color.setHslF(0, 0, 1.0 - contrast)
 
         diameter = int(option.rect.height() * 0.8)
         spacing = (option.rect.height() - diameter) // 2
-        x_pos = option.rect.left() + spacing if value < 0 else option.rect.right() - diameter - spacing
+        x_pos = option.rect.left() + spacing if location < 0 else option.rect.right() - diameter - spacing
         y_pos = option.rect.top() + spacing
 
         painter.setRenderHint(QPainter.Antialiasing)
@@ -353,7 +357,8 @@ class OnlinePlotsView(QMainWindow):
         self.responseTimeDelegate = ResponseTimeDelegate()
         self.trials.setItemDelegateForColumn(1, self.stimulusDelegate)
         self.trials.setColumnHidden(2, True)
-        self.trials.setItemDelegateForColumn(3, self.responseTimeDelegate)
+        self.trials.setColumnHidden(3, True)
+        self.trials.setItemDelegateForColumn(4, self.responseTimeDelegate)
         self.trials.setShowGrid(False)
         self.trials.setFrameShape(QTableView.NoFrame)
         self.trials.setFocusPolicy(Qt.FocusPolicy.NoFocus)
