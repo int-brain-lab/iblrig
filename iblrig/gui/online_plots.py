@@ -7,7 +7,7 @@ import pyqtgraph as pg
 from pydantic import DirectoryPath, Field, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
 from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QObject, QRectF, Qt, Signal, Slot
-from qtpy.QtGui import QColor, QPainter, QTransform
+from qtpy.QtGui import QColor, QPainter, QTransform, QLinearGradient
 from qtpy.QtWidgets import (
     QApplication,
     QFrame,
@@ -137,7 +137,10 @@ class ResponseTimeDelegate(QStyledItemDelegate):
             norm_value = np.log(value / self.norm_min) / self.norm_div
             filled_rect = QRectF(option.rect)
             filled_rect.setWidth(filled_rect.width() * norm_value)
-            painter.setBrush(self.color_correct if status == 'correct' else self.color_error)
+            gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
+            gradient.setColorAt(0, QColor(255, 255, 255, 0))
+            gradient.setColorAt(1, self.color_correct if status == 'correct' else self.color_error)
+            painter.setBrush(gradient)
         painter.setPen(Qt.NoPen)
         painter.drawRect(filled_rect)
 
