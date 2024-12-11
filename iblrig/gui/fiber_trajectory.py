@@ -5,17 +5,17 @@
 import json
 import sys
 
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QFormLayout
-
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
+import numpy as np
+from ibllib.atlas import AllenAtlas, Insertion
 from ibllib.tests import TEST_DB
-from ibllib.atlas import Insertion, AllenAtlas
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from one.webclient import AlyxClient
+from PyQt5.QtGui import QColor, QPalette
+from PyQt5.QtWidgets import (QApplication, QFormLayout, QLabel, QLineEdit,
+                             QMainWindow, QVBoxLayout, QWidget)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ def plot_trajectories(ax, names, trajectories, atlas=None):
     prop_cycle = plt.rcParams['axes.prop_cycle']
     colors = prop_cycle.by_key()['color']
     eps = 0.0001
-    for name, traj, color in zip(names, trajectories, colors):
+    for name, traj, color in zip(names, trajectories, colors, strict=True):
         x = traj[0, 0]
         y = traj[0, 1]
         if x == y == 0:
