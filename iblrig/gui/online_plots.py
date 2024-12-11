@@ -1,13 +1,14 @@
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from pydantic import DirectoryPath, Field, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
-from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QObject, QRectF, Qt, Signal, Slot
-from qtpy.QtGui import QColor, QPainter, QTransform, QLinearGradient
+from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QModelIndex, QObject, QRectF, Qt, Signal, Slot
+from qtpy.QtGui import QColor, QLinearGradient, QPainter, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QFrame,
@@ -25,12 +26,27 @@ from iblqt.core import DataFrameTableModel
 from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_jsonable
 
 
+class TrialsTableModel(DataFrameTableModel):
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any | None:
+        if index.isValid() and role == Qt.ItemDataRole.StatusTipRole:
+            trial = self.data(index.siblingAtColumn(0), Qt.ItemDataRole.DisplayRole)
+            stim = self.data(index.siblingAtColumn(1), Qt.ItemDataRole.DisplayRole)
+            outcome = self.data(index.siblingAtColumn(2), Qt.ItemDataRole.DisplayRole)
+            timing = self.data(index.siblingAtColumn(3), Qt.ItemDataRole.DisplayRole)
+            tip = (
+                f'Trial {trial}: {abs(stim) * 100:g}% contrast on {"right" if np.sign(stim) == 1 else "left"} side '
+                f'of screen, {outcome}'
+            )
+            return tip if outcome == 'no-go' else f'{tip} after {timing:0.2f} s'
+        return super().data(index, role)
+
+
 class OnlinePlotsModel(QObject):
     currentTrialChanged = Signal(int)
     _trial_data = pd.DataFrame()
     _bpod_data = pd.DataFrame()
     trials_table = pd.DataFrame()
-    table_model = DataFrameTableModel()
+    table_model = TrialsTableModel()
     _jsonableOffset = 0
     _currentTrial = 0
 
@@ -323,6 +339,7 @@ class OnlinePlotsView(QMainWindow):
         # trial data
         self.trials = QTableView(self)
         self.trials.setModel(self.model.table_model)
+        self.trials.setMouseTracking(True)
         self.trials.verticalHeader().hide()
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
