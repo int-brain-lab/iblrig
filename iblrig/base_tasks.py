@@ -1437,9 +1437,12 @@ class NetworkSession(BaseSession):
 
     def cleanup_mixin_network(self):
         """Clean up services."""
+        log.info('Cleaning up network mixin')
         self.remote_rigs.close()
         if self.remote_rigs.is_connected:
             log.warning('Failed to properly clean up network mixin')
+        else:
+            log.info('Cleaned up network mixin')
 
 
 class SpontaneousSession(BaseSession):

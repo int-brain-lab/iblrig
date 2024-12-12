@@ -22,6 +22,7 @@ __pycache__/
 \.sonarlint/
 \.pytest*
 .pytest*
+*.code-workspace
 *.pyc
 docs/_build
 scratch/
