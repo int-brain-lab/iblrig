@@ -137,6 +137,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
     color_correct = QColor(44, 162, 95)
     color_error = QColor(227, 74, 51)
     color_nogo = QColor(192, 192, 192)
+    color_text = QColor('white')
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
@@ -160,7 +161,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         painter.setPen(Qt.NoPen)
         painter.drawRect(filled_rect)
 
-        painter.setPen(pg.mkPen('white'))
+        painter.setPen(self.color_text)
         value_text = f'{value:.2f}' if outcome != 'no-go' else 'N/A'
         filled_rect.adjust(0, 0, -5, 0)
         painter.drawText(filled_rect, Qt.AlignVCenter | Qt.AlignRight, value_text)
