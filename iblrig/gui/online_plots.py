@@ -138,6 +138,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
     color_error = QColor(227, 74, 51)
     color_nogo = QColor(192, 192, 192)
     color_text = QColor('white')
+    color_gradient0 = QColor(255, 255, 255, 0)
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
@@ -155,7 +156,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         filled_rect = QRectF(option.rect)
         filled_rect.setWidth(filled_rect.width() * norm_value)
         gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
-        gradient.setColorAt(0, QColor(255, 255, 255, 0))
+        gradient.setColorAt(0, self.color_gradient0)
         gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
         painter.setBrush(gradient)
         painter.setPen(Qt.NoPen)
