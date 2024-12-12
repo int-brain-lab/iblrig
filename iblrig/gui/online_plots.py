@@ -36,9 +36,7 @@ class TrialsTableModel(DataFrameTableModel):
             contrast = index.siblingAtColumn(2).data() * 100
             outcome = index.siblingAtColumn(3).data()
             timing = index.siblingAtColumn(4).data()
-            tip = (
-                f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} / {outcome}'
-            )
+            tip = f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} / {outcome}'
             return tip + ('.' if outcome == 'no-go' else f' after {timing:0.2f} s.')
         return super().data(index, role)
 
@@ -236,13 +234,14 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.centralWidget.nextRow()
         self.labels[channel] = self.addLabel(label, col=0, color='k')
         self.meshes[channel] = StateMeshItem(colorMap=self.colormap)
-        self.meshes[channel].stateIndex.connect(self.showStatusState)
+        self.meshes[channel].stateIndex.connect(self.showStateInfo)
         self.plots[channel] = pg.PlotDataItem(pen='k', stepMode='right')
         self.plots[channel].setSkipFiniteCheck(True)
         self.viewBoxes[channel] = self.addViewBox(col=1)
         self.viewBoxes[channel].addItem(self.meshes[channel])
         self.viewBoxes[channel].addItem(self.plots[channel])
         self.viewBoxes[channel].setMouseEnabled(x=True, y=False)
+        self.viewBoxes[channel].setMenuEnabled(False)
         self.viewBoxes[channel].sigXRangeChanged.connect(self.updateXRange)
 
     def setData(self, data: pd.DataFrame):
@@ -250,7 +249,7 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.showTrial()
 
     @Slot(int)
-    def showStatusState(self, index: int):
+    def showStateInfo(self, index: int):
         if index < 0:
             self.window().statusBar().clearMessage()
         else:
@@ -261,13 +260,13 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         limits = limits.index.total_seconds()
         self.limits = {'xMin': 0, 'xMax': limits[1] - limits[0], 'minXRange': 0.001, 'yMin': -0.2, 'yMax': 1.2}
 
-        t0 = self.data[self.data.Type == 'StateStart']
-        t1 = self.data[self.data.Type == 'StateEnd']
-        mesh_x = np.append(t0.index.total_seconds(), t1.index[-1].total_seconds()) - limits[0]
+        state_t0 = self.data[self.data.Type == 'StateStart']
+        state_t1 = self.data[self.data.Type == 'StateEnd']
+        mesh_x = np.append(state_t0.index.total_seconds(), state_t1.index[-1].total_seconds()) - limits[0]
         mesh_x = np.tile(mesh_x, (2, 1))
         mesh_y = np.zeros(mesh_x.shape) - 0.2
         mesh_y[1, :] = 1.2
-        mesh_z = t0.State.cat.codes.to_numpy()
+        mesh_z = state_t0.State.cat.codes.to_numpy()
         mesh_z = mesh_z[np.newaxis, :]
 
         for channel in self.plots:
@@ -346,6 +345,7 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.trials.horizontalHeader().setStretchLastSection(True)
         self.trials.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
             'QTableView::item:selected { color: black; background-color: lightgray; }'
@@ -364,13 +364,47 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setSelectionMode(QTableView.SingleSelection)
         self.trials.setSelectionBehavior(QTableView.SelectRows)
         self.trials.selectionModel().selectionChanged.connect(self.onSelectionChanged)
-        layout.addWidget(self.trials, 2, 0, 1, 1)
+        layout.addWidget(self.trials, 2, 0, 2, 1)
+
+        # psychometric function
+        self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
+        self.psychometricFunction.plotItem.setTitle('Psychometric Function', color='k')
+        self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
+        self.psychometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
+        for axis in ('left', 'bottom'):
+            self.psychometricFunction.plotItem.getAxis(axis).setGrid(128)
+            self.psychometricFunction.plotItem.getAxis(axis).setTextPen('k')
+        self.psychometricFunction.plotItem.setXRange(-1, 1, padding=0)
+        self.psychometricFunction.plotItem.setYRange(0, 1, padding=0)
+        self.psychometricFunction.plotItem.setMouseEnabled(x=False, y=False)
+        self.psychometricFunction.plotItem.setMenuEnabled(False)
+        self.psychometricFunction.plotItem.hideButtons()
+        self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
+        self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
+
+        # response time
+        self.responseTimeWidget = pg.PlotWidget(parent=self, background='white')
+        self.responseTimeWidget.plotItem.setTitle('Response Time', color='k')
+        self.responseTimeWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
+        self.responseTimeWidget.plotItem.getAxis('bottom').setLabel('Signed Contrast')
+        for axis in ('left', 'bottom'):
+            self.responseTimeWidget.plotItem.getAxis(axis).setGrid(128)
+            self.responseTimeWidget.plotItem.getAxis(axis).setTextPen('k')
+        self.responseTimeWidget.plotItem.setLogMode(x=False, y=True)
+        self.responseTimeWidget.plotItem.setXRange(-1, 1, padding=0)
+        self.responseTimeWidget.plotItem.setYRange(-1, 2, padding=0)
+        self.responseTimeWidget.plotItem.setMouseEnabled(x=False, y=False)
+        self.responseTimeWidget.plotItem.setMenuEnabled(False)
+        self.responseTimeWidget.plotItem.hideButtons()
+        self.responseTimeWidget.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        layout.addWidget(self.responseTimeWidget, 3, 1, 1, 1)
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
         self.bpodWidget.setMinimumHeight(200)
         self.bpodWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.bpodWidget, 3, 0, 1, 2)
+        layout.addWidget(self.bpodWidget, 4, 0, 1, 2)
 
         self.model.currentTrialChanged.connect(self.updatePlots)
 
