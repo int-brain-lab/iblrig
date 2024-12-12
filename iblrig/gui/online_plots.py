@@ -174,7 +174,6 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
 
 class StateMeshItem(pg.PColorMeshItem):
-    statusMessage = Signal(str)
     stateIndex = Signal(int)
 
     def __init__(self, *args, **kwargs):
@@ -183,11 +182,12 @@ class StateMeshItem(pg.PColorMeshItem):
     def hoverEvent(self, ev):
         if ev.exit:
             if not hasattr(ev, '_scenePos'):
-                self.statusMessage.emit('')
+                self.stateIndex.emit(-1)
             else:
                 item = self.scene().itemAt(ev.scenePos(), QTransform())
                 if not isinstance(item, QGraphicsRectItem):
-                    self.statusMessage.emit('')
+                    self.stateIndex.emit(-1)
+            return
 
         try:
             x = self.mapFromParent(ev.pos()).x()
@@ -198,7 +198,6 @@ class StateMeshItem(pg.PColorMeshItem):
         except IndexError:
             return
         self.stateIndex.emit(i)
-        # self.statusMessage.emit(f'State: "{self.stateName}"')
 
 
 class BpodWidget(pg.GraphicsLayoutWidget):
@@ -241,7 +240,6 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.centralWidget.nextRow()
         self.labels[channel] = self.addLabel(label, col=0, color='k')
         self.meshes[channel] = StateMeshItem(colorMap=self.colormap)
-        self.meshes[channel].statusMessage.connect(self.showStatusMessage)
         self.meshes[channel].stateIndex.connect(self.showStatusState)
         self.plots[channel] = pg.PlotDataItem(pen='k', stepMode='right')
         self.plots[channel].setSkipFiniteCheck(True)
@@ -255,13 +253,12 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.data = data
         self.showTrial()
 
-    @Slot(str)
-    def showStatusMessage(self, string: str):
-        self.window().statusBar().showMessage(string)
-
     @Slot(int)
     def showStatusState(self, index: int):
-        self.window().statusBar().showMessage(f'State: {self.data.State.cat.categories[index]}')
+        if index < 0:
+            self.window().statusBar().clearMessage()
+        else:
+            self.window().statusBar().showMessage(f'State: {self.data.State.cat.categories[index]}')
 
     def showTrial(self):
         limits = self.data[self.data['Type'].isin(['TrialStart', 'TrialEnd'])]
@@ -314,7 +311,7 @@ class OnlinePlotsView(QMainWindow):
         pg.setConfigOptions(antialias=True)
         self.model = OnlinePlotsModel(raw_data_folder, self)
 
-        self.statusBar().showMessage('')
+        self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
 
         # the frame that contains all the plots
