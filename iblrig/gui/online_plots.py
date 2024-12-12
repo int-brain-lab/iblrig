@@ -147,21 +147,23 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
         # Draw the progress bar
         painter.fillRect(option.rect, option.backgroundBrush)
-        if outcome != 'no-go':
-            norm_value = np.log(value / self.norm_min) / self.norm_div
-            filled_rect = QRectF(option.rect)
-            filled_rect.setWidth(filled_rect.width() * norm_value)
-            gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
-            gradient.setColorAt(0, QColor(255, 255, 255, 0))
-            gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
-            painter.setBrush(gradient)
-            painter.setPen(Qt.NoPen)
-            painter.drawRect(filled_rect)
+        if outcome == 'no-go':
+            return
 
-        # Draw the value text
-        painter.setPen(option.palette.text().color())
+        norm_value = np.log(value / self.norm_min) / self.norm_div
+        filled_rect = QRectF(option.rect)
+        filled_rect.setWidth(filled_rect.width() * norm_value)
+        gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
+        gradient.setColorAt(0, QColor(255, 255, 255, 0))
+        gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
+        painter.setBrush(gradient)
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(filled_rect)
+
+        painter.setPen(pg.mkPen('white'))
         value_text = f'{value:.2f}' if outcome != 'no-go' else 'N/A'
-        painter.drawText(option.rect, Qt.AlignVCenter | Qt.AlignCenter, value_text)
+        filled_rect.adjust(0, 0, -5, 0)
+        painter.drawText(filled_rect, Qt.AlignVCenter | Qt.AlignRight, value_text)
 
     def displayText(self, value, locale):
         return ''
