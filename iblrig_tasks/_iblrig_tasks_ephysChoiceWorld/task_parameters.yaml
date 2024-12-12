@@ -1,0 +1,1 @@
+'CONTRAST_SET_PROBABILITY_TYPE': skew_zero  # uniform or skew_zero: uniform makes the 0 contrast as likely as the others, while skew_zero makes it half as likely as other contrasts
