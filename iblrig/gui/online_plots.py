@@ -37,10 +37,9 @@ class TrialsTableModel(DataFrameTableModel):
             outcome = index.siblingAtColumn(3).data()
             timing = index.siblingAtColumn(4).data()
             tip = (
-                f'Trial {trial}: stimulus with {contrast:g}% contrast on {"right" if position == 1 else "left"} '
-                f'side of screen, {outcome}'
+                f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} / {outcome}'
             )
-            return f'{tip}.' if outcome == 'no-go' else f'{tip} after {timing:0.2f} s.'
+            return tip + ('.' if outcome == 'no-go' else f' after {timing:0.2f} s.')
         return super().data(index, role)
 
 
@@ -81,7 +80,7 @@ class OnlinePlotsModel(QObject):
 
         table = pd.DataFrame()
         table['Trial'] = self._trial_data.trial_num
-        table['Stimulus'] = np.sign(self._trial_data.position)
+        table['Stimulus'] = self._trial_data.position
         table['Contrast'] = self._trial_data.contrast
         table['Outcome'] = self._trial_data.apply(
             lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
@@ -150,10 +149,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
         # Draw the progress bar
         painter.fillRect(option.rect, option.backgroundBrush)
-        if outcome == 'no-go':
-            filled_rect = QRectF(option.rect)
-            painter.setBrush(self.color_nogo)
-        else:
+        if outcome != 'no-go':
             norm_value = np.log(value / self.norm_min) / self.norm_div
             filled_rect = QRectF(option.rect)
             filled_rect.setWidth(filled_rect.width() * norm_value)
@@ -161,8 +157,8 @@ class ResponseTimeDelegate(QStyledItemDelegate):
             gradient.setColorAt(0, QColor(255, 255, 255, 0))
             gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
             painter.setBrush(gradient)
-        painter.setPen(Qt.NoPen)
-        painter.drawRect(filled_rect)
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(filled_rect)
 
         # Draw the value text
         painter.setPen(option.palette.text().color())
