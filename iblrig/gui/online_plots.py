@@ -186,7 +186,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
         # Get the float value from the model
         value = index.data()
-        outcome = index.sibling(index.row(), 3).data()
+        outcome = index.sibling(index.row(), 4).data()
 
         # Draw the progress bar
         painter.fillRect(option.rect, option.backgroundBrush)
