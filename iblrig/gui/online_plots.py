@@ -54,8 +54,8 @@ class TrialsTableView(QTableView):
     norm_div = np.log10(norm_max / norm_min)
     x_minor = [i / j for j in (10, 1, 0.1) for i in range(2, 10)]
     x_major = np.power(10.0, np.arange(-1, 3))
-    color_minor = QColor(229, 229, 229)
-    color_major = QColor(202, 202, 202)
+    color_minor = QColor(238, 238, 238)
+    color_major = QColor(199, 199, 199)
     grid_col = 5
 
     def paintEvent(self, event):
