@@ -7,8 +7,8 @@ import pandas as pd
 import pyqtgraph as pg
 from pydantic import DirectoryPath, Field, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
-from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QModelIndex, QObject, QRectF, Qt, Signal, Slot
-from qtpy.QtGui import QColor, QLinearGradient, QPainter, QTransform
+from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QModelIndex, QObject, QRect, QRectF, Qt, Signal, Slot
+from qtpy.QtGui import QColor, QFont, QLinearGradient, QPainter, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QFrame,
@@ -34,9 +34,13 @@ class TrialsTableModel(DataFrameTableModel):
             trial = index.siblingAtColumn(0).data()
             position = index.siblingAtColumn(1).data()
             contrast = index.siblingAtColumn(2).data() * 100
-            outcome = index.siblingAtColumn(3).data()
-            timing = index.siblingAtColumn(4).data()
-            tip = f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} / {outcome}'
+            debias = index.siblingAtColumn(3).data()
+            outcome = index.siblingAtColumn(4).data()
+            timing = index.siblingAtColumn(5).data()
+            tip = (
+                f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} '
+                f'{"(debiasing) " if debias else ""}/ {outcome}'
+            )
             return tip + ('.' if outcome == 'no-go' else f' after {timing:0.2f} s.')
         if index.isValid() and index.column() == 0 and role == Qt.TextAlignmentRole:
             return Qt.AlignRight | Qt.AlignVCenter
@@ -51,14 +55,16 @@ class TrialsTableView(QTableView):
     def paintEvent(self, event):
         painter = QPainter(self.viewport())
         painter.setPen(QColor(229, 229, 229))
+        viewport_pos = self.columnViewportPosition(5)
+        col_width = self.columnWidth(5)
         for x in (i / j for j in (10, 1, 0.1) for i in range(2, 10)):
-            xval = np.log10(x / self.norm_min) / self.norm_div
-            line_x = self.columnViewportPosition(4) + round(self.columnWidth(4) * xval)
+            x_val = np.log10(x / self.norm_min) / self.norm_div
+            line_x = viewport_pos + round(col_width * x_val)
             painter.drawLine(line_x, 0, line_x, self.height())
         painter.setPen(QColor(202, 202, 202))
         for x in np.power(10.0, np.arange(-1, 3)):
-            xval = np.log10(x / self.norm_min) / self.norm_div
-            line_x = self.columnViewportPosition(4) + round(self.columnWidth(4) * xval)
+            x_val = np.log10(x / self.norm_min) / self.norm_div
+            line_x = viewport_pos + round(col_width * x_val)
             painter.drawLine(line_x, 0, line_x, self.height())
         super().paintEvent(event)
 
@@ -87,6 +93,7 @@ class OnlinePlotsModel(QObject):
         with self.settings_file.open('r') as f:
             self.task_settings = json.load(f)
 
+        # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
         self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
         self.jsonableWatcher.fileChanged.connect(self.readJsonable)
@@ -102,6 +109,7 @@ class OnlinePlotsModel(QObject):
         table['Trial'] = self._trial_data.trial_num
         table['Stimulus'] = self._trial_data.position
         table['Contrast'] = self._trial_data.contrast
+        table['Debias'] = self._trial_data.debias_trial if 'debias_trial' in self._trial_data.columns else False
         table['Outcome'] = self._trial_data.apply(
             lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
         )
@@ -135,18 +143,29 @@ class StimulusDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
         location = index.siblingAtColumn(1).data()
         contrast = index.siblingAtColumn(2).data()
+        debias = index.siblingAtColumn(3).data()
+
         color = QColor()
         color.setHslF(0, 0, 1.0 - contrast)
 
-        diameter = int(option.rect.height() * 0.8)
+        diameter = round(option.rect.height() * 0.8)
         spacing = (option.rect.height() - diameter) // 2
         x_pos = option.rect.left() + spacing if location < 0 else option.rect.right() - diameter - spacing
         y_pos = option.rect.top() + spacing
 
+        # draw circle
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(color)
         painter.setPen(self.pen)
-        painter.drawEllipse(x_pos, y_pos, diameter, diameter)  # Draw circle
+        painter.drawEllipse(x_pos, y_pos, diameter, diameter)
+
+        if debias:
+            rect = QRect(x_pos, y_pos, diameter, diameter)
+            painter.setPen(QColor('white') if contrast > 0.5 else QColor('black'))
+            painter.save()
+            painter.setFont(QFont(painter.font().family(), 9, -1, False))
+            painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, 'DB')
+            painter.restore()
 
     def displayText(self, value, locale):
         return ''
@@ -384,7 +403,8 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setItemDelegateForColumn(1, self.stimulusDelegate)
         self.trials.setColumnHidden(2, True)
         self.trials.setColumnHidden(3, True)
-        self.trials.setItemDelegateForColumn(4, self.responseTimeDelegate)
+        self.trials.setColumnHidden(4, True)
+        self.trials.setItemDelegateForColumn(5, self.responseTimeDelegate)
         self.trials.setShowGrid(False)
         self.trials.setFrameShape(QTableView.NoFrame)
         self.trials.setFocusPolicy(Qt.FocusPolicy.NoFocus)
