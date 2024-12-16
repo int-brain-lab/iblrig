@@ -221,7 +221,7 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         # add title
         if title is not None:
             self.centralWidget.nextRow()
-            self.addLabel(title, col=1, color='k')
+            self.addLabel(title, size='11pt', col=1, color='k')
 
         # add plots for digital channels
         for channel in ('BNC1', 'BNC2', 'Port1'):
@@ -313,6 +313,7 @@ class OnlinePlotsView(QMainWindow):
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
+        self.setMinimumSize(900, 700)
 
         # the frame that contains all the plots
         frame = QFrame(self)
@@ -322,7 +323,6 @@ class OnlinePlotsView(QMainWindow):
 
         # we use a grid layout to organize the different plots
         layout = QGridLayout(frame)
-        layout.setSpacing(0)
         frame.setLayout(layout)
 
         # main title
@@ -349,7 +349,6 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.trials.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setStretchLastSection(True)
         self.trials.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
@@ -379,8 +378,8 @@ class OnlinePlotsView(QMainWindow):
         for axis in ('left', 'bottom'):
             self.psychometricFunction.plotItem.getAxis(axis).setGrid(128)
             self.psychometricFunction.plotItem.getAxis(axis).setTextPen('k')
-        self.psychometricFunction.plotItem.setXRange(-1, 1, padding=0)
-        self.psychometricFunction.plotItem.setYRange(0, 1, padding=0)
+        self.psychometricFunction.plotItem.setXRange(-1, 1, padding=0.05)
+        self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
         self.psychometricFunction.plotItem.setMouseEnabled(x=False, y=False)
         self.psychometricFunction.plotItem.setMenuEnabled(False)
         self.psychometricFunction.plotItem.hideButtons()
@@ -397,8 +396,8 @@ class OnlinePlotsView(QMainWindow):
             self.responseTimeWidget.plotItem.getAxis(axis).setGrid(128)
             self.responseTimeWidget.plotItem.getAxis(axis).setTextPen('k')
         self.responseTimeWidget.plotItem.setLogMode(x=False, y=True)
-        self.responseTimeWidget.plotItem.setXRange(-1, 1, padding=0)
-        self.responseTimeWidget.plotItem.setYRange(-1, 2, padding=0)
+        self.responseTimeWidget.plotItem.setXRange(-1, 1, padding=0.05)
+        self.responseTimeWidget.plotItem.setYRange(-1, 2, padding=0.05)
         self.responseTimeWidget.plotItem.setMouseEnabled(x=False, y=False)
         self.responseTimeWidget.plotItem.setMenuEnabled(False)
         self.responseTimeWidget.plotItem.hideButtons()
@@ -407,7 +406,7 @@ class OnlinePlotsView(QMainWindow):
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
-        self.bpodWidget.setMinimumHeight(200)
+        self.bpodWidget.setMinimumHeight(160)
         self.bpodWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addWidget(self.bpodWidget, 4, 0, 1, 2)
 
