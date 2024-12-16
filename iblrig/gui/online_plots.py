@@ -27,7 +27,7 @@ from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_js
 
 
 class TrialsTableModel(DataFrameTableModel):
-    """Child of :class:`~iblqt.core.DataFrameTableModel` that displays status tips for entries in the trials table."""
+    """A table model that displays status tips for entries in the trials table."""
 
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any | None:
         if index.isValid() and role == Qt.ItemDataRole.StatusTipRole:
@@ -48,21 +48,27 @@ class TrialsTableModel(DataFrameTableModel):
 
 
 class TrialsTableView(QTableView):
+    """A table view that shows a logarithmic x-grid in one column"""
     norm_min = 0.1
     norm_max = 102.0
     norm_div = np.log10(norm_max / norm_min)
+    x_minor = [i / j for j in (10, 1, 0.1) for i in range(2, 10)]
+    x_major = np.power(10.0, np.arange(-1, 3))
+    color_minor = QColor(229, 229, 229)
+    color_major = QColor(202, 202, 202)
+    grid_col = 5
 
     def paintEvent(self, event):
+        viewport_pos = self.columnViewportPosition(self.grid_col)
+        col_width = self.columnWidth(self.grid_col)
         painter = QPainter(self.viewport())
-        painter.setPen(QColor(229, 229, 229))
-        viewport_pos = self.columnViewportPosition(5)
-        col_width = self.columnWidth(5)
-        for x in (i / j for j in (10, 1, 0.1) for i in range(2, 10)):
+        painter.setPen(self.color_minor)
+        for x in self.x_minor:
             x_val = np.log10(x / self.norm_min) / self.norm_div
             line_x = viewport_pos + round(col_width * x_val)
             painter.drawLine(line_x, 0, line_x, self.height())
-        painter.setPen(QColor(202, 202, 202))
-        for x in np.power(10.0, np.arange(-1, 3)):
+        painter.setPen(self.color_major)
+        for x in self.x_major:
             x_val = np.log10(x / self.norm_min) / self.norm_div
             line_x = viewport_pos + round(col_width * x_val)
             painter.drawLine(line_x, 0, line_x, self.height())
@@ -154,6 +160,7 @@ class StimulusDelegate(QStyledItemDelegate):
         y_pos = option.rect.top() + spacing
 
         # draw circle
+        painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setBrush(color)
         painter.setPen(self.pen)
@@ -162,10 +169,9 @@ class StimulusDelegate(QStyledItemDelegate):
         if debias:
             rect = QRect(x_pos, y_pos, diameter, diameter)
             painter.setPen(QColor('white') if contrast > 0.5 else QColor('black'))
-            painter.save()
             painter.setFont(QFont(painter.font().family(), 9, -1, False))
             painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, 'DB')
-            painter.restore()
+        painter.restore()
 
     def displayText(self, value, locale):
         return ''
@@ -192,7 +198,6 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         painter.fillRect(option.rect, option.backgroundBrush)
         if outcome == 'no-go':
             return
-
         norm_value = np.log(value / self.norm_min) / self.norm_div
         filled_rect = QRectF(option.rect)
         filled_rect.setWidth(filled_rect.width() * norm_value)
@@ -354,7 +359,7 @@ class OnlinePlotsView(QMainWindow):
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
-        self.setMinimumSize(900, 700)
+        self.setMinimumSize(1024, 768)
 
         # the frame that contains all the plots
         frame = QFrame(self)
