@@ -211,6 +211,7 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.setRenderHints(QPainter.Antialiasing)
         self.setBackground('white')
         self.centralWidget.setSpacing(0)
+        self.centralWidget.setContentsMargins(0, 0, 0, 0)
 
         colormap = pg.colormap.get('glasbey_light', source='colorcet')
         colors = colormap.getLookupTable(0, 1, 256, alpha=True)
