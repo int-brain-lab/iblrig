@@ -38,7 +38,29 @@ class TrialsTableModel(DataFrameTableModel):
             timing = index.siblingAtColumn(4).data()
             tip = f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} / {outcome}'
             return tip + ('.' if outcome == 'no-go' else f' after {timing:0.2f} s.')
+        if index.isValid() and index.column() == 0 and role == Qt.TextAlignmentRole:
+            return Qt.AlignRight | Qt.AlignVCenter
         return super().data(index, role)
+
+
+class TrialsTableView(QTableView):
+    norm_min = 0.1
+    norm_max = 102.0
+    norm_div = np.log10(norm_max / norm_min)
+
+    def paintEvent(self, event):
+        painter = QPainter(self.viewport())
+        painter.setPen(QColor(229, 229, 229))
+        for x in (i / j for j in (10, 1, 0.1) for i in range(2, 10)):
+            xval = np.log10(x / self.norm_min) / self.norm_div
+            line_x = self.columnViewportPosition(4) + round(self.columnWidth(4) * xval)
+            painter.drawLine(line_x, 0, line_x, self.height())
+        painter.setPen(QColor(202, 202, 202))
+        for x in np.power(10.0, np.arange(-1, 3)):
+            xval = np.log10(x / self.norm_min) / self.norm_div
+            line_x = self.columnViewportPosition(4) + round(self.columnWidth(4) * xval)
+            painter.drawLine(line_x, 0, line_x, self.height())
+        super().paintEvent(event)
 
 
 class OnlinePlotsModel(QObject):
@@ -132,7 +154,7 @@ class StimulusDelegate(QStyledItemDelegate):
 
 class ResponseTimeDelegate(QStyledItemDelegate):
     norm_min = 0.1
-    norm_max = 60.0
+    norm_max = 102.0
     norm_div = np.log(norm_max / norm_min)
     color_correct = QColor(44, 162, 95)
     color_error = QColor(227, 74, 51)
@@ -321,7 +343,7 @@ class OnlinePlotsView(QMainWindow):
         frame.setStyleSheet('background-color: rgb(255, 255, 255);')
         self.setCentralWidget(frame)
 
-        # we use a grid layout to organize the different plots
+        # we use a grid layout to organize the different widgets
         layout = QGridLayout(frame)
         frame.setLayout(layout)
 
@@ -342,17 +364,18 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(subtitle, 1, 0, 1, 2)
 
         # trial data
-        self.trials = QTableView(self)
+        self.trials = TrialsTableView(self)
         self.trials.setModel(self.model.table_model)
         self.trials.setMouseTracking(True)
         self.trials.verticalHeader().hide()
+        self.trials.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setStretchLastSection(True)
         self.trials.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; background-color: lightgray; }'
+            'QTableView::item:selected { color: black; selection-background-color: rgb(229, 229, 229); }'
         )
         self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
