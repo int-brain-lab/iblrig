@@ -157,7 +157,7 @@ def bpod_trial_data_to_dataframe(bpod_trial_data: dict[str, Any], trial: int) ->
     # deduce channels and values from event names
     df[['Channel', 'Value']] = df['Event'].str.extract(RE_PATTERN_EVENT, expand=True)
     df['Channel'] = df['Channel'].astype('category')
-    df['Value'] = df['Value'].replace({'Low': 0, 'High': 1, 'Out': 0, 'In': 1})
+    df['Value'] = df['Value'].replace({'Low': '0', 'High': '1', 'Out': '0', 'In': '1'})
     df['Value'] = pd.to_numeric(df['Value'], errors='coerce', downcast='unsigned', dtype_backend='numpy_nullable')
 
     return df

@@ -1,4 +1,6 @@
+import ctypes
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -7,9 +9,21 @@ import pandas as pd
 import pyqtgraph as pg
 from pydantic import DirectoryPath, Field, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
-from qtpy.QtCore import QFileSystemWatcher, QItemSelection, QModelIndex, QObject, QRect, QRectF, Qt, Signal, Slot
-from qtpy.QtGui import QColor, QFont, QLinearGradient, QPainter, QTransform
+from qtpy.QtCore import (
+    QCoreApplication,
+    QFileSystemWatcher,
+    QItemSelection,
+    QModelIndex,
+    QObject,
+    QRect,
+    QRectF,
+    Qt,
+    Signal,
+    Slot,
+)
+from qtpy.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap, QTransform
 from qtpy.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QFrame,
     QGraphicsRectItem,
@@ -23,6 +37,8 @@ from qtpy.QtWidgets import (
 )
 
 from iblqt.core import DataFrameTableModel
+from iblrig import __version__ as iblrig_version
+from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_jsonable
 
 
@@ -49,6 +65,7 @@ class TrialsTableModel(DataFrameTableModel):
 
 class TrialsTableView(QTableView):
     """A table view that shows a logarithmic x-grid in one column"""
+
     norm_min = 0.1
     norm_max = 102.0
     norm_div = np.log10(norm_max / norm_min)
@@ -360,6 +377,9 @@ class OnlinePlotsView(QMainWindow):
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
         self.setMinimumSize(1024, 768)
+        icon = QIcon()
+        icon.addPixmap(QPixmap(':/images/iblrig_logo'), QIcon.Normal, QIcon.Off)
+        self.setWindowIcon(icon)
 
         # the frame that contains all the plots
         frame = QFrame(self)
@@ -391,6 +411,7 @@ class OnlinePlotsView(QMainWindow):
         self.trials = TrialsTableView(self)
         self.trials.setModel(self.model.table_model)
         self.trials.setMouseTracking(True)
+        self.trials.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.trials.verticalHeader().hide()
         self.trials.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
@@ -435,9 +456,9 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
         layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
 
-        # response time
+        # chronometric function
         self.responseTimeWidget = pg.PlotWidget(parent=self, background='white')
-        self.responseTimeWidget.plotItem.setTitle('Response Time', color='k')
+        self.responseTimeWidget.plotItem.setTitle('Chronometric Function', color='k')
         self.responseTimeWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.responseTimeWidget.plotItem.getAxis('bottom').setLabel('Signed Contrast')
         for axis in ('left', 'bottom'):
@@ -454,7 +475,7 @@ class OnlinePlotsView(QMainWindow):
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
-        self.bpodWidget.setMinimumHeight(160)
+        self.bpodWidget.setMinimumHeight(130)
         self.bpodWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addWidget(self.bpodWidget, 4, 0, 1, 2)
 
@@ -491,6 +512,14 @@ class OnlinePlotsView(QMainWindow):
 def online_plots_cli():
     class Settings(BaseSettings, cli_parse_args=True):
         directory: CliPositionalArg[Path] = Field(description='Raw Data Directory')
+
+    # set app information
+    QCoreApplication.setOrganizationName('International Brain Laboratory')
+    QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
+    QCoreApplication.setApplicationName('IBLRIG Online Plots')
+    if os.name == 'nt':
+        app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QApplication([])
 
