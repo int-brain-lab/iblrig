@@ -55,7 +55,7 @@ class TrialsTableModel(DataFrameTableModel):
             timing = index.siblingAtColumn(5).data()
             tip = (
                 f'Trial {trial}: {contrast:g}% contrast / {abs(position):g}° {"right" if position > 0 else "left"} '
-                f'{"(debiasing) " if debias else ""}/ {outcome}'
+                f'{"/ debiasing " if debias else ""}/ {outcome}'
             )
             return tip + ('.' if outcome == 'no-go' else f' after {timing:0.2f} s.')
         if index.isValid() and index.column() == 0 and role == Qt.TextAlignmentRole:
@@ -115,6 +115,14 @@ class OnlinePlotsModel(QObject):
 
         with self.settings_file.open('r') as f:
             self.task_settings = json.load(f)
+        self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
+        self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
+        signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
+        self.psychometrics = pd.DataFrame(
+            columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
+            index=pd.MultiIndex.from_product([self.probability_set, signed_contrasts]),
+        )
+        self.psychometrics['count'] = 0
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
@@ -128,11 +136,10 @@ class OnlinePlotsModel(QObject):
         self._trial_data = pd.concat([self._trial_data, trial_data])
         self._bpod_data = bpod_session_data_to_dataframe(bpod_data=bpod_data, existing_data=self._bpod_data)
 
-        table = pd.DataFrame()
-        table['Trial'] = self._trial_data.trial_num
-        table['Stimulus'] = self._trial_data.position
-        table['Contrast'] = self._trial_data.contrast
-        table['Debias'] = self._trial_data.debias_trial if 'debias_trial' in self._trial_data.columns else False
+        # update data for trial history table
+        table = self._trial_data[['trial_num', 'position', 'contrast']].copy()
+        table.columns = ['Trial', 'Stimulus', 'Contrast']
+        table['Debias'] = self._trial_data.get('debias_trial', False)
         table['Outcome'] = self._trial_data.apply(
             lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
         )
@@ -413,6 +420,7 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setMouseTracking(True)
         self.trials.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.trials.verticalHeader().hide()
+        # self.trials.horizontalHeader().hide()
         self.trials.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -420,7 +428,7 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setStretchLastSection(True)
         self.trials.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 15%); }'
+            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 10%); }'
         )
         self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -486,7 +494,8 @@ class OnlinePlotsView(QMainWindow):
         self.title.setText(f'Trial {trial}')
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.setCurrentIndex(self.model.table_model.index(trial, 0))
-        self.trials.scrollToBottom()
+        if trial == self.model.table_model.columnCount() - 1:
+            self.trials.scrollToBottom()
         self.update()
 
     def onSelectionChanged(self, selected: QItemSelection, _: QItemSelection):
