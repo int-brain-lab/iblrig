@@ -75,6 +75,31 @@ class TrialsTableView(QTableView):
     color_major = QColor(199, 199, 199)
     grid_col = 5
 
+    def __init__(self, parent: QObject):
+        super().__init__(parent)
+        self.setMouseTracking(True)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.verticalHeader().hide()
+        # self.horizontalHeader().hide()
+        self.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setStyleSheet(
+            'QHeaderView::section { border: none; background-color: white; }'
+            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 10%); }'
+        )
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.stimulusDelegate = StimulusDelegate()
+        self.responseTimeDelegate = ResponseTimeDelegate()
+        self.setItemDelegateForColumn(1, self.stimulusDelegate)
+        self.setItemDelegateForColumn(5, self.responseTimeDelegate)
+        self.setShowGrid(False)
+        self.setFrameShape(QTableView.NoFrame)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setSelectionMode(QTableView.SingleSelection)
+        self.setSelectionBehavior(QTableView.SelectRows)
+
     def paintEvent(self, event):
         viewport_pos = self.columnViewportPosition(self.grid_col)
         col_width = self.columnWidth(self.grid_col)
@@ -384,9 +409,7 @@ class OnlinePlotsView(QMainWindow):
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
         self.setMinimumSize(1024, 768)
-        icon = QIcon()
-        icon.addPixmap(QPixmap(':/images/iblrig_logo'), QIcon.Normal, QIcon.Off)
-        self.setWindowIcon(icon)
+        self.setWindowIcon(QIcon(QPixmap(':/images/iblrig_logo')))
 
         # the frame that contains all the plots
         frame = QFrame(self)
@@ -397,9 +420,11 @@ class OnlinePlotsView(QMainWindow):
         # we use a grid layout to organize the different widgets
         layout = QGridLayout(frame)
         frame.setLayout(layout)
+        layout.setColumnStretch(0, 1)
+        layout.setColumnStretch(1, 2)
 
         # main title
-        self.title = QLabel('This is the main title')
+        self.title = QLabel('This is the main title', self)
         self.title.setAlignment(Qt.AlignHCenter)
         font = self.title.font()
         font.setPointSize(15)
@@ -409,7 +434,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.title, 0, 0, 1, 2)
 
         # sub title
-        subtitle = QLabel('This is the sub-title')
+        subtitle = QLabel('This is the sub-title', self)
         subtitle.setAlignment(Qt.AlignHCenter)
         subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addWidget(subtitle, 1, 0, 1, 2)
@@ -417,34 +442,12 @@ class OnlinePlotsView(QMainWindow):
         # trial data
         self.trials = TrialsTableView(self)
         self.trials.setModel(self.model.table_model)
-        self.trials.setMouseTracking(True)
-        self.trials.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.trials.verticalHeader().hide()
-        # self.trials.horizontalHeader().hide()
-        self.trials.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
-        self.trials.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.trials.selectionModel().selectionChanged.connect(self.onSelectionChanged)
         self.trials.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.trials.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.trials.horizontalHeader().setStretchLastSection(True)
-        self.trials.setStyleSheet(
-            'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 10%); }'
-        )
-        self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.stimulusDelegate = StimulusDelegate()
-        self.responseTimeDelegate = ResponseTimeDelegate()
-        self.trials.setItemDelegateForColumn(1, self.stimulusDelegate)
         self.trials.setColumnHidden(2, True)
         self.trials.setColumnHidden(3, True)
         self.trials.setColumnHidden(4, True)
-        self.trials.setItemDelegateForColumn(5, self.responseTimeDelegate)
-        self.trials.setShowGrid(False)
-        self.trials.setFrameShape(QTableView.NoFrame)
-        self.trials.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.trials.setSelectionMode(QTableView.SingleSelection)
-        self.trials.setSelectionBehavior(QTableView.SelectRows)
-        self.trials.selectionModel().selectionChanged.connect(self.onSelectionChanged)
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
         # psychometric function
@@ -488,6 +491,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.bpodWidget, 4, 0, 1, 2)
 
         self.model.currentTrialChanged.connect(self.updatePlots)
+        self.updatePlots(self.model.nTrials() - 1)
 
     @Slot(int)
     def updatePlots(self, trial: int):
