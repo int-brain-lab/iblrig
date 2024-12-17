@@ -198,8 +198,8 @@ class ResponseTimeDelegate(QStyledItemDelegate):
     norm_min = 0.1
     norm_max = 102.0
     norm_div = np.log(norm_max / norm_min)
-    color_correct = QColor(44, 162, 95)
-    color_error = QColor(227, 74, 51)
+    color_correct = QColor(0, 107, 90)
+    color_error = QColor(219, 67, 37)
     color_nogo = QColor(192, 192, 192)
     color_text = QColor('white')
     color_gradient0 = QColor(255, 255, 255, 0)
@@ -420,7 +420,7 @@ class OnlinePlotsView(QMainWindow):
         self.trials.horizontalHeader().setStretchLastSection(True)
         self.trials.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; selection-background-color: rgb(229, 229, 229); }'
+            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 15%); }'
         )
         self.trials.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.trials.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -486,6 +486,7 @@ class OnlinePlotsView(QMainWindow):
         self.title.setText(f'Trial {trial}')
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.setCurrentIndex(self.model.table_model.index(trial, 0))
+        self.trials.scrollToBottom()
         self.update()
 
     def onSelectionChanged(self, selected: QItemSelection, _: QItemSelection):
