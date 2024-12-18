@@ -471,13 +471,15 @@ class OnlinePlotsView(QMainWindow):
             return legend
 
         # set common properties for psychometric/chronometric PlotDataItems
-        def setCommonPlotDataItemSettings(item: pg.PlotDataItem, index: int):
+        def createPlotDataItems(plot_item: pg.PlotItem, index: int) -> pg.PlotDataItem:
+            item = plot_item.plot()
             color = self.colormap.getByIndex(index)
             item.setData(x=[1, np.NAN], y=[np.NAN, 1])
             item.setPen(pg.mkPen(color=color, width=2))
             item.setSymbolPen(color)
             item.setSymbolBrush(color)
             item.setSymbolSize(7)
+            return item
 
         # psychometric function
         self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
@@ -489,8 +491,7 @@ class OnlinePlotsView(QMainWindow):
         legend = setCommonPlotItemSettings(self.psychometricFunction.plotItem)
         self.psychometricPlotDataItems = dict()
         for idx, p in enumerate([1, 2]):
-            self.psychometricPlotDataItems[p] = self.psychometricFunction.plotItem.plot()
-            setCommonPlotDataItemSettings(self.psychometricPlotDataItems[p], idx)
+            self.psychometricPlotDataItems[p] = createPlotDataItems(self.psychometricFunction.plotItem, idx)
             legend.addItem(self.psychometricPlotDataItems[p], f'p = {p:0.1f}')
 
         # chronometric function
@@ -503,8 +504,7 @@ class OnlinePlotsView(QMainWindow):
         legend = setCommonPlotItemSettings(self.chronometricFunction.plotItem)
         self.chronometricPlotItems = dict()
         for idx, p in enumerate([1, 2]):
-            self.chronometricPlotItems[p] = self.chronometricFunction.plotItem.plot()
-            setCommonPlotDataItemSettings(self.chronometricPlotItems[p], idx)
+            self.chronometricPlotItems[p] = createPlotDataItems(self.chronometricFunction.plotItem, idx)
             legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
 
         # bpod data
