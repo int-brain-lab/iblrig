@@ -1,6 +1,7 @@
 import ctypes
 import json
 import os
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -453,33 +454,33 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setColumnHidden(4, True)
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
-        # set common properties for psychometric/chronometric PlotItems
-        def setCommonPlotItemSettings(item: pg.PlotItem) -> pg.LegendItem:
-            item.addItem(pg.InfiniteLine(0, 90, 'black'))
-            item.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
+        # set common properties for psychometric/chronometric functions
+        def commonFunctionSettings(plot_widget: pg.PlotWidget, categories: Sequence[Any]) -> dict[Any, pg.PlotDataItem]:
+            plot_item = plot_widget.plotItem
+            plot_item.addItem(pg.InfiniteLine(0, 90, 'black'))
+            plot_item.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
             for axis in ('left', 'bottom'):
-                item.getAxis(axis).setGrid(128)
-                item.getAxis(axis).setTextPen('k')
-            item.getAxis('bottom').setLabel('Signed Contrast')
-            item.setXRange(-1, 1, padding=0.05)
-            item.setMouseEnabled(x=False, y=False)
-            item.setMenuEnabled(False)
-            item.hideButtons()
+                plot_item.getAxis(axis).setGrid(128)
+                plot_item.getAxis(axis).setTextPen('k')
+            plot_item.getAxis('bottom').setLabel('Signed Contrast')
+            plot_item.setXRange(-1, 1, padding=0.05)
+            plot_item.setMouseEnabled(x=False, y=False)
+            plot_item.setMenuEnabled(False)
+            plot_item.hideButtons()
             legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
-            legend.setParentItem(item.graphicsItem())
+            legend.setParentItem(plot_item.graphicsItem())
             legend.setZValue(1)
-            return legend
-
-        # set common properties for psychometric/chronometric PlotDataItems
-        def createPlotDataItems(plot_item: pg.PlotItem, index: int) -> pg.PlotDataItem:
-            item = plot_item.plot()
-            color = self.colormap.getByIndex(index)
-            item.setData(x=[1, np.NAN], y=[np.NAN, 1])
-            item.setPen(pg.mkPen(color=color, width=2))
-            item.setSymbolPen(color)
-            item.setSymbolBrush(color)
-            item.setSymbolSize(7)
-            return item
+            plot_data_items = dict()
+            for idx, category in enumerate(categories):
+                plot_data_items[category] = plot_item.plot()
+                color = self.colormap.getByIndex(idx)
+                plot_data_items[category].setData(x=[1, np.NAN], y=[np.NAN, 1])
+                plot_data_items[category].setPen(pg.mkPen(color=color, width=2))
+                plot_data_items[category].setSymbolPen(color)
+                plot_data_items[category].setSymbolBrush(color)
+                plot_data_items[category].setSymbolSize(7)
+                legend.addItem(plot_data_items[category], f'p = {category:0.1f}')
+            return plot_data_items
 
         # psychometric function
         self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
@@ -488,11 +489,7 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
-        legend = setCommonPlotItemSettings(self.psychometricFunction.plotItem)
-        self.psychometricPlotDataItems = dict()
-        for idx, p in enumerate([1, 2]):
-            self.psychometricPlotDataItems[p] = createPlotDataItems(self.psychometricFunction.plotItem, idx)
-            legend.addItem(self.psychometricPlotDataItems[p], f'p = {p:0.1f}')
+        self.psychometricPlotDataItems = commonFunctionSettings(self.psychometricFunction, [1, 2])
 
         # chronometric function
         self.chronometricFunction = pg.PlotWidget(parent=self, background='white')
@@ -501,11 +498,7 @@ class OnlinePlotsView(QMainWindow):
         self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
         self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
-        legend = setCommonPlotItemSettings(self.chronometricFunction.plotItem)
-        self.chronometricPlotItems = dict()
-        for idx, p in enumerate([1, 2]):
-            self.chronometricPlotItems[p] = createPlotDataItems(self.chronometricFunction.plotItem, idx)
-            legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
+        self.chronometricPlotDataItems = commonFunctionSettings(self.chronometricFunction, [1, 2])
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
