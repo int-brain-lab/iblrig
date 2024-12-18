@@ -1,7 +1,6 @@
 import ctypes
 import json
 import os
-from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +39,7 @@ from qtpy.QtWidgets import (
 from iblqt.core import DataFrameTableModel
 from iblrig import __version__ as iblrig_version
 from iblrig.gui import resources_rc  # noqa: F401
+from iblrig.misc import online_std
 from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_jsonable
 
 
@@ -87,7 +87,7 @@ class TrialsTableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; selection-background-color: rgb(250, 250, 250); }'
+            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 6%); }'
             'QTableView { background-color: rgba(0, 0, 0, 3%); }'
         )
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -144,12 +144,14 @@ class OnlinePlotsModel(QObject):
             self.task_settings = json.load(f)
         self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
         self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
-        signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
+        self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
         self.psychometrics = pd.DataFrame(
             columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-            index=pd.MultiIndex.from_product([self.probability_set, signed_contrasts]),
+            index=pd.MultiIndex.from_product([self.probability_set, self.signed_contrasts]),
         )
         self.psychometrics['count'] = 0
+        self.reward_amount = 0
+        self.ntrials_correct = 0
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
@@ -158,6 +160,8 @@ class OnlinePlotsModel(QObject):
 
     @Slot(str)
     def readJsonable(self, _: str) -> None:
+        if not self.jsonable_file.exists():
+            return
         trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonableOffset)
         self._jsonableOffset = self.jsonable_file.stat().st_size
         self._trial_data = pd.concat([self._trial_data, trial_data])
@@ -175,6 +179,30 @@ class OnlinePlotsModel(QObject):
         )
         self.table_model.setDataFrame(table)
 
+        # update psychometrics using online statistics method
+        for _, row in trial_data.iterrows():
+            signed_contrast = np.sign(row.position) * row.contrast
+            choice = row.position > 0 if row.trial_correct else row.position < 0
+            indexer = (row.stim_probability_left, signed_contrast)
+            if indexer not in self.psychometrics.index:
+                self.psychometrics.loc[indexer, :] = np.nan
+                self.psychometrics.loc[indexer, 'count'] = 0
+            self.psychometrics.loc[indexer, 'count'] += 1
+            self.psychometrics.loc[indexer, 'response_time'], self.psychometrics.loc[indexer, 'response_time_std'] = online_std(
+                new_sample=row.response_time,
+                new_count=self.psychometrics.loc[indexer, 'count'],
+                old_mean=self.psychometrics.loc[indexer, 'response_time'],
+                old_std=self.psychometrics.loc[indexer, 'response_time_std'],
+            )
+            self.psychometrics.loc[indexer, 'choice'], self.psychometrics.loc[indexer, 'choice_std'] = online_std(
+                new_sample=float(choice),
+                new_count=self.psychometrics.loc[indexer, 'count'],
+                old_mean=self.psychometrics.loc[indexer, 'choice'],
+                old_std=self.psychometrics.loc[indexer, 'choice_std'],
+            )
+            self.reward_amount += row.reward_amount
+            self.ntrials_correct += row.trial_correct
+
         self.setCurrentTrial(self.nTrials() - 1)
 
     @Slot(int)
@@ -188,6 +216,9 @@ class OnlinePlotsModel(QObject):
 
     def nTrials(self) -> int:
         return len(self._trial_data)
+
+    def percentCorrect(self) -> float:
+        return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
 
     def bpod_data(self, trial: int) -> pd.DataFrame:
         return self._bpod_data[self._bpod_data.Trial == trial]
@@ -435,13 +466,13 @@ class OnlinePlotsView(QMainWindow):
         font.setBold(True)
         self.title.setFont(font)
         self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.title, 0, 0, 1, 2)
+        layout.addWidget(self.title, 0, 0, 1, 3)
 
         # sub title
         subtitle = QLabel('This is the sub-title', self)
         subtitle.setAlignment(Qt.AlignHCenter)
         subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(subtitle, 1, 0, 1, 2)
+        layout.addWidget(subtitle, 1, 0, 1, 3)
 
         # trial data
         self.trials = TrialsTableView(self)
@@ -454,32 +485,39 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setColumnHidden(4, True)
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
-        # set common properties for psychometric/chronometric functions
-        def commonFunctionSettings(plot_widget: pg.PlotWidget, categories: Sequence[Any]) -> dict[Any, pg.PlotDataItem]:
-            plot_item = plot_widget.plotItem
-            plot_item.addItem(pg.InfiniteLine(0, 90, 'black'))
+        # properties common to all pyqtgraph plots
+        def common_plot_item_props(plot_item: pg.PlotItem):
             plot_item.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
+            plot_item.setMouseEnabled(x=False, y=False)
+            plot_item.setMenuEnabled(False)
+            plot_item.hideButtons()
+            for axis in ('left', 'bottom'):
+                plot_item.getAxis(axis).setTextPen('k')
+
+        # properties common to psychometric/chronometric functions
+        def common_function_props(plot_widget: pg.PlotWidget) -> dict[Any, pg.PlotDataItem]:
+            plot_item = plot_widget.plotItem
+            common_plot_item_props(plot_item)
+            plot_item.addItem(pg.InfiniteLine(0, 90, 'black'))
             for axis in ('left', 'bottom'):
                 plot_item.getAxis(axis).setGrid(128)
                 plot_item.getAxis(axis).setTextPen('k')
             plot_item.getAxis('bottom').setLabel('Signed Contrast')
             plot_item.setXRange(-1, 1, padding=0.05)
-            plot_item.setMouseEnabled(x=False, y=False)
-            plot_item.setMenuEnabled(False)
-            plot_item.hideButtons()
-            legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
+            legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
             legend.setParentItem(plot_item.graphicsItem())
             legend.setZValue(1)
             plot_data_items = dict()
-            for idx, category in enumerate(categories):
-                plot_data_items[category] = plot_item.plot()
+            for idx, probability in enumerate(self.model.probability_set):
+                plot_data_items[probability] = plot_item.plot(connect='all')
                 color = self.colormap.getByIndex(idx)
-                plot_data_items[category].setData(x=[1, np.NAN], y=[np.NAN, 1])
-                plot_data_items[category].setPen(pg.mkPen(color=color, width=2))
-                plot_data_items[category].setSymbolPen(color)
-                plot_data_items[category].setSymbolBrush(color)
-                plot_data_items[category].setSymbolSize(7)
-                legend.addItem(plot_data_items[category], f'p = {category:0.1f}')
+                plot_data_items[probability].setData(x=[1, np.NAN], y=[np.NAN, 1])
+                plot_data_items[probability].setPen(pg.mkPen(color=color, width=2))
+                plot_data_items[probability].setSymbol('o')
+                plot_data_items[probability].setSymbolPen(color)
+                plot_data_items[probability].setSymbolBrush(color)
+                plot_data_items[probability].setSymbolSize(5)
+                legend.addItem(plot_data_items[probability], f'p = {probability:0.1f}')
             return plot_data_items
 
         # psychometric function
@@ -489,7 +527,7 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
-        self.psychometricPlotDataItems = commonFunctionSettings(self.psychometricFunction, [1, 2])
+        self.psychometricPlots = common_function_props(self.psychometricFunction)
 
         # chronometric function
         self.chronometricFunction = pg.PlotWidget(parent=self, background='white')
@@ -498,13 +536,44 @@ class OnlinePlotsView(QMainWindow):
         self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
         self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
-        self.chronometricPlotDataItems = commonFunctionSettings(self.chronometricFunction, [1, 2])
+        self.chronometricPlots = common_function_props(self.chronometricFunction)
+
+        # properties common to all bar charts
+        def common_bar_chart_props(plot_item: pg.PlotItem):
+            common_plot_item_props(plot_item)
+            plot_item.getAxis('left').setWidth(40)
+            plot_item.getAxis('left').setGrid(128)
+            plot_item.getAxis('bottom').setLabel(' ')
+            plot_item.getAxis('bottom').setTicks([[(1, ' ')], []])
+            plot_item.getAxis('bottom').setStyle(tickLength=0)
+            plot_item.setXRange(min=0, max=2, padding=0)
+
+        # performance chart
+        self.performanceWidget = pg.PlotWidget(parent=self, background='white')
+        layout.addWidget(self.performanceWidget, 2, 2, 1, 1)
+        common_bar_chart_props(self.performanceWidget.plotItem)
+        self.performanceWidget.plotItem.setTitle('Performance', color='k')
+        self.performanceWidget.plotItem.getAxis('left').setLabel('Performance (%)')
+        self.performancePlot = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush='k')
+        self.performanceWidget.addItem(self.performancePlot)
+        self.performanceWidget.plotItem.setYRange(0, 105, padding=0)
+
+        # reward chart
+        self.rewardWidget = pg.PlotWidget(parent=self, background='white')
+        self.rewardWidget.setMinimumWidth(135)
+        layout.addWidget(self.rewardWidget, 3, 2, 1, 1)
+        common_bar_chart_props(self.rewardWidget.plotItem)
+        self.rewardWidget.plotItem.setTitle('Total Reward', color='k')
+        self.rewardWidget.plotItem.getAxis('left').setLabel('Reward Amount (μl)')
+        self.rewardPlot = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush='b')
+        self.rewardWidget.addItem(self.rewardPlot)
+        self.rewardWidget.plotItem.setYRange(0, 1050, padding=0)
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
         self.bpodWidget.setMinimumHeight(130)
         self.bpodWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.bpodWidget, 4, 0, 1, 2)
+        layout.addWidget(self.bpodWidget, 4, 0, 1, 3)
 
         self.model.currentTrialChanged.connect(self.updatePlots)
         self.updatePlots(self.model.nTrials() - 1)
@@ -516,6 +585,12 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setCurrentIndex(self.model.table_model.index(trial, 0))
         if trial == self.model.table_model.columnCount() - 1:
             self.trials.scrollToBottom()
+        for p in self.model.probability_set:
+            idx = (p, self.model.signed_contrasts)
+            self.psychometricPlots[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'choice'].to_list())
+            self.chronometricPlots[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'response_time'].to_list())
+        self.performancePlot.setOpts(height=self.model.percentCorrect())
+        self.rewardPlot.setOpts(height=self.model.reward_amount)
         self.update()
 
     def onSelectionChanged(self, selected: QItemSelection, _: QItemSelection):
