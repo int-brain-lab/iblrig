@@ -454,7 +454,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
         # set common properties for psychometric/chronometric PlotItems
-        def setCommonPlotItemSettings(item: pg.PlotItem):
+        def setCommonPlotItemSettings(item: pg.PlotItem) -> pg.LegendItem:
             item.addItem(pg.InfiniteLine(0, 90, 'black'))
             item.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
             for axis in ('left', 'bottom'):
@@ -465,9 +465,14 @@ class OnlinePlotsView(QMainWindow):
             item.setMouseEnabled(x=False, y=False)
             item.setMenuEnabled(False)
             item.hideButtons()
+            legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
+            legend.setParentItem(item.graphicsItem())
+            legend.setZValue(1)
+            return legend
 
         # set common properties for psychometric/chronometric PlotDataItems
-        def setCommonPlotDataItemSettings(item: pg.PlotDataItem, color: QColor):
+        def setCommonPlotDataItemSettings(item: pg.PlotDataItem, index: int):
+            color = self.colormap.getByIndex(index)
             item.setData(x=[1, np.NAN], y=[np.NAN, 1])
             item.setPen(pg.mkPen(color=color, width=2))
             item.setSymbolPen(color)
@@ -481,15 +486,11 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
-        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
-        legend.setParentItem(self.psychometricFunction.plotItem.graphicsItem())
-        setCommonPlotItemSettings(self.psychometricFunction.plotItem)
-        legend.setZValue(1)
+        legend = setCommonPlotItemSettings(self.psychometricFunction.plotItem)
         self.psychometricPlotDataItems = dict()
         for idx, p in enumerate([1, 2]):
-            color = self.colormap.getByIndex(idx)
             self.psychometricPlotDataItems[p] = self.psychometricFunction.plotItem.plot()
-            setCommonPlotDataItemSettings(self.psychometricPlotDataItems[p], color)
+            setCommonPlotDataItemSettings(self.psychometricPlotDataItems[p], idx)
             legend.addItem(self.psychometricPlotDataItems[p], f'p = {p:0.1f}')
 
         # chronometric function
@@ -499,15 +500,11 @@ class OnlinePlotsView(QMainWindow):
         self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
         self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
-        setCommonPlotItemSettings(self.chronometricFunction.plotItem)
-        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
-        legend.setParentItem(self.chronometricFunction.plotItem.graphicsItem())
-        legend.setZValue(1)
+        legend = setCommonPlotItemSettings(self.chronometricFunction.plotItem)
         self.chronometricPlotItems = dict()
         for idx, p in enumerate([1, 2]):
-            color = self.colormap.getByIndex(idx)
             self.chronometricPlotItems[p] = self.chronometricFunction.plotItem.plot()
-            setCommonPlotDataItemSettings(self.chronometricPlotItems[p], color)
+            setCommonPlotDataItemSettings(self.chronometricPlotItems[p], idx)
             legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
 
         # bpod data
