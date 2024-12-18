@@ -401,6 +401,8 @@ class BpodWidget(pg.GraphicsLayoutWidget):
 
 
 class OnlinePlotsView(QMainWindow):
+    colormap = pg.colormap.get('tab10', source='matplotlib')
+
     def __init__(self, raw_data_folder: DirectoryPath, parent: QObject | None = None):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
@@ -452,6 +454,7 @@ class OnlinePlotsView(QMainWindow):
 
         # psychometric function
         self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
+        layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
         self.psychometricFunction.plotItem.setTitle('Psychometric Function', color='k')
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
@@ -465,24 +468,54 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction.plotItem.hideButtons()
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
-        layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
+        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
+        legend.setParentItem(self.psychometricFunction.plotItem.graphicsItem())
+        legend.setZValue(1)
+        self.psychometricPlotItems = dict()
+        for idx, p in enumerate([1, 2]):
+            color = self.colormap.getByIndex(idx)
+            self.psychometricPlotItems[p] = self.psychometricFunction.plotItem.plot(
+                x=[-1, np.NAN],
+                y=[np.NAN, 1],
+                pen=pg.mkPen(color=color, width=2),
+                symbolPen=color,
+                symbolBrush=color,
+                symbolSize=7
+            )
+            legend.addItem(self.psychometricPlotItems[p], f'p = {p:0.1f}')
 
         # chronometric function
-        self.responseTimeWidget = pg.PlotWidget(parent=self, background='white')
-        self.responseTimeWidget.plotItem.setTitle('Chronometric Function', color='k')
-        self.responseTimeWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
-        self.responseTimeWidget.plotItem.getAxis('bottom').setLabel('Signed Contrast')
+        self.chronometricFunction = pg.PlotWidget(parent=self, background='white')
+        layout.addWidget(self.chronometricFunction, 3, 1, 1, 1)
+        self.chronometricFunction.plotItem.setTitle('Chronometric Function', color='k')
+        self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
+        self.chronometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
         for axis in ('left', 'bottom'):
-            self.responseTimeWidget.plotItem.getAxis(axis).setGrid(128)
-            self.responseTimeWidget.plotItem.getAxis(axis).setTextPen('k')
-        self.responseTimeWidget.plotItem.setLogMode(x=False, y=True)
-        self.responseTimeWidget.plotItem.setXRange(-1, 1, padding=0.05)
-        self.responseTimeWidget.plotItem.setYRange(-1, 2, padding=0.05)
-        self.responseTimeWidget.plotItem.setMouseEnabled(x=False, y=False)
-        self.responseTimeWidget.plotItem.setMenuEnabled(False)
-        self.responseTimeWidget.plotItem.hideButtons()
-        self.responseTimeWidget.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
-        layout.addWidget(self.responseTimeWidget, 3, 1, 1, 1)
+            self.chronometricFunction.plotItem.getAxis(axis).setGrid(128)
+            self.chronometricFunction.plotItem.getAxis(axis).setTextPen('k')
+        self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
+        self.chronometricFunction.plotItem.setXRange(-1, 1, padding=0.05)
+        self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
+        self.chronometricFunction.plotItem.setMouseEnabled(x=False, y=False)
+        self.chronometricFunction.plotItem.setMenuEnabled(False)
+        self.chronometricFunction.plotItem.hideButtons()
+        self.chronometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        self.chronometricFunction.plotItem.addLegend()
+        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
+        legend.setParentItem(self.chronometricFunction.plotItem.graphicsItem())
+        legend.setZValue(1)
+        self.chronometricPlotItems = dict()
+        for idx, p in enumerate([1, 2]):
+            color = self.colormap.getByIndex(idx)
+            self.chronometricPlotItems[p] = self.chronometricFunction.plotItem.plot(
+                x=[-1, np.NAN],
+                y=[np.NAN, 1],
+                pen=pg.mkPen(color=color, width=2),
+                symbolPen=color,
+                symbolBrush=color,
+                symbolSize=7
+            )
+            legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
