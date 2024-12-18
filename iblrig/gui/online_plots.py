@@ -86,7 +86,8 @@ class TrialsTableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.setStyleSheet(
             'QHeaderView::section { border: none; background-color: white; }'
-            'QTableView::item:selected { color: black; selection-background-color: rgba(0, 0, 0, 10%); }'
+            'QTableView::item:selected { color: black; selection-background-color: rgb(250, 250, 250); }'
+            'QTableView { background-color: rgba(0, 0, 0, 3%); }'
         )
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -456,6 +457,7 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
         layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
         self.psychometricFunction.plotItem.setTitle('Psychometric Function', color='k')
+        self.psychometricFunction.plotItem.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
         for axis in ('left', 'bottom'):
@@ -480,7 +482,7 @@ class OnlinePlotsView(QMainWindow):
                 pen=pg.mkPen(color=color, width=2),
                 symbolPen=color,
                 symbolBrush=color,
-                symbolSize=7
+                symbolSize=7,
             )
             legend.addItem(self.psychometricPlotItems[p], f'p = {p:0.1f}')
 
@@ -488,6 +490,7 @@ class OnlinePlotsView(QMainWindow):
         self.chronometricFunction = pg.PlotWidget(parent=self, background='white')
         layout.addWidget(self.chronometricFunction, 3, 1, 1, 1)
         self.chronometricFunction.plotItem.setTitle('Chronometric Function', color='k')
+        self.chronometricFunction.plotItem.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
         self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
         for axis in ('left', 'bottom'):
@@ -513,7 +516,7 @@ class OnlinePlotsView(QMainWindow):
                 pen=pg.mkPen(color=color, width=2),
                 symbolPen=color,
                 symbolBrush=color,
-                symbolSize=7
+                symbolSize=7,
             )
             legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
 
