@@ -453,71 +453,61 @@ class OnlinePlotsView(QMainWindow):
         self.trials.setColumnHidden(4, True)
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
+        # set common properties for psychometric/chronometric PlotItems
+        def setCommonPlotItemSettings(item: pg.PlotItem):
+            item.addItem(pg.InfiniteLine(0, 90, 'black'))
+            item.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
+            for axis in ('left', 'bottom'):
+                item.getAxis(axis).setGrid(128)
+                item.getAxis(axis).setTextPen('k')
+            item.getAxis('bottom').setLabel('Signed Contrast')
+            item.setXRange(-1, 1, padding=0.05)
+            item.setMouseEnabled(x=False, y=False)
+            item.setMenuEnabled(False)
+            item.hideButtons()
+
+        # set common properties for psychometric/chronometric PlotDataItems
+        def setCommonPlotDataItemSettings(item: pg.PlotDataItem, color: QColor):
+            item.setData(x=[1, np.NAN], y=[np.NAN, 1])
+            item.setPen(pg.mkPen(color=color, width=2))
+            item.setSymbolPen(color)
+            item.setSymbolBrush(color)
+            item.setSymbolSize(7)
+
         # psychometric function
         self.psychometricFunction = pg.PlotWidget(parent=self, background='white')
         layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
         self.psychometricFunction.plotItem.setTitle('Psychometric Function', color='k')
-        self.psychometricFunction.plotItem.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
         self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
-        self.psychometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
-        for axis in ('left', 'bottom'):
-            self.psychometricFunction.plotItem.getAxis(axis).setGrid(128)
-            self.psychometricFunction.plotItem.getAxis(axis).setTextPen('k')
-        self.psychometricFunction.plotItem.setXRange(-1, 1, padding=0.05)
         self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
-        self.psychometricFunction.plotItem.setMouseEnabled(x=False, y=False)
-        self.psychometricFunction.plotItem.setMenuEnabled(False)
-        self.psychometricFunction.plotItem.hideButtons()
         self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
-        self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
         legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
         legend.setParentItem(self.psychometricFunction.plotItem.graphicsItem())
+        setCommonPlotItemSettings(self.psychometricFunction.plotItem)
         legend.setZValue(1)
-        self.psychometricPlotItems = dict()
+        self.psychometricPlotDataItems = dict()
         for idx, p in enumerate([1, 2]):
             color = self.colormap.getByIndex(idx)
-            self.psychometricPlotItems[p] = self.psychometricFunction.plotItem.plot(
-                x=[-1, np.NAN],
-                y=[np.NAN, 1],
-                pen=pg.mkPen(color=color, width=2),
-                symbolPen=color,
-                symbolBrush=color,
-                symbolSize=7,
-            )
-            legend.addItem(self.psychometricPlotItems[p], f'p = {p:0.1f}')
+            self.psychometricPlotDataItems[p] = self.psychometricFunction.plotItem.plot()
+            setCommonPlotDataItemSettings(self.psychometricPlotDataItems[p], color)
+            legend.addItem(self.psychometricPlotDataItems[p], f'p = {p:0.1f}')
 
         # chronometric function
         self.chronometricFunction = pg.PlotWidget(parent=self, background='white')
         layout.addWidget(self.chronometricFunction, 3, 1, 1, 1)
         self.chronometricFunction.plotItem.setTitle('Chronometric Function', color='k')
-        self.chronometricFunction.plotItem.getViewBox().setBackgroundColor(pg.mkColor(250, 250, 250))
         self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
-        self.chronometricFunction.plotItem.getAxis('bottom').setLabel('Signed Contrast')
-        for axis in ('left', 'bottom'):
-            self.chronometricFunction.plotItem.getAxis(axis).setGrid(128)
-            self.chronometricFunction.plotItem.getAxis(axis).setTextPen('k')
         self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
-        self.chronometricFunction.plotItem.setXRange(-1, 1, padding=0.05)
         self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
-        self.chronometricFunction.plotItem.setMouseEnabled(x=False, y=False)
-        self.chronometricFunction.plotItem.setMenuEnabled(False)
-        self.chronometricFunction.plotItem.hideButtons()
-        self.chronometricFunction.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
-        self.chronometricFunction.plotItem.addLegend()
+        setCommonPlotItemSettings(self.chronometricFunction.plotItem)
         legend = pg.LegendItem(pen='lightgray', brush='w', offset=(60, 30), verSpacing=-5, labelTextColor='k')
         legend.setParentItem(self.chronometricFunction.plotItem.graphicsItem())
         legend.setZValue(1)
         self.chronometricPlotItems = dict()
         for idx, p in enumerate([1, 2]):
             color = self.colormap.getByIndex(idx)
-            self.chronometricPlotItems[p] = self.chronometricFunction.plotItem.plot(
-                x=[-1, np.NAN],
-                y=[np.NAN, 1],
-                pen=pg.mkPen(color=color, width=2),
-                symbolPen=color,
-                symbolBrush=color,
-                symbolSize=7,
-            )
+            self.chronometricPlotItems[p] = self.chronometricFunction.plotItem.plot()
+            setCommonPlotDataItemSettings(self.chronometricPlotItems[p], color)
             legend.addItem(self.chronometricPlotItems[p], f'p = {p:0.1f}')
 
         # bpod data
