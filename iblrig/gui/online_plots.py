@@ -162,8 +162,8 @@ class TrialsWidget(QWidget):
         self.model = model
 
         layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 8, 0, 36)
+        layout.setSpacing(5)
+        layout.setContentsMargins(0, 7, 0, 36)
         self.setLayout(layout)
 
         self.titleLabel = QLabel('Trials History')
