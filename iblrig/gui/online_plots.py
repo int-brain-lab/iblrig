@@ -547,13 +547,14 @@ class OnlinePlotsView(QMainWindow):
             plot_item.getAxis('bottom').setTicks([[(1, ' ')], []])
             plot_item.getAxis('bottom').setStyle(tickLength=0)
             plot_item.setXRange(min=0, max=2, padding=0)
+            plot_item.hoverEvent = self.mouseOverBarChart
 
         # performance chart
         self.performanceWidget = pg.PlotWidget(parent=self, background='white')
         layout.addWidget(self.performanceWidget, 2, 2, 1, 1)
         common_bar_chart_props(self.performanceWidget.plotItem)
         self.performanceWidget.plotItem.setTitle('Performance', color='k')
-        self.performanceWidget.plotItem.getAxis('left').setLabel('Performance (%)')
+        self.performanceWidget.plotItem.getAxis('left').setLabel('Correct Choices (%)')
         self.performancePlot = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush='k')
         self.performanceWidget.addItem(self.performancePlot)
         self.performanceWidget.plotItem.setYRange(0, 105, padding=0)
@@ -577,6 +578,16 @@ class OnlinePlotsView(QMainWindow):
 
         self.model.currentTrialChanged.connect(self.updatePlots)
         self.updatePlots(self.model.nTrials() - 1)
+
+    def mouseOverBarChart(self, event):
+        statusbar = self.window().statusBar()
+        if event.exit:
+            statusbar.clearMessage()
+        elif event.currentItem.vb.sceneBoundingRect().contains(event.scenePos()):
+            if event.currentItem == self.performanceWidget.plotItem:
+                statusbar.showMessage(f'Performance: {self.model.percentCorrect():0.1f}% correct choices')
+            else:
+                statusbar.showMessage(f'Total reward amount: {self.model.reward_amount:0.1f} μl')
 
     @Slot(int)
     def updatePlots(self, trial: int):
