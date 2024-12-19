@@ -1,6 +1,7 @@
 import ctypes
 import json
 import os
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +24,6 @@ from qtpy.QtCore import (
 )
 from qtpy.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap, QTransform
 from qtpy.QtWidgets import (
-    QAbstractItemView,
     QApplication,
     QFrame,
     QGraphicsRectItem,
@@ -59,7 +59,7 @@ class PlotWidget(pg.PlotWidget):
             self.plotItem.getAxis(axis).setTextPen('k')
 
 
-class SingleBarChart(PlotWidget):
+class SingleBarChartWidget(PlotWidget):
     """A bar chart with a single column"""
 
     def __init__(self, *args, barBrush='k', **kwargs):
@@ -76,6 +76,33 @@ class SingleBarChart(PlotWidget):
     @Slot(float)
     def setValue(self, value: float):
         self._barGraphItem.setOpts(height=value)
+
+
+class FunctionWidget(PlotWidget):
+    """A widget for psychometric and chronometric functions"""
+
+    def __init__(self, *args, colors: pg.ColorMap, probabilities: Iterable[float], **kwargs):
+        super().__init__(*args, **kwargs)
+        self.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        for axis in ('left', 'bottom'):
+            self.plotItem.getAxis(axis).setGrid(128)
+            self.plotItem.getAxis(axis).setTextPen('k')
+        self.plotItem.getAxis('bottom').setLabel('Signed Contrast')
+        self.plotItem.setXRange(-1, 1, padding=0.05)
+        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
+        legend.setParentItem(self.plotItem.graphicsItem())
+        legend.setZValue(1)
+        self.plotDataItems = dict()
+        for idx, probability in enumerate(probabilities):
+            self.plotDataItems[probability] = self.plotItem.plot(connect='all')
+            color = colors.getByIndex(idx)
+            self.plotDataItems[probability].setData(x=[1, np.NAN], y=[np.NAN, 1])
+            self.plotDataItems[probability].setPen(pg.mkPen(color=color, width=2))
+            self.plotDataItems[probability].setSymbol('o')
+            self.plotDataItems[probability].setSymbolPen(color)
+            self.plotDataItems[probability].setSymbolBrush(color)
+            self.plotDataItems[probability].setSymbolSize(5)
+            legend.addItem(self.plotDataItems[probability], f'p = {probability:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -544,56 +571,29 @@ class OnlinePlotsView(QMainWindow):
         subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addWidget(subtitle, 1, 0, 1, 3)
 
-        # trial data
+        # trial history
         self.trials = TrialsWidget(self, self.model.table_model)
         self.trials.trialSelected.connect(self.model.setCurrentTrial)
         layout.addWidget(self.trials, 2, 0, 2, 1)
 
-        # properties common to psychometric/chronometric functions
-        def common_function_props(plot_widget: pg.PlotWidget) -> dict[Any, pg.PlotDataItem]:
-            plot_item = plot_widget.plotItem
-            plot_item.addItem(pg.InfiniteLine(0, 90, 'black'))
-            for axis in ('left', 'bottom'):
-                plot_item.getAxis(axis).setGrid(128)
-                plot_item.getAxis(axis).setTextPen('k')
-            plot_item.getAxis('bottom').setLabel('Signed Contrast')
-            plot_item.setXRange(-1, 1, padding=0.05)
-            legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
-            legend.setParentItem(plot_item.graphicsItem())
-            legend.setZValue(1)
-            plot_data_items = dict()
-            for idx, probability in enumerate(self.model.probability_set):
-                plot_data_items[probability] = plot_item.plot(connect='all')
-                color = self.colormap.getByIndex(idx)
-                plot_data_items[probability].setData(x=[1, np.NAN], y=[np.NAN, 1])
-                plot_data_items[probability].setPen(pg.mkPen(color=color, width=2))
-                plot_data_items[probability].setSymbol('o')
-                plot_data_items[probability].setSymbolPen(color)
-                plot_data_items[probability].setSymbolBrush(color)
-                plot_data_items[probability].setSymbolSize(5)
-                legend.addItem(plot_data_items[probability], f'p = {probability:0.1f}')
-            return plot_data_items
-
         # psychometric function
-        self.psychometricFunction = PlotWidget(parent=self)
-        layout.addWidget(self.psychometricFunction, 2, 1, 1, 1)
-        self.psychometricFunction.plotItem.setTitle('Psychometric Function', color='k')
-        self.psychometricFunction.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
-        self.psychometricFunction.plotItem.setYRange(0, 1, padding=0.05)
-        self.psychometricFunction.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
-        self.psychometricPlots = common_function_props(self.psychometricFunction)
+        self.psychometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        self.psychometricWidget.plotItem.setTitle('Psychometric Function', color='k')
+        self.psychometricWidget.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
+        self.psychometricWidget.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
+        self.psychometricWidget.plotItem.setYRange(0, 1, padding=0.05)
+        layout.addWidget(self.psychometricWidget, 2, 1, 1, 1)
 
         # chronometric function
-        self.chronometricFunction = PlotWidget(parent=self)
-        layout.addWidget(self.chronometricFunction, 3, 1, 1, 1)
-        self.chronometricFunction.plotItem.setTitle('Chronometric Function', color='k')
-        self.chronometricFunction.plotItem.getAxis('left').setLabel('Response Time (s)')
-        self.chronometricFunction.plotItem.setLogMode(x=False, y=True)
-        self.chronometricFunction.plotItem.setYRange(-1, 2, padding=0.05)
-        self.chronometricPlots = common_function_props(self.chronometricFunction)
+        self.chronometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        self.chronometricWidget.plotItem.setTitle('Chronometric Function', color='k')
+        self.chronometricWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
+        self.chronometricWidget.plotItem.setLogMode(x=False, y=True)
+        self.chronometricWidget.plotItem.setYRange(-1, 2, padding=0.05)
+        layout.addWidget(self.chronometricWidget, 3, 1, 1, 1)
 
         # performance chart
-        self.performanceWidget = SingleBarChart(parent=self)
+        self.performanceWidget = SingleBarChartWidget(parent=self)
         self.performanceWidget.setMinimumWidth(155)
         self.performanceWidget.plotItem.setTitle('Performance', color='k')
         self.performanceWidget.plotItem.getAxis('left').setLabel('Correct Choices (%)')
@@ -602,7 +602,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.performanceWidget, 2, 2, 1, 1)
 
         # reward chart
-        self.rewardWidget = SingleBarChart(parent=self, barBrush='blue')
+        self.rewardWidget = SingleBarChartWidget(parent=self, barBrush='blue')
         self.rewardWidget.plotItem.setTitle('Reward Amount', color='k')
         self.rewardWidget.plotItem.getAxis('left').setLabel('Total Reward Volume (μl)')
         self.rewardWidget.plotItem.setYRange(0, 1050, padding=0)
@@ -637,8 +637,10 @@ class OnlinePlotsView(QMainWindow):
             self.trials.scrollToBottom()
         for p in self.model.probability_set:
             idx = (p, self.model.signed_contrasts)
-            self.psychometricPlots[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'choice'].to_list())
-            self.chronometricPlots[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'response_time'].to_list())
+            self.psychometricWidget.plotDataItems[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'choice'].to_list())
+            self.chronometricWidget.plotDataItems[p].setData(
+                x=idx[1], y=self.model.psychometrics.loc[idx, 'response_time'].to_list()
+            )
         self.performanceWidget.setValue(self.model.percentCorrect())
         self.rewardWidget.setValue(self.model.reward_amount)
         self.update()
