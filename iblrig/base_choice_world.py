@@ -833,7 +833,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
 
     def new_block(self):
         """
-        if block_init_5050
+        If block_init_5050
             First block has 50/50 probability of leftward stim
             is 90 trials long
         """
