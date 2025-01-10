@@ -1,4 +1,5 @@
 import ctypes
+import datetime
 import json
 import os
 from collections.abc import Iterable
@@ -218,6 +219,8 @@ class TrialsWidget(QWidget):
 
 class OnlinePlotsModel(QObject):
     currentTrialChanged = Signal(int)
+    titleChanged = Signal(str)
+    subtitleChanged = Signal(str)
     _trial_data = pd.DataFrame()
     _bpod_data = pd.DataFrame()
     trials_table = pd.DataFrame()
@@ -301,6 +304,7 @@ class OnlinePlotsModel(QObject):
             self.ntrials_correct += row.trial_correct
 
         self.setCurrentTrial(self.nTrials() - 1)
+        self.titleChanged.emit(self.getTitle())
 
     @Slot(int)
     def setCurrentTrial(self, value: int) -> None:
@@ -314,11 +318,21 @@ class OnlinePlotsModel(QObject):
     def nTrials(self) -> int:
         return len(self._trial_data)
 
+    def timeElapsed(self) -> datetime.timedelta:
+        seconds = 0 if self.nTrials() == 0 else (self._bpod_data.index[-1] - self._bpod_data.index[0]).seconds
+        return datetime.timedelta(seconds=seconds)
+
     def percentCorrect(self) -> float:
         return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
 
     def bpod_data(self, trial: int) -> pd.DataFrame:
         return self._bpod_data[self._bpod_data.Trial == trial]
+
+    def getTitle(self) -> str:
+        protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
+        trials = f'{self.nTrials()} trial{"s" if self.nTrials != 1 else ""}'
+        spacer = '  ·  '
+        return f'{protocol}{spacer}{trials}{spacer}time: {self.timeElapsed()}'
 
 
 class StimulusDelegate(QStyledItemDelegate):
@@ -556,7 +570,7 @@ class OnlinePlotsView(QMainWindow):
         layout.setColumnStretch(1, 2)
 
         # main title
-        self.title = QLabel('This is the main title', self)
+        self.title = QLabel(self.model.getTitle(), self)
         self.title.setAlignment(Qt.AlignHCenter)
         font = self.title.font()
         font.setPointSize(15)
@@ -566,10 +580,10 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.title, 0, 0, 1, 3)
 
         # sub title
-        subtitle = QLabel('This is the sub-title', self)
-        subtitle.setAlignment(Qt.AlignHCenter)
-        subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(subtitle, 1, 0, 1, 3)
+        self.subtitle = QLabel('This is the sub-title', self)
+        self.subtitle.setAlignment(Qt.AlignHCenter)
+        self.subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        layout.addWidget(self.subtitle, 1, 0, 1, 3)
 
         # trial history
         self.trials = TrialsWidget(self, self.model.table_model)
@@ -616,7 +630,16 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.bpodWidget, 4, 0, 1, 3)
 
         self.model.currentTrialChanged.connect(self.updatePlots)
+        self.model.titleChanged.connect(self.setTitle)
         self.updatePlots(self.model.nTrials() - 1)
+
+    @Slot(str)
+    def setTitle(self, str):
+        self.title.setText(str)
+
+    @Slot(str)
+    def setTitleBackground(self, color: str):
+        self.title.setStyleSheet(f'QLabel {{ background-color: {color}; }}')
 
     def mouseOverBarChart(self, event):
         statusbar = self.window().statusBar()
@@ -630,7 +653,6 @@ class OnlinePlotsView(QMainWindow):
 
     @Slot(int)
     def updatePlots(self, trial: int):
-        self.title.setText(f'Trial {trial}')
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.table_view.setCurrentIndex(self.model.table_model.index(trial, 0))
         self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
