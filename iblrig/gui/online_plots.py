@@ -633,8 +633,7 @@ class OnlinePlotsView(QMainWindow):
         self.title.setText(f'Trial {trial}')
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.table_view.setCurrentIndex(self.model.table_model.index(trial, 0))
-        if trial == self.model.table_model.columnCount() - 1:
-            self.trials.scrollToBottom()
+        self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
         for p in self.model.probability_set:
             idx = (p, self.model.signed_contrasts)
             self.psychometricWidget.plotDataItems[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'choice'].to_list())
