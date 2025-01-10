@@ -119,7 +119,7 @@ def start_photometry_task_cmd():
     parser.add_argument('-c', '--sync-channel', type=int, default=1, help='Sync channel')
     args = parser.parse_args()
 
-    assert len(args.rois) == len(args.location), 'The number of ROIs and locations must be the same.'
+    assert len(args.rois) == len(args.locations), 'The number of ROIs and locations must be the same.'
 
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
-    init_neurophotometrics_subject(subject=args.subject, rois=args.rois, locations=args.location, sync_channel=args.sync_channel)
+    init_neurophotometrics_subject(subject=args.subject, rois=args.rois, locations=args.locations, sync_channel=args.sync_channel)
