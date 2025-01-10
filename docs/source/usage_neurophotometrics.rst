@@ -46,7 +46,7 @@ Starting a photometry session
 
    cd C:\iblrigv8\
    venv\scripts\Activate.ps1
-   start_photometry_task --subject=Mickey --roi G0 G1 --location NBM SI
+   start_photometry_task --subject Mickey --rois G0 G1 --locations NBM SI
 
 
 

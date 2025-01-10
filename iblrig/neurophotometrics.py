@@ -50,7 +50,7 @@ def start_workflow_cmd(debug: bool = False):
 
 
 def init_neurophotometrics_subject(
-    session_stub: str, rois: Iterable[str], locations: Iterable[str], sync_channel: int = 1, **kwargs
+    subject: str, rois: Iterable[str], locations: Iterable[str], sync_channel: int = 1, **kwargs
 ) -> NeurophotometricsCopier:
     """
     Initialize a neurophotometrics behavior session.
@@ -61,8 +61,8 @@ def init_neurophotometrics_subject(
 
     Parameters
     ----------
-    session_stub : str
-        The name of the subject for this session.
+    subject : str
+        The name of the session_stub for this session.
     rois : Iterable[str]
         List of ROIs to be recorded.
     locations : Iterable[str]
@@ -81,7 +81,7 @@ def init_neurophotometrics_subject(
     regions = BrainRegions()
     if not all(map(lambda x: x in regions.acronym, locations)):
         _logger.warning(f'Brain regions {locations} not found in BrainRegions acronyms')
-    npc, dict_paths = _get_neurophotometrics_copier(session_stub)
+    npc, dict_paths = _get_neurophotometrics_copier(subject)
     description = NeurophotometricsCopier.neurophotometrics_description(rois, locations, sync_channel, **kwargs)
     npc.initialize_experiment(acquisition_description=description)
     return npc
@@ -97,7 +97,7 @@ def copy_photometry_subject(session_stub: str) -> bool:
 def start_photometry_task_cmd():
     """
     Command line interface for preparing a neurophotometrics session on the photometry computer.
-    start_photometry_recording -s Algernon --rois G0 G1 --locations
+    start_photometry_task --subject Mickey --rois G0 G1 --location NBM SI
     :return:
     """
     parser = argparse.ArgumentParser(
