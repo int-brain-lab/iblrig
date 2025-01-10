@@ -81,7 +81,17 @@ def init_neurophotometrics_subject(
     regions = BrainRegions()
     if not all(map(lambda x: x in regions.acronym, locations)):
         _logger.warning(f'Brain regions {locations} not found in BrainRegions acronyms')
-    npc, dict_paths = _get_neurophotometrics_copier(subject)
+
+    # constructing the stub name
+    dict_paths = iblrig.path_helper.get_local_and_remote_paths()
+    date = datetime.datetime.today().strftime('%Y-%m-%d')
+    ## counting the number of directories (to get the session number)
+    n = len([path for path in (dict_paths['local_subjects_folder'] / subject / date).iterdir() if path.isdir()])
+    session_number = f'{n+1:03}'
+    stub_name = f'{subject}/{date}/{session_number}'
+
+    # creating the copier from the stub name and initializing
+    npc, dict_paths = _get_neurophotometrics_copier(stub_name)
     description = NeurophotometricsCopier.neurophotometrics_description(rois, locations, sync_channel, **kwargs)
     npc.initialize_experiment(acquisition_description=description)
     return npc

@@ -16,7 +16,7 @@ Setup
       device_neurophotometrics:
          DEVICE_MODEL: NP3002
          BONSAI_EXECUTABLE: C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe
-         BONSAI_WORKFLOW: devices\neurophotometrics\FP3002.bonsai
+         BONSAI_WORKFLOW: devices\neurophotometrics\FP3002_digital_inputs.bonsai
          COM_NEUROPHOTOMETRY: COM3
 
 
@@ -33,7 +33,7 @@ Starting a photometry recording
 - start the task
 
 The photometry recording will start and the photometry data will be saved in the data local folder with the following stucture:
-- {local_data_folder}\neurophotometrics\yyyy-mm-dd\HHMMSS
+- {local_data_folder}\neurophotometrics\yyyy-mm-dd\THHMMSS
 Where yyyy-mm-dd is the date of the recording and HHMMSS is the time of the recording.
 
 
