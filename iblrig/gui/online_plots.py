@@ -319,8 +319,14 @@ class OnlinePlotsModel(QObject):
         return len(self._trial_data)
 
     def timeElapsed(self) -> datetime.timedelta:
-        seconds = 0 if self.nTrials() == 0 else (self._bpod_data.index[-1] - self._bpod_data.index[0]).seconds
-        return datetime.timedelta(seconds=seconds)
+        if self.nTrials() == 0:
+            return datetime.timedelta(seconds=0)
+
+        # we currently calculate the time relative to the end of the first trial
+        # this is owed to the way the camera is set up in the first trial
+        t0 = self._bpod_data[self._bpod_data.Type == 'TrialEnd'].index[0]
+        t1 = self._bpod_data.index[-1]
+        return datetime.timedelta(seconds=(t1 - t0).seconds)
 
     def percentCorrect(self) -> float:
         return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
