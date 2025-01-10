@@ -121,7 +121,7 @@ class Session(ActiveChoiceWorldSession):
             dest='stim_gain',
             default=DEFAULTS['STIM_GAIN'],
             type=float,
-            help=f'Visual angle/wheel displacement ' f'(deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
+            help=f'Visual angle/wheel displacement (deg/mm, default: {DEFAULTS["STIM_GAIN"]})',
         )
         parser.add_argument(
             '--stim_reverse',

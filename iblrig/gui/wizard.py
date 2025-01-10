@@ -425,12 +425,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             msg_box.setWindowTitle('IBLRIG System Validation')
             msg_box.setIcon(QtWidgets.QMessageBox().Warning)
             msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
-            text = f"The following issue{'s were' if len(results) > 1 else ' was'} detected:"
+            text = f'The following issue{"s were" if len(results) > 1 else " was"} detected:'
             for result in results:
                 text = (
-                    text + f"<br><br>\n"
-                    f"<b>{'Warning' if result.status == Status.WARN else 'Failure'}:</b> {result.message}<br>\n"
-                    f"{('<b>Suggestion:</b> ' + result.solution) if result.solution is not None else ''}"
+                    text + f'<br><br>\n'
+                    f'<b>{"Warning" if result.status == Status.WARN else "Failure"}:</b> {result.message}<br>\n'
+                    f'{("<b>Suggestion:</b> " + result.solution) if result.solution is not None else ""}'
                 )
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
@@ -568,10 +568,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         box.setModal(False)
         box.setWindowTitle('Training Level')
         box.setText(
-            f'{session_path}\n\n'
-            f'training phase:\t{training_phase}\n'
-            f'reward:\t{reward_amount:.2f} uL\n'
-            f'stimulus gain:\t{stim_gain}'
+            f'{session_path}\n\ntraining phase:\t{training_phase}\nreward:\t{reward_amount:.2f} uL\nstimulus gain:\t{stim_gain}'
         )
         if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
             box.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Close)
@@ -1145,9 +1142,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 answer = QtWidgets.QMessageBox.question(
                     self,
                     'Is this a dud?',
-                    f"The session consisted of only {ntrials:d} trial"
-                    f"{'s' if ntrials > 1 else ''} and appears to be a dud.\n\n"
-                    f"Should it be deleted?",
+                    f'The session consisted of only {ntrials:d} trial'
+                    f'{"s" if ntrials > 1 else ""} and appears to be a dud.\n\n'
+                    f'Should it be deleted?',
                 )
                 if answer == QtWidgets.QMessageBox.Yes:
                     shutil.rmtree(self.model.session_folder)
