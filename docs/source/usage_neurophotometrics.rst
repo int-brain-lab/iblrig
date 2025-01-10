@@ -33,7 +33,7 @@ Starting a photometry recording
 - start the task
 
 The photometry recording will start and the photometry data will be saved in the data local folder with the following stucture:
-- {local_data_folder}\neurophotometrics\yyyy-mm-dd\THHMMSS
+- {local_data_folder}\neurophotometrics\yyyy-mm-dd\HHMMSS
 Where yyyy-mm-dd is the date of the recording and HHMMSS is the time of the recording.
 
 
@@ -46,7 +46,7 @@ Starting a photometry session
 
    cd C:\iblrigv8\
    venv\scripts\Activate.ps1
-   start_photometry_session --subject=Mickey --roi G0 G1 --location NBM SI
+   start_photometry_task --subject=Mickey --roi G0 G1 --location NBM SI
 
 
 
