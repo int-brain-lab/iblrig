@@ -59,7 +59,7 @@ class HasBpod(Protocol):
 
 class BaseSession(ABC):
     version = None
-    """str: !!CURRENTLY UNUSED!! task version string."""
+    """str: Task version string."""
     # protocol_name: str | None = None
     """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
@@ -440,6 +440,8 @@ class BaseSession(ABC):
         }
         with contextlib.suppress(importlib.metadata.PackageNotFoundError):
             patch_dict['PROJECT_EXTRACTION_VERSION'] = importlib.metadata.version('project_extraction')
+        if self.version is not None:
+            patch_dict['TASK_VERSION'] = self.version
         output_dict.update(patch_dict)
         return output_dict
 
