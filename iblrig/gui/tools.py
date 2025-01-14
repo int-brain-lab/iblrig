@@ -136,7 +136,7 @@ class DiskSpaceIndicator(QProgressBar):
             p = self.palette()
             p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
             self.setPalette(p)
-        self.setStatusTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  ' f'available space: {self._gigs_free:.1f} GB')
+        self.setStatusTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  available space: {self._gigs_free:.1f} GB')
 
 
 class Worker(QRunnable):

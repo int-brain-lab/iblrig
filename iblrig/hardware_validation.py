@@ -186,8 +186,7 @@ class ValidatorSerial(Validator):
                 yield Result(Status.PASS, f'Serial device on {self.port} can be connected to')
                 yield Result(
                     Status.INFO,
-                    f'USB ID: {self.port_info.vid:04X}:{self.port_info.pid:04X}, '
-                    f'Serial Number: {self.port_info.serial_number}',
+                    f'USB ID: {self.port_info.vid:04X}:{self.port_info.pid:04X}, Serial Number: {self.port_info.serial_number}',
                 )
             except SerialException as e:
                 yield Result(
@@ -347,14 +346,14 @@ class ValidatorBpod(ValidatorSerial):
             v_major, machine_type = ser.query(b'F', '<2H')
             firmware_version = (v_major, ser.query(b'f', '<H')[0] if v_major > 22 else 0)
             machine_str = {1: 'v0.5', 2: 'r07+', 3: 'r2.0-2.5', 4: '2+ r1.0'}[machine_type]
-            machine_str.join(f", PCB revision{ser.query(b'v', '<B')[0]}" if v_major > 22 else '')
+            machine_str.join(f', PCB revision{ser.query(b"v", "<B")[0]}' if v_major > 22 else '')
         yield Result(Status.INFO, f'Hardware version: {machine_str}')
         yield Result(Status.INFO, f'Firmware version: {firmware_version[0]}.{firmware_version[1]}')
         if firmware_version[0] > 22:
             yield Result(
                 Status.FAIL,
                 'Firmware version greater than 22 are not supported by IBLRIG',
-                solution='Downgrade the Bpod' 's firmware to version 22',
+                solution='Downgrade the Bpods firmware to version 22',
             )
             return False
 
@@ -529,7 +528,7 @@ class ValidatorValve(Validator):
         elif days_passed > 1:
             yield Result(Status.PASS, f'Valve has been calibrated {days_passed} days ago')
         else:
-            yield Result(Status.PASS, f'Valve has been calibrated {"yesterday" if days_passed==1 else "today"}')
+            yield Result(Status.PASS, f'Valve has been calibrated {"yesterday" if days_passed == 1 else "today"}')
 
 
 class ValidatorMic(Validator):
@@ -768,8 +767,7 @@ class ValidatorSound(ValidatorSerial):
                     yield Result(
                         Status.FAIL,
                         'Cannot find USB sound device',
-                        solution="Connect both of the sound card's USB ports and make sure that the HARP drivers are "
-                        'installed',
+                        solution="Connect both of the sound card's USB ports and make sure that the HARP drivers are installed",
                     )
                     return False
                 else:
