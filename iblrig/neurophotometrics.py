@@ -87,7 +87,7 @@ def init_neurophotometrics_subject(
     date = datetime.datetime.today().strftime('%Y-%m-%d')
     ## counting the number of directories (to get the session number)
     n = len([path for path in (dict_paths['local_subjects_folder'] / subject / date).iterdir() if path.isdir()])
-    session_number = f'{n+1:03}'
+    session_number = f'{n + 1:03}'
     stub_name = f'{subject}/{date}/{session_number}'
 
     # creating the copier from the stub name and initializing
@@ -130,6 +130,8 @@ def start_photometry_task_cmd():
     args = parser.parse_args()
 
     assert len(args.rois) == len(args.locations), 'The number of ROIs and locations must be the same.'
+    assert len(set(args.locations)) == len(args.locations), 'duplicate brain regions are not possible'
+    assert len(set(args.rois)) == len(args.rois), 'duplicate rois are not possible'
 
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     init_neurophotometrics_subject(subject=args.subject, rois=args.rois, locations=args.locations, sync_channel=args.sync_channel)
