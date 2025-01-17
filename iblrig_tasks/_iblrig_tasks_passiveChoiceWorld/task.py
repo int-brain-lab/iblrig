@@ -58,7 +58,7 @@ class Session(ChoiceWorldSession):
             dest='duration_spontaneous',
             default=DEFAULTS['SPONTANEOUS_ACTIVITY_SECONDS'],
             type=int,
-            help=f'duration of spontaneous activity in seconds ' f'(default: {DEFAULTS["SPONTANEOUS_ACTIVITY_SECONDS"]} s)',
+            help=f'duration of spontaneous activity in seconds (default: {DEFAULTS["SPONTANEOUS_ACTIVITY_SECONDS"]} s)',
         )
         parser.add_argument(
             '--skip_event_replay',

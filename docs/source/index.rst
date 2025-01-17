@@ -11,7 +11,7 @@
    usage
    reference
    hardware
-   reference_developer_guide
+   developer_guide
    faq
 
 .. if-builder:: html

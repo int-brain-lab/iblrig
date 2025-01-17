@@ -494,8 +494,8 @@ class BaseSession(ABC):
             if self.iblrig_settings['ALYX_URL'] is None:
                 return
             info_str = (
-                f"alyx client with user name {self.iblrig_settings['ALYX_USER']} "
-                + f"and url: {self.iblrig_settings['ALYX_URL']}"
+                f'alyx client with user name {self.iblrig_settings["ALYX_USER"]} '
+                + f'and url: {self.iblrig_settings["ALYX_URL"]}'
             )
             try:
                 self._one = ONE(
@@ -561,7 +561,7 @@ class BaseSession(ABC):
                     session=ses['url'][-36:],
                     water_type=self.task_params.get('REWARD_TYPE', None),
                 )
-                log.info(f"Water administered registered in Alyx database: {ses['subject']}, " f"{wa['water_administered']}mL")
+                log.info(f'Water administered registered in Alyx database: {ses["subject"]}, {wa["water_administered"]}mL')
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register water administration to Alyx')
@@ -951,9 +951,7 @@ class BpodMixin(BaseSession):
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
             raise ValueError(
-                'The value for device_bpod:COM_BPOD in '
-                'settings/hardware_settings.yaml is null. Please '
-                'provide a valid port name.'
+                'The value for device_bpod:COM_BPOD in settings/hardware_settings.yaml is null. Please provide a valid port name.'
             )
         disabled_ports = [x - 1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=disabled_ports)
@@ -1141,7 +1139,7 @@ class SoundMixin(BaseSession, HasBpod):
                 )
             case _:
                 self.bpod.define_xonar_sounds_actions()
-        log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
+        log.info(f'Sound module loaded: OK: {self.hardware_settings.device_sound["OUTPUT"]}')
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
         """
