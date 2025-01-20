@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from ibllib.atlas import AllenAtlas, Insertion
+from iblatlas.atlas import AllenAtlas, Insertion
 from ibllib.tests import TEST_DB
 from one.webclient import AlyxClient
 
@@ -51,7 +51,7 @@ def plot_trajectories(ax, names, trajectories, atlas=None):
     prop_cycle = plt.rcParams['axes.prop_cycle']
     colors = prop_cycle.by_key()['color']
     eps = 0.0001
-    for name, traj, color in zip(names, trajectories, colors, strict=True):
+    for name, traj, color in zip(names, trajectories, colors):
         x = traj[0, 0]
         y = traj[0, 1]
         if x == y == 0:
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         self.names = names
         self.trajectories = trajectories
 
-        self.setWindowTitle('Fiber insertions')
+        self.setWindowTitle('Fiber Insertions')
 
         # Main widget
         main_widget = QWidget()
@@ -178,6 +178,8 @@ class MainWindow(QMainWindow):
         # Add panels to the main layout
         main_layout.addWidget(top_panel)
         main_layout.addWidget(bottom_panel)
+        main_layout.setStretch(0, 0)
+        main_layout.setStretch(1,1)
 
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
