@@ -10,6 +10,7 @@ import sys
 import traceback
 from collections import OrderedDict
 from dataclasses import dataclass
+from importlib.metadata import entry_points
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
@@ -131,6 +132,11 @@ class RigWizardModel:
         if CUSTOM_TASKS:
             tasks.extend(sorted([p for p in Path(iblrig_custom_tasks.__file__).parent.rglob('task.py')]))
         self.all_tasks = OrderedDict({p.parts[-2]: p for p in tasks})
+
+        # include external tasks registered as plugins
+        for plugin in sorted(entry_points(group='iblrig.plugins'), key=lambda ep: ep.name):
+            if plugin.name.startswith('task_') and issubclass(session := plugin.load(), BaseSession):
+                self.all_tasks[session.protocol_name] = session.get_task_file()
 
         # get the subjects from iterating over folders in the the iblrig data path
         if self.iblrig_settings['iblrig_local_data_path'] is None:
@@ -425,12 +431,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             msg_box.setWindowTitle('IBLRIG System Validation')
             msg_box.setIcon(QtWidgets.QMessageBox().Warning)
             msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
-            text = f"The following issue{'s were' if len(results) > 1 else ' was'} detected:"
+            text = f'The following issue{"s were" if len(results) > 1 else " was"} detected:'
             for result in results:
                 text = (
-                    text + f"<br><br>\n"
-                    f"<b>{'Warning' if result.status == Status.WARN else 'Failure'}:</b> {result.message}<br>\n"
-                    f"{('<b>Suggestion:</b> ' + result.solution) if result.solution is not None else ''}"
+                    text + f'<br><br>\n'
+                    f'<b>{"Warning" if result.status == Status.WARN else "Failure"}:</b> {result.message}<br>\n'
+                    f'{("<b>Suggestion:</b> " + result.solution) if result.solution is not None else ""}'
                 )
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
@@ -568,10 +574,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         box.setModal(False)
         box.setWindowTitle('Training Level')
         box.setText(
-            f'{session_path}\n\n'
-            f'training phase:\t{training_phase}\n'
-            f'reward:\t{reward_amount:.2f} uL\n'
-            f'stimulus gain:\t{stim_gain}'
+            f'{session_path}\n\ntraining phase:\t{training_phase}\nreward:\t{reward_amount:.2f} uL\nstimulus gain:\t{stim_gain}'
         )
         if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
             box.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Close)
@@ -862,7 +865,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMinimum(0)
                     widget.setMaximum(11)
 
-                case 'delay_secs':
+                case 'delay_mins':
                     label = 'Initial Delay, min'
                     widget.setMaximum(60)
 
@@ -1035,8 +1038,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if len(remotes := self.listViewRemoteDevices.getDevices()) > 0:
                     cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
-                    if key == '--delay_secs':
-                        value = str(int(value) * 60)  # noqa: PLW2901
                     if isinstance(value, list):
                         cmd.extend([key] + value)
                     elif isinstance(value, bool) and value is True:
@@ -1145,9 +1146,9 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 answer = QtWidgets.QMessageBox.question(
                     self,
                     'Is this a dud?',
-                    f"The session consisted of only {ntrials:d} trial"
-                    f"{'s' if ntrials > 1 else ''} and appears to be a dud.\n\n"
-                    f"Should it be deleted?",
+                    f'The session consisted of only {ntrials:d} trial'
+                    f'{"s" if ntrials > 1 else ""} and appears to be a dud.\n\n'
+                    f'Should it be deleted?',
                 )
                 if answer == QtWidgets.QMessageBox.Yes:
                     shutil.rmtree(self.model.session_folder)

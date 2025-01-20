@@ -122,7 +122,7 @@ class HiFi(SerialSingleton):
             raise RuntimeError(
                 f'Waveform too long - maximum supported length is {self.max_samples_per_waveform} '
                 f'samples ({self.max_samples_per_waveform / self.sampling_rate_hz:.1f}s at '
-                f'{self.sampling_rate_hz / 1E3:.1f}kHz)'
+                f'{self.sampling_rate_hz / 1e3:.1f}kHz)'
             )
         is_stereo = n_channels == 2
 

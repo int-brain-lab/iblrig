@@ -115,16 +115,21 @@ class ChoiceWorldSession(
     base_parameters_file = Path(__file__).parent.joinpath('base_choice_world_params.yaml')
     TrialDataModel = ChoiceWorldTrialData
 
-    def __init__(self, *args, delay_secs=0, **kwargs):
+    def __init__(self, *args, delay_mins: float = 0, **kwargs):
         super().__init__(**kwargs)
-        self.task_params['SESSION_DELAY_START'] = delay_secs
+
+        # session delay is handled in seconds internally
+        self.task_params['SESSION_DELAY_START'] = delay_mins * 60.0
+
         # init behaviour data
         self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[0]]
         self.movement_right = self.device_rotary_encoder.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[1]]
+
         # init counter variables
         self.trial_num = -1
         self.block_num = -1
         self.block_trial_num = -1
+
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
         self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
@@ -140,12 +145,12 @@ class ChoiceWorldSession(
         """:return: argparse.parser()"""
         parser = super(ChoiceWorldSession, ChoiceWorldSession).extra_parser()
         parser.add_argument(
-            '--delay_secs',
-            dest='delay_secs',
+            '--delay_mins',
+            dest='delay_mins',
             default=0,
-            type=int,
+            type=float,
             required=False,
-            help='initial delay before starting the first trial (default: 0s)',
+            help='initial delay before starting the first trial (default: 0 min)',
         )
         parser.add_argument(
             '--remote',
@@ -833,7 +838,7 @@ class BiasedChoiceWorldSession(ActiveChoiceWorldSession):
 
     def new_block(self):
         """
-        if block_init_5050
+        If block_init_5050
             First block has 50/50 probability of leftward stim
             is 90 trials long
         """

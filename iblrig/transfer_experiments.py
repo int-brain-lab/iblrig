@@ -329,8 +329,7 @@ class SessionCopier:
         """
         if self.glob_file_remote_copy_status('complete'):
             log.warning(
-                f'Copy already complete for {self.session_path},'
-                f' remove {self.glob_file_remote_copy_status("complete")} to force'
+                f'Copy already complete for {self.session_path}, remove {self.glob_file_remote_copy_status("complete")} to force'
             )
             return True
         status = self._copy_collections(*args, **kwargs)
