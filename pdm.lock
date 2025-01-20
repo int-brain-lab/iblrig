@@ -5,7 +5,7 @@
 groups = ["default", "ci", "dev", "doc", "project-extraction", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a1b27a816af51b42cb61db0d443313f9342bcfa91e22c49c5a24c25c93a35b95"
+content_hash = "sha256:9ef5233064a3c3af965f033ed7593597da96b2ba1d476008681c983db2cc3d0f"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -871,7 +871,7 @@ dependencies = [
 
 [[package]]
 name = "iblqt"
-version = "0.4.1"
+version = "0.4.2"
 requires_python = ">=3.10"
 summary = "A collection of extensions to the Qt framework."
 groups = ["default"]
@@ -883,8 +883,8 @@ dependencies = [
     "qtpy>=2.4.1",
 ]
 files = [
-    {file = "iblqt-0.4.1-py3-none-any.whl", hash = "sha256:bc49f34db7dd1b6e49c246569ccb234ea86ce9002580940f83287f3fbb2fd1b6"},
-    {file = "iblqt-0.4.1.tar.gz", hash = "sha256:9e4fc6681838351a0b324ad66cdcfdcf4230ef5f6b6791cddaf59d1f2081a31a"},
+    {file = "iblqt-0.4.2-py3-none-any.whl", hash = "sha256:2025133c009d91b590fb1b515ad669dd165368b940d631d071d7817be5018c97"},
+    {file = "iblqt-0.4.2.tar.gz", hash = "sha256:a7ebb8c0d31b5546d228d89a0e9c1ba8babcf385d8672712cc37db0e579e582f"},
 ]
 
 [[package]]
