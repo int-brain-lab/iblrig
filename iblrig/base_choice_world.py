@@ -152,15 +152,6 @@ class ChoiceWorldSession(
             required=False,
             help='initial delay before starting the first trial (default: 0 min)',
         )
-        parser.add_argument(
-            '--remote',
-            dest='remote_rigs',
-            type=str,
-            required=False,
-            action='append',
-            nargs='+',
-            help='specify one of the remote rigs to interact with over the network',
-        )
         return parser
 
     def start_hardware(self):

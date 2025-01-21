@@ -1319,6 +1319,27 @@ class NetworkSession(BaseSession):
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         return paths
 
+    @staticmethod
+    def extra_parser():
+        """
+        Parse network arguments.
+
+        Namely adds the remote argument to the parser.
+
+        :return: argparse.parser()
+        """
+        parser = super().extra_parser()
+        parser.add_argument(
+            '--remote',
+            dest='remote_rigs',
+            type=str,
+            required=False,
+            action='append',
+            nargs='+',
+            help='specify one of the remote rigs to interact with over the network',
+        )
+        return parser
+
     def run(self):
         """Run session and report exceptions to remote services."""
         self.start_mixin_network()
