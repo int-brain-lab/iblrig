@@ -1328,7 +1328,7 @@ class NetworkSession(BaseSession):
 
         :return: argparse.parser()
         """
-        parser = super().extra_parser()
+        parser = super(NetworkSession, NetworkSession).extra_parser()
         parser.add_argument(
             '--remote',
             dest='remote_rigs',
