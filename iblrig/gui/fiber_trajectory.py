@@ -23,6 +23,11 @@ from PyQt5.QtWidgets import (
 from iblatlas.atlas import AllenAtlas, Insertion
 from ibllib.tests import TEST_DB
 from one.webclient import AlyxClient
+from iblqt.core import QAlyx
+from iblqt.widgets import AlyxLoginDialog
+
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import RigSettings
 
 # -------------------------------------------------------------------------------------------------
 # Global variables
@@ -119,8 +124,26 @@ class TrajectoryLoader:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, nickname=None, names=None, trajectories=None):
-        super().__init__()
+    def __init__(
+        self,
+        nickname: str | None = None,
+        names: list[str] | None = None,
+        trajectories: np.typing.NDArray[np.float64] | None = None,
+        parent: QWidget | None = None,
+        alyx: QAlyx | None = None,
+    ):
+        super().__init__(parent)
+
+        settings: RigSettings = load_pydantic_yaml(RigSettings)
+        if isinstance(alyx, QAlyx):
+            self.alyx = alyx
+        else:
+            self.alyx = QAlyx(base_url=settings.ALYX_URL.unicode_string(), parent=self)
+
+        # if not self.alyx.client.is_logged_in:
+        #     dlg = AlyxLoginDialog(alyx=self.alyx, parent=self)
+        #     dlg.setWindowTitle('Log in to Alyx')
+        #     dlg.exec()
 
         self.atlas = AllenAtlas(25)
         self.atlas.compute_surface()
@@ -179,7 +202,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(top_panel)
         main_layout.addWidget(bottom_panel)
         main_layout.setStretch(0, 0)
-        main_layout.setStretch(1,1)
+        main_layout.setStretch(1, 1)
 
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
