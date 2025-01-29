@@ -1043,7 +1043,7 @@ class ValveMixin(BaseSession, HasBpod):
             Valve opening time in seconds.
         """
         amount_ul = self.task_params.REWARD_AMOUNT_UL if amount_ul is None else amount_ul
-        return self.valve.values.ul2ms(amount_ul) / 1e3
+        return self.valve.values.ul2ms(amount_ul) / 1e3  # noqa: PD011
 
     def valve_open(self, reward_valve_time):
         """

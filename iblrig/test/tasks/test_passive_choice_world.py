@@ -52,7 +52,7 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
             for position in positions:
                 counts = f[(f.stim_type == 'G') & (f.position == position) & (f.contrast != 0.0)].contrast.value_counts()
                 assert set(counts.keys()) == {0.0625, 0.125, 0.25, 1.0}
-                assert all([v == 20 for v in counts.values])
+                assert all([v == 20 for v in counts.to_numpy()])
             assert len(f[f.stim_type == 'V']) == 40
             assert len(f[f.stim_type == 'T']) == 40
             assert len(f[f.stim_type == 'N']) == 40

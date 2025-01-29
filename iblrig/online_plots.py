@@ -298,7 +298,7 @@ class OnlinePlots:
             if self.data.psychometrics.loc[p]['count'].sum() == 0:
                 continue
             # update psychometric curves
-            iok = ~np.isnan(self.data.psychometrics.loc[p]['choice'].values.astype(np.float32))
+            iok = ~np.isnan(self.data.psychometrics.loc[p]['choice'].to_numpy().astype(np.float32))
             xval = self.data.psychometrics.loc[p].index[iok]
             h.curve_psych[p][0].set(xdata=xval, ydata=self.data.psychometrics.loc[p]['choice'][iok])
             h.curve_reaction[p][0].set(xdata=xval, ydata=self.data.psychometrics.loc[p]['response_time'][iok])
@@ -391,9 +391,9 @@ class OnlinePlots:
         self.data.water_delivered = trials_table.reward_amount.sum()
         # init the last trials table
         it = self.data.last_trials.index[-np.minimum(self.data.ntrials, NTRIALS_PLOT) :]
-        self.data.last_trials.loc[it, 'correct'] = trials_table.trial_correct.iloc[-NTRIALS_PLOT:].values
-        self.data.last_trials.loc[it, 'signed_contrast'] = trials_table.signed_contrast.iloc[-NTRIALS_PLOT:].values
-        self.data.last_trials.loc[it, 'response_time'] = trials_table.response_time.iloc[-NTRIALS_PLOT:].values
+        self.data.last_trials.loc[it, 'correct'] = trials_table.trial_correct.iloc[-NTRIALS_PLOT:].to_numpy()
+        self.data.last_trials.loc[it, 'signed_contrast'] = trials_table.signed_contrast.iloc[-NTRIALS_PLOT:].to_numpy()
+        self.data.last_trials.loc[it, 'response_time'] = trials_table.response_time.iloc[-NTRIALS_PLOT:].to_numpy()
         self.data.last_trials.loc[it, 'stim_on'] = np.array(
             [bpod_data[i]['States timestamps']['stim_on'][0][0] for i in np.arange(-it.size, 0)]
         )

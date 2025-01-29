@@ -72,7 +72,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                         contrast_set = np.array([0.5, 1.0])
 
                 np.testing.assert_equal(contrasts['contrast'].values, contrast_set)
-                normalized_counts = np.abs(nt / contrast_set.size - contrasts['count'].values)
+                normalized_counts = np.abs(nt / contrast_set.size - contrasts['count'].to_numpy())
                 normalized_counts = normalized_counts * probas / np.sum(probas)
                 normalized_counts = normalized_counts / (nt / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)

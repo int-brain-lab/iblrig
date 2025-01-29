@@ -55,13 +55,13 @@ class TestInstantiationBiased(BaseTestCases.CommonTestInstantiateTask):
             first_trial=pd.NamedAgg(column='block_trial_num', aggfunc='first'),
         )
         # test that the first block is 90 trials
-        assert df_blocks['count'].values[0] == 90
+        assert df_blocks['count'].to_numpy()[0] == 90
         # make all first block trials were reset to 0
         assert np.all(df_blocks['first_trial'] == 0)
         # test that the first block has 50/50 probability
-        assert df_blocks['stim_probability_left'].values[0] == 0.5
+        assert df_blocks['stim_probability_left'].to_numpy()[0] == 0.5
         # make sure that all subsequent blocks alternate between 0.2 and 0.8 left probability
-        assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].values[1:])), 0.6))
+        assert np.all(np.isclose(np.abs(np.diff(df_blocks['stim_probability_left'].to_numpy()[1:])), 0.6))
         # assert the the trial outcomes are within 0.3 of the generating probability
         np.testing.assert_array_less(np.abs(df_blocks['position'] - df_blocks['stim_probability_left']), 0.4)
         np.testing.assert_array_equal(np.unique(task.trials_table['reward_amount']), reward_set)

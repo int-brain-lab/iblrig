@@ -167,7 +167,7 @@ class TestsBiasedBlocksGeneration(unittest.TestCase):
         df = pd.DataFrame(data=pc, columns=['angle', 'contrast', 'proba'])
         df['signed_contrasts'] = df['contrast'] * np.sign(df['angle'])
         c = df.groupby('signed_contrasts')['signed_contrasts'].count() / pc.shape[0]
-        return c.values
+        return c.to_numpy()
 
     def test_default(self):
         np.random.seed(7816)
