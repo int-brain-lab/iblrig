@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.27.1
+------
+* fixed: resolved warning about chained assignment in TrainingChoiceWorld.compute_performance()
+
 8.27.0
 ------
 * feature: allow for external tasks to be registered as plugins
