@@ -35,7 +35,7 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
 
             # The task stimuli replays consist of 300 stimulus presentations ordered randomly.
             assert len(f) == 300
-            assert f.stim_type.iloc[:10].nunique() > 1
+            assert f.stim_type.iloc[:10].nunique() > 1  # noqa: PD101
             assert set(f.stim_type.unique()) == {'G', 'N', 'T', 'V'}
 
             # 180 gabor patches with 300 ms duration
