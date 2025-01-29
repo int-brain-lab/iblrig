@@ -7,6 +7,7 @@ import logging
 from typing import Literal
 
 import numpy as np
+import pandas as pd
 
 import iblrig.raw_data_loaders
 from iblrig.path_helper import iterate_previous_sessions
@@ -166,3 +167,20 @@ def training_phase_from_contrast_set(contrast_set: list[float]) -> int | None:
         if np.array_equal(contrast_set, expected_set):
             return phase
     raise Exception(f'Could not determine training phase from contrast set {contrast_set}')
+
+
+def compute_performance(
+    trials_table: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Aggregates performance metrics for each signed contrast in the table
+    :param trials_data:
+    :return:
+    """
+    trials_table = trials_table.loc[trials_table.position.notna(), :].copy()
+    trials_table['signed_contrast'] = trials_table['contrast'] * np.sign(trials_table['position'])
+    df_performance = trials_table.groupby(['signed_contrast']).agg(
+        last_50_perf=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
+        ntrials=pd.NamedAgg(column='trial_correct', aggfunc='count'),
+    )
+    return df_performance

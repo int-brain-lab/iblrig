@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from iblrig import choiceworld
 from iblrig.test.base import BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
@@ -102,21 +103,16 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         trial_fixtures = get_fixtures()
         adaptive_reward = 1.9
         n_trials = 800
+
         task = TrainingChoiceWorldSession(**self.task_kwargs, adaptive_reward=adaptive_reward)
         task.create_session()
-
-        def get_proportion():
-            return task.trials_table.groupby(['signed_contrast']).agg(
-                performance=pd.NamedAgg(column='trial_correct', aggfunc=lambda x: np.sum(x[np.maximum(-50, -x.size) :]) / 50),
-                n_trials=pd.NamedAgg(column='trial_correct', aggfunc='count'),
-            )
-
+        np.random.seed(12354)
         for i_trial in range(n_trials):
             original_phase = task.training_phase
             task.next_trial()
+            performance = choiceworld.compute_performance(task.trials_table)
             did_progress = task.training_phase > original_phase
             assert task.trial_num == i_trial
-
             # pc = task.psychometric_curve()
             trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
             task.trial_completed(trial_fixtures[trial_type])
@@ -135,21 +131,18 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 continue
             if original_phase == 0:
                 assert task.trials_table.iloc[i_trial - 1].contrast in [0.5, 1.0]
-                proportion = get_proportion()
-                passing = proportion[np.abs(proportion.index) >= 0.5]['performance'] > 0.8
+                passing = performance[np.abs(performance.index) >= 0.5]['last_50_perf'] > 0.8
                 should_graduate = np.all(passing) and (passing.size == 4)
             elif original_phase == 1:
                 assert task.trials_table.iloc[i_trial - 1].contrast in [0.25, 0.5, 1.0]
-                proportion = get_proportion()
-                passing = proportion[np.abs(proportion.index) == 0.25]['performance'] > 0.8
+                passing = performance[np.abs(performance.index) == 0.25]['last_50_perf'] > 0.8
                 should_graduate = np.all(passing) and (passing.size == 2)
             elif original_phase >= 2:
                 if (task.trials_table.loc[: i_trial - 1].training_phase == original_phase).sum() >= 200:
                     should_graduate = True
             assert did_progress == should_graduate
-
-        # we shouldn't be in training phase 0 anymore
-        assert task.training_phase > 0
+        # we should have progressed beyond phase 3
+        np.testing.assert_equal(task.trials_table['training_phase'].value_counts().sort_index().values, [181, 475, 144])
 
     def test_acquisition_description(self):
         task = TrainingChoiceWorldSession(**self.task_kwargs)
