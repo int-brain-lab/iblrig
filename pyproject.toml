@@ -22,11 +22,11 @@ dependencies = [
     #
     # IBL packages
     "iblatlas>=0.5.5",
-    "ibllib>=3.1.0",
+    "ibllib>=3.2.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblutil>=1.14.0",
-    "iblqt>=0.3.1",
-    "ONE-api>=2.11.1",
+    "iblqt>=0.4.2",
+    "ONE-api>=2.11.2",
     "tycmd-wrapper>=0.2.1",
     "ibl-photometry",
     #
@@ -34,17 +34,17 @@ dependencies = [
     "annotated-types>=0.7.0",
     "graphviz>=0.20.3",
     "ipython>=8.26.0",
-    "matplotlib>=3.9.2",
+    "matplotlib>=3.10.0",
     "numpy<2.0.0",
     "packaging>=24.1",
     "pandas>=2.2.3",
-    "pandera>=0.20.4",
-    "pydantic>=2.9.2",
+    "pandera>=0.22.1",
+    "pydantic>=2.10.5",
     "pyqtgraph>=0.13.7",
     "python-osc>=1.8.3",
     "pyusb>=1.2.1",
     "PyYAML>=6.0.2",
-    "scipy>=1.14.1",
+    "scipy>=1.15.1",
     "sounddevice>=0.5.0",
 ]
 [project.optional-dependencies]
@@ -85,24 +85,24 @@ dev = [
     "deadcode>=2.4.1",
 ]
 test = [
-    "pytest>=8.3.2",
+    "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
-    "ruff>=0.7.3",
+    "ruff>=0.9.1",
 ]
 doc = [
     "sphinx>=7.4.7",
-    "sphinx-autobuild>=2024.4.16",
+    "sphinx-autobuild>=2024.10.3",
     "sphinx-lesson>=0.8.19",
     "sphinx-simplepdf>=1.6.0",
     "myst-parser>=4.0.0",
 ]
 typing = [
-    "mypy>=1.13.0",
+    "mypy>=1.14.1",
     "PyQt5-stubs>=5.15.6.0",
-    "types-PyYAML>=6.0.12.20240808",
-    "types-requests>=2.32.0.20240712",
-    "types-python-dateutil>=2.9.0.20240316",
-    "types-pyserial>=3.5.0.20240826",
+    "types-PyYAML>=6.0.12.20241230",
+    "types-requests>=2.32.0.20241016",
+    "types-python-dateutil>=2.9.0.20241206",
+    "types-pyserial>=3.5.0.20241221",
 ]
 ci = [
     "pytest-github-actions-annotate-failures>=0.2.0",

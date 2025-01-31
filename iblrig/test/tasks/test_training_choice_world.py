@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from iblrig import choiceworld
 from iblrig.test.base import BaseTestCases
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
@@ -49,9 +50,9 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                 contrasts = (
                     trials_table.groupby(['contrast']).agg(count=pd.NamedAgg(column='contrast', aggfunc='count')).reset_index()
                 )
-                np.testing.assert_equal(trials_table['stim_probability_left'].values, 0.5)
+                np.testing.assert_equal(trials_table['stim_probability_left'].to_numpy(), 0.5)
                 np.testing.assert_equal(np.unique(trials_table['reward_amount'].values), np.array([0, adaptive_reward]))
-                np.testing.assert_equal(trials_table['training_phase'].values, training_phase)
+                np.testing.assert_equal(trials_table['training_phase'].to_numpy(), training_phase)
                 debias = True
                 probas = 1
                 match training_phase:
@@ -77,9 +78,20 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                 normalized_counts = normalized_counts / (nt / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)
                 if debias:
-                    assert trials_table.debias_trial.astype(int).sum() > 20
+                    for index, row in trials_table.iterrows():
+                        # if the previous trial was incorrect, not a no-go and easy
+                        assert row.debias_trial == (
+                            (index > 0)
+                            and (trials_table.loc[index - 1, 'trial_correct'] != 1)
+                            and (trials_table.loc[index - 1, 'response_side'] != 0)
+                            and (trials_table.loc[index - 1, 'contrast'] >= 0.5)
+                        )
+                        if row.debias_trial:
+                            assert row.position in task.task_params['STIM_POSITIONS']
+                            assert trials_table.loc[index - 1, 'contrast'] == row.contrast
+                    assert trials_table.debias_trial.sum() > 0
                 else:
-                    assert trials_table.debias_trial.astype(int).sum() == 0
+                    assert trials_table.debias_trial.sum() == 0
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
@@ -90,11 +102,17 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
     def test_task(self):
         trial_fixtures = get_fixtures()
         adaptive_reward = 1.9
-        nt = 800
+        n_trials = 800
+
         task = TrainingChoiceWorldSession(**self.task_kwargs, adaptive_reward=adaptive_reward)
         task.create_session()
-        for i in np.arange(nt):
+        np.random.seed(12354)
+        for i_trial in range(n_trials):
+            original_phase = task.training_phase
             task.next_trial()
+            performance = choiceworld.compute_performance(task.trials_table)
+            did_progress = task.training_phase > original_phase
+            assert task.trial_num == i_trial
             # pc = task.psychometric_curve()
             trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
             task.trial_completed(trial_fixtures[trial_type])
@@ -103,9 +121,28 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                 self.assertEqual(task.trials_table['reward_amount'][task.trial_num], adaptive_reward)
             else:
                 assert not task.trials_table['trial_correct'][task.trial_num]
-            if i == 245:
+            if i_trial == 245:
                 task.show_trial_log()
             assert not np.isnan(task.reward_time)
+
+            # assert correct progression through training phases
+            should_graduate = False
+            if i_trial == 0:
+                continue
+            if original_phase == 0:
+                assert task.trials_table.iloc[i_trial - 1].contrast in [0.5, 1.0]
+                passing = performance[np.abs(performance.index) >= 0.5]['last_50_perf'] > 0.8
+                should_graduate = np.all(passing) and (passing.size == 4)
+            elif original_phase == 1:
+                assert task.trials_table.iloc[i_trial - 1].contrast in [0.25, 0.5, 1.0]
+                passing = performance[np.abs(performance.index) == 0.25]['last_50_perf'] > 0.8
+                should_graduate = np.all(passing) and (passing.size == 2)
+            elif original_phase >= 2:
+                if (task.trials_table.loc[: i_trial - 1].training_phase == original_phase).sum() >= 200:
+                    should_graduate = True
+            assert did_progress == should_graduate
+        # we should have progressed beyond phase 3
+        np.testing.assert_equal(task.trials_table['training_phase'].value_counts().sort_index().values, [181, 475, 144])
 
     def test_acquisition_description(self):
         task = TrainingChoiceWorldSession(**self.task_kwargs)
