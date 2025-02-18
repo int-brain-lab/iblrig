@@ -11,7 +11,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from PyQt5.QtCore import QProcess
 from pydantic import DirectoryPath, Field, validate_call
 from pydantic_settings import BaseSettings, CliImplicitFlag, CliPositionalArg
 from qtpy.QtCore import (
