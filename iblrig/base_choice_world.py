@@ -754,10 +754,11 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
 
     def __del__(self):
         if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
-            log.info('Terminating online plots')
+            log.info('Terminating subprocess: online plots')
             self.plot_subprocess.terminate()
-            self.plot_subprocess.wait(timeout=5)
-            if self.plot_subprocess.poll() is None:
+            try:
+                self.plot_subprocess.wait(timeout=5)
+            except subprocess.TimeoutExpired:
                 log.warning('Process did not terminate within 5 seconds - killing it.')
                 self.plot_subprocess.kill()
 
