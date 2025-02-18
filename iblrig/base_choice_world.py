@@ -735,6 +735,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
+    plot_subprocess: subprocess.Popen | None = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -743,12 +744,22 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     def _run(self):
         # starts online plotting
         if self.interactive:
-            subprocess.Popen(
-                ['view_session', str(self.paths['DATA_FILE_PATH']), str(self.paths['SETTINGS_FILE_PATH'])],
+            log.info('Starting subprocess: online plots')
+            self.plot_subprocess = subprocess.Popen(
+                ['view_session2', '--live', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.STDOUT,
             )
         super()._run()
+
+    def __del__(self):
+        if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
+            log.info('Terminating online plots')
+            self.plot_subprocess.terminate()
+            self.plot_subprocess.wait(timeout=5)
+            if self.plot_subprocess.poll() is None:
+                log.warning('Process did not terminate within 5 seconds - killing it.')
+                self.plot_subprocess.kill()
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict

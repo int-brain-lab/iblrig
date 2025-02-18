@@ -2,6 +2,8 @@ import ctypes
 import datetime
 import json
 import os
+import sys
+import time
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -9,8 +11,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
+from PyQt5.QtCore import QProcess
 from pydantic import DirectoryPath, Field, validate_call
-from pydantic_settings import BaseSettings, CliPositionalArg
+from pydantic_settings import BaseSettings, CliImplicitFlag, CliPositionalArg
 from qtpy.QtCore import (
     QCoreApplication,
     QFileSystemWatcher,
@@ -229,12 +232,18 @@ class OnlinePlotsModel(QObject):
     _currentTrial = 0
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
-    def __init__(self, raw_data_folder: DirectoryPath, parent: QObject | None = None):
+    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
         super().__init__(parent=parent)
         self.raw_data_folder = raw_data_folder
         self.jsonable_file = raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
         self.settings_file = raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
 
+        if not raw_data_folder.exists():
+            raise FileNotFoundError(raw_data_folder)
+        if live:
+            print('Waiting for data ...')
+            while not self.jsonable_file.exists() or not self.settings_file.exists():
+                time.sleep(0.2)
         if not self.jsonable_file.exists():
             raise FileNotFoundError(self.jsonable_file)
         if not self.settings_file.exists():
@@ -553,10 +562,10 @@ class BpodWidget(pg.GraphicsLayoutWidget):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, raw_data_folder: DirectoryPath, parent: QObject | None = None):
+    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(raw_data_folder, self)
+        self.model = OnlinePlotsModel(raw_data_folder, live, self)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -693,6 +702,7 @@ class OnlinePlotsView(QMainWindow):
 def online_plots_cli():
     class Settings(BaseSettings, cli_parse_args=True):
         directory: CliPositionalArg[Path] = Field(description='Raw Data Directory')
+        live: CliImplicitFlag[bool] = Field(description='live plotting during acquisistion', default=False)
 
     # set app information
     QCoreApplication.setOrganizationName('International Brain Laboratory')
@@ -704,10 +714,10 @@ def online_plots_cli():
 
     app = QApplication([])
 
-    window = OnlinePlotsView(Settings().directory)
+    window = OnlinePlotsView(Settings().directory, Settings().live)
     window.show()
 
-    app.exec()
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':
