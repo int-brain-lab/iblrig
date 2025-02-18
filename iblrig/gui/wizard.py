@@ -10,6 +10,7 @@ import sys
 import traceback
 from collections import OrderedDict
 from dataclasses import dataclass
+from importlib.metadata import entry_points
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
@@ -131,6 +132,11 @@ class RigWizardModel:
         if CUSTOM_TASKS:
             tasks.extend(sorted([p for p in Path(iblrig_custom_tasks.__file__).parent.rglob('task.py')]))
         self.all_tasks = OrderedDict({p.parts[-2]: p for p in tasks})
+
+        # include external tasks registered as plugins
+        for plugin in sorted(entry_points(group='iblrig.plugins'), key=lambda ep: ep.name):
+            if plugin.name.startswith('task_') and issubclass(session := plugin.load(), BaseSession):
+                self.all_tasks[session.protocol_name] = session.get_task_file()
 
         # get the subjects from iterating over folders in the the iblrig data path
         if self.iblrig_settings['iblrig_local_data_path'] is None:
@@ -859,7 +865,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     widget.setMinimum(0)
                     widget.setMaximum(11)
 
-                case 'delay_secs':
+                case 'delay_mins':
                     label = 'Initial Delay, min'
                     widget.setMaximum(60)
 
@@ -1032,12 +1038,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 if len(remotes := self.listViewRemoteDevices.getDevices()) > 0:
                     cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
-                    if key == '--delay_secs':
-                        value = str(int(value) * 60)  # noqa: PLW2901
                     if isinstance(value, list):
                         cmd.extend([key] + value)
-                    elif isinstance(value, bool) and value is True:
-                        cmd.append(key)
+                    elif isinstance(value, bool):
+                        if value is True:
+                            cmd.append(key)
+                        else:
+                            pass
                     else:
                         cmd.extend([key, value])
                 cmd.extend(['--weight', f'{weight}'])

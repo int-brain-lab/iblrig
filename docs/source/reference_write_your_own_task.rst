@@ -128,3 +128,34 @@ Example 2: re-writing a state-machine for a biased choice world task
 In some instances changes in the task logic require to go deeper and re-write the sequence of task events. In bpod parlance, we are talking about rewritng the state-machine code.
 
 Coming, for now here is an example of such a `task <https://github.com/int-brain-lab/iblrig/tree/iblrigv8/iblrig_tasks/_iblrig_tasks_neuroModulatorChoiceWorld>`_.
+
+
+Packaging
+---------
+
+You can package your task as a plugin for IBLRIG that resides in an independant package.
+For instance, if your package is structured as follows:
+
+.. code-block::
+
+   example_task
+   ├── pyproject.toml
+   ├── task_parameters.yaml
+   └── task.py
+
+include the following configuration in your ``pyproject.toml`` file:
+
+.. code-block:: toml
+
+   [project]
+   name = "example_task"
+   version = "0.1.0"
+   description = "An example task for IBLRIG"
+
+   [project.entry-points."iblrig.plugins"]
+   task_example = "task:Session"
+
+In order for IBLRIG to recognize your plugin, the key of the entry point (in this case, ``task_example``) must start with the prefix ``task_``. The value must point to a subclass of :class:`~iblrig.base_tasks.BaseSession`, which is the base class for all tasks in IBLRIG.
+
+Once you have created your package and installed it in the virtual environment of IBLRIG, your task should appear in the list of available tasks in the GUI.
+
