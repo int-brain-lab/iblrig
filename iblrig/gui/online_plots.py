@@ -19,8 +19,11 @@ from qtpy.QtCore import (
     QItemSelection,
     QModelIndex,
     QObject,
+    QPoint,
     QRect,
     QRectF,
+    QSettings,
+    QSize,
     Qt,
     Signal,
     Slot,
@@ -647,6 +650,10 @@ class OnlinePlotsView(QMainWindow):
         self.model.titleChanged.connect(self.setTitle)
         self.updatePlots(self.model.nTrials() - 1)
 
+        self.settings = QSettings()
+        self.move(self.settings.value('pos', self.pos(), QPoint))
+        self.resize(self.settings.value('size', self.size(), QSize))
+
     @Slot(str)
     def setTitle(self, str):
         self.title.setText(str)
@@ -696,6 +703,14 @@ class OnlinePlotsView(QMainWindow):
             case _:
                 return
         event.accept()
+
+    def moveEvent(self, event):
+        self.settings.setValue('pos', self.pos())
+        super().moveEvent(event)
+
+    def resizeEvent(self, event):
+        self.settings.setValue('size', self.size())
+        super().resizeEvent(event)
 
 
 def online_plots_cli():
