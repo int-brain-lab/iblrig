@@ -33,6 +33,7 @@ from qtpy.QtWidgets import (
     QApplication,
     QFrame,
     QGraphicsRectItem,
+    QGraphicsSceneHoverEvent,
     QGridLayout,
     QHeaderView,
     QLabel,
@@ -428,13 +429,39 @@ class ResponseTimeDelegate(QStyledItemDelegate):
 
 
 class StateMeshItem(pg.PColorMeshItem):
+    """
+    A graphical item for displaying a color mesh that represents Bpod states.
+
+    This class extends the PyQtGraph's `PColorMeshItem` to provide
+    functionality for emitting signals when the mouse hovers over
+    different states in the mesh.
+
+    Attributes
+    ----------
+    stateIndex : Signal
+        A signal that emits the index of the state currently hovered over.
+    """
+
     stateIndex = Signal(int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def hoverEvent(self, ev):
+    def hoverEvent(self, ev: QGraphicsSceneHoverEvent):
+        """
+        Handle hover events over the mesh item.
+
+        This method emits the index of the state that the mouse is currently
+        hovering over. If the mouse exits the item or hovers over an area
+        that does not correspond to a state, it emits -1.
+
+        Parameters
+        ----------
+        ev : QGraphicsSceneHoverEvent
+            The event object containing information about the hover event.
+        """
         if ev.exit:
+            # If the mouse exits the item, emit -1 to indicate no state is hovered
             if not hasattr(ev, '_scenePos'):
                 self.stateIndex.emit(-1)
             else:
@@ -444,34 +471,74 @@ class StateMeshItem(pg.PColorMeshItem):
             return
 
         try:
+            # Get the x-coordinate of the mouse position relative to the item
             x = self.mapFromParent(ev.pos()).x()
         except AttributeError:
             return
         try:
+            # Find the index of the state corresponding to the x-coordinate
             i = self.z[:, np.where(self.x[0, :] <= x)[0][-1]][0]
         except IndexError:
             return
+
+        # Emit the index of the hovered state
         self.stateIndex.emit(i)
 
 
 class BpodWidget(pg.GraphicsLayoutWidget):
+    """
+    A widget for visualizing Bpod data in a graphical layout.
+
+    This widget displays digital channels and Bpod states over time,
+    allowing for the visualization of trial data.
+    """
+
     data = pd.DataFrame()
     labels: dict[str, pg.LabelItem] = dict()
     plots: dict[str, pg.PlotDataItem] = dict()
     meshes: dict[str, StateMeshItem] = dict()
     viewBoxes: dict[str, pg.ViewBox] = dict()
 
-    def __init__(self, *args, title: str | None = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        title: str | None = None,
+        alpha: int = 64,
+        channels: Iterable | None = None,
+        showStatusTips: bool = True,
+        **kwargs,
+    ):
+        """
+        Initialize the BpodWidget.
+
+        Parameters
+        ----------
+        *args : tuple
+            Positional arguments to be passed to the parent class.
+        title : str | None, optional
+            The title of the widget (default is None).
+        alpha : int, optional
+            The alpha value used in color-coding the Bpod states. Default: 64.
+        channels : Iterable, optional
+            An iterable of channel names to be included in the plot.
+            Defaults are `BNC1`, `BNC2`, and `Port1`.
+        showStatusTips : bool, optional
+            Show status tips when hovering the mouse over state regions. Default: True
+        **kwargs : dict
+            Keyword arguments to be passed to the parent class.
+        """
         super().__init__(*args, **kwargs)
 
+        # set rendering hint and layout options
         self.setRenderHints(QPainter.Antialiasing)
         self.setBackground('white')
         self.centralWidget.setSpacing(0)
         self.centralWidget.setContentsMargins(0, 0, 0, 0)
 
+        # define colormap for Bpod states
         colormap = pg.colormap.get('glasbey_light', source='colorcet')
         colors = colormap.getLookupTable(0, 1, 256, alpha=True)
-        colors[:, 3] = 64  # set alpha
+        colors[:, 3] = alpha
         self.colormap = pg.ColorMap(colormap.pos, colors)
 
         # add title
@@ -479,8 +546,8 @@ class BpodWidget(pg.GraphicsLayoutWidget):
             self.centralWidget.nextRow()
             self.addLabel(title, size='11pt', col=1, color='k')
 
-        # add plots for digital channels
-        for channel in ('BNC1', 'BNC2', 'Port1'):
+        # add digital channels
+        for channel in channels or ('BNC1', 'BNC2', 'Port1'):
             self.addDigitalChannel(channel)
 
         # add x axis
@@ -491,6 +558,16 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.centralWidget.addItem(a, col=1)
 
     def addDigitalChannel(self, channel: str, label: str | None = None):
+        """
+        Add a digital channel to the widget.
+
+        Parameters
+        ----------
+        channel : str
+            The name of the digital channel to add.
+        label : str | None, optional
+            The label for the channel (default is None, which uses the channel name).
+        """
         label = channel if label is None else label
         self.centralWidget.nextRow()
         self.labels[channel] = self.addLabel(label, col=0, color='k')
@@ -506,17 +583,38 @@ class BpodWidget(pg.GraphicsLayoutWidget):
         self.viewBoxes[channel].sigXRangeChanged.connect(self.updateXRange)
 
     def setData(self, data: pd.DataFrame):
+        """
+        Set the data for the widget and update the display.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The data to be displayed in the widget. The data needs to be organized according to the format returned by
+            :py:func:`~iblrig.raw_data_loaders.bpod_trial_data_to_dataframe`.
+        """
         self.data = data
         self.showTrial()
 
     @Slot(int)
     def showStateInfo(self, index: int):
+        """
+        Show information about the state in the status bar.
+
+        Parameters
+        ----------
+        index : int
+            The index of the state to display.
+        """
         if index < 0:
             self.window().statusBar().clearMessage()
         else:
             self.window().statusBar().showMessage(f'State: {self.data.State.cat.categories[index]}')
 
     def showTrial(self):
+        """
+        Display the trial data in the widget.
+        This method updates the limits and plots for each digital channel.
+        """
         limits = self.data[self.data['Type'].isin(['TrialStart', 'TrialEnd'])]
         limits = limits.index.total_seconds()
         self.limits = {'xMin': 0, 'xMax': limits[1] - limits[0], 'minXRange': 0.001, 'yMin': -0.2, 'yMax': 1.2}
@@ -535,8 +633,7 @@ class BpodWidget(pg.GraphicsLayoutWidget):
             plot_x = values.index.total_seconds().to_numpy() - limits[0]
             plot_y = values.to_numpy()
 
-            # Since Bpod only supports *changes* in the digital signals, we need
-            # to extend the plots to the axes limits.
+            # Extend the plots to both sides to include axes limits.
             if len(plot_x) > 0:
                 plot_x = np.insert(plot_x, 0, 0)
                 plot_x = np.append(plot_x, limits[1])
