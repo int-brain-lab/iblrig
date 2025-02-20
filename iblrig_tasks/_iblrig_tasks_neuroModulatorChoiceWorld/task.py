@@ -5,7 +5,6 @@ from pydantic import NonNegativeFloat
 
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession, BiasedChoiceWorldTrialData
-from iblrig.hardware import SOFTCODE
 from pybpodapi.protocol import StateMachine
 
 REWARD_AMOUNTS_UL = (1, 3)
