@@ -190,6 +190,19 @@ class ChoiceWorldSession(
             #     Start state machine definition
             # =============================================================================
             sma = self.get_state_machine_trial(i)
+
+            # Check if state machine uses deprecated way of waiting for the camera / initial delay
+            if i == 0:
+                if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
+                    log.warning('********************************************************')
+                    log.warning('ATTENTION! YOUR TASK NEEDS UPDATING!')
+                    log.warning('Camera and initial delay should not be handled by task.')
+                    log.warning("Please refer to IBLRIG's documentation for details.")
+                    log.warning('********************************************************')
+                    time.sleep(5)
+                else:
+                    pass  # todo: add delay until camera is started
+
             log.debug('Sending state machine to bpod')
             # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
