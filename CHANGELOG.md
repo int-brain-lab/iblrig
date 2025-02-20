@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.28.0
+------
+* changed: Handling of camera and initial delay moved out of ChoiceWorld's state machine definition
+
 8.27.3
 ------
 * changed: reset camera(s) prior to starting task when inconsistencies have been detected
