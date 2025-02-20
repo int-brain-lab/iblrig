@@ -183,15 +183,11 @@ class ChoiceWorldSession(
         """Run the task with the actual state machine."""
         time_last_trial_end = time.time()
         for i in range(self.task_params.NTRIALS):  # Main loop
-            # t_overhead = time.time()
+            # obtain state machine definition
             self.next_trial()
-            log.info(f'Starting trial: {i}')
-            # =============================================================================
-            #     Start state machine definition
-            # =============================================================================
             sma = self.get_state_machine_trial(i)
 
-            # Check if state machine uses deprecated way of waiting for the camera / initial delay
+            # check if state machine uses deprecated way of waiting for camera / initial delay
             if i == 0:
                 if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
                     log.warning('********************************************************')
@@ -203,21 +199,25 @@ class ChoiceWorldSession(
                 else:
                     pass  # todo: add delay until camera is started
 
-            log.debug('Sending state machine to bpod')
             # Send state machine description to Bpod device
+            log.debug('Sending state machine to bpod')
             self.bpod.send_state_machine(sma)
-            # t_overhead = time.time() - t_overhead
+
             # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
             # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
             dead_time = self.task_params.get('DEAD_TIME', 0.5)
             dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
+
             # wait to achieve the desired ITI duration
             if dt > 0:
                 time.sleep(dt)
-            # Run state machine
+
+            # run state machine
+            log.info(f'Starting trial: {i}')
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
+
             # handle pause event
             flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
             flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
