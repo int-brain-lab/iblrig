@@ -228,7 +228,7 @@ class ChoiceWorldSession(
         )
         sma.add_state(
             state_name='camera_trigger_received',
-            output_actions=[('SoftCode', TemporarySoftcodes.CAMERA_TRIGGER_RECEIVED), ('BNC1', 255)],
+            output_actions=[('SoftCode', TemporarySoftcodes.CAMERA_TRIGGER_RECEIVED)],
             state_change_conditions={'Tup': 'delay_initiation'},
         )
         sma.add_state(
