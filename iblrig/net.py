@@ -425,6 +425,7 @@ def get_remote_devices(remote_devices_file=None, iblrig_settings=None):
 
 async def get_server_communicator(service_uri, name: str):
     """
+    TODO DOCUMENT
 
     Parameters
     ----------
