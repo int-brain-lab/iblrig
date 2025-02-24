@@ -182,11 +182,17 @@ class ChoiceWorldSession(
             self.bpod.register_softcodes(self.softcode_dictionary())
 
     @final
-    def _wait_for_camera_and_initial_delay(self):
+    def _wait_for_camera_and_initial_delay(self) -> None:
+        """Wait for the camera to start recording and manage the initial delay.
+
+        This method implements a temporary state machine to coordinate the process of waiting for the camera recording
+        to commence and to handle any specified initial delay. It should be called just prior to the start of the task.
+        The states defined here were previously part of the task's main state machine (see `get_state_machine_trial()`).
+        """
         initial_delay = self.task_params.get('SESSION_DELAY_START', 0)
 
         # temporary IntEnum for storing softcodes
-        # SOFTCODE.TRIGGER_CAMERA is being reused, we add three more unique values
+        # SOFTCODE.TRIGGER_CAMERA is being reused; we add three more unique values
         class TemporarySoftcodes(enum.IntEnum):
             START_CAMERA_RECORDING = SOFTCODE.TRIGGER_CAMERA.value
             WAIT_FOR_CAMERA_TRIGGER = enum.auto()
@@ -245,8 +251,11 @@ class ChoiceWorldSession(
         # restore original softcode handler
         self.bpod.softcode_handler_function = original_softcode_handler
 
-    def _run(self):
-        """Run the task with the actual state machine."""
+    def _run(self) -> None:
+        """Execute the task using the defined state machine.
+
+        This method orchestrates the execution of the task by running a state machine for a specified number of trials.
+        """
         time_last_trial_end = time.time()
         for trial_number in range(self.task_params.NTRIALS):  # Main loop
             # obtain state machine definition
