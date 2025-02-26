@@ -28,8 +28,8 @@ class Cameras:
         self._cameras = self._instance.GetCameras()
         self._init_cameras = init_cameras
         if init_cameras:
-            for camera in self._cameras:
-                camera.Init()
+            for i in range(len(self._cameras)):
+                self._cameras[i].Init()
 
     def __enter__(self) -> PySpin.CameraList:
         """Enters the runtime context related to this object.
@@ -47,9 +47,8 @@ class Cameras:
         Deinitializes the cameras if they were initialized and releases the system instance.
         """
         if self._init_cameras:
-            for camera in self._cameras:
-                camera.DeInit()
-            del camera  # Clean up the camera reference
+            for i in range(len(self._cameras)):
+                self._cameras[i].DeInit()
         self._cameras.Clear()
         self._instance.ReleaseInstance()
 
@@ -78,25 +77,24 @@ def acquisition_ok() -> bool:
     """
     success = True
     with Cameras() as cameras:
-        for camera in cameras:
-            log.debug(f'Testing image acquisition with camera #{camera.DeviceID()}')
-            camera.BeginAcquisition()
+        for i in range(len(cameras)):
+            log.debug(f'Testing image acquisition with camera #{cameras[i].DeviceID()}')
+            cameras[i].BeginAcquisition()
             try:
-                image = camera.GetNextImage(1000)
+                image = cameras[i].GetNextImage(1000)
                 if image.IsValid() and image.GetImageStatus() == PySpin.SPINNAKER_IMAGE_STATUS_NO_ERROR:
-                    log.info(f'Acquisition test for camera #{camera.DeviceID()} was successful.')
+                    log.info(f'Acquisition test for camera #{cameras[i].DeviceID()} was successful.')
                 else:
-                    log.error(f'Inconsistency detected during acquisition test for camera #{camera.DeviceID()}.')
+                    log.error(f'Inconsistency detected during acquisition test for camera #{cameras[i].DeviceID()}.')
                     success = False
             except PySpin.SpinnakerException as e:
-                log.error(f'Acquisition test for camera #{camera.DeviceID()} failed with an exception: {e.message}')
+                log.error(f'Acquisition test for camera #{cameras[i].DeviceID()} failed with an exception: {e.message}')
                 success = False
             else:
                 if image.IsValid():
                     image.Release()
             finally:
-                camera.EndAcquisition()
-        del camera
+                cameras[i].EndAcquisition()
     return success
 
 
@@ -111,33 +109,32 @@ def reset_all_cameras():
             return
 
         # Iterate through each camera and reset
-        for camera in cameras:
-            camera.Init()
+        for i in range(len(cameras)):
+            cameras[i].Init()
             try:
-                camera.DeviceReset()
+                cameras[i].DeviceReset()
             except PySpin.SpinnakerException as e:
-                log.error(f'Error resetting camera #{camera.DeviceID()}: {e}')
+                log.error(f'Error resetting camera #{cameras[i].DeviceID()}: {e}')
             else:
-                log.info(f'Resetting camera #{camera.DeviceID.ToString()} ...')
+                log.info(f'Resetting camera #{cameras[i].DeviceID.ToString()} ...')
             finally:
-                camera.DeInit()
+                cameras[i].DeInit()
 
         # Wait for all cameras to come back online
         log.info(f'Waiting for {"camera" if len(cameras) == 1 else "cameras"} to come back online (~10 s) ...')
         all_cameras_online = False
         while not all_cameras_online:
             all_cameras_online = True
-            for camera in cameras:
+            for i in range(len(cameras)):
                 try:
-                    camera.Init()
+                    cameras[i].Init()
                 except PySpin.SpinnakerException:
                     all_cameras_online = False
                 else:
-                    log.info(f'Camera #{camera.DeviceID()} is back online.')
-                    camera.DeInit()
+                    log.info(f'Camera #{cameras[i].DeviceID()} is back online.')
+                    cameras[i].DeInit()
             if not all_cameras_online:
                 time.sleep(0.2)
-        del camera
 
 
 def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
@@ -156,9 +153,8 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr | None = None):
     """
     if camera is None:
         with Cameras() as cameras:
-            for cam in cameras:
-                enable_camera_trigger(enable=enable, camera=cam)
-                del cam
+            for i in range(len(cameras)):
+                enable_camera_trigger(enable=enable, camera=cameras[i])
     else:
         node_map = camera.GetNodeMap()
         node_trigger_mode = PySpin.CEnumerationPtr(node_map.GetNode('TriggerMode'))
