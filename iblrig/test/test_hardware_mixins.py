@@ -6,6 +6,7 @@ The start() methods of those mixins require the hardware to be connected.
 
 import unittest
 from unittest import mock
+from unittest.mock import patch
 
 from iblrig.base_choice_world import ChoiceWorldSession
 from iblrig.base_tasks import (
@@ -50,6 +51,13 @@ class BaseTestHardwareMixins(unittest.TestCase):
     def setUp(self):
         task_settings_file = ChoiceWorldSession.base_parameters_file
         self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
+
+    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession._run')
+    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession.start_hardware')
+    def test_execute_mixins_shared_function(self, mock_start_hardware, mock_run):
+        self.session._execute_mixins_shared_function('start_')
+        mock_start_hardware.assert_called_once()
+        mock_run.assert_not_called()
 
 
 class TestBonsaiMixins(unittest.TestCase):

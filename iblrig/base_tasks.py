@@ -568,19 +568,23 @@ class BaseSession(ABC):
             return
         return ses
 
-    def _execute_mixins_shared_function(self, pattern):
+    def _execute_mixins_shared_function(self, pattern: str) -> None:
         """
-        Loop over all methods of the class that start with pattern and execute them.
+        Execute all methods of the class whose names start with the specified pattern.
+
+        This method loops through all callable methods of the class that begin with the given pattern and invokes each
+        of them in the order they are found. It is useful for executing a set of related methods that share a common
+        naming convention, such as initialization, starting, stopping, or cleanup routines.
 
         Parameters
         ----------
         pattern : str
-            'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
+            The prefix pattern to match method names. Only methods whose names start with this pattern will be executed.
+            Examples: 'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'.
         """
-        method_names = [method for method in dir(self) if method.startswith(pattern)]
-        methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
-        for meth in methods:
-            meth()
+        methods = [getattr(self, m) for m in dir(self) if m.startswith(pattern) and callable(getattr(self, m))]
+        for method in methods:
+            method()
 
     @property
     def time_elapsed(self):
