@@ -767,7 +767,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # call parent method
         super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
-    def trial_completed(self, bpod_data):
+    def trial_completed(self, bpod_data: dict) -> None:
         """
         Update the trials table with information about the behaviour coming from the bpod.
 
@@ -779,6 +779,11 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         ----------
         bpod_data : dict
             The Bpod data as returned by pybpod
+
+        Raises
+        ------
+        AssertionError
+            If the position is zero or if the number of detected outcomes is not exactly one.
         """
         # Get the response time from the behaviour data.
         # It is defined as the time passing between the start of `stim_on` and the end of `closed_loop`.
