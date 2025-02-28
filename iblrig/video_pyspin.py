@@ -10,6 +10,25 @@ logger = logging.getLogger(__name__)
 
 
 def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: int = 2) -> bool:
+    """
+    Log a message related to a camera.
+
+    Parameters
+    ----------
+    level : int
+        The logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL).
+    camera : PySpin.CameraPtr
+        A pointer to the camera object from the PySpin library.
+    message : str
+        The message to log, which will be associated with the camera.
+    stacklevel : int, optional
+        The stack level to use for the logging call (default is 2).
+
+    Returns
+    -------
+    bool
+        Returns True if the logging level is less than ERROR, otherwise False.
+    """
     logger.log(level=level, msg=f'Camera #{camera.DeviceID()}: {message.strip(" .")}.', stacklevel=stacklevel)
     return level < logging.ERROR
 
@@ -122,15 +141,9 @@ def get_node(camera: PySpin.CameraPtr, node_name: str) -> PySpin.INode:
     -------
     PySpin.INode
         The node corresponding to the specified node name.
-
-    Raises
-    ------
-    AssertionError
-        If the node is not available or not readable for the specified camera.
     """
     node_map = camera.GetNodeMap()
-    node = node_map.GetNode(node_name)
-    return node
+    return node_map.GetNode(node_name)
 
 
 def get_enumeration_pointer(camera: PySpin.CameraPtr, node_name: str) -> PySpin.CEnumerationPtr:
@@ -292,6 +305,25 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
 
 
 def set_enumeration(node_name: str, value: str | int, camera: PySpin.CameraPtr) -> bool:
+    """
+    Set the value of an enumeration node for a given camera.
+
+    Parameters
+    ----------
+    node_name : str
+        The name of the enumeration node to set.
+    value : str or int
+        The value to set for the enumeration node. This can be either a string
+        representing the display name of the entry or an integer representing
+        the index of the entry.
+    camera : PySpin.CameraPtr
+        A pointer to the camera object from the PySpin library.
+
+    Returns
+    -------
+    bool
+        Returns True if the value was successfully set, otherwise False.
+    """
     try:
         pointer = get_enumeration_pointer(camera, node_name)
         node_name_pretty = pointer.GetDisplayName()
@@ -315,6 +347,24 @@ def set_enumeration(node_name: str, value: str | int, camera: PySpin.CameraPtr) 
 
 
 def set_float(node_name: str, value: float, camera: PySpin.CameraPtr) -> bool:
+    """
+    Set the value of a float node for a given camera.
+
+    Parameters
+    ----------
+    node_name : str
+        The name of the float node to set.
+    value : float
+        The value to set for the float node. This must be within the valid range
+        defined by the node's minimum and maximum values.
+    camera : PySpin.CameraPtr
+        A pointer to the camera object from the PySpin library.
+
+    Returns
+    -------
+    bool
+        Returns True if the value was successfully set, otherwise False.
+    """
     try:
         pointer = get_float_pointer(camera, node_name)
         node_name_pretty = pointer.GetDisplayName()
