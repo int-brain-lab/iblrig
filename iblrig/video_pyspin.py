@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 from collections.abc import Callable
-from typing import Any, Literal
+from typing import Any
 
 import PySpin
 from pydantic import NonNegativeInt
@@ -131,8 +131,8 @@ def get_node(camera: PySpin.CameraPtr, node_name: str) -> PySpin.INode:
     """
     node_map = camera.GetNodeMap()
     node = node_map.GetNode(node_name)
-    assert PySpin.IsAvailable(node), f'Node `{node_name}` is not available for camera #{camera.DeviceID()}.'
-    assert PySpin.IsReadable(node), f'Node `{node_name}` is not readable for camera #{camera.DeviceID()}.'
+    assert PySpin.IsAvailable(node), f'Node `{node_name}` is not available'
+    assert PySpin.IsReadable(node), f'Node `{node_name}` is not readable'
     return node
 
 
@@ -159,7 +159,7 @@ def get_enumeration_pointer(camera: PySpin.CameraPtr, node_name: str) -> PySpin.
     """
     node = get_node(camera, node_name)
     pointer = PySpin.CEnumerationPtr(node)
-    assert pointer.IsValid(), f'Invalid CEnumerationPtr {pointer.GetName()} for camera #{camera.DeviceID()}'
+    assert pointer.IsValid(), f'Invalid CEnumerationPtr `{node_name}`'
     return pointer
 
 
@@ -267,27 +267,49 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
         return camera_log(logging.ERROR, camera, f'Error setting trigger: {e.args[0]}')
 
 
-@process_camera
-def select_line(line: NonNegativeInt, camera: PySpin.CameraPtr) -> bool:
-    line_selector_ptr = get_enumeration_pointer(camera, 'LineSelector')
-    if line_selector_ptr.GetIntValue() != line:
-        assert line in range(len(line_selector_ptr.GetEntries())), 'Not a valid GPIO line'
-        line_selector_ptr.SetIntValue(line)
-        return camera_log(logging.DEBUG, camera, f'Selecting GPIO line {line}')
-
-
-@process_camera
-def set_line_mode(line: NonNegativeInt, mode: Literal['Input', 'Output'], camera: PySpin.CameraPtr) -> bool:
+def set_enumeration_int(node_name: str, value: int, camera: PySpin.CameraPtr) -> bool:
     try:
-        select_line(line=line, camera=camera)
-        line_mode_ptr = get_enumeration_pointer(camera, 'LineMode')
-        valid_vals = [x.GetDisplayName() for x in line_mode_ptr.GetEntries()]
-        assert mode in valid_vals, f'Invalid line mode `{mode}`'
-        line_mode_val = line_mode_ptr.GetEntryByName(mode).GetValue()
-        if line_mode_ptr.GetIntValue() != line_mode_val:
-            assert 'W' in PySpin.EAccessModeClass_ToString(line_mode_ptr.GetAccessMode()), 'Node is not writable'
-            line_mode_ptr.SetIntValue(line_mode_val)
-            camera_log(logging.INFO, camera, f'Setting line mode for GPIO line {line} to `{mode}`')
+        pointer = get_enumeration_pointer(camera, node_name)
+        node_name_pretty = pointer.GetDisplayName()
+        valid_values = range(len(pointer.GetEntries()))
+        assert value in valid_values, f'Value must be in the range 0..{range(4).stop - 1}'
+        if pointer.GetIntValue() != value:
+            assert 'W' in PySpin.EAccessModeClass_ToString(pointer.GetAccessMode()), f'{node_name_pretty} is not writable'
+            pointer.SetIntValue(value)
+            camera_log(logging.INFO, camera, f'{node_name_pretty} set to {pointer.GetEntry(value).GetDisplayName()}')
         return True
     except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting GPIO line {line} to `{mode}`: {e.args[0]}')
+        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
+
+
+def set_enumeration_str(node_name: str, value: str, camera: PySpin.CameraPtr) -> bool:
+    try:
+        pointer = get_enumeration_pointer(camera, node_name)
+        node_name_pretty = pointer.GetDisplayName()
+        valid_values = [x.GetDisplayName() for x in pointer.GetEntries()]
+        assert value in valid_values, f'Invalid {node_name_pretty}: `{value}`. Valid values are ' + ', '.join(
+            [f'`{x}`' for x in valid_values]
+        )
+        int_value = pointer.GetEntryByName(value).GetValue()
+        if pointer.GetIntValue() != int_value:
+            assert 'W' in PySpin.EAccessModeClass_ToString(pointer.GetAccessMode()), f'{node_name_pretty} is not writable'
+            pointer.SetIntValue(int_value)
+            camera_log(logging.INFO, camera, f'{node_name} set to `{value}`')
+        return True
+    except Exception as e:
+        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
+
+
+@process_camera
+def select_line(line: NonNegativeInt, camera: PySpin.CameraPtr) -> bool:
+    return set_enumeration_int(node_name='LineSelector', value=line, camera=camera)
+
+
+@process_camera
+def set_line_mode(value: str, camera: PySpin.CameraPtr) -> bool:
+    return set_enumeration_str(node_name='LineMode', value=value, camera=camera)
+
+
+@process_camera
+def set_line_source(value: str, camera: PySpin.CameraPtr) -> bool:
+    return set_enumeration_str(node_name='LineSource', value=value, camera=camera)
