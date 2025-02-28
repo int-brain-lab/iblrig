@@ -157,6 +157,6 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         }
         for key, expected_value in expected_dict.items():
             assert key in actual_dict, f'Acquisition description does not match expected structure. No such key: `{key}`.'
-            assert (
-                actual_dict[key] == expected_value
-            ), f'Acquisition description does not match expected structure. Failed on key `{key}`.'
+            assert actual_dict[key] == expected_value, (
+                f'Acquisition description does not match expected structure. Failed on key `{key}`.'
+            )
