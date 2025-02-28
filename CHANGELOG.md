@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.27.4
+------
+* added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+
 8.27.3
 ------
 * changed: reset camera(s) prior to starting task when inconsistencies have been detected
