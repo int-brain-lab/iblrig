@@ -38,7 +38,6 @@ app.log
 /.venv/
 *.autosave
 iblrig/_version.py
-*.code-workspace
 
 .coverage*
 coverage.xml
