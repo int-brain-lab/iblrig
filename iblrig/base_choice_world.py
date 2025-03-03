@@ -137,8 +137,10 @@ class ChoiceWorldSession(
                 'Temperature_C': np.zeros(NTRIALS_INIT) * np.nan,
                 'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.nan,
                 'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
-            }
+            },
+            dtype=np.float16,
         )
+        self.ambient_sensor_table.rename_axis('Trial', inplace=True)
 
     @staticmethod
     def extra_parser():
@@ -218,7 +220,6 @@ class ChoiceWorldSession(
 
             # save trial and update log
             self.trial_completed(self.bpod.session.current_trial.export())
-            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
             self.show_trial_log()
 
             # handle stop event
@@ -526,6 +527,12 @@ class ChoiceWorldSession(
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
         self.save_trial_data_to_json(bpod_data)
+
+        # save ambient data
+        sensor_reading = self.bpod.get_ambient_sensor_reading()
+        self.ambient_sensor_table.loc[self.trial_num] = sensor_reading
+        self.bpod.write_ambient_data(self.paths['AMBIENT_FILE_PATH'], self.trial_num, sensor_reading)
+
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()

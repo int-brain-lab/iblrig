@@ -269,6 +269,8 @@ class BaseSession(ABC):
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
             *   DATA_FILE_PATH: contains the bpod trials
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   AMBIENT_FILE_PATH: contains the ambient sensor data
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_ambientSensorData.raw.bin`
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
@@ -310,6 +312,7 @@ class BaseSession(ABC):
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.AMBIENT_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_ambientSensorData.raw.bin')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
