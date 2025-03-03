@@ -228,13 +228,13 @@ class Bpod(BpodIO):
             - [2] : Relative humidity in percentage
         """
         if self.ambient_module is None:
-            data = np.full((1, 0), np.nan, np.float32)
+            data = np.full(3, np.nan, np.float16)
         else:
             self.ambient_module.start_module_relay()
             self.bpod_modules.module_write(self.ambient_module, 'R')
             reply = self.bpod_modules.module_read(self.ambient_module, 12)
             self.ambient_module.stop_module_relay()
-            data = np.frombuffer(bytes(reply), dtype=np.float32).copy()
+            data = np.frombuffer(bytes(reply), dtype=np.float16).copy()
             data[1] /= 100
         return data
 
