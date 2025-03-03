@@ -529,11 +529,12 @@ class ChoiceWorldSession(
         self.save_trial_data_to_json(bpod_data)
 
         # save ambient data
-        sensor_reading = self.bpod.get_ambient_sensor_reading()
-        self.ambient_sensor_table.iloc[self.trial_num] = sensor_reading
-        self.bpod.write_ambient_data(
-            filepath=self.paths['AMBIENT_FILE_PATH'], trial_number=self.trial_num, sensor_reading=sensor_reading
-        )
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            sensor_reading = self.bpod.get_ambient_sensor_reading()
+            self.ambient_sensor_table.iloc[self.trial_num] = sensor_reading
+            self.bpod.write_ambient_data(
+                filepath=self.paths['AMBIENT_FILE_PATH'], trial_number=self.trial_num, sensor_reading=sensor_reading
+            )
 
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
