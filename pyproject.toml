@@ -21,7 +21,7 @@ dependencies = [
     "PyQtWebEngine-Qt5==5.15.2",
     #
     # IBL packages
-    "iblatlas>=0.5.5",
+    "iblatlas>=0.5.6",
     "ibllib>=3.2.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblutil>=1.14.0",
@@ -38,12 +38,12 @@ dependencies = [
     "packaging>=24.1",
     "pandas>=2.2.3",
     "pandera>=0.22.1",
-    "pydantic>=2.10.5",
+    "pydantic>=2.10.6",
     "pyqtgraph>=0.13.7",
     "python-osc>=1.8.3",
     "pyusb>=1.2.1",
     "PyYAML>=6.0.2",
-    "scipy>=1.15.1",
+    "scipy>=1.15.2",
     "sounddevice>=0.5.0",
 ]
 [project.optional-dependencies]
@@ -52,23 +52,25 @@ project-extraction = [
 ]
 
 [project.scripts]
-view_session        = "iblrig.commands:view_session"
-transfer_data       = "iblrig.commands:transfer_data_cli"
-transfer_video_data = "iblrig.commands:transfer_video_data_cli"
-transfer_ephys_data = "iblrig.commands:transfer_ephys_data_cli"
-flush               = "iblrig.commands:flush"
-remove-old-sessions = "iblrig.commands:remove_local_sessions"
-iblrig              = "iblrig.gui.wizard:main"
-upgrade_iblrig      = "iblrig.upgrade_iblrig:upgrade"
-install_spinnaker   = "iblrig.video:install_spinnaker"
-install_pyspin      = "iblrig.video:install_pyspin"
-start_video_session = "iblrig.video:prepare_video_session_cmd"
-start_ephys_session = "iblrig.ephys:prepare_ephys_session_cmd"
+view_session            = "iblrig.commands:view_session"
+transfer_data           = "iblrig.commands:transfer_data_cli"
+transfer_video_data     = "iblrig.commands:transfer_video_data_cli"
+transfer_ephys_data     = "iblrig.commands:transfer_ephys_data_cli"
+flush                   = "iblrig.commands:flush"
+remove-old-sessions     = "iblrig.commands:remove_local_sessions"
+remove_bonsai_layouts   = "iblrig.commands:remove_bonsai_layouts"
+iblrig                  = "iblrig.gui.wizard:main"
+upgrade_iblrig          = "iblrig.upgrade_iblrig:upgrade"
+install_spinnaker       = "iblrig.video:install_spinnaker"
+install_pyspin          = "iblrig.video:install_pyspin"
+start_video_session     = "iblrig.video:prepare_video_session_cmd"
+start_ephys_session     = "iblrig.ephys:prepare_ephys_session_cmd"
 start_neurophotometrics = 'iblrig.neurophotometrics:start_workflow_cmd'
-start_photometry_task = 'iblrig.neurophotometrics:start_photometry_task_cmd'
-convert_uis         = "iblrig.gui.tools:convert_uis"
-validate_iblrig     = "iblrig.hardware_validation:run_all_validators_cli"
-validate_video      = "iblrig.video:validate_video_cmd"
+start_photometry_task   = 'iblrig.neurophotometrics:start_photometry_task_cmd'
+convert_uis             = "iblrig.gui.tools:convert_uis"
+validate_iblrig         = "iblrig.hardware_validation:run_all_validators_cli"
+validate_video          = "iblrig.video:validate_video_cmd"
+
 
 [tool.pdm.version]
 source = "file"
@@ -86,25 +88,25 @@ dev = [
 test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
-    "ruff>=0.9.1",
+    "ruff>=0.9.6",
 ]
 doc = [
     "sphinx>=7.4.7",
     "sphinx-autobuild>=2024.10.3",
     "sphinx-lesson>=0.8.19",
     "sphinx-simplepdf>=1.6.0",
-    "myst-parser>=4.0.0",
+    "myst-parser>=4.0.1",
 ]
 typing = [
-    "mypy>=1.14.1",
+    "mypy>=1.15.0",
     "PyQt5-stubs>=5.15.6.0",
     "types-PyYAML>=6.0.12.20241230",
     "types-requests>=2.32.0.20241016",
     "types-python-dateutil>=2.9.0.20241206",
-    "types-pyserial>=3.5.0.20241221",
+    "types-pyserial>=3.5.0.20250130",
 ]
 ci = [
-    "pytest-github-actions-annotate-failures>=0.2.0",
+    "pytest-github-actions-annotate-failures>=0.3.0",
 ]
 
 [tool.mypy]

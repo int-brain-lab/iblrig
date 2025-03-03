@@ -748,7 +748,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             'Response Time': f'{trial_info.response_time:.2f} s',
             'Trial Correct': trial_info.trial_correct,
             'N Trials Correct': self.session_info.NTRIALS_CORRECT,
-            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT,
+            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT + 1,
         }
 
         # update info dict with extra_info dict

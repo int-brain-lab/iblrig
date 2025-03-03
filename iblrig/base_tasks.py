@@ -815,11 +815,18 @@ class BonsaiRecordingMixin(BaseSession):
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
 
+        # test acquisition and reset cameras if needed
         # enable trigger of cameras (so Bonsai can disable it again ... sigh)
         if PYSPIN_AVAILABLE:
-            from iblrig.video_pyspin import enable_camera_trigger
+            from iblrig import video_pyspin
 
-            enable_camera_trigger(True)
+            if not video_pyspin.acquisition_ok():
+                video_pyspin.reset_all_cameras()
+            video_pyspin.enable_camera_trigger(True)
+            # with video_pyspin.Cameras() as cameras:
+            #     video_pyspin.enable_camera_trigger(True, cameras)
+            #     video_pyspin.set_line_mode(line=2, mode='Output', camera=cameras)
+            #     video_pyspin.set_line_mode(line=3, mode='Input', camera=cameras)
 
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
@@ -1490,3 +1497,14 @@ class SpontaneousSession(BaseSession):
             if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
                 self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
+
+
+class SpontaneousBpodSession(SpontaneousSession, BpodMixin):
+    """
+    Like SpontaneousSession but with the BpodMixin added in.
+
+    This ensures that the Bpod spacers will be generated when starting the task.
+    """
+
+    def start_hardware(self) -> None:
+        self.start_mixin_bpod()
