@@ -1,9 +1,13 @@
 Changelog
 =========
 
+
 8.28.0
 ------
 * changed: Handling of camera and initial delay moved out of ChoiceWorld's state machine definition
+* added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+
+-------------------------------
 
 8.27.3
 ------
