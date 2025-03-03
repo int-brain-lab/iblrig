@@ -622,9 +622,9 @@ class CameraSessionNetworked(CameraSession):
         """Process init command from remote rig."""
         self.logger.info('INIT message received')
         data = data[0] if any(data) else {}
-        assert (
-            exp_ref := data.get('exp_ref')
-        ), 'No experiment reference found'  # FIXME graceful error (stop thread somehow so there's no hanging)
+        assert (exp_ref := data.get('exp_ref')), (
+            'No experiment reference found'
+        )  # FIXME graceful error (stop thread somehow so there's no hanging)
         if isinstance(exp_ref, str):
             exp_ref = self.one.ref2dict(exp_ref)
         # NB: Only the first match case for which predicate is true will be run so we can update the status dynamically
