@@ -224,7 +224,7 @@ def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
         # get node
         assert hasattr(camera, node_name), f"No such node: '{node_name}'"
         node = getattr(camera, node_name)
-        assert hasattr(node, 'SetValue'), f'node '{node_name}' has no SetValue() attribute'
+        assert hasattr(node, 'SetValue'), f"node '{node_name}' has no SetValue() attribute"
         disp_name = node.GetDisplayName()
         assert PySpin.IsWritable(node), f'{disp_name} is not writable'
 
@@ -269,7 +269,7 @@ def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
         node.SetValue(value)
         return camera_log(logging.INFO, camera, f'Setting {disp_name} to {value_str}')
     except Exception as e:
-        return camera_log(logging.ERROR, camera, f"Error setting value: {e.args[0]}")
+        return camera_log(logging.ERROR, camera, f'Error setting value: {e.args[0]}')
 
 
 @process_camera
@@ -298,7 +298,40 @@ def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any:
         assert PySpin.IsReadable(node), f'{disp_name} is not readable'
         return node.GetValue()
     except Exception as e:
-        return camera_log(logging.ERROR, camera, f"Error getting value: {e.args[0]}")
+        return camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
+
+
+@process_camera
+def get_string_value(node_name: str, camera: PySpin.CameraPtr) -> str:
+    """
+    Get the value of a camera node, formatted as a string.
+
+    Parameters
+    ----------
+    node_name : str
+        The name of the node to get the value of.
+    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
+        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
+        cameras will be considered.
+
+    Returns
+    -------
+    str
+        The value of the node, formatted as a string.
+    """
+    try:
+        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
+        node = getattr(camera, node_name)
+        assert hasattr(node, 'GetValue'), f"node '{node_name}' has no GetValue() attribute"
+        disp_name = node.GetDisplayName()
+        assert PySpin.IsReadable(node), f'{disp_name} is not readable'
+        if isinstance(node, PySpin.IEnumeration):
+            return node.GetEntry(node.GetIntValue()).GetDisplayName()
+        else:
+            return f'{node.GetValue():g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+    except Exception as e:
+        camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
+        return ''
 
 
 @process_camera
