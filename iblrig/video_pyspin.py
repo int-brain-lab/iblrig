@@ -126,80 +126,6 @@ def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
     return wrapper  # type: ignore
 
 
-def get_node(camera: PySpin.CameraPtr, node_name: str) -> PySpin.INode:
-    """
-    Retrieve a node from the camera's node map.
-
-    Parameters
-    ----------
-    camera : PySpin.CameraPtr
-        The camera pointer from which to retrieve the node.
-    node_name : str
-        The name of the node to retrieve.
-
-    Returns
-    -------
-    PySpin.INode
-        The node corresponding to the specified node name.
-    """
-    node_map = camera.GetNodeMap()
-    return node_map.GetNode(node_name)
-
-
-def get_enumeration_pointer(camera: PySpin.CameraPtr, node_name: str) -> PySpin.CEnumerationPtr:
-    """
-    Retrieve a pointer to an enumeration node from the camera's node map.
-
-    Parameters
-    ----------
-    camera : PySpin.CameraPtr
-        The camera pointer from which to retrieve the enumeration node.
-    node_name : str
-        The name of the enumeration node to retrieve.
-
-    Returns
-    -------
-    PySpin.CEnumerationPtr
-        Pointer to the enumeration node corresponding to the specified node name.
-
-    Raises
-    ------
-    AssertionError
-        If the pointer is not valid for the specified camera.
-    """
-    node = get_node(camera, node_name)
-    pointer = PySpin.CEnumerationPtr(node)
-    assert pointer.IsValid(), f'Invalid CEnumerationPtr `{node_name}`'
-    return pointer
-
-
-def get_float_pointer(camera: PySpin.CameraPtr, node_name: str) -> PySpin.CFloatPtr:
-    """
-    Retrieve a pointer to a float node from the camera's node map.
-
-    Parameters
-    ----------
-    camera : PySpin.CameraPtr
-        The camera pointer from which to retrieve the float node.
-    node_name : str
-        The name of the float node to retrieve.
-
-    Returns
-    -------
-    PySpin.CFloatPtr
-        Pointer to the float node corresponding to the specified node name.
-
-    Raises
-    ------
-    AssertionError
-        If the pointer is not valid for the specified camera.
-    """
-    node = get_node(camera, node_name)
-    pointer = PySpin.CFloatPtr(node)
-    assert pointer.IsValid(), f'Invalid CFloatPtr `{node_name}`'
-    return pointer
-
-
 def acquisition_ok() -> bool:
     """Test image acquisition for all available cameras.
 
@@ -257,7 +183,8 @@ def reset_all_cameras():
                 cameras[i].DeInit()
 
         # Wait for all cameras to come back online
-        logger.info(f'Waiting for {"camera" if len(cameras) == 1 else "cameras"} to come back online (~10 s) ...')
+        for i in range(len(cameras)):
+            camera_log(logging.INFO, cameras[i], 'Waiting for camera to come back online (~10 s)')
         all_cameras_online = False
         while not all_cameras_online:
             all_cameras_online = True
@@ -267,20 +194,38 @@ def reset_all_cameras():
                 except PySpin.SpinnakerException:
                     all_cameras_online = False
                 else:
-                    camera_log(logging.INFO, cameras[i], 'Back online.')
+                    camera_log(logging.INFO, cameras[i], 'Camera is back online')
                     cameras[i].DeInit()
             if not all_cameras_online:
                 time.sleep(0.2)
 
 
 @process_camera
-def set_property(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
+def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
+    """
+    Set the value of a camera node to a specified value.
+
+    Parameters
+    ----------
+    node_name : str
+        The name of the node to set the value for.
+    value : Any
+        The value to set for the specified node. The type of value must match the node's expected type.
+    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
+        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
+        cameras will be considered.
+
+    Returns
+    -------
+    bool
+        True if the property was set successfully, False otherwise.
+    """
     try:
         # get node
-        assert hasattr(camera, node_name), f'No such node: `{node_name}`'
+        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
         node = getattr(camera, node_name)
+        assert hasattr(node, 'SetValue'), f'node '{node_name}' has no SetValue() attribute'
         disp_name = node.GetDisplayName()
-        assert hasattr(node, 'SetValue'), f'{disp_name} cannot be set'
         assert PySpin.IsWritable(node), f'{disp_name} is not writable'
 
         # assert types
@@ -324,7 +269,36 @@ def set_property(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
         node.SetValue(value)
         return camera_log(logging.INFO, camera, f'Setting {disp_name} to {value_str}')
     except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
+        return camera_log(logging.ERROR, camera, f"Error setting value: {e.args[0]}")
+
+
+@process_camera
+def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any:
+    """
+    Get the value of a camera node.
+
+    Parameters
+    ----------
+    node_name : str
+        The name of the node to get the value of.
+    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
+        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
+        cameras will be considered.
+
+    Returns
+    -------
+    Any
+        The value of the node.
+    """
+    try:
+        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
+        node = getattr(camera, node_name)
+        assert hasattr(node, 'GetValue'), f"node '{node_name}' has no GetValue() attribute"
+        disp_name = node.GetDisplayName()
+        assert PySpin.IsReadable(node), f'{disp_name} is not readable'
+        return node.GetValue()
+    except Exception as e:
+        return camera_log(logging.ERROR, camera, f"Error getting value: {e.args[0]}")
 
 
 @process_camera
@@ -347,24 +321,24 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
     PySpin.SpinnakerException
         If there is an error while setting the trigger mode for the camera.
     """
-    return set_property(node_name='TriggerMode', value=int(enable), camera=camera)
+    return set_value(node_name='TriggerMode', value=int(enable), camera=camera)
 
 
 @process_camera
 def select_line(line: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_property(node_name='LineSelector', value=line, camera=camera)
+    return set_value(node_name='LineSelector', value=line, camera=camera)
 
 
 @process_camera
 def set_line_mode(value: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_property(node_name='LineMode', value=value, camera=camera)
+    return set_value(node_name='LineMode', value=value, camera=camera)
 
 
 @process_camera
 def set_line_source(value: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_property(node_name='LineSource', value=value, camera=camera)
+    return set_value(node_name='LineSource', value=value, camera=camera)
 
 
 @process_camera
 def set_framerate(value: float, camera: PySpin.CameraPtr) -> bool:
-    return set_property(node_name='AcquisitionFrameRate', value=value, camera=camera)
+    return set_value(node_name='AcquisitionFrameRate', value=value, camera=camera)
