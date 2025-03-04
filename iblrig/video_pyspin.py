@@ -110,15 +110,15 @@ def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
 
         # call the wrapped function
         results = []
+        if isinstance(camera, PySpin.CameraPtr):
+            results.append(func(*args, camera=camera, **kwargs))
+        elif isinstance(camera, PySpin.CameraList):
+            for i in range(len(camera)):
+                results.append(func(*args, camera=camera[i], **kwargs))
         if camera is None:
             with Cameras() as camera_list:
                 for i in range(len(camera_list)):
                     results.append(func(*args, camera=camera_list[i], **kwargs))
-        elif isinstance(camera, PySpin.CameraList):
-            for i in range(len(camera)):
-                results.append(func(*args, camera=camera[i], **kwargs))
-        else:
-            results.append(func(*args, camera=camera, **kwargs))
 
         # return results as tuple
         return tuple(results)
@@ -274,6 +274,60 @@ def reset_all_cameras():
 
 
 @process_camera
+def set_property(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
+    try:
+        # get node
+        assert hasattr(camera, node_name), f'No such node: `{node_name}`'
+        node = getattr(camera, node_name)
+        disp_name = node.GetDisplayName()
+        assert hasattr(node, 'SetValue'), f'{disp_name} cannot be set'
+        assert PySpin.IsWritable(node), f'{disp_name} is not writable'
+
+        # assert types
+        node_type = type(node)
+        val_type = type(value)
+        match node_type:
+            case PySpin.IInteger:
+                expected_value_types = [int]
+            case PySpin.IFloat:
+                expected_value_types = [int, float]
+            case PySpin.IBoolean:
+                expected_value_types = [bool]
+            case _ if isinstance(node, PySpin.IEnumeration):
+                expected_value_types = [int, str]
+                if val_type is str:
+                    if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
+                        value = getattr(PySpin, enumeration_name)
+                        val_type = type(value)
+                    else:
+                        expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
+                        expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
+                        raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
+            case _:
+                raise TypeError(f'Unsupported node type: {node_type.__name__}')
+        if val_type not in expected_value_types:
+            expected_val_type_str = ', '.join([f'{x.__name__}' for x in expected_value_types])
+            expected_val_type_str = ' or'.join(expected_val_type_str.rsplit(',', 1))
+            raise TypeError(f'Value for {disp_name} must be of type {expected_val_type_str} - not {val_type.__name__}')
+
+        # limit value to valid range
+        if node_type in (PySpin.IInteger, PySpin.IFloat) and not node.GetMin() <= value <= node.GetMax():
+            value = min(max(value, node.GetMin()), node.GetMax())
+
+        # set value (if necessary)
+        if isinstance(node, PySpin.IEnumeration) and value != node.GetIntValue():
+            value_str = node.GetEntry(value).GetDisplayName()
+        elif value != node.GetValue():
+            value_str = f'{value:g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+        else:
+            return True
+        node.SetValue(value)
+        return camera_log(logging.INFO, camera, f'Setting {disp_name} to {value_str}')
+    except Exception as e:
+        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
+
+
+@process_camera
 def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
     """Enable or disable the trigger for a specified camera or all cameras.
 
@@ -293,105 +347,24 @@ def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
     PySpin.SpinnakerException
         If there is an error while setting the trigger mode for the camera.
     """
-    try:
-        trigger_mode_ptr = get_enumeration_pointer(camera, 'TriggerMode')
-        trigger_mode_val = trigger_mode_ptr.GetEntryByName('On' if enable else 'Off').GetValue()
-        if trigger_mode_ptr.GetIntValue() != trigger_mode_val:
-            trigger_mode_ptr.SetIntValue(trigger_mode_val)
-            camera_log(logging.INFO, camera, f'{"Enabled" if enable else "Disabled"} trigger')
-        return True
-    except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting trigger: {e.args[0]}')
-
-
-def set_enumeration(node_name: str, value: str | int, camera: PySpin.CameraPtr) -> bool:
-    """
-    Set the value of an enumeration node for a given camera.
-
-    Parameters
-    ----------
-    node_name : str
-        The name of the enumeration node to set.
-    value : str or int
-        The value to set for the enumeration node. This can be either a string
-        representing the display name of the entry or an integer representing
-        the index of the entry.
-    camera : PySpin.CameraPtr
-        A pointer to the camera object from the PySpin library.
-
-    Returns
-    -------
-    bool
-        Returns True if the value was successfully set, otherwise False.
-    """
-    try:
-        pointer = get_enumeration_pointer(camera, node_name)
-        node_name_pretty = pointer.GetDisplayName()
-        if isinstance(value, str):
-            valid_values = [x.GetDisplayName() for x in pointer.GetEntries()]
-            assert value in valid_values, f'Invalid {node_name_pretty}: `{value}`. Valid values are ' + ', '.join(
-                [f'`{x}`' for x in valid_values]
-            )
-            int_value = pointer.GetEntryByName(value).GetValue()
-        else:
-            int_value = int(value)
-            valid_values = range(len(pointer.GetEntries()))
-            assert int_value in valid_values, f'Value must be in the range 0..{range(4).stop - 1}'
-        if pointer.GetIntValue() != int_value:
-            assert 'W' in PySpin.EAccessModeClass_ToString(pointer.GetAccessMode()), f'{node_name_pretty} is not writable'
-            pointer.SetIntValue(int_value)
-            camera_log(logging.INFO, camera, f'{node_name_pretty} set to `{pointer.GetEntry(int_value).GetDisplayName()}`')
-        return True
-    except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
-
-
-def set_float(node_name: str, value: float, camera: PySpin.CameraPtr) -> bool:
-    """
-    Set the value of a float node for a given camera.
-
-    Parameters
-    ----------
-    node_name : str
-        The name of the float node to set.
-    value : float
-        The value to set for the float node. This must be within the valid range
-        defined by the node's minimum and maximum values.
-    camera : PySpin.CameraPtr
-        A pointer to the camera object from the PySpin library.
-
-    Returns
-    -------
-    bool
-        Returns True if the value was successfully set, otherwise False.
-    """
-    try:
-        pointer = get_float_pointer(camera, node_name)
-        node_name_pretty = pointer.GetDisplayName()
-        assert 'W' in PySpin.EAccessModeClass_ToString(pointer.GetAccessMode()), f'{node_name_pretty} is not writable'
-        assert value >= pointer.GetMin(), f'{node_name_pretty} must be >= {pointer.GetMin():g} {pointer.GetUnit()}'
-        assert value <= pointer.GetMax(), f'{node_name_pretty} must be <= {pointer.GetMax():g} {pointer.GetUnit()}'
-        pointer.SetValue(value)
-        return camera_log(logging.INFO, camera, f'{node_name_pretty} set to {pointer.GetValue():g} {pointer.GetUnit()}')
-    except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting {node_name}: {e.args[0]}')
+    return set_property(node_name='TriggerMode', value=int(enable), camera=camera)
 
 
 @process_camera
-def select_line(line: int, camera: PySpin.CameraPtr) -> bool:
-    return set_enumeration(node_name='LineSelector', value=line, camera=camera)
+def select_line(line: int | str, camera: PySpin.CameraPtr) -> bool:
+    return set_property(node_name='LineSelector', value=line, camera=camera)
 
 
 @process_camera
-def set_line_mode(value: str, camera: PySpin.CameraPtr) -> bool:
-    return set_enumeration(node_name='LineMode', value=value, camera=camera)
+def set_line_mode(value: int | str, camera: PySpin.CameraPtr) -> bool:
+    return set_property(node_name='LineMode', value=value, camera=camera)
 
 
 @process_camera
-def set_line_source(value: str, camera: PySpin.CameraPtr) -> bool:
-    return set_enumeration(node_name='LineSource', value=value, camera=camera)
+def set_line_source(value: int | str, camera: PySpin.CameraPtr) -> bool:
+    return set_property(node_name='LineSource', value=value, camera=camera)
 
 
 @process_camera
 def set_framerate(value: float, camera: PySpin.CameraPtr) -> bool:
-    return set_float(node_name='AcquisitionFrameRate', value=value, camera=camera)
+    return set_property(node_name='AcquisitionFrameRate', value=value, camera=camera)
