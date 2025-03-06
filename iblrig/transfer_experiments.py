@@ -675,10 +675,10 @@ class NeurophotometricsCopier(SessionCopier):
         if sync_label is not None:
             description['sync_label'] = sync_label
         description['fibers'] = {roi: {'location': location} for roi, location in zip(rois, locations, strict=False)}
-        return {'neurophotometrics': description}
+        return {'devices': {'neurophotometrics': description}}
 
     def _copy_collections(self, folder_neurophotometric: Path | None = None) -> bool:
-        ed = self.experiment_description['neurophotometrics']
+        ed = self.experiment_description['devices']['neurophotometrics']
         dt = datetime.datetime.fromisoformat(ed['datetime'])
         # Here we find the first photometry folder after the start_time. In case this is failing
         # we can feed a custom start_time to go to the desired folder, or just rename the folder

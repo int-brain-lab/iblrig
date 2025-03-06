@@ -153,7 +153,8 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             mocker.side_effect = self.side_effect
             # the actual code to test
             iblrig.neurophotometrics.init_neurophotometrics_subject(
-                session_stub=f'test_subject/{datetime.today().strftime("%Y-%m-%d")}/001',
+                subject='test_subject',
+                # session_stub=f'test_subject/{datetime.today().strftime("%Y-%m-%d")}/001',
                 rois=['Region00', 'Region01'],
                 locations=['VTA', 'SNc'],
             )

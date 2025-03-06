@@ -86,7 +86,10 @@ def init_neurophotometrics_subject(
     dict_paths = iblrig.path_helper.get_local_and_remote_paths()
     date = datetime.datetime.today().strftime('%Y-%m-%d')
     ## counting the number of directories (to get the session number)
-    n = len([path for path in (dict_paths['local_subjects_folder'] / subject / date).iterdir() if path.isdir()])
+    # if this folder doesn't exist, it's the first session
+    subject_date_folder = dict_paths['local_subjects_folder'] / subject / date
+    n = len([path for path in subject_date_folder.iterdir() if path.isdir()]) if subject_date_folder.exists() else 0
+
     session_number = f'{n + 1:03}'
     stub_name = f'{subject}/{date}/{session_number}'
 
@@ -130,8 +133,11 @@ def start_photometry_task_cmd():
     args = parser.parse_args()
 
     assert len(args.rois) == len(args.locations), 'The number of ROIs and locations must be the same.'
-    assert len(set(args.locations)) == len(args.locations), 'duplicate brain regions are not possible'
     assert len(set(args.rois)) == len(args.rois), 'duplicate rois are not possible'
+    band = 'G' if any([roi.startswith('G') for roi in args.rois]) else 'R'
+    ix = [i for i, roi in enumerate(args.rois) if roi.startswith(band)]
+    locations = [args.locations[i] for i in ix]
+    assert len(set(locations)) == len(locations), 'duplicate brain regions are not possible'
 
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     init_neurophotometrics_subject(subject=args.subject, rois=args.rois, locations=args.locations, sync_channel=args.sync_channel)
