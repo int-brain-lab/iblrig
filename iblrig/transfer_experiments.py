@@ -694,7 +694,8 @@ class NeurophotometricsCopier(SessionCopier):
         assert len(folder_times) >= 1, f'No neurophotometrics acquisition files found in {folder_day}'
         hhmmss = sorted([int(stem[1:]) for stem in [f.stem for f in folder_times]])
         i = np.searchsorted(hhmmss, int(dt.strftime('%H%M%S'))) - 1
-        csv_raw_photometry = folder_day.joinpath(f'T{hhmmss[i]}', 'raw_photometry.csv')
+        # csv_raw_photometry = folder_day.joinpath(f'T{hhmmss[i]}', 'raw_photometry.csv')
+        csv_raw_photometry = folder_day / f'T{hhmmss[i]}' / 'raw_photometry' / 'raw_photometry.csv'
         csv_digital_inputs = folder_day.joinpath(f'T{hhmmss[i]}', 'digital_inputs.csv')
         assert csv_raw_photometry.exists(), f'Raw photometry file {csv_raw_photometry} not found'
         assert csv_digital_inputs.exists(), f'Digital inputs file {csv_digital_inputs} not found'

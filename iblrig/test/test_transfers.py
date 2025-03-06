@@ -142,7 +142,8 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
         raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
-        raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry.csv', index=False)
+        (folder_neurophotometrics / 'raw_photometry').mkdir(exist_ok=True)
+        raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
     def test_copier(self):
         # session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
