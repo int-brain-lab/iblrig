@@ -20,7 +20,7 @@ class TestExperimentDescription(unittest.TestCase):
                     'datetime': '2024-10-11T11:11:00',
                     'collection': 'raw_photometry_data',
                     'fibers': {'G0': {'location': 'SI'}, 'G1': {'location': 'VTA'}},
-                    }
                 }
             }
+        }
         self.assertEqual(dexpected, d)
