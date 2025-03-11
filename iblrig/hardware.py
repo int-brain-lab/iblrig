@@ -23,6 +23,7 @@ from serial.serialutil import SerialException
 from serial.tools import list_ports
 
 from iblrig.pydantic_definitions import HardwareSettingsRotaryEncoder
+from iblutil.io import binary
 from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder as PybpodRotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule as PybpodRotaryEncoderModule
@@ -32,7 +33,7 @@ from pybpodapi.state_machine import StateMachine
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
 DTYPE_AMBIENT_SENSOR_RAW = np.dtype(
-    [('Temperature_C', np.float16), ('AirPressure_mb', np.float16), ('RelativeHumidity', np.float16)]
+    [('Temperature_C', np.float32), ('AirPressure_mb', np.float32), ('RelativeHumidity', np.float32)]
 )
 DTYPE_AMBIENT_SENSOR_BIN = np.dtype([('Trial', np.uint16)] + DTYPE_AMBIENT_SENSOR_RAW.descr)
 
@@ -228,18 +229,18 @@ class Bpod(BpodIO):
             - [2] : Relative humidity in percentage
         """
         if self.ambient_module is None:
-            data = np.full(3, np.nan, np.float16)
+            data = np.full(3, np.nan, np.float32)
         else:
             self.ambient_module.start_module_relay()
             self.bpod_modules.module_write(self.ambient_module, 'R')
             reply = self.bpod_modules.module_read(self.ambient_module, 12)
             self.ambient_module.stop_module_relay()
-            data = np.frombuffer(bytes(reply), dtype=np.float16).copy()
+            data = np.frombuffer(bytes(reply), dtype=np.float32).copy()
             data[1] /= 100
         return data
 
     @staticmethod
-    def write_ambient_data(filepath: Path | str, trial_number: int, sensor_reading: np.ndarray):
+    def write_ambient_binary(filepath: Path | str, trial_number: int, sensor_reading: np.ndarray):
         """
         Write ambient sensor data to a binary file.
 
@@ -257,7 +258,7 @@ class Bpod(BpodIO):
             ambient_data.tofile(f)
 
     @staticmethod
-    def read_ambient_data(filepath: Path | str) -> pd.DataFrame:
+    def read_ambient_binary(filepath: Path | str) -> pd.DataFrame:
         """
         Read ambient sensor data from a binary file into a DataFrame.
 
@@ -272,8 +273,7 @@ class Bpod(BpodIO):
             A DataFrame containing the ambient sensor data, with columns corresponding to the fields
             defined in `DTYPE_AMBIENT_SENSOR_BIN`.
         """
-        data = np.fromfile(filepath, dtype=DTYPE_AMBIENT_SENSOR_BIN)
-        return pd.DataFrame(data)
+        return binary.load_as_dataframe(filepath_bin=filepath, dtype=DTYPE_AMBIENT_SENSOR_BIN)
 
     def flush(self):
         """Flushes valve 1."""

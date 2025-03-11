@@ -34,13 +34,14 @@ from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.hardware import SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai, get_number
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblrig.valve import Valve
+from iblutil.io import binary
 from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, flatten, setup_logger
@@ -957,6 +958,13 @@ class BpodMixin(BaseSession):
 
     def stop_mixin_bpod(self):
         self.bpod.close()
+
+        # convert ambient data from binary to parquet
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            pqt_file = binary.convert_to_parquet(
+                filepath_bin=self.paths['AMBIENT_FILE_PATH'], dtype=DTYPE_AMBIENT_SENSOR_BIN, delete_bin_file=True
+            )
+            log.info(f"'{self.paths['AMBIENT_FILE_PATH'].name}' converted to parqet and stored as '{pqt_file.name}'")
 
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
