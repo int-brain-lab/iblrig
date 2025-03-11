@@ -1,19 +1,22 @@
 import argparse
-import string
-import datetime
 import asyncio
+import datetime
+import logging
+import string
 from pathlib import Path
 
 import numpy as np
-from one.alf.io import next_num_folder
-from one.api import OneAlyx
-from iblutil.io import net
 
 from iblatlas import atlas
 from iblrig.base_tasks import EmptySession
+from iblrig.net import get_server_communicator, read_stdin, update_alyx_token
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import RigSettings
 from iblrig.transfer_experiments import EphysCopier
-from iblrig.net import get_server_communicator, update_alyx_token, read_stdin
+from iblutil.io import net
 from iblutil.util import setup_logger
+from one.alf.io import next_num_folder
+from one.api import OneAlyx
 
 
 def prepare_ephys_session_cmd():
@@ -30,7 +33,7 @@ def prepare_ephys_session_cmd():
         help='the service URI to listen to messages on. pass ":<port>" to specify port only.',
     )
     args = parser.parse_args()
-    setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
+    setup_logger(name=__name__, level='DEBUG' if args.debug else 'INFO')
     if args.service_uri:
         asyncio.run(main_v8_networked(args.subject_name, args.debug, args.nprobes, args.service_uri))
     else:
@@ -97,8 +100,7 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
 async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
     # from iblrig.base_tasks import EmptySession
 
-
-    log = setup_logger(name='iblrig', level=10 if debug else 20)
+    log = logging.getLogger(__name__)
 
     # if PARAMS.get('PROBE_TYPE_00', '3B') != '3B' or PARAMS.get('PROBE_TYPE_01', '3B') != '3B':
     #     raise NotImplementedError('Only 3B probes supported.')
@@ -109,8 +111,6 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
     # session = EmptySession(subject=mouse, interactive=False, iblrig_settings=iblrig_settings)
     # session_path = session.paths.SESSION_FOLDER
     # FIXME The following should be done by the EmptySession class
-    from iblrig.path_helper import load_pydantic_yaml
-    from iblrig.pydantic_definitions import RigSettings
     iblrig_settings = load_pydantic_yaml(RigSettings)
     date = datetime.datetime.now().date().isoformat()
     num = next_num_folder(iblrig_settings.iblrig_local_data_path / mouse / date)
@@ -119,7 +119,7 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
     raw_data_folder.mkdir(parents=True, exist_ok=True)
 
     log.info('Created %s', raw_data_folder)
-    REMOTE_SUBJECT_FOLDER = iblrig_settings.iblrig_remote_subjects_path
+    remote_subject_folder = iblrig_settings.iblrig_remote_subjects_path
 
     for n in range(n_probes):
         probe_folder = raw_data_folder / f'probe{n:02}'
@@ -127,7 +127,7 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
         log.info('Created %s', probe_folder)
 
     # Save the stub files locally and in the remote repo for future copy script to use
-    copier = EphysCopier(session_path=session_path, remote_subjects_folder=REMOTE_SUBJECT_FOLDER)
+    copier = EphysCopier(session_path=session_path, remote_subjects_folder=remote_subject_folder)
     communicator, _ = await get_server_communicator(service_uri, 'neuropixel')
     copier.initialize_experiment(nprobes=n_probes)
 
@@ -156,24 +156,24 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
                             for d in raw_data_folder.iterdir():  # Remove probe folders
                                 d.rmdir()
                             raw_data_folder.rmdir()  # remove collection
+                            # Remove remote exp description file
+                            log.debug('Removing %s', copier.file_remote_experiment_description)
+                            copier.file_remote_experiment_description.unlink()
+                            copier.file_remote_experiment_description.with_suffix('.status_pending').unlink()
                             # Delete whole session folder?
                             session_files = list(session_path.rglob('*'))
-                            if len(session_files) == 1 and session_files[0].name.startswith(
-                                    '_ibl_experiment.description'):
+                            if len(session_files) == 1 and session_files[0].name.startswith('_ibl_experiment.description'):
                                 ans = input(f'Remove empty session {"/".join(session_path.parts[-3:])}? [y/N]\n')
                                 if (ans.strip().lower() or 'n')[0] == 'y':
                                     log.warning('Removing %s', session_path)
                                     log.debug('Removing %s', session_files[0])
                                     session_files[0].unlink()
                                     session_path.rmdir()
-                                    # Remove remote exp description file
-                                    log.debug('Removing %s', copier.file_remote_experiment_description)
-                                    copier.file_remote_experiment_description.unlink()
                         else:
                             session_path.joinpath('transfer_me.flag').touch()
                         communicator.close()
-                        for task in tasks:
-                            task.cancel()
+                        for t in tasks:
+                            t.cancel()
                         tasks.clear()
                         return
                 case 'remote':
@@ -182,7 +182,7 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
                         log.error('Remote communicator closed')
                     else:
                         data, addr, event = task.result()
-                        S = net.base.ExpMessage
+                        S = net.base.ExpMessage  # noqa
                         match event:
                             case S.EXPINFO:
                                 reponse_data = {'exp_ref': one.dict2ref(exp_ref), 'main_sync': True}
@@ -191,9 +191,9 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
                                 await communicator.status(net.base.ExpStatus.RUNNING, addr=addr)
                             case S.EXPINIT:
                                 expected = one.dict2ref(exp_ref)
-                                # TODO Make assertion
-                                if 'exp_ref' in data and data['exp_ref'] != expected:
-                                    log.critical('Experiment reference mismatch! Expected %s, got %s', expected, data['exp_ref'])
+                                remote_ref = (data[0] or {}).get('exp_ref') if any(data) else None
+                                if remote_ref and remote_ref != expected:
+                                    log.critical('Experiment reference mismatch! Expected %s, got %s', expected, remote_ref)
                                 data = {'exp_ref': one.dict2ref(exp_ref), 'status': net.base.ExpStatus.RUNNING}
                                 await communicator.init(data, addr=addr)
                             case S.EXPSTART:
