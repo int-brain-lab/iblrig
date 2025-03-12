@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import numpy as np
-import pandas as pd
 import serial
 import sounddevice as sd
 from annotated_types import Ge, Le
@@ -23,7 +22,6 @@ from serial.serialutil import SerialException
 from serial.tools import list_ports
 
 from iblrig.pydantic_definitions import HardwareSettingsRotaryEncoder
-from iblutil.io import binary
 from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder as PybpodRotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule as PybpodRotaryEncoderModule
@@ -238,41 +236,6 @@ class Bpod(BpodIO):
             data = np.frombuffer(bytes(reply), dtype=np.float32).copy()
             data[1] /= 100
         return data
-
-    @staticmethod
-    def write_ambient_binary(filepath: Path | str, trial_number: int, sensor_reading: np.ndarray):
-        """
-        Write/append ambient sensor data to a binary file.
-
-        Parameters
-        ----------
-        filepath : Path or str
-            The path to the file where the data will be written.
-        trial_number : int
-            The trial number associated with the sensor readings.
-        sensor_reading : np.ndarray
-            A 1D array containing three sensor readings: temperature, air pressure, and relative humidity.
-        """
-        with Path(filepath).open('ab') as f:
-            binary.write_array(f,[trial_number, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
-
-    @staticmethod
-    def read_ambient_binary(filepath: Path | str) -> pd.DataFrame:
-        """
-        Read ambient sensor data from a binary file into a DataFrame.
-
-        Parameters
-        ----------
-        filepath : Path or str
-            The path to the file from which the data will be read.
-
-        Returns
-        -------
-        pd.DataFrame
-            A DataFrame containing the ambient sensor data, with columns corresponding to the fields
-            defined in `DTYPE_AMBIENT_SENSOR_BIN`.
-        """
-        return binary.load_as_dataframe(filepath_bin=filepath, dtype=DTYPE_AMBIENT_SENSOR_BIN)
 
     def flush(self):
         """Flushes valve 1."""
