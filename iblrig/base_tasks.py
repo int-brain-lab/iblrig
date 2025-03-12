@@ -960,7 +960,7 @@ class BpodMixin(BaseSession):
         self.bpod.close()
 
         # convert ambient data from binary to parquet
-        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+        if self.paths['AMBIENT_FILE_PATH'].exists():
             pqt_file = binary.convert_to_parquet(
                 filepath_bin=self.paths['AMBIENT_FILE_PATH'], dtype=DTYPE_AMBIENT_SENSOR_BIN, delete_bin_file=True
             )
