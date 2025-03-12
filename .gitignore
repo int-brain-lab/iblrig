@@ -22,6 +22,7 @@ __pycache__/
 \.sonarlint/
 \.pytest*
 .pytest*
+*.code-workspace
 *.pyc
 docs/_build
 scratch/
@@ -37,7 +38,6 @@ app.log
 /.venv/
 *.autosave
 iblrig/_version.py
-*.code-workspace
 
 .coverage*
 coverage.xml
