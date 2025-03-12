@@ -5,7 +5,10 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
+import warnings
 import zipfile
+from datetime import datetime
 from pathlib import Path
 
 from ibllib.io.raw_data_loaders import load_embedded_frame_data
@@ -192,10 +195,7 @@ def prepare_video_session_cmd():
         parser.error('--subject-name is mandatory if --service-uri has not been provided.')
 
     log_level = 'DEBUG' if args.debug else 'INFO'
-    setup_logger(name='iblrig', level=log_level)
     service_uri = args.service_uri
-    # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
-    # False but until fully tested, let's call the old function
     if service_uri is False:
         session = CameraSession(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         session.run()
@@ -320,6 +320,14 @@ class CameraSession(EmptySession):
         if kwargs.get('append'):
             raise NotImplementedError
         super().__init__(subject=subject or '', **kwargs)
+        try:  # Attempt to create log
+            log_file = Path(tempfile.gettempdir()).joinpath(
+                'iblrig_logs', f'{datetime.now().strftime("%Y%m%d-%H%M%S")}_camera-session.log'
+            )
+            log_file.parent.mkdir(parents=True, exist_ok=True)
+            self._setup_loggers(level=kwargs.get('log_level', 'INFO'), file=log_file)
+        except Exception as ex:
+            warnings.warn(f'Failed to set up logs: {ex}', stacklevel=2)
         self.experiment_description = None
         self.bonsai_process = None
         try:
@@ -369,8 +377,28 @@ class CameraSession(EmptySession):
             self._one = OneAlyx(silent=True, mode='local')
         return self._one
 
-    def _setup_loggers(self, level='INFO', **_):
-        self.logger = setup_logger(name='iblrig', level=level)
+    def _setup_loggers(self, level='INFO', file=None, **_):
+        self.logger = setup_logger(name='iblrig', level=level, file=file)
+
+    def _copy_log_to_session(self):
+        """Copy the log file to the session folder.
+
+        This copies the iblrig_logs file handler to the session raw video data folder after closing and removing.
+        This should be run at the end of an acquisition. If no file handler is found or the SESSION_RAW_DATA_FOLDER
+        path is not set, the method will do nothing.
+        """
+        tmplog = Path(tempfile.gettempdir(), 'iblrig_logs')
+        file_handlers = filter(
+            lambda h: isinstance(h, logging.FileHandler) and Path(h.baseFilename).is_relative_to(tmplog), self.logger.handlers
+        )
+        if file_handler := next(file_handlers, None):
+            file_handler.close()
+            self.logger.removeHandler(file_handler)
+            if self.paths.get('SESSION_RAW_DATA_FOLDER'):
+                new_file = self.paths['SESSION_RAW_DATA_FOLDER'].joinpath('_ibl_log.info-acquisition.log')
+                new_file.parent.mkdir(parents=True, exist_ok=True)
+                self.logger.debug('Moving log file: %s -> %s', file_handler.baseFilename, new_file)
+                Path(file_handler.baseFilename).replace(new_file)
 
     @property
     def cameras(self):
@@ -443,6 +471,10 @@ class CameraSession(EmptySession):
         self.bonsai_process.wait()
         self._status = net.base.ExpStatus.STOPPED
         self.stop_recording()
+        try:
+            self._copy_log_to_session()
+        except Exception as ex:
+            self.logger.error('Failed to copy log to session: %s', ex)
 
 
 class CameraSessionNetworked(CameraSession):
@@ -555,6 +587,10 @@ class CameraSessionNetworked(CameraSession):
                         raise NotImplementedError(f'Unexpected task "{task.get_name()}"')
                 self._async_tasks.remove(task)
         self.close()
+        try:
+            self._copy_log_to_session()
+        except Exception as ex:
+            self.logger.error('Failed to copy log to session: %s', ex)
 
     def close(self):
         """End experiment and cleanup object.
