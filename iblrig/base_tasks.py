@@ -646,9 +646,9 @@ class BaseSession(ABC):
             self.session_info.POOP_COUNT = get_number('Droppings count: ', int, lambda x: x >= 0)
 
         self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')
         self._execute_mixins_shared_function('cleanup_mixin')
+        self.register_to_alyx()
 
     @abstractmethod
     def start_hardware(self):
