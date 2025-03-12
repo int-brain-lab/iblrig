@@ -242,7 +242,7 @@ class Bpod(BpodIO):
     @staticmethod
     def write_ambient_binary(filepath: Path | str, trial_number: int, sensor_reading: np.ndarray):
         """
-        Write ambient sensor data to a binary file.
+        Write/append ambient sensor data to a binary file.
 
         Parameters
         ----------
@@ -254,8 +254,7 @@ class Bpod(BpodIO):
             A 1D array containing three sensor readings: temperature, air pressure, and relative humidity.
         """
         with Path(filepath).open('ab') as f:
-            ambient_data = np.array([(trial_number, *sensor_reading)], dtype=DTYPE_AMBIENT_SENSOR_BIN)
-            ambient_data.tofile(f)
+            binary.write_array(f,[trial_number, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
 
     @staticmethod
     def read_ambient_binary(filepath: Path | str) -> pd.DataFrame:
