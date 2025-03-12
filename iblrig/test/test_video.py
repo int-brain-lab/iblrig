@@ -2,7 +2,7 @@ import asyncio
 import sys
 import tempfile
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from unittest import mock
 from unittest.mock import ANY, DEFAULT, MagicMock, call, patch
@@ -261,6 +261,94 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
             await self.session.run()
         # Check the original log file still exists
         self.assertTrue(temp_log_file.exists() and temp_log_file.stat().st_size > 0)
+
+    @patch('iblrig.video.call_bonsai')
+    @patch('iblrig.video_pyspin.enable_camera_trigger')
+    async def test_error_handling(self, *_):
+        """Check handles message errors when running."""
+
+        def _message_mock_1():
+            """Mock two init messages in a row, both with different expRefs."""
+            addr = '192.168.0.5:99998'
+            for ref in ('2020-01-01_1_foo', '2020-01-01_1_bar'):
+                yield [{'exp_ref': ref}], addr, net.base.ExpMessage.EXPINIT
+
+        responses_1 = _message_mock_1()
+        self.communicator.on_event.side_effect = lambda evt: next(responses_1)
+
+        with self.assertRaises(AssertionError) as cm:
+            await self.session.run()
+            self.assertEqual(str(cm.exception), 'expected 2025-03-12_1_foo, got 2025-03-12_1_bar')
+        # Check the communicator was closed
+        self.communicator.close.assert_called_once()
+        self.assertFalse(any(self.session._async_tasks))
+
+        # When the session is running, the communicator should remain open
+        await self.asyncSetUp()  # reset the session
+
+        def _message_mock_2():
+            """Mock two init messages in a row, both with different expRefs."""
+            addr = '192.168.0.5:99998'
+            yield (f'{date.today()}_1_foo', {}), addr, net.base.ExpMessage.EXPSTART
+            while True:  # sometimes the on_event method is awaited again before the bonsai task
+                yield [{'exp_ref': '2020-01-01_1_bar'}], addr, net.base.ExpMessage.EXPINIT
+                if not self.bonsai_subprocess_future.done():
+                    self.bonsai_subprocess_future.set_result(0)
+                    self.communicator.is_connected = False
+
+        responses_2 = _message_mock_2()
+        self.communicator.on_event.side_effect = lambda evt: next(responses_2)
+        # Should catch and log error instead of raising
+        with self.assertLogs(self.session.logger.name, 'ERROR') as cm:
+            await self.session.run()
+            record = next((r.getMessage() for r in cm.records if r.levelno == 40), '')
+            self.assertRegex(record, '2020-01-01_1_bar received; already running 2025-03-12_1_foo')
+
+    async def test_process_keyboard_input(self):
+        """Test iblrig.video.CameraSessionNetworked._process_keyboard_input method."""
+        # With blank input should simply return
+        with self.assertNoLogs(self.session.logger, 'INFO'):
+            await self.session._process_keyboard_input('')
+        self.communicator.close.assert_not_called()
+        # With unknown input should log error
+        with self.assertLogs(self.session.logger, 'ERROR'):
+            await self.session._process_keyboard_input('FOO')
+            self.communicator.close.assert_not_called()
+        # With STOP should log info and stop recording
+        with self.assertLogs(self.session.logger, 'INFO'), patch.object(self.session, 'stop_recording') as stop:
+            await self.session._process_keyboard_input('STOP')
+            stop.assert_awaited_once()
+            self.communicator.close.assert_not_called()
+        # With START should log info and start recording
+        assert self.session.exp_ref is None
+        with self.assertLogs(self.session.logger, 'ERROR'), patch.object(self.session, 'on_start') as start:
+            await self.session._process_keyboard_input('START')
+            start.assert_not_awaited()
+        self.session.session_info = dict(SUBJECT_NAME='foo', SESSION_START_TIME=datetime.now().isoformat(), SESSION_NUMBER=1)
+        assert self.session.exp_ref
+        with self.assertLogs(self.session.logger, 'INFO'), patch.object(self.session, 'on_start') as start:
+            await self.session._process_keyboard_input('START')
+            exp_ref = f'{date.today()}_1_foo'
+            start.assert_awaited_once_with([exp_ref, {}], None)
+        # With QUIT should log info and close communicator
+        with self.assertLogs(self.session.logger, 'INFO'), patch.object(self.session, 'stop_recording') as stop:
+            await self.session._process_keyboard_input('QUIT')
+            stop.assert_not_awaited()
+            self.communicator.close.assert_called()
+            self.session.bonsai_process = MagicMock()
+            self.session.bonsai_process.returncode = 0
+            await self.session._process_keyboard_input('QUIT')
+            stop.assert_not_awaited()
+            self.session.bonsai_process.returncode = None
+            await self.session._process_keyboard_input('QUIT')
+            stop.assert_awaited_once()
+        # With QUIT! should call close method
+        self.communicator.close.reset_mock()
+        with self.assertLogs(self.session.logger, 'INFO'), patch.object(self.session, 'close', wraps=self.session.close) as close:
+            await self.session._process_keyboard_input('QUIT!!!')
+            close.assert_called_once()
+            self.communicator.close.assert_called_once()
+            self.assertFalse(any(self.session._async_tasks))
 
 
 class TestValidateVideo(unittest.TestCase):
