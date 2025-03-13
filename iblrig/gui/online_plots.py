@@ -28,7 +28,7 @@ from qtpy.QtCore import (
     Signal,
     Slot,
 )
-from qtpy.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPixmap, QTransform
+from qtpy.QtGui import QBrush, QColor, QFont, QGradient, QIcon, QLinearGradient, QPainter, QPixmap, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QFrame,
@@ -53,7 +53,7 @@ from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_js
 
 
 class PlotWidget(pg.PlotWidget):
-    """PlotWidget with tuned default settings."""
+    """PyQtGraph PlotWidget with tuned default settings."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,22 +67,40 @@ class PlotWidget(pg.PlotWidget):
 
 
 class SingleBarChartWidget(PlotWidget):
-    """A bar chart with a single column"""
+    """A bar chart with a single column for use with PyQtGraph"""
 
-    def __init__(self, *args, barBrush='k', **kwargs):
+    def __init__(self, *args, barColor: Any = 0.4, textColor: Any = 1.0, textFormat: str = '{:g}', **kwargs):
         super().__init__(*args, **kwargs)
-        self.plotItem.getAxis('left').setWidth(40)
-        self.plotItem.getAxis('left').setGrid(128)
-        self.plotItem.getAxis('bottom').setLabel(' ')
-        self.plotItem.getAxis('bottom').setTicks([[(1, ' ')], []])
-        self.plotItem.getAxis('bottom').setStyle(tickLength=0, tickAlpha=0)
+
+        y_axis = self.plotItem.getAxis('left')
+        y_axis.setWidth(40)
+        y_axis.setGrid(128)
+
+        x_axis = self.plotItem.getAxis('bottom')
+        x_axis.setLabel(' ')
+        x_axis.setTicks([[(1, ' ')], []])
+        x_axis.setStyle(tickLength=0, tickAlpha=0)
         self.plotItem.setXRange(min=0, max=2, padding=0)
-        self._barGraphItem = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush=barBrush)
+
+        gradient = QLinearGradient(0, 0, 0, 1)
+        gradient.setCoordinateMode(QGradient.ObjectBoundingMode)
+        gradient.setColorAt(0.9, pg.mkColor(barColor))
+        gradient.setColorAt(0, pg.mkColor((255, 255, 255, 0)))
+        self._barGraphItem = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush=QBrush(gradient))
         self.addItem(self._barGraphItem)
+
+        self._textFormat = textFormat
+        self._textItem = pg.TextItem('0', anchor=(0.5, 0), color=textColor)
+        self._textItem.setX(1)
+        self._textItem.setY(50)
+        self.addItem(self._textItem)
+
 
     @Slot(float)
     def setValue(self, value: float):
         self._barGraphItem.setOpts(height=value)
+        self._textItem.setText(self._textFormat.format(value))
+        self._textItem.setY(value)
 
 
 class FunctionWidget(PlotWidget):
@@ -721,7 +739,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.chronometricWidget, 3, 1, 1, 1)
 
         # performance chart
-        self.performanceWidget = SingleBarChartWidget(parent=self)
+        self.performanceWidget = SingleBarChartWidget(parent=self, textFormat='{:0.1f} %')
         self.performanceWidget.setMinimumWidth(155)
         self.performanceWidget.plotItem.setTitle('Performance', color='k')
         self.performanceWidget.plotItem.getAxis('left').setLabel('Correct Choices (%)')
@@ -730,7 +748,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.performanceWidget, 2, 2, 1, 1)
 
         # reward chart
-        self.rewardWidget = SingleBarChartWidget(parent=self, barBrush='blue')
+        self.rewardWidget = SingleBarChartWidget(parent=self, barColor=(128, 128, 255), textFormat='{:0.1f} μl')
         self.rewardWidget.plotItem.setTitle('Reward Amount', color='k')
         self.rewardWidget.plotItem.getAxis('left').setLabel('Total Reward Volume (μl)')
         self.rewardWidget.plotItem.setYRange(0, 1050, padding=0)
