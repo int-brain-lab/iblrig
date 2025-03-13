@@ -1,9 +1,14 @@
 Changelog
 =========
 
-8.27.4
+8.28.0
 ------
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+
+8.27.4
+------
+* fixed: passive choice world did not play noise stimulus
+* changed: update to ONE-api>=3.0.0 and ibllib>=3.3.0
 
 8.27.3
 ------

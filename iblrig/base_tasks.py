@@ -130,15 +130,12 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
-        if hardware_settings is not None:
-            self.hardware_settings.update(hardware_settings)
-            HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
-        if iblrig_settings is not None:
-            self.iblrig_settings.update(iblrig_settings)
-            RigSettings.model_validate(self.iblrig_settings)
-
+        self._load_settings(
+            file_hardware_settings=file_hardware_settings,
+            hardware_settings=hardware_settings,
+            file_iblrig_settings=file_iblrig_settings,
+            iblrig_settings=iblrig_settings,
+        )
         self.wizard = wizard
 
         # Load the tasks settings, from the task folder or override with the input argument
@@ -173,6 +170,18 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    def _load_settings(
+        self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
+    ):
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        if hardware_settings is not None:
+            self.hardware_settings.update(hardware_settings)
+            HardwareSettings.model_validate(self.hardware_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        if iblrig_settings is not None:
+            self.iblrig_settings.update(iblrig_settings)
+            RigSettings.model_validate(self.iblrig_settings)
 
     @classmethod
     def get_task_file(cls) -> Path:
@@ -1157,7 +1166,7 @@ class SoundMixin(BaseSession, HasBpod):
         Play the noise sound for the error feedback using bpod state machine.
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_noise], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
@@ -1177,7 +1186,7 @@ class SoundMixin(BaseSession, HasBpod):
         sma.add_state(
             state_name=state_name,
             state_timer=state_timer,
-            output_actions=[self.bpod.actions.play_tone],
+            output_actions=output_actions,
             state_change_conditions={'BNC2Low': 'exit', 'Tup': 'exit'},
         )
         self.bpod.send_state_machine(sma)
@@ -1219,7 +1228,8 @@ class NetworkSession(BaseSession):
         if isinstance(remote_rigs, list):
             # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
             remote_rigs = list(filter(None, flatten(remote_rigs)))
-            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings'))
+            self._load_settings(**kwargs)
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=self.iblrig_settings)
             if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                 raise ValueError('Selected remote rigs not in remote rigs list')
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
@@ -1307,17 +1317,39 @@ class NetworkSession(BaseSession):
         assert self.exp_ref
         paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
         paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
-        if append == paths.TASK_COLLECTION.endswith('00'):
-            raise ValueError(
-                f'Append value incorrect. Either remove previous task collections from '
-                f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
-            )
+        # if append == paths.TASK_COLLECTION.endswith('00'):
+        #     raise ValueError(
+        #         f'Append value incorrect. Either remove previous task collections from '
+        #         f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
+        #     )
+        log.critical('This is task number %i for %s', int(paths.TASK_COLLECTION.split('_')[-1]) + 1, self.exp_ref)
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         return paths
+
+    @staticmethod
+    def extra_parser():
+        """
+        Parse network arguments.
+
+        Namely adds the remote argument to the parser.
+
+        :return: argparse.parser()
+        """
+        parser = super(NetworkSession, NetworkSession).extra_parser()
+        parser.add_argument(
+            '--remote',
+            dest='remote_rigs',
+            type=str,
+            required=False,
+            action='append',
+            nargs='+',
+            help='specify one of the remote rigs to interact with over the network',
+        )
+        return parser
 
     def run(self):
         """Run session and report exceptions to remote services."""
@@ -1410,6 +1442,7 @@ class NetworkSession(BaseSession):
                 f'Running past or future sessions not currently supported. \n'
                 f'Please check the system date time settings on each rig.'
             )
+        # TODO How to handle folder already existing before running UDP experiment?
 
         # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
         exp_ref = self.one.dict2ref(self.exp_ref)
@@ -1436,9 +1469,12 @@ class NetworkSession(BaseSession):
 
     def cleanup_mixin_network(self):
         """Clean up services."""
+        log.info('Cleaning up network mixin')
         self.remote_rigs.close()
         if self.remote_rigs.is_connected:
             log.warning('Failed to properly clean up network mixin')
+        else:
+            log.info('Cleaned up network mixin')
 
 
 class SpontaneousSession(BaseSession):
