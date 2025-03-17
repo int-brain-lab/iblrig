@@ -47,6 +47,7 @@ from qtpy.QtWidgets import (
 
 from iblqt.core import DataFrameTableModel
 from iblrig import __version__ as iblrig_version
+from iblrig.choiceworld import get_subject_training_info
 from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_jsonable
@@ -95,7 +96,6 @@ class SingleBarChartWidget(PlotWidget):
         self._textItem.setY(50)
         self.addItem(self._textItem)
 
-
     @Slot(float)
     def setValue(self, value: float):
         self._barGraphItem.setOpts(height=value)
@@ -113,7 +113,6 @@ class FunctionWidget(PlotWidget):
             self.plotItem.getAxis(axis).setGrid(128)
             self.plotItem.getAxis(axis).setTextPen('k')
         self.plotItem.getAxis('bottom').setLabel('Signed Contrast')
-        self.plotItem.setXRange(-1, 1, padding=0.05)
         legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
         legend.setParentItem(self.plotItem.graphicsItem())
         legend.setZValue(1)
@@ -244,7 +243,6 @@ class TrialsWidget(QWidget):
 class OnlinePlotsModel(QObject):
     currentTrialChanged = Signal(int)
     titleChanged = Signal(str)
-    subtitleChanged = Signal(str)
     _trial_data = pd.DataFrame()
     _bpod_data = pd.DataFrame()
     trials_table = pd.DataFrame()
@@ -334,13 +332,27 @@ class OnlinePlotsModel(QObject):
             self.ntrials_correct += row.trial_correct
 
         self.setCurrentTrial(self.nTrials() - 1)
-        self.titleChanged.emit(self.getTitle())
+
+    def getSessionString(self) -> str:
+        training_info, _ = get_subject_training_info(
+            subject_name=self.task_settings.get('SUBJECT_NAME'),
+            task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
+            lab=self.task_settings.get('ALYX_LAB'),
+        )
+        return (
+            f'Subject: {self.task_settings.get("SUBJECT_NAME")}  ·  '
+            f'Weight: {self.task_settings.get("SUBJECT_WEIGHT")} g  ·  '
+            f'Training Phase: {training_info.get("training_phase")}  ·  '
+            f'Stimulus Gain: {self.task_settings.get("STIM_GAIN")}  ·  '
+            f'Reward Amount: {self.task_settings.get("REWARD_AMOUNT_UL")} µl'
+        )
 
     @Slot(int)
     def setCurrentTrial(self, value: int) -> None:
         if value != self._currentTrial:
             self._currentTrial = value
             self.currentTrialChanged.emit(value)
+            self.titleChanged.emit(self.getTitle())
 
     def currentTrial(self) -> int:
         return self._currentTrial
@@ -351,11 +363,8 @@ class OnlinePlotsModel(QObject):
     def timeElapsed(self) -> datetime.timedelta:
         if self.nTrials() == 0:
             return datetime.timedelta(seconds=0)
-
-        # we currently calculate the time relative to the end of the first trial
-        # this is owed to the way the camera is set up in the first trial
-        t0 = self._bpod_data[self._bpod_data.Type == 'TrialEnd'].index[0]
-        t1 = self._bpod_data.index[-1]
+        t0 = self._bpod_data[self._bpod_data.Type == 'TrialStart'].index[0]
+        t1 = self._bpod_data[self._bpod_data.Type == 'TrialEnd'].index[self._currentTrial]
         return datetime.timedelta(seconds=(t1 - t0).seconds)
 
     def percentCorrect(self) -> float:
@@ -366,9 +375,8 @@ class OnlinePlotsModel(QObject):
 
     def getTitle(self) -> str:
         protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
-        trials = f'{self.nTrials()} trial{"s" if self.nTrials != 1 else ""}'
         spacer = '  ·  '
-        return f'{protocol}{spacer}{trials}{spacer}time: {self.timeElapsed()}'
+        return f'{protocol}{spacer}Trial {self._currentTrial}{spacer}Elapsed Time: {self.timeElapsed()}'
 
 
 class StimulusDelegate(QStyledItemDelegate):
@@ -695,11 +703,17 @@ class OnlinePlotsView(QMainWindow):
         frame.setStyleSheet('background-color: rgb(255, 255, 255);')
         self.setCentralWidget(frame)
 
-        # we use a grid layout to organize the different widgets
+        # use a grid layout to organize the different widgets
         layout = QGridLayout(frame)
         frame.setLayout(layout)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 2)
+
+        # titles are arranged in a sub-layout to allow changing the background color in unison
+        self.titleFrame = QFrame(self)
+        title_layout = QVBoxLayout(self.titleFrame)
+        self.titleFrame.setLayout(title_layout)
+        layout.addWidget(self.titleFrame, 0, 0, 1, 3)
 
         # main title
         self.title = QLabel(self.model.getTitle(), self)
@@ -709,18 +723,21 @@ class OnlinePlotsView(QMainWindow):
         font.setBold(True)
         self.title.setFont(font)
         self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.title, 0, 0, 1, 3)
+        title_layout.addWidget(self.title)
 
         # sub title
-        self.subtitle = QLabel('This is the sub-title', self)
+        self.subtitle = QLabel(self)
         self.subtitle.setAlignment(Qt.AlignHCenter)
+        font.setPointSize(10)
+        self.subtitle.setFont(font)
         self.subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.subtitle, 1, 0, 1, 3)
+        self.subtitle.setText(self.model.getSessionString())
+        title_layout.addWidget(self.subtitle)
 
         # trial history
         self.trials = TrialsWidget(self, self.model.table_model)
         self.trials.trialSelected.connect(self.model.setCurrentTrial)
-        layout.addWidget(self.trials, 2, 0, 2, 1)
+        layout.addWidget(self.trials, 1, 0, 2, 1)
 
         # psychometric function
         self.psychometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
@@ -728,15 +745,17 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricWidget.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricWidget.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
         self.psychometricWidget.plotItem.setYRange(0, 1, padding=0.05)
-        layout.addWidget(self.psychometricWidget, 2, 1, 1, 1)
+        layout.addWidget(self.psychometricWidget, 1, 1, 1, 1)
 
         # chronometric function
         self.chronometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
         self.chronometricWidget.plotItem.setTitle('Chronometric Function', color='k')
         self.chronometricWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricWidget.plotItem.setLogMode(x=False, y=True)
+        self.chronometricWidget.plotItem.setXLink(self.psychometricWidget.plotItem)
+        self.chronometricWidget.plotItem.setXRange(-1, 1, padding=0.025)
         self.chronometricWidget.plotItem.setYRange(-1, 2, padding=0.05)
-        layout.addWidget(self.chronometricWidget, 3, 1, 1, 1)
+        layout.addWidget(self.chronometricWidget, 2, 1, 1, 1)
 
         # performance chart
         self.performanceWidget = SingleBarChartWidget(parent=self, textFormat='{:0.1f} %')
@@ -745,7 +764,7 @@ class OnlinePlotsView(QMainWindow):
         self.performanceWidget.plotItem.getAxis('left').setLabel('Correct Choices (%)')
         self.performanceWidget.plotItem.setYRange(0, 105, padding=0)
         self.performanceWidget.plotItem.hoverEvent = self.mouseOverBarChart
-        layout.addWidget(self.performanceWidget, 2, 2, 1, 1)
+        layout.addWidget(self.performanceWidget, 1, 2, 1, 1)
 
         # reward chart
         self.rewardWidget = SingleBarChartWidget(parent=self, barColor=(128, 128, 255), textFormat='{:0.1f} μl')
@@ -753,18 +772,20 @@ class OnlinePlotsView(QMainWindow):
         self.rewardWidget.plotItem.getAxis('left').setLabel('Total Reward Volume (μl)')
         self.rewardWidget.plotItem.setYRange(0, 1050, padding=0)
         self.rewardWidget.plotItem.hoverEvent = self.mouseOverBarChart
-        layout.addWidget(self.rewardWidget, 3, 2, 1, 1)
+        layout.addWidget(self.rewardWidget, 2, 2, 1, 1)
 
         # bpod data
         self.bpodWidget = BpodWidget(self, title='Bpod States and Input Channels')
         self.bpodWidget.setMinimumHeight(130)
         self.bpodWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        layout.addWidget(self.bpodWidget, 4, 0, 1, 3)
+        layout.addWidget(self.bpodWidget, 3, 0, 1, 3)
 
+        # connect signals / slots
         self.model.currentTrialChanged.connect(self.updatePlots)
         self.model.titleChanged.connect(self.setTitle)
         self.updatePlots(self.model.nTrials() - 1)
 
+        # manage settings
         self.settings = QSettings()
         self.move(self.settings.value('pos', self.pos(), QPoint))
         self.resize(self.settings.value('size', self.size(), QSize))
@@ -775,7 +796,12 @@ class OnlinePlotsView(QMainWindow):
 
     @Slot(str)
     def setTitleBackground(self, color: str):
-        self.title.setStyleSheet(f'QLabel {{ background-color: {color}; }}')
+        """Set the background color of the title area to a gradient of the specified color."""
+        self.titleFrame.setStyleSheet(
+            f'QFrame {{ background-color: qlineargradient(x1: 0, x2: 1, '
+            f'stop: 0 {color}, stop: 0.2 transparent, stop: 0.8 transparent, stop: 1 {color}); }}\n'
+            f'QLabel {{ background-color: transparent; }}'
+        )
 
     def mouseOverBarChart(self, event):
         statusbar = self.window().statusBar()
