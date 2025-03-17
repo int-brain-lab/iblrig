@@ -26,6 +26,7 @@ from qtpy.QtCore import (
     QSettings,
     QSize,
     Qt,
+    QThreadPool,
     Signal,
     Slot,
 )
@@ -50,6 +51,7 @@ from iblqt.core import DataFrameTableModel
 from iblrig import __version__ as iblrig_version
 from iblrig.choiceworld import get_subject_training_info
 from iblrig.gui import resources_rc  # noqa: F401
+from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
 
@@ -559,12 +561,14 @@ class BpodWidget(pg.GraphicsLayoutWidget):
 class OnlinePlotsModel(QObject):
     currentTrialChanged = Signal(int)
     titleChanged = Signal(str)
+    sessionStringAvailable = Signal(str)
     _trial_data = pd.DataFrame()
     _bpod_data: list[pd.DataFrame] = list()
     trials_table = pd.DataFrame()
     table_model = TrialsTableModel()
     _jsonableOffset = 0
     _currentTrial = 0
+    sessionString = ''
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
@@ -596,6 +600,10 @@ class OnlinePlotsModel(QObject):
         self.psychometrics['count'] = 0
         self.reward_amount = 0
         self.ntrials_correct = 0
+
+        # get session string in separate thread
+        session_string_worker = Worker(self.getSessionString)
+        QThreadPool.globalInstance().start(session_string_worker)
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
@@ -651,19 +659,20 @@ class OnlinePlotsModel(QObject):
 
         self.setCurrentTrial(self.nTrials() - 1)
 
-    def getSessionString(self) -> str:
+    def getSessionString(self) -> None:
         training_info, _ = get_subject_training_info(
             subject_name=self.task_settings.get('SUBJECT_NAME'),
             task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
             lab=self.task_settings.get('ALYX_LAB'),
         )
-        return (
+        self.sessionString = (
             f'Subject: {self.task_settings.get("SUBJECT_NAME")}  ·  '
             f'Weight: {self.task_settings.get("SUBJECT_WEIGHT")} g  ·  '
             f'Training Phase: {training_info.get("training_phase")}  ·  '
             f'Stimulus Gain: {self.task_settings.get("STIM_GAIN")}  ·  '
             f'Reward Amount: {self.task_settings.get("REWARD_AMOUNT_UL")} µl'
         )
+        self.sessionStringAvailable.emit(self.sessionString)
 
     @Slot(int)
     def setCurrentTrial(self, value: int) -> None:
@@ -741,11 +750,12 @@ class OnlinePlotsView(QMainWindow):
 
         # sub title
         self.subtitle = QLabel(self)
+        self.model.sessionStringAvailable.connect(self.subtitle.setText)
+        self.subtitle.setText(self.model.sessionString)
         self.subtitle.setAlignment(Qt.AlignHCenter)
         font.setPointSize(10)
         self.subtitle.setFont(font)
         self.subtitle.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.subtitle.setText(self.model.getSessionString())
         title_layout.addWidget(self.subtitle)
 
         # trial history
