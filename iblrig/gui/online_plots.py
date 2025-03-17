@@ -667,12 +667,14 @@ class OnlinePlotsModel(QObject):
             task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
             lab=self.task_settings.get('ALYX_LAB'),
         )
+        use_adaptive_reward = self.task_settings.get('ADAPTIVE_REWARD', False)
+        reward_amount = training_info['adaptive_reward'] if use_adaptive_reward else self.task_settings.get('REWARD_AMOUNT_UL')
         self.sessionString = (
             f'Subject: {self.task_settings.get("SUBJECT_NAME")}  ·  '
             f'Weight: {self.task_settings.get("SUBJECT_WEIGHT")} g  ·  '
-            f'Training Phase: {training_info.get("training_phase")}  ·  '
+            f'Training Phase: {training_info["training_phase"]}  ·  '
             f'Stimulus Gain: {self.task_settings.get("STIM_GAIN")}  ·  '
-            f'Reward Amount: {self.task_settings.get("REWARD_AMOUNT_UL")} µl'
+            f'{"Adaptive " if use_adaptive_reward else ""}Reward Amount: {reward_amount} µl'
         )
         self.sessionStringAvailable.emit(self.sessionString)
 
