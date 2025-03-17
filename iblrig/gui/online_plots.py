@@ -215,16 +215,6 @@ class TrialsTableView(QTableView):
             painter.drawLine(line_x, 0, line_x, self.height())
         super().paintEvent(event)
 
-    def wheelEvent(self, event):
-        current_idx = self.currentIndex()
-        current_row = current_idx.row()
-        if event.angleDelta().y() > 0:
-            new_row = max(current_row - 1, 0)
-        else:
-            new_row = min(current_row + 1, self.model().rowCount() - 1)
-        self.setCurrentIndex(self.model().index(new_row, current_idx.column()))
-        super().wheelEvent(event)
-
 
 class TrialsWidget(QWidget):
     trialSelected = Signal(int)
@@ -769,6 +759,7 @@ class OnlinePlotsView(QMainWindow):
         self.psychometricWidget.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricWidget.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
         self.psychometricWidget.plotItem.setYRange(0, 1, padding=0.05)
+        self.psychometricWidget.plotItem.hoverEvent = self.mouseOverFunction
         layout.addWidget(self.psychometricWidget, 1, 1, 1, 1)
 
         # chronometric function
@@ -779,6 +770,7 @@ class OnlinePlotsView(QMainWindow):
         self.chronometricWidget.plotItem.setXLink(self.psychometricWidget.plotItem)
         self.chronometricWidget.plotItem.setXRange(-1, 1, padding=0.025)
         self.chronometricWidget.plotItem.setYRange(-1, 2, padding=0.05)
+        self.chronometricWidget.plotItem.hoverEvent = self.mouseOverFunction
         layout.addWidget(self.chronometricWidget, 2, 1, 1, 1)
 
         # performance chart
@@ -837,6 +829,16 @@ class OnlinePlotsView(QMainWindow):
             else:
                 statusbar.showMessage(f'Total reward volume: {self.model.reward_amount:0.1f} μl')
 
+    def mouseOverFunction(self, event):
+        statusbar = self.window().statusBar()
+        if event.exit:
+            statusbar.clearMessage()
+        elif event.currentItem.vb.sceneBoundingRect().contains(event.scenePos()):
+            if event.currentItem == self.psychometricWidget.plotItem:
+                statusbar.showMessage('Psychometric Function, shaded areas represent Standard Error of the Mean')
+            else:
+                statusbar.showMessage('Chronometric Function, shaded areas represent Standard Error of the Mean')
+
     @Slot(int)
     def updatePlots(self, trial: int):
         self.bpodWidget.setData(self.model.bpod_data(trial))
@@ -844,13 +846,18 @@ class OnlinePlotsView(QMainWindow):
         self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
         for p in self.model.probability_set:
             data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
-            x = data.index.to_numpy()
-            for metric, widget in {'choice': self.psychometricWidget, 'response_time': self.chronometricWidget}.items():
-                y = data[metric].to_numpy()
-                e = data[metric + '_std'].to_numpy()
-                widget.upperCurves[p].setData(x=x, y=y + e)
-                widget.lowerCurves[p].setData(x=x, y=y - e)
-                widget.plotDataItems[p].setData(x=x, y=y)
+            x = data.index
+            y = data.choice
+            sqrt_n = np.sqrt(data['count'])
+            e = data.choice_std / sqrt_n
+            self.psychometricWidget.upperCurves[p].setData(x=x, y=y + e)
+            self.psychometricWidget.lowerCurves[p].setData(x=x, y=y - e)
+            self.psychometricWidget.plotDataItems[p].setData(x=x, y=y)
+            y = data.response_time
+            e = data.response_time_std / sqrt_n
+            self.chronometricWidget.upperCurves[p].setData(x=x, y=y + e)
+            self.chronometricWidget.lowerCurves[p].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
+            self.chronometricWidget.plotDataItems[p].setData(x=x, y=y)
         self.performanceWidget.setValue(self.model.percentCorrect())
         self.rewardWidget.setValue(self.model.reward_amount)
         self.update()
