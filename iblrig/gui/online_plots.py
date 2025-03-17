@@ -635,6 +635,10 @@ class OnlinePlotsModel(QObject):
 
         # update psychometrics using online statistics method
         for _, row in trial_data.iterrows():
+            self.reward_amount += row.reward_amount
+            self.ntrials_correct += row.trial_correct
+            if row.response_side == 0:
+                continue  # do not count no-go trials
             signed_contrast = np.sign(row.position) * row.contrast
             choice = row.position > 0 if row.trial_correct else row.position < 0
             indexer = (row.stim_probability_left, signed_contrast)
@@ -654,8 +658,6 @@ class OnlinePlotsModel(QObject):
                 old_mean=self.psychometrics.loc[indexer, 'choice'],
                 old_std=self.psychometrics.loc[indexer, 'choice_std'],
             )
-            self.reward_amount += row.reward_amount
-            self.ntrials_correct += row.trial_correct
 
         self.setCurrentTrial(self.nTrials() - 1)
 
