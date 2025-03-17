@@ -93,6 +93,15 @@ Camera Issues
    *  If you use a USB 3.1 Host Controller Card check if it requires additional powering through a SATA or Molex cable.
       FLIR offers `a few models <https://www.flir.com/products/usb-3.1-host-controller-card>`_ that should work fine.
 
+*  If the BONSAI panels for the video live view do not show up there might be an issue with the
+   `BONSAI layout settings <https://bonsai-rx.org/docs/articles/editor.html#visualizer-layout-settings>`_.
+   To reset these layout settings, run the following in PowerShell:
+
+   .. code::
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      remove_bonsai_layouts
+
 
 Frame2TTL
 =========

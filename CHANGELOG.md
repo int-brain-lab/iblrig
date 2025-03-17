@@ -1,6 +1,22 @@
 Changelog
 =========
 
+8.28.0
+------
+* added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+
+8.27.4
+------
+* fixed: passive choice world did not play noise stimulus
+* changed: update to ONE-api>=3.0.0 and ibllib>=3.3.0
+
+8.27.3
+------
+* changed: reset camera(s) prior to starting task when inconsistencies have been detected
+* changed: include stock subjects if user is stock manager
+* changed: skip validation of Ambient Module if device_bpod.USE_AMBIENT_MODULE is false
+* added: `remove_bonsai_layouts` command for troubleshooting BONSAI GUIs not appearing 
+
 8.27.2
 ------
 * fixed: error when using task arguments of type bool

@@ -254,10 +254,13 @@ class RigWizardModel:
                 )
             QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 
-        # get subjects from Alyx: this is the set of subjects that are alive and not stock in the lab defined in settings
-        rest_subjects = self.alyx.rest(
-            'subjects', 'list', alive=True, stock=False, lab=self.iblrig_settings['ALYX_LAB'], no_cache=True
-        )
+        # get subjects from Alyx: this is the set of subjects that are alive and in the lab defined in settings
+        # stock subjects are excluded, unless the user is stock manager
+        kwargs = {'alive': True, 'lab': self.iblrig_settings['ALYX_LAB'], 'no_cache': True}
+        is_stock_manager = any(self.alyx.rest('subjects', 'list', responsible_user=self.user, stock=True, limit=1, **kwargs))
+        if not is_stock_manager:
+            kwargs['stock'] = False
+        rest_subjects = self.alyx.rest('subjects', 'list', **kwargs)
         self.all_subjects.remove(self.test_subject_name)
         self.all_subjects = [self.test_subject_name] + sorted(set(self.all_subjects + [s['nickname'] for s in rest_subjects]))
 

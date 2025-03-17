@@ -62,7 +62,7 @@ Below shows how to start the cameras for the subject 'example' with configuratio
 
    cd C:\iblrigv8\
    venv\scripts\Activate.ps1
-   start_video_session example default
+   start_video_session --subject_name example --profile default
 
 Copy command
 ------------
