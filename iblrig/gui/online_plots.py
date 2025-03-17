@@ -856,15 +856,15 @@ class OnlinePlotsView(QMainWindow):
         self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
         for p in self.model.probability_set:
             data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
-            x = data.index
-            y = data.choice
-            sqrt_n = np.sqrt(data['count'])
-            e = data.choice_std / sqrt_n
+            x = data.index.to_numpy()
+            y = data.choice.to_numpy()
+            sqrt_n = np.sqrt(data['count'].to_numpy())
+            e = data.choice_std.to_numpy() / sqrt_n
             self.psychometricWidget.upperCurves[p].setData(x=x, y=y + e)
             self.psychometricWidget.lowerCurves[p].setData(x=x, y=y - e)
             self.psychometricWidget.plotDataItems[p].setData(x=x, y=y)
-            y = data.response_time
-            e = data.response_time_std / sqrt_n
+            y = data.response_time.to_numpy()
+            e = data.response_time_std.to_numpy() / sqrt_n
             self.chronometricWidget.upperCurves[p].setData(x=x, y=y + e)
             self.chronometricWidget.lowerCurves[p].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
             self.chronometricWidget.plotDataItems[p].setData(x=x, y=y)
