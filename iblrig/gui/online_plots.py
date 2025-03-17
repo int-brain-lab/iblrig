@@ -5,6 +5,7 @@ import os
 import sys
 import time
 from collections.abc import Iterable
+from copy import copy
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +51,7 @@ from iblrig import __version__ as iblrig_version
 from iblrig.choiceworld import get_subject_training_info
 from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.misc import online_std
-from iblrig.raw_data_loaders import bpod_session_data_to_dataframe, load_task_jsonable
+from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
 
 
 class PlotWidget(pg.PlotWidget):
@@ -117,16 +118,26 @@ class FunctionWidget(PlotWidget):
         legend.setParentItem(self.plotItem.graphicsItem())
         legend.setZValue(1)
         self.plotDataItems = dict()
-        for idx, probability in enumerate(probabilities):
-            self.plotDataItems[probability] = self.plotItem.plot(connect='all')
-            color = colors.getByIndex(idx)
-            self.plotDataItems[probability].setData(x=[1, np.NAN], y=[np.NAN, 1])
-            self.plotDataItems[probability].setPen(pg.mkPen(color=color, width=2))
-            self.plotDataItems[probability].setSymbol('o')
-            self.plotDataItems[probability].setSymbolPen(color)
-            self.plotDataItems[probability].setSymbolBrush(color)
-            self.plotDataItems[probability].setSymbolSize(5)
-            legend.addItem(self.plotDataItems[probability], f'p = {probability:0.1f}')
+        self.upperCurves = dict()
+        self.lowerCurves = dict()
+        self.fillItems = dict()
+        null_pen = pg.mkPen((0, 0, 0, 0))
+        for idx, p in enumerate(probabilities):
+            line_color = colors.getByIndex(idx)
+            fill_color = copy(line_color)
+            fill_color.setAlpha(32)
+            self.upperCurves[p] = self.plotItem.plot(pen=null_pen)
+            self.lowerCurves[p] = self.plotItem.plot(pen=null_pen)
+            self.fillItems[p] = pg.FillBetweenItem(self.upperCurves[p], self.lowerCurves[p], brush=fill_color, pen=null_pen)
+            self.addItem(self.fillItems[p])
+            self.plotDataItems[p] = self.plotItem.plot(connect='all')
+            self.plotDataItems[p].setData(x=[1, np.NAN], y=[np.NAN, 1])
+            self.plotDataItems[p].setPen(pg.mkPen(color=line_color, width=2))
+            self.plotDataItems[p].setSymbol('o')
+            self.plotDataItems[p].setSymbolPen(line_color)
+            self.plotDataItems[p].setSymbolBrush(line_color)
+            self.plotDataItems[p].setSymbolSize(5)
+            legend.addItem(self.plotDataItems[p], f'p = {p:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -238,145 +249,6 @@ class TrialsWidget(QWidget):
     @Slot(QItemSelection, QItemSelection)
     def _onSelectionChange(self, selected: QItemSelection, _deselected: QItemSelection):
         self.trialSelected.emit(selected.indexes()[0].row())
-
-
-class OnlinePlotsModel(QObject):
-    currentTrialChanged = Signal(int)
-    titleChanged = Signal(str)
-    _trial_data = pd.DataFrame()
-    _bpod_data = pd.DataFrame()
-    trials_table = pd.DataFrame()
-    table_model = TrialsTableModel()
-    _jsonableOffset = 0
-    _currentTrial = 0
-
-    @validate_call(config=dict(arbitrary_types_allowed=True))
-    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
-        super().__init__(parent=parent)
-        self.raw_data_folder = raw_data_folder
-        self.jsonable_file = raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
-        self.settings_file = raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
-
-        if not raw_data_folder.exists():
-            raise FileNotFoundError(raw_data_folder)
-        if live:
-            print('Waiting for data ...')
-            while not self.jsonable_file.exists() or not self.settings_file.exists():
-                time.sleep(0.2)
-        if not self.jsonable_file.exists():
-            raise FileNotFoundError(self.jsonable_file)
-        if not self.settings_file.exists():
-            raise FileNotFoundError(self.settings_file)
-
-        with self.settings_file.open('r') as f:
-            self.task_settings = json.load(f)
-        self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
-        self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
-        self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
-        self.psychometrics = pd.DataFrame(
-            columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-            index=pd.MultiIndex.from_product([self.probability_set, self.signed_contrasts]),
-        )
-        self.psychometrics['count'] = 0
-        self.reward_amount = 0
-        self.ntrials_correct = 0
-
-        # read the jsonable file and instantiate a QFileSystemWatcher
-        self.readJsonable(self.jsonable_file)
-        self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
-        self.jsonableWatcher.fileChanged.connect(self.readJsonable)
-
-    @Slot(str)
-    def readJsonable(self, _: str) -> None:
-        if not self.jsonable_file.exists():
-            return
-        trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonableOffset)
-        self._jsonableOffset = self.jsonable_file.stat().st_size
-        self._trial_data = pd.concat([self._trial_data, trial_data])
-        self._bpod_data = bpod_session_data_to_dataframe(bpod_data=bpod_data, existing_data=self._bpod_data)
-
-        # update data for trial history table
-        table = self._trial_data[['trial_num', 'position', 'contrast']].copy()
-        table.columns = ['Trial', 'Stimulus', 'Contrast']
-        table['Debias'] = self._trial_data.get('debias_trial', False)
-        table['Outcome'] = self._trial_data.apply(
-            lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
-        )
-        table['Response Time / s'] = self._trial_data.apply(
-            lambda row: np.NAN if row['response_side'] == 0 else row['response_time'], axis=1
-        )
-        self.table_model.setDataFrame(table)
-
-        # update psychometrics using online statistics method
-        for _, row in trial_data.iterrows():
-            signed_contrast = np.sign(row.position) * row.contrast
-            choice = row.position > 0 if row.trial_correct else row.position < 0
-            indexer = (row.stim_probability_left, signed_contrast)
-            if indexer not in self.psychometrics.index:
-                self.psychometrics.loc[indexer, :] = np.nan
-                self.psychometrics.loc[indexer, 'count'] = 0
-            self.psychometrics.loc[indexer, 'count'] += 1
-            self.psychometrics.loc[indexer, 'response_time'], self.psychometrics.loc[indexer, 'response_time_std'] = online_std(
-                new_sample=row.response_time,
-                new_count=self.psychometrics.loc[indexer, 'count'],
-                old_mean=self.psychometrics.loc[indexer, 'response_time'],
-                old_std=self.psychometrics.loc[indexer, 'response_time_std'],
-            )
-            self.psychometrics.loc[indexer, 'choice'], self.psychometrics.loc[indexer, 'choice_std'] = online_std(
-                new_sample=float(choice),
-                new_count=self.psychometrics.loc[indexer, 'count'],
-                old_mean=self.psychometrics.loc[indexer, 'choice'],
-                old_std=self.psychometrics.loc[indexer, 'choice_std'],
-            )
-            self.reward_amount += row.reward_amount
-            self.ntrials_correct += row.trial_correct
-
-        self.setCurrentTrial(self.nTrials() - 1)
-
-    def getSessionString(self) -> str:
-        training_info, _ = get_subject_training_info(
-            subject_name=self.task_settings.get('SUBJECT_NAME'),
-            task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
-            lab=self.task_settings.get('ALYX_LAB'),
-        )
-        return (
-            f'Subject: {self.task_settings.get("SUBJECT_NAME")}  ·  '
-            f'Weight: {self.task_settings.get("SUBJECT_WEIGHT")} g  ·  '
-            f'Training Phase: {training_info.get("training_phase")}  ·  '
-            f'Stimulus Gain: {self.task_settings.get("STIM_GAIN")}  ·  '
-            f'Reward Amount: {self.task_settings.get("REWARD_AMOUNT_UL")} µl'
-        )
-
-    @Slot(int)
-    def setCurrentTrial(self, value: int) -> None:
-        if value != self._currentTrial:
-            self._currentTrial = value
-            self.currentTrialChanged.emit(value)
-            self.titleChanged.emit(self.getTitle())
-
-    def currentTrial(self) -> int:
-        return self._currentTrial
-
-    def nTrials(self) -> int:
-        return len(self._trial_data)
-
-    def timeElapsed(self) -> datetime.timedelta:
-        if self.nTrials() == 0:
-            return datetime.timedelta(seconds=0)
-        t0 = self._bpod_data[self._bpod_data.Type == 'TrialStart'].index[0]
-        t1 = self._bpod_data[self._bpod_data.Type == 'TrialEnd'].index[self._currentTrial]
-        return datetime.timedelta(seconds=(t1 - t0).seconds)
-
-    def percentCorrect(self) -> float:
-        return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
-
-    def bpod_data(self, trial: int) -> pd.DataFrame:
-        return self._bpod_data[self._bpod_data.Trial == trial]
-
-    def getTitle(self) -> str:
-        protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
-        spacer = '  ·  '
-        return f'{protocol}{spacer}Trial {self._currentTrial}{spacer}Elapsed Time: {self.timeElapsed()}'
 
 
 class StimulusDelegate(QStyledItemDelegate):
@@ -684,6 +556,148 @@ class BpodWidget(pg.GraphicsLayoutWidget):
                 view_box.setXRange(x_range[0], x_range[1], padding=0)
 
 
+class OnlinePlotsModel(QObject):
+    currentTrialChanged = Signal(int)
+    titleChanged = Signal(str)
+    _trial_data = pd.DataFrame()
+    _bpod_data: list[pd.DataFrame] = list()
+    trials_table = pd.DataFrame()
+    table_model = TrialsTableModel()
+    _jsonableOffset = 0
+    _currentTrial = 0
+
+    @validate_call(config=dict(arbitrary_types_allowed=True))
+    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
+        super().__init__(parent=parent)
+        self.raw_data_folder = raw_data_folder
+        self.jsonable_file = raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
+        self.settings_file = raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
+
+        if not raw_data_folder.exists():
+            raise FileNotFoundError(raw_data_folder)
+        if live:
+            print('Waiting for data ...')
+            while not self.jsonable_file.exists() or not self.settings_file.exists():
+                time.sleep(0.2)
+        if not self.jsonable_file.exists():
+            raise FileNotFoundError(self.jsonable_file)
+        if not self.settings_file.exists():
+            raise FileNotFoundError(self.settings_file)
+
+        with self.settings_file.open('r') as f:
+            self.task_settings = json.load(f)
+        self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
+        self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
+        self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
+        self.psychometrics = pd.DataFrame(
+            columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
+            index=pd.MultiIndex.from_product([self.probability_set, self.signed_contrasts]),
+        )
+        self.psychometrics['count'] = 0
+        self.reward_amount = 0
+        self.ntrials_correct = 0
+
+        # read the jsonable file and instantiate a QFileSystemWatcher
+        self.readJsonable(self.jsonable_file)
+        self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
+        self.jsonableWatcher.fileChanged.connect(self.readJsonable)
+
+    @Slot(str)
+    def readJsonable(self, _: str) -> None:
+        if not self.jsonable_file.exists():
+            return
+
+        # load jsonable data / convert bpod data to list of dataframes
+        trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonableOffset)
+        self._jsonableOffset = self.jsonable_file.stat().st_size
+        self._trial_data = pd.concat([self._trial_data, trial_data])
+        self._bpod_data = bpod_trial_data_to_dataframes(bpod_data, self._bpod_data)
+
+        # update data for trial history table
+        table = self._trial_data[['trial_num', 'position', 'contrast']].copy()
+        table.columns = ['Trial', 'Stimulus', 'Contrast']
+        table['Debias'] = self._trial_data.get('debias_trial', False)
+        table['Outcome'] = self._trial_data.apply(
+            lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
+        )
+        table['Response Time / s'] = self._trial_data.apply(
+            lambda row: np.NAN if row['response_side'] == 0 else row['response_time'], axis=1
+        )
+        self.table_model.setDataFrame(table)
+
+        # update psychometrics using online statistics method
+        for _, row in trial_data.iterrows():
+            signed_contrast = np.sign(row.position) * row.contrast
+            choice = row.position > 0 if row.trial_correct else row.position < 0
+            indexer = (row.stim_probability_left, signed_contrast)
+            if indexer not in self.psychometrics.index:
+                self.psychometrics.loc[indexer, :] = np.nan
+                self.psychometrics.loc[indexer, 'count'] = 0
+            self.psychometrics.loc[indexer, 'count'] += 1
+            self.psychometrics.loc[indexer, 'response_time'], self.psychometrics.loc[indexer, 'response_time_std'] = online_std(
+                new_sample=row.response_time,
+                new_count=self.psychometrics.loc[indexer, 'count'],
+                old_mean=self.psychometrics.loc[indexer, 'response_time'],
+                old_std=self.psychometrics.loc[indexer, 'response_time_std'],
+            )
+            self.psychometrics.loc[indexer, 'choice'], self.psychometrics.loc[indexer, 'choice_std'] = online_std(
+                new_sample=float(choice),
+                new_count=self.psychometrics.loc[indexer, 'count'],
+                old_mean=self.psychometrics.loc[indexer, 'choice'],
+                old_std=self.psychometrics.loc[indexer, 'choice_std'],
+            )
+            self.reward_amount += row.reward_amount
+            self.ntrials_correct += row.trial_correct
+
+        self.setCurrentTrial(self.nTrials() - 1)
+
+    def getSessionString(self) -> str:
+        training_info, _ = get_subject_training_info(
+            subject_name=self.task_settings.get('SUBJECT_NAME'),
+            task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
+            lab=self.task_settings.get('ALYX_LAB'),
+        )
+        return (
+            f'Subject: {self.task_settings.get("SUBJECT_NAME")}  ·  '
+            f'Weight: {self.task_settings.get("SUBJECT_WEIGHT")} g  ·  '
+            f'Training Phase: {training_info.get("training_phase")}  ·  '
+            f'Stimulus Gain: {self.task_settings.get("STIM_GAIN")}  ·  '
+            f'Reward Amount: {self.task_settings.get("REWARD_AMOUNT_UL")} µl'
+        )
+
+    @Slot(int)
+    def setCurrentTrial(self, value: int) -> None:
+        if value != self._currentTrial:
+            self._currentTrial = value
+            self.currentTrialChanged.emit(value)
+            self.titleChanged.emit(self.getTitle())
+
+    def currentTrial(self) -> int:
+        return self._currentTrial
+
+    def nTrials(self) -> int:
+        return len(self._trial_data)
+
+    def timeElapsed(self) -> datetime.timedelta:
+        if self.nTrials() == 0:
+            return datetime.timedelta(seconds=0)
+        i = self._currentTrial
+        t0 = self._bpod_data[0][self._bpod_data[0].Type == 'TrialStart'].index[0]
+        t1 = self._bpod_data[i][self._bpod_data[i].Type == 'TrialEnd'].index[-1]
+        return datetime.timedelta(seconds=(t1 - t0).seconds)
+
+    def percentCorrect(self) -> float:
+        return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
+
+    def bpod_data(self, trial: int) -> pd.DataFrame:
+        return self._bpod_data[trial]
+
+    def getTitle(self) -> str:
+        protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
+        spacer = '  ·  '
+        return f'{protocol}{spacer}Trial {self._currentTrial}{spacer}Elapsed Time: {self.timeElapsed()}'
+
+
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
@@ -781,8 +795,8 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.bpodWidget, 3, 0, 1, 3)
 
         # connect signals / slots
-        self.model.currentTrialChanged.connect(self.updatePlots)
         self.model.titleChanged.connect(self.setTitle)
+        self.model.currentTrialChanged.connect(self.updatePlots)
         self.updatePlots(self.model.nTrials() - 1)
 
         # manage settings
@@ -819,11 +833,14 @@ class OnlinePlotsView(QMainWindow):
         self.trials.table_view.setCurrentIndex(self.model.table_model.index(trial, 0))
         self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
         for p in self.model.probability_set:
-            idx = (p, self.model.signed_contrasts)
-            self.psychometricWidget.plotDataItems[p].setData(x=idx[1], y=self.model.psychometrics.loc[idx, 'choice'].to_list())
-            self.chronometricWidget.plotDataItems[p].setData(
-                x=idx[1], y=self.model.psychometrics.loc[idx, 'response_time'].to_list()
-            )
+            data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
+            x = data.index.to_numpy()
+            for metric, widget in {'choice': self.psychometricWidget, 'response_time': self.chronometricWidget}.items():
+                y = data[metric].to_numpy()
+                e = data[metric + '_std'].to_numpy()
+                widget.upperCurves[p].setData(x=x, y=y + e)
+                widget.lowerCurves[p].setData(x=x, y=y - e)
+                widget.plotDataItems[p].setData(x=x, y=y)
         self.performanceWidget.setValue(self.model.percentCorrect())
         self.rewardWidget.setValue(self.model.reward_amount)
         self.update()
