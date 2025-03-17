@@ -215,6 +215,16 @@ class TrialsTableView(QTableView):
             painter.drawLine(line_x, 0, line_x, self.height())
         super().paintEvent(event)
 
+    def wheelEvent(self, event):
+        current_idx = self.currentIndex()
+        current_row = current_idx.row()
+        if event.angleDelta().y() > 0:
+            new_row = max(current_row - 1, 0)
+        else:
+            new_row = min(current_row + 1, self.model().rowCount() - 1)
+        self.setCurrentIndex(self.model().index(new_row, current_idx.column()))
+        super().wheelEvent(event)
+
 
 class TrialsWidget(QWidget):
     trialSelected = Signal(int)
