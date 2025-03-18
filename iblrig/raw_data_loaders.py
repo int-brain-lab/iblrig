@@ -12,16 +12,16 @@ log = logging.getLogger(__name__)
 RE_PATTERN_EVENT = re.compile(r'^(\D+\d)_?(.+)$')
 
 
-def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> tuple[pd.DataFrame, list[Any]]:
+def load_task_jsonable(jsonable_file: str | Path, offset: int = 0) -> tuple[pd.DataFrame, list[Any]]:
     """
     Reads in a task data jsonable file and returns a trials dataframe and a bpod data list.
 
     Parameters
     ----------
-    jsonable_file : str
+    jsonable_file : str or Path
         full path to jsonable file.
-    offset : int or None
-        The offset to start reading from (default: None).
+    offset : int, optional
+        The offset to start reading from. Defaults to 0.
 
     Returns
     -------
@@ -31,18 +31,14 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> 
         - trials_table (pandas.DataFrame): A DataFrame with the trial info in the same format as the Session trials table.
         - bpod_data (list): timing data for each trial
     """
-    trials_table = []
     with open(jsonable_file) as f:
-        if offset is not None:
-            f.seek(offset, 0)
-        for line in f:
-            trials_table.append(json.loads(line))
+        f.seek(offset, 0)
+        trials_table = [json.loads(line) for line in f]
 
-    # pop-out bpod data
+    # pop out bpod data
     bpod_data = [td.pop('behavior_data') for td in trials_table]
 
-    trials_table = pd.DataFrame(trials_table)
-    return trials_table, bpod_data
+    return pd.DataFrame(trials_table), bpod_data
 
 
 def bpod_session_data_to_dataframe(bpod_data: list[dict[str, Any]], existing_data: pd.DataFrame | None = None) -> pd.DataFrame:
