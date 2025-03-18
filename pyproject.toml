@@ -22,11 +22,11 @@ dependencies = [
     #
     # IBL packages
     "iblatlas>=0.5.6",
-    "ibllib>=3.2.0",
+    "ibllib>=3.3.0",
     "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
     "iblutil>=1.14.0",
     "iblqt>=0.4.2",
-    "ONE-api>=2.11.2",
+    "ONE-api>=3.0.0",
     "tycmd-wrapper>=0.2.1",
     #
     # Everything else

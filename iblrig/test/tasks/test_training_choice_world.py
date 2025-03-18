@@ -145,22 +145,18 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         np.testing.assert_equal(task.trials_table['training_phase'].value_counts().sort_index().values, [181, 475, 144])
 
     def test_acquisition_description(self):
-        task = TrainingChoiceWorldSession(**self.task_kwargs)
-        ad = task.experiment_description
-        ed = {
+        """Test that the acquisition description of the task matches the expected structure and values."""
+        actual_dict = self.task.experiment_description
+        expected_dict = {
             'sync': {'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}},
             'devices': {
                 'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}},
                 'microphone': {'microphone': {'collection': 'raw_task_data_00', 'sync_label': 'audio'}},
             },
-            'tasks': [
-                {
-                    '_iblrig_tasks_trainingChoiceWorld': {
-                        'collection': 'raw_task_data_00',
-                        # 'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus'],
-                    }
-                }
-            ],
+            'tasks': [{'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00'}}],
         }
-        for key, ed_value in ed.items():
-            assert ad[key] == ed_value, f'Failed on {key}'
+        for key, expected_value in expected_dict.items():
+            assert key in actual_dict, f'Acquisition description does not match expected structure. No such key: `{key}`.'
+            assert actual_dict[key] == expected_value, (
+                f'Acquisition description does not match expected structure. Failed on key `{key}`.'
+            )
