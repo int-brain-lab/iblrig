@@ -6,6 +6,7 @@ import sys
 import time
 from collections.abc import Iterable
 from copy import copy
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +55,20 @@ from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
+
+
+@dataclass
+class Colors:
+    RED = '#eb5757'
+    GREEN = '#57eb8b'
+    YELLOW = '#ede34e'
+    TRANSPARENT = 'transparent'
+
+
+@dataclass
+class EngagedCriterion:
+    SECONDS = 20 #45 * 60
+    TRIAL_COUNT = 20 #400
 
 
 class PlotWidget(pg.PlotWidget):
@@ -561,14 +576,14 @@ class BpodWidget(pg.GraphicsLayoutWidget):
 class OnlinePlotsModel(QObject):
     currentTrialChanged = Signal(int)
     titleChanged = Signal(str)
+    titleColorChanged = Signal(str)
     sessionStringAvailable = Signal(str)
+    tableModel = TrialsTableModel()
+    sessionString = ''
     _trial_data = pd.DataFrame()
     _bpod_data: list[pd.DataFrame] = list()
-    trials_table = pd.DataFrame()
-    table_model = TrialsTableModel()
-    _jsonableOffset = 0
-    _currentTrial = 0
-    sessionString = ''
+    _jsonable_offset = 0
+    _current_trial = 0
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
@@ -599,7 +614,11 @@ class OnlinePlotsModel(QObject):
         )
         self.psychometrics['count'] = 0
         self.reward_amount = 0
-        self.ntrials_correct = 0
+        self._n_trials = 0
+        self._n_trials_correct = 0
+        self._n_trials_engaged = 0
+        self._seconds_elapsed = 0
+        self.titleColor = ''
 
         # get session string in separate thread
         session_string_worker = Worker(self.getSessionString)
@@ -616,10 +635,11 @@ class OnlinePlotsModel(QObject):
             return
 
         # load jsonable data / convert bpod data to list of dataframes
-        trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonableOffset)
-        self._jsonableOffset = self.jsonable_file.stat().st_size
+        trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonable_offset)
+        self._jsonable_offset = self.jsonable_file.stat().st_size
         self._trial_data = pd.concat([self._trial_data, trial_data])
         self._bpod_data = bpod_trial_data_to_dataframes(bpod_data, self._bpod_data)
+        self._n_trials = len(self._trial_data)
 
         # update data for trial history table
         table = self._trial_data[['trial_num', 'position', 'contrast']].copy()
@@ -631,12 +651,16 @@ class OnlinePlotsModel(QObject):
         table['Response Time / s'] = self._trial_data.apply(
             lambda row: np.NAN if row['response_side'] == 0 else row['response_time'], axis=1
         )
-        self.table_model.setDataFrame(table)
+        self.tableModel.setDataFrame(table)
 
         # update psychometrics using online statistics method
-        for _, row in trial_data.iterrows():
+        t0 = self._bpod_data[0].index[0]
+        for trial, row in trial_data.iterrows():
+            self._seconds_elapsed = (self._bpod_data[trial].index[-1] - t0).total_seconds()
+            if self._seconds_elapsed <= EngagedCriterion.SECONDS:
+                self._n_trials_engaged += 1
+            self._n_trials_correct += row.trial_correct
             self.reward_amount += row.reward_amount
-            self.ntrials_correct += row.trial_correct
             if row.response_side == 0:
                 continue  # do not count no-go trials
             signed_contrast = np.sign(row.position) * row.contrast
@@ -659,7 +683,36 @@ class OnlinePlotsModel(QObject):
                 old_std=self.psychometrics.loc[indexer, 'choice_std'],
             )
 
-        self.setCurrentTrial(self.nTrials() - 1)
+        self.compute_end_session_criteria()
+        self.setCurrentTrial(self._n_trials - 1)
+
+
+    def compute_end_session_criteria(self):
+        """Implement critera to change the color of the figure display, according to the specifications of the task."""
+
+        # Within the first part of the session we don't apply response time criterion
+        if self._seconds_elapsed < EngagedCriterion.SECONDS:
+            color = Colors.TRANSPARENT
+
+        # if the mouse has been training for more than 90 minutes subject training too long
+        elif self._seconds_elapsed > (90 * 60):
+            color = Colors.RED
+
+        # the mouse fails to do more than 400 trials in the first 45 mins
+        elif self._n_trials_engaged <= EngagedCriterion.TRIAL_COUNT:
+            color = Colors.GREEN
+
+        # the subject reaction time over the last 20 trials is more than 5 times greater than the overall reaction time
+        elif (self._trial_data['response_time'].median() * 5) < self._trial_data['response_time'][20:].median():
+            color = Colors.YELLOW
+
+        # 90 > time > 45 min and subject's avg response time hasn't significantly decreased
+        else:
+            color = Colors.TRANSPARENT
+
+        if self.titleColor != color:
+            self.titleColor = color
+        self.titleColorChanged.emit(color)
 
     def getSessionString(self) -> None:
         training_info, _ = get_subject_training_info(
@@ -680,27 +733,27 @@ class OnlinePlotsModel(QObject):
 
     @Slot(int)
     def setCurrentTrial(self, value: int) -> None:
-        if value != self._currentTrial:
-            self._currentTrial = value
+        if value != self._current_trial:
+            self._current_trial = value
             self.currentTrialChanged.emit(value)
             self.titleChanged.emit(self.getTitle())
 
     def currentTrial(self) -> int:
-        return self._currentTrial
+        return self._current_trial
 
     def nTrials(self) -> int:
-        return len(self._trial_data)
+        return self._n_trials
 
     def timeElapsed(self) -> datetime.timedelta:
-        if self.nTrials() == 0:
+        if self._n_trials == 0:
             return datetime.timedelta(seconds=0)
-        i = self._currentTrial
+        i = self._current_trial
         t0 = self._bpod_data[0][self._bpod_data[0].Type == 'TrialStart'].index[0]
         t1 = self._bpod_data[i][self._bpod_data[i].Type == 'TrialEnd'].index[-1]
         return datetime.timedelta(seconds=(t1 - t0).seconds)
 
     def percentCorrect(self) -> float:
-        return self.ntrials_correct / (self.nTrials() if self.nTrials() > 0 else np.nan) * 100
+        return self._n_trials_correct / (self._n_trials if self._n_trials > 0 else np.nan) * 100
 
     def bpod_data(self, trial: int) -> pd.DataFrame:
         return self._bpod_data[trial]
@@ -708,7 +761,7 @@ class OnlinePlotsModel(QObject):
     def getTitle(self) -> str:
         protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
         spacer = '  ·  '
-        return f'{protocol}{spacer}Trial {self._currentTrial}{spacer}Elapsed Time: {self.timeElapsed()}'
+        return f'{protocol}{spacer}Trial {self._current_trial}{spacer}Elapsed Time: {self.timeElapsed()}'
 
 
 class OnlinePlotsView(QMainWindow):
@@ -763,7 +816,7 @@ class OnlinePlotsView(QMainWindow):
         title_layout.addWidget(self.subtitle)
 
         # trial history
-        self.trials = TrialsWidget(self, self.model.table_model)
+        self.trials = TrialsWidget(self, self.model.tableModel)
         self.trials.trialSelected.connect(self.model.setCurrentTrial)
         layout.addWidget(self.trials, 1, 0, 2, 1)
 
@@ -814,6 +867,8 @@ class OnlinePlotsView(QMainWindow):
         self.model.titleChanged.connect(self.setTitle)
         self.model.currentTrialChanged.connect(self.updatePlots)
         self.updatePlots(self.model.nTrials() - 1)
+        self.model.titleColorChanged.connect(self.setTitleBackground)
+        # self.setTitleBackground(self.model.titleColor)
 
         # manage settings
         self.settings = QSettings()
@@ -827,6 +882,7 @@ class OnlinePlotsView(QMainWindow):
     @Slot(str)
     def setTitleBackground(self, color: str):
         """Set the background color of the title area to a gradient of the specified color."""
+        print(color)
         self.titleFrame.setStyleSheet(
             f'QFrame {{ background-color: qlineargradient(x1: 0, x2: 1, '
             f'stop: 0 {color}, stop: 0.2 transparent, stop: 0.8 transparent, stop: 1 {color}); }}\n'
@@ -856,8 +912,8 @@ class OnlinePlotsView(QMainWindow):
     @Slot(int)
     def updatePlots(self, trial: int):
         self.bpodWidget.setData(self.model.bpod_data(trial))
-        self.trials.table_view.setCurrentIndex(self.model.table_model.index(trial, 0))
-        self.trials.table_view.scrollTo(self.model.table_model.index(trial, 0))
+        self.trials.table_view.setCurrentIndex(self.model.tableModel.index(trial, 0))
+        self.trials.table_view.scrollTo(self.model.tableModel.index(trial, 0))
         for p in self.model.probability_set:
             data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
             x = data.index.to_numpy()
