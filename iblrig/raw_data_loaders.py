@@ -28,8 +28,10 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int = 0) -> tuple[pd.D
     tuple
         A tuple containing
 
-        - trials_table (pandas.DataFrame): A DataFrame with the trial info in the same format as the Session trials table.
-        - bpod_data (list): timing data for each trial
+        *  trials_table : pandas.DataFrame
+              A DataFrame with the trial info in the same format as the Session trials table.
+        *  bpod_data : list
+              timing data for each trial
     """
     with open(jsonable_file) as f:
         f.seek(offset, 0)
