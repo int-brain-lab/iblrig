@@ -18,12 +18,16 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> 
 
     Parameters
     ----------
-    - jsonable_file (str): full path to jsonable file.
-    - offset (int or None): The offset to start reading from (default: None).
+    jsonable_file : str
+        full path to jsonable file.
+    offset : int or None
+        The offset to start reading from (default: None).
 
     Returns
     -------
-    - tuple: A tuple containing:
+    tuple
+        A tuple containing
+
         - trials_table (pandas.DataFrame): A DataFrame with the trial info in the same format as the Session trials table.
         - bpod_data (list): timing data for each trial
     """
@@ -34,10 +38,8 @@ def load_task_jsonable(jsonable_file: str | Path, offset: int | None = None) -> 
         for line in f:
             trials_table.append(json.loads(line))
 
-    # pop-out the bpod data from the table
-    bpod_data = []
-    for td in trials_table:
-        bpod_data.append(td.pop('behavior_data'))
+    # pop-out bpod data
+    bpod_data = [td.pop('behavior_data') for td in trials_table]
 
     trials_table = pd.DataFrame(trials_table)
     return trials_table, bpod_data
