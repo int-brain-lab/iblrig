@@ -743,24 +743,16 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
 
-        if i == 0:  # First trial exception start camera
-            log.info('Waiting for camera pulses...')
-            sma.add_state(
-                state_name='iti',
-                state_timer=3600,
-                state_change_conditions={'Port1In': 'stim_on'},
-                output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # start camera
-        else:
-            # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
-            # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
-            # the offset of this state is trial start!
-            sma.add_state(
-                state_name='iti',
-                state_timer=1,  # Stim off for 1 sec
-                state_change_conditions={'Tup': 'stim_on'},
-                output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
-            )
+        # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
+        # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
+        # the offset of this state is trial start!
+        sma.add_state(
+            state_name='iti',
+            state_timer=1,  # Stim off for 1 sec
+            state_change_conditions={'Tup': 'stim_on'},
+            output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
+        )
+
         # This stim_on state is considered the actual trial start
         sma.add_state(
             state_name='stim_on',
