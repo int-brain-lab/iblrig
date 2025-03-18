@@ -9,7 +9,7 @@ from iblrig import raw_data_loaders
 from iblrig.test.base import PATH_FIXTURES
 
 
-class TestPathHelper(unittest.TestCase):
+class TestRawDataLoaders(unittest.TestCase):
     jsonable = Path(PATH_FIXTURES).joinpath('task_data_short.jsonable')
 
     def test_load_task_jsonable(self):
