@@ -292,7 +292,7 @@ class ChoiceWorldSession(
 
             # run state machine
             log.info('-----------------------')
-            log.info(f'Starting trial: {trial_number}')
+            log.info(f'Starting Trial #{trial_number}')
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
@@ -663,10 +663,10 @@ class ChoiceWorldSession(
 
         # log info dict
         log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
-        max_key_length = max(len(key) for key in info_dict)
+        key_format = '- {}: '
+        n_justify = max(len(key) for key in info_dict) + len(key_format.format(''))
         for key, value in info_dict.items():
-            spaces = (max_key_length - len(key)) * ' '
-            log.log(log_level, f'- {key}: {spaces}{str(value)}')
+            log.log(log_level, key_format.format(key).ljust(n_justify) + str(value))
 
     @property
     def iti_reward(self):
