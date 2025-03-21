@@ -13,8 +13,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pydantic import DirectoryPath, Field, validate_call
-from pydantic_settings import BaseSettings, CliImplicitFlag, CliPositionalArg
+from pydantic import Field, validate_call
+from pydantic_settings import BaseSettings, CliPositionalArg
 from qtpy.QtCore import (
     QCoreApplication,
     QFileSystemWatcher,
@@ -34,6 +34,7 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QBrush, QColor, QFont, QGradient, QIcon, QLinearGradient, QPainter, QPixmap, QTransform
 from qtpy.QtWidgets import (
     QApplication,
+    QFileDialog,
     QFrame,
     QGraphicsRectItem,
     QGraphicsSceneHoverEvent,
@@ -54,6 +55,7 @@ from iblrig.choiceworld import get_subject_training_info
 from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
+from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
 
 
@@ -67,8 +69,8 @@ class Colors:
 
 @dataclass
 class EngagedCriterion:
-    SECONDS = 20 #45 * 60
-    TRIAL_COUNT = 20 #400
+    SECONDS = 20  # 45 * 60
+    TRIAL_COUNT = 20  # 400
 
 
 class PlotWidget(pg.PlotWidget):
@@ -586,22 +588,29 @@ class OnlinePlotsModel(QObject):
     _current_trial = 0
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
-    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
+    def __init__(self, path: Path, parent: QObject | None = None):
         super().__init__(parent=parent)
-        self.raw_data_folder = raw_data_folder
-        self.jsonable_file = raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
-        self.settings_file = raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
+        is_live = False
 
-        if not raw_data_folder.exists():
-            raise FileNotFoundError(raw_data_folder)
-        if live:
-            print('Waiting for data ...')
-            while not self.jsonable_file.exists() or not self.settings_file.exists():
-                time.sleep(0.2)
-        if not self.jsonable_file.exists():
-            raise FileNotFoundError(self.jsonable_file)
-        if not self.settings_file.exists():
-            raise FileNotFoundError(self.settings_file)
+        if not path.exists():
+            raise FileNotFoundError(path)
+        elif path.is_dir():
+            if not path.name.startswith('raw_task_data'):
+                raise ValueError(f'Not a raw data folder: {path}')
+            self.raw_data_folder = path
+            self.jsonable_file = self.raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
+            self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
+            if not self.jsonable_file.exists() or not self.settings_file.exists():
+                print('Waiting for data ...')
+                while not self.jsonable_file.exists() or not self.settings_file.exists():
+                    time.sleep(0.2)
+            is_live = True
+        elif path.is_file():
+            if not path.name.endswith('.raw.jsonable'):
+                raise ValueError(f'Not a jsonable file: {path}')
+            self.jsonable_file = path
+            self.raw_data_folder = path.parent
+            self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
 
         with self.settings_file.open('r') as f:
             self.task_settings = json.load(f)
@@ -626,14 +635,12 @@ class OnlinePlotsModel(QObject):
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
-        self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
-        self.jsonableWatcher.fileChanged.connect(self.readJsonable)
+        if is_live:
+            self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
+            self.jsonableWatcher.fileChanged.connect(self.readJsonable)
 
     @Slot(str)
     def readJsonable(self, _: str) -> None:
-        if not self.jsonable_file.exists():
-            return
-
         # load jsonable data / convert bpod data to list of dataframes
         trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonable_offset)
         self._jsonable_offset = self.jsonable_file.stat().st_size
@@ -686,10 +693,8 @@ class OnlinePlotsModel(QObject):
         self.compute_end_session_criteria()
         self.setCurrentTrial(self._n_trials - 1)
 
-
     def compute_end_session_criteria(self):
         """Implement critera to change the color of the figure display, according to the specifications of the task."""
-
         # Within the first part of the session we don't apply response time criterion
         if self._seconds_elapsed < EngagedCriterion.SECONDS:
             color = Colors.TRANSPARENT
@@ -767,10 +772,10 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, raw_data_folder: DirectoryPath, live: bool = False, parent: QObject | None = None):
+    def __init__(self, path: Path, parent: QObject | None = None):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(raw_data_folder, live, self)
+        self.model = OnlinePlotsModel(path, self)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -959,9 +964,8 @@ class OnlinePlotsView(QMainWindow):
 
 
 def online_plots_cli():
-    class Settings(BaseSettings, cli_parse_args=True):
-        directory: CliPositionalArg[Path] = Field(description='Raw Data Directory')
-        live: CliImplicitFlag[bool] = Field(description='live plotting during acquisistion', default=False)
+    class Settings(BaseSettings, cli_parse_args=True, cli_enforce_required=False):
+        filename: CliPositionalArg[Path] = Field(description='Task Data File (*.jsonable) or ')
 
     # set app information
     QCoreApplication.setOrganizationName('International Brain Laboratory')
@@ -973,7 +977,16 @@ def online_plots_cli():
 
     app = QApplication([])
 
-    window = OnlinePlotsView(Settings().directory, Settings().live)
+    if len(sys.argv) < 2:
+        local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
+        filename, _ = QFileDialog.getOpenFileName(
+            caption='Select Task Data File', filter='Task Data (*.raw.jsonable)', directory=local_subjects_folder
+        )
+        if len(filename) == 0:
+            return
+    else:
+        filename = Settings().filename
+    window = OnlinePlotsView(filename)
     window.show()
 
     sys.exit(app.exec())
