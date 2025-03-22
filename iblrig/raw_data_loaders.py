@@ -9,7 +9,7 @@ import pandas as pd
 from pandas.core.dtypes.concat import union_categoricals
 
 log = logging.getLogger(__name__)
-RE_PATTERN_EVENT = re.compile(r'^(\D+\d)_?(.+)$')
+RE_PATTERN_EVENT = re.compile(r'^(?P<Channel>\D+\d?)_?(?P<Value>.*)$')
 
 
 def load_task_jsonable(jsonable_file: str | Path, offset: int = 0) -> tuple[pd.DataFrame, list[Any]]:
@@ -214,10 +214,15 @@ def bpod_trial_data_to_dataframe(bpod_trial_data: dict[str, Any], trial: int) ->
     df['Event'] = df['Event'].astype('category')
     df.insert(2, 'Trial', pd.to_numeric(pd.Series(trial, index=df.index), downcast='unsigned'))
 
-    # deduce channels and values from event names
-    df[['Channel', 'Value']] = df['Event'].str.extract(RE_PATTERN_EVENT, expand=True)
-    df['Channel'] = df['Channel'].astype('category')
-    df['Value'] = df['Value'].replace({'Low': '0', 'High': '1', 'Out': '0', 'In': '1'})
-    df['Value'] = pd.to_numeric(df['Value'], errors='coerce', downcast='unsigned', dtype_backend='numpy_nullable')
+    # extract channel name and value from Event strings
+    # since 'Event' is categorical, only process its unique values for performance
+    mappings = df['Event'].cat.categories.to_series().str.extract(RE_PATTERN_EVENT, expand=True)
+    mappings['Channel'] = mappings['Channel'].astype('category')
+    mappings['Value'] = mappings['Value'].replace({'Low': '0', 'High': '1', 'Out': '0', 'In': '1'})
+    mappings['Value'] = pd.to_numeric(mappings['Value'], errors='coerce', downcast='unsigned', dtype_backend='numpy_nullable')
+
+    # map the extracted channel and value information back to the DataFrame.
+    df['Channel'] = df['Event'].map(mappings['Channel'])
+    df['Value'] = df['Event'].map(mappings['Value'])
 
     return df
