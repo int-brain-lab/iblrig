@@ -204,15 +204,14 @@ def bpod_trial_data_to_dataframe(bpod_trial_data: dict[str, Any], trial: int) ->
 
     # create dataframe with TimedeltaIndex
     df = pd.DataFrame(data=event_list, columns=['Time', 'Type', 'State', 'Event'])
-    df.Time = pd.to_timedelta(df.Time + trial_start, unit='seconds')
+    df.Time = np.array((df.Time + trial_start) * 1e6, dtype='timedelta64[us]')
     df.set_index('Time', inplace=True)
-    df.rename_axis(index=None, inplace=True)
 
     # cast types
     df['Type'] = df['Type'].astype('category')
     df['State'] = df['State'].astype('category').ffill()
     df['Event'] = df['Event'].astype('category')
-    df.insert(2, 'Trial', pd.to_numeric(pd.Series(trial, index=df.index), downcast='unsigned'))
+    df.insert(2, 'Trial', pd.to_numeric([trial], downcast='unsigned')[0])
 
     # extract channel name and value from Event strings
     # since 'Event' is categorical, only process its unique values for performance
