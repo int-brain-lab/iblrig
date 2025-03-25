@@ -298,7 +298,7 @@ class Bpod(BpodIO):
                 self._arcom.serial_object.write(command)
                 if self._arcom.read_uint8() == 1:
                     return True
-            except serial.SerialException:
+            except (serial.SerialException, struct.error):
                 pass
             self._arcom.serial_object.reset_input_buffer()
             self._arcom.serial_object.reset_output_buffer()

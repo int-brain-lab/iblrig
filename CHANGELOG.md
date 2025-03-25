@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.27.6
+------
+* fixed: detection of LED control ability broken for Bpods with old firmware  
+
 8.27.5
 ------
 * fixed: issues in serial communication resolved through update to iblpybpod-no-gui 3.1.0
