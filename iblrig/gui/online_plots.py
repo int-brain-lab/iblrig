@@ -8,12 +8,12 @@ from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pydantic import Field, validate_call
+from pydantic import UUID4, AfterValidator, DirectoryPath, Field, FilePath, PlainSerializer, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
 from qtpy.QtCore import (
     QCoreApplication,
@@ -57,6 +57,21 @@ from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
+from one.alf.spec import is_session_path
+from one.api import ONE
+
+
+def is_alf_path(value: Path) -> Path:
+    if not is_session_path(value):
+        raise ValueError('Field is not a session path')
+    return value
+
+
+SessionPath = Annotated[
+    Path,
+    AfterValidator(lambda x: is_alf_path(x)),
+    PlainSerializer(lambda x: str(x), return_type=str),
+]
 
 
 @dataclass
@@ -588,16 +603,35 @@ class OnlinePlotsModel(QObject):
     _current_trial = 0
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
-    def __init__(self, path: Path, parent: QObject | None = None):
+    def __init__(self, session: FilePath | DirectoryPath | UUID4, parent: QObject | None = None):
         super().__init__(parent=parent)
         is_live = False
 
-        if not path.exists():
-            raise FileNotFoundError(path)
-        elif path.is_dir():
-            if not path.name.startswith('raw_task_data'):
-                raise ValueError(f'Not a raw data folder: {path}')
-            self.raw_data_folder = path
+        # If session is a UUID ...
+        if not isinstance(session, Path):
+            one = ONE()
+
+            # assert that session exists
+            session_exists = len(one.alyx.rest('sessions', 'list', id=session)) > 0
+            if not session_exists:
+                raise ValueError(f'Could not find session with ID {session}')
+
+            # load Task Data File
+            datasets = one.list_datasets(session, filename='*taskData.raw.jsonable')
+            if len(datasets) == 0:
+                raise ValueError(f'Could not find Task Data File for session {session}')
+            session = one.load_dataset(session, datasets[0], download_only=True)
+
+            # load Task Settings File
+            datasets = one.list_datasets(session, filename='*_iblrig_taskSettings.raw.json')
+            if len(datasets) > 0:
+                one.load_dataset(session, datasets[0], download_only=True)
+
+        # If session is a directory ...
+        if session.is_dir():
+            if not session.name.startswith('raw_task_data'):
+                raise ValueError(f'Not a Raw Data Directory: {session}')
+            self.raw_data_folder = session
             self.jsonable_file = self.raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
             self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
             if not self.jsonable_file.exists() or not self.settings_file.exists():
@@ -605,11 +639,13 @@ class OnlinePlotsModel(QObject):
                 while not self.jsonable_file.exists() or not self.settings_file.exists():
                     time.sleep(0.2)
             is_live = True
-        elif path.is_file():
-            if not path.name.endswith('.raw.jsonable'):
-                raise ValueError(f'Not a jsonable file: {path}')
-            self.jsonable_file = path
-            self.raw_data_folder = path.parent
+
+        # If session is a file ...
+        elif session.is_file():
+            if not session.name.endswith('.raw.jsonable'):
+                raise ValueError(f'Not a Task Data File: {session}')
+            self.jsonable_file = session
+            self.raw_data_folder = session.parent
             self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
 
         with self.settings_file.open('r') as f:
@@ -772,10 +808,10 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, path: Path, parent: QObject | None = None):
+    def __init__(self, session: FilePath | DirectoryPath | UUID4, parent: QObject | None = None):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(path, self)
+        self.model = OnlinePlotsModel(session, self)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -963,9 +999,13 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
 
-def online_plots_cli():
-    class Settings(BaseSettings, cli_parse_args=True, cli_enforce_required=False):
-        filename: CliPositionalArg[Path] = Field(description='Task Data File (*.jsonable) or ')
+def online_plots_cli(*args):
+    sys.argv.extend([str(arg) for arg in args])
+
+    class CLISettings(BaseSettings, cli_parse_args=True, cli_enforce_required=False, cli_avoid_json=True):
+        """Display a Session's Online Plot."""
+
+        session: CliPositionalArg[FilePath | DirectoryPath | UUID4] = Field(description="a session's Task Data File or eID")
 
     # set app information
     QCoreApplication.setOrganizationName('International Brain Laboratory')
@@ -979,14 +1019,14 @@ def online_plots_cli():
 
     if len(sys.argv) < 2:
         local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
-        filename, _ = QFileDialog.getOpenFileName(
+        session, _ = QFileDialog.getOpenFileName(
             caption='Select Task Data File', filter='Task Data (*.raw.jsonable)', directory=local_subjects_folder
         )
-        if len(filename) == 0:
+        if len(session) == 0:
             return
     else:
-        filename = Settings().filename
-    window = OnlinePlotsView(filename)
+        session = CLISettings().session
+    window = OnlinePlotsView(session)
     window.show()
 
     sys.exit(app.exec())
