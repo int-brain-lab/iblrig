@@ -659,7 +659,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_name='stim_on',
             state_timer=0.1,
             state_change_conditions={'Tup': 'stim_center', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
-            output_actions=[self.bpod.actions.bonsai_show_stim],
+            output_actions=[self.bpod.actions.bonsai_show_stim, ('BNC1', 255)],
         )
 
         # Play tone and wait for `delay_to_stim_center`.
