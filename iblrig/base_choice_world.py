@@ -670,12 +670,22 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
                 state_change_conditions={'Tup': 'stim_on'},
                 output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
             )
-        # This stim_on state is considered the actual trial start
+        # This stim_on state is considered the actual trial start.
+        # Move to next state if Frame2TTL event is detected.
+        # Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='stim_on',
+            state_timer=0.1,
+            state_change_conditions={'Tup': 'stim_center', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
+            output_actions=[self.bpod.actions.bonsai_show_stim],
+        )
+
+        # Play tone and wait for `delay_to_stim_center`.
+        sma.add_state(
+            state_name='play_tone',
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
-            state_change_conditions={'Tup': 'stim_center'},
-            output_actions=[self.bpod.actions.bonsai_show_stim, self.bpod.actions.play_tone],
+            output_actions=[self.bpod.actions.play_tone],
+            state_change_conditions={'Tup': 'stim_center', 'BNC2High': 'stim_center'},
         )
 
         sma.add_state(
