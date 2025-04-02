@@ -34,13 +34,14 @@ from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.hardware import SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai, get_number
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblrig.valve import Valve
+from iblutil.io import binary
 from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, flatten, setup_logger
@@ -130,15 +131,12 @@ class BaseSession(ABC):
         self.init_datetime = datetime.datetime.now()
 
         # loads in the settings: first load the files, then update with the input argument if provided
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
-        if hardware_settings is not None:
-            self.hardware_settings.update(hardware_settings)
-            HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
-        if iblrig_settings is not None:
-            self.iblrig_settings.update(iblrig_settings)
-            RigSettings.model_validate(self.iblrig_settings)
-
+        self._load_settings(
+            file_hardware_settings=file_hardware_settings,
+            hardware_settings=hardware_settings,
+            file_iblrig_settings=file_iblrig_settings,
+            iblrig_settings=iblrig_settings,
+        )
         self.wizard = wizard
 
         # Load the tasks settings, from the task folder or override with the input argument
@@ -173,6 +171,18 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    def _load_settings(
+        self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
+    ):
+        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        if hardware_settings is not None:
+            self.hardware_settings.update(hardware_settings)
+            HardwareSettings.model_validate(self.hardware_settings)
+        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        if iblrig_settings is not None:
+            self.iblrig_settings.update(iblrig_settings)
+            RigSettings.model_validate(self.iblrig_settings)
 
     @classmethod
     def get_task_file(cls) -> Path:
@@ -269,6 +279,8 @@ class BaseSession(ABC):
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
             *   DATA_FILE_PATH: contains the bpod trials
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   AMBIENT_FILE_PATH: contains the ambient sensor data
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_ambientSensorData.raw.bin`
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
@@ -310,6 +322,7 @@ class BaseSession(ABC):
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.AMBIENT_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_ambientSensorData.raw.bin')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
@@ -454,7 +467,7 @@ class BaseSession(ABC):
         return json_file  # PosixPath
 
     @final
-    def save_trial_data_to_json(self, bpod_data: dict):
+    def save_trial_data_to_json(self, bpod_data: dict, validate: bool = True):
         """Validate and save trial data.
 
         This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
@@ -465,20 +478,23 @@ class BaseSession(ABC):
         ----------
         bpod_data : dict
             Trial data returned from pybpod.
+        validate : bool, optional
+            Validate trial's data using Pydantic model. Default: True.
         """
         # get trial's data as a dict
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
 
-        # warn about entries not covered by pydantic model
-        if trial_data.get('trial_num', 1) == 0:
-            for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
-                log.warning(
-                    f'Key "{key}" in trial_data is missing from TrialDataModel - '
-                    f'its value ({trial_data[key]}) will not be validated.'
-                )
+        if validate:
+            # warn about entries not covered by pydantic model
+            if trial_data.get('trial_num', 1) == 0:
+                for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
+                    log.warning(
+                        f'Key "{key}" in trial_data is missing from TrialDataModel - '
+                        f'its value ({trial_data[key]}) will not be validated.'
+                    )
 
-        # validate by passing through pydantic model
-        trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
+            # validate by passing through pydantic model
+            trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
 
         # add bpod_data as 'behavior_data'
         trial_data['behavior_data'] = bpod_data
@@ -486,6 +502,7 @@ class BaseSession(ABC):
         # write json data to file
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(trial_data) + '\n')
+        log.debug(f'Trial data dumped to `{self.paths["DATA_FILE_PATH"].name}`')
 
     @property
     def one(self):
@@ -568,19 +585,23 @@ class BaseSession(ABC):
             return
         return ses
 
-    def _execute_mixins_shared_function(self, pattern):
+    def _execute_mixins_shared_function(self, pattern: str) -> None:
         """
-        Loop over all methods of the class that start with pattern and execute them.
+        Execute all methods of the class whose names start with the specified pattern.
+
+        This method loops through all callable methods of the class that begin with the given pattern and invokes each
+        of them in the order they are found. It is useful for executing a set of related methods that share a common
+        naming convention, such as initialization, starting, stopping, or cleanup routines.
 
         Parameters
         ----------
         pattern : str
-            'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
+            The prefix pattern to match method names. Only methods whose names start with this pattern will be executed.
+            Examples: 'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'.
         """
-        method_names = [method for method in dir(self) if method.startswith(pattern)]
-        methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
-        for meth in methods:
-            meth()
+        methods = [getattr(self, m) for m in dir(self) if m.startswith(pattern) and callable(getattr(self, m))]
+        for method in methods:
+            method()
 
     @property
     def time_elapsed(self):
@@ -642,9 +663,9 @@ class BaseSession(ABC):
             self.session_info.POOP_COUNT = get_number('Droppings count: ', int, lambda x: x >= 0)
 
         self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')
         self._execute_mixins_shared_function('cleanup_mixin')
+        self.register_to_alyx()
 
     @abstractmethod
     def start_hardware(self):
@@ -964,6 +985,13 @@ class BpodMixin(BaseSession):
     def stop_mixin_bpod(self):
         self.bpod.close()
 
+        # convert ambient data from binary to parquet
+        if self.paths['AMBIENT_FILE_PATH'].exists():
+            pqt_file = binary.convert_to_parquet(
+                filepath_bin=self.paths['AMBIENT_FILE_PATH'], dtype=DTYPE_AMBIENT_SENSOR_BIN, delete_bin_file=True
+            )
+            log.info(f"'{self.paths['AMBIENT_FILE_PATH'].name}' converted to parqet and stored as '{pqt_file.name}'")
+
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
             raise ValueError(
@@ -1162,7 +1190,7 @@ class SoundMixin(BaseSession, HasBpod):
         Play the noise sound for the error feedback using bpod state machine.
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_noise], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
@@ -1182,7 +1210,7 @@ class SoundMixin(BaseSession, HasBpod):
         sma.add_state(
             state_name=state_name,
             state_timer=state_timer,
-            output_actions=[self.bpod.actions.play_tone],
+            output_actions=output_actions,
             state_change_conditions={'BNC2Low': 'exit', 'Tup': 'exit'},
         )
         self.bpod.send_state_machine(sma)
@@ -1224,7 +1252,8 @@ class NetworkSession(BaseSession):
         if isinstance(remote_rigs, list):
             # For now we flatten to list of remote rig names but could permit list of (name, URI) tuples
             remote_rigs = list(filter(None, flatten(remote_rigs)))
-            all_remote_rigs = net.get_remote_devices(iblrig_settings=kwargs.get('iblrig_settings'))
+            self._load_settings(**kwargs)
+            all_remote_rigs = net.get_remote_devices(iblrig_settings=self.iblrig_settings)
             if not set(remote_rigs).issubset(all_remote_rigs.keys()):
                 raise ValueError('Selected remote rigs not in remote rigs list')
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
@@ -1312,17 +1341,39 @@ class NetworkSession(BaseSession):
         assert self.exp_ref
         paths.SESSION_FOLDER = date_folder / f'{self.exp_ref["sequence"]:03}'
         paths.TASK_COLLECTION = iblrig.path_helper.iterate_collection(paths.SESSION_FOLDER)
-        if append == paths.TASK_COLLECTION.endswith('00'):
-            raise ValueError(
-                f'Append value incorrect. Either remove previous task collections from '
-                f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
-            )
+        # if append == paths.TASK_COLLECTION.endswith('00'):
+        #     raise ValueError(
+        #         f'Append value incorrect. Either remove previous task collections from '
+        #         f'{paths.SESSION_FOLDER}, or select append in GUI (--append arg in cli)'
+        #     )
+        log.critical('This is task number %i for %s', int(paths.TASK_COLLECTION.split('_')[-1]) + 1, self.exp_ref)
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         return paths
+
+    @staticmethod
+    def extra_parser():
+        """
+        Parse network arguments.
+
+        Namely adds the remote argument to the parser.
+
+        :return: argparse.parser()
+        """
+        parser = super(NetworkSession, NetworkSession).extra_parser()
+        parser.add_argument(
+            '--remote',
+            dest='remote_rigs',
+            type=str,
+            required=False,
+            action='append',
+            nargs='+',
+            help='specify one of the remote rigs to interact with over the network',
+        )
+        return parser
 
     def run(self):
         """Run session and report exceptions to remote services."""
@@ -1415,6 +1466,7 @@ class NetworkSession(BaseSession):
                 f'Running past or future sessions not currently supported. \n'
                 f'Please check the system date time settings on each rig.'
             )
+        # TODO How to handle folder already existing before running UDP experiment?
 
         # exp_ref = ConversionMixin.path2ref(self.paths['SESSION_FOLDER'], as_dict=False)
         exp_ref = self.one.dict2ref(self.exp_ref)
@@ -1441,9 +1493,12 @@ class NetworkSession(BaseSession):
 
     def cleanup_mixin_network(self):
         """Clean up services."""
+        log.info('Cleaning up network mixin')
         self.remote_rigs.close()
         if self.remote_rigs.is_connected:
             log.warning('Failed to properly clean up network mixin')
+        else:
+            log.info('Cleaned up network mixin')
 
 
 class SpontaneousSession(BaseSession):

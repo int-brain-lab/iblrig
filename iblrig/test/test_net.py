@@ -151,8 +151,18 @@ class TestAuxiliaries(unittest.IsolatedAsyncioTestCase):
     @patch('iblrig.net.net.app.EchoProtocol.client')
     @patch('iblrig.net.net.app.Services', spec=net.app.Services)
     def setUp(self, services, com):
+        """Set up test.
+
+        The EchoProtocol mock objects are not directly used as the Services object is mocked,
+        however EchoProtocol is instantiated by Auxiliaries before passing to the Services object.
+        """
         self.services, self.com = services, com
         self.clients = {'rig_1': 'udp://192.168.0.1', 'rig_2': 'udp://192.168.0.2'}
+        # For the services to appear connected, the length must be > 0 and the iterator must evaluate True
+        self.services().__iter__.side_effect = (iter([]), iter([True]))  # first check should evaluate False
+        self.services().__len__.side_effect = lambda: len(self.clients) if self.services.call_count > 0 else 0
+        self.services().is_connected = True
+        self.services.reset_mock(return_value=False, side_effect=False)  # reset call count
         self.aux = iblrig.net.Auxiliaries(self.clients)
         self.addCleanup(self.aux.close)  # ensure threads joined
         assert getattr(self.aux, 'connected', False)
