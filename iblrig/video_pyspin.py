@@ -76,6 +76,7 @@ class Cameras:
             for i in range(len(self._cameras)):
                 self._cameras[i].DeInit()
         self._cameras.Clear()
+        del self._cameras
         self._instance.ReleaseInstance()
 
 
