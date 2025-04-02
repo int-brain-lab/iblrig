@@ -103,7 +103,7 @@ def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
         # find camera parameter
         if 'camera' in kwargs:
             camera = kwargs.pop('camera')
-        elif len(args) > 0 and isinstance(args[-1], PySpin.CameraPtr | PySpin.CameraList):
+        elif len(args) > 0 and isinstance(args[-1], (PySpin.CameraPtr, PySpin.CameraList)):  # noqa: UP038
             camera = args[-1]
             args = args[:-1]
         else:
@@ -201,6 +201,31 @@ def reset_all_cameras():
                 time.sleep(0.2)
 
 
+def _get_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
+    if camera.GetNodeMap().GetNode(node_name) is None:
+        raise AttributeError(f'No such node: {node_name}')
+    node = getattr(camera, node_name)
+    return node
+
+
+def _get_writable_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
+    node = _get_node(node_name, camera)
+    if not hasattr(node, 'SetValue'):
+        raise AttributeError(f"node '{node_name}' has no SetValue() attribute")
+    if not PySpin.IsWritable(node):
+        raise AttributeError(f'{node.GetDisplayName()} is not writable')
+    return node
+
+
+def _get_readable_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
+    node = _get_node(node_name, camera)
+    if not hasattr(node, 'GetValue'):
+        raise AttributeError(f"node '{node_name}' has no GetValue() attribute")
+    if not PySpin.IsReadable(node):
+        raise AttributeError(f'{node.GetDisplayName()} is not readable')
+    return node
+
+
 @process_camera
 def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
     """
@@ -223,11 +248,8 @@ def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
     """
     try:
         # get node
-        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
-        node = getattr(camera, node_name)
-        assert hasattr(node, 'SetValue'), f"node '{node_name}' has no SetValue() attribute"
+        node = _get_writable_node(node_name, camera)
         disp_name = node.GetDisplayName()
-        assert PySpin.IsWritable(node), f'{disp_name} is not writable'
 
         # assert types
         node_type = type(node)
@@ -292,11 +314,7 @@ def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any:
         The value of the node.
     """
     try:
-        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
-        node = getattr(camera, node_name)
-        assert hasattr(node, 'GetValue'), f"node '{node_name}' has no GetValue() attribute"
-        disp_name = node.GetDisplayName()
-        assert PySpin.IsReadable(node), f'{disp_name} is not readable'
+        node = _get_readable_node(node_name, camera)
         return node.GetValue()
     except Exception as e:
         return camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
@@ -321,11 +339,7 @@ def get_string_value(node_name: str, camera: PySpin.CameraPtr) -> str:
         The value of the node, formatted as a string.
     """
     try:
-        assert hasattr(camera, node_name), f"No such node: '{node_name}'"
-        node = getattr(camera, node_name)
-        assert hasattr(node, 'GetValue'), f"node '{node_name}' has no GetValue() attribute"
-        disp_name = node.GetDisplayName()
-        assert PySpin.IsReadable(node), f'{disp_name} is not readable'
+        node = _get_readable_node(node_name, camera)
         if isinstance(node, PySpin.IEnumeration):
             return node.GetEntry(node.GetIntValue()).GetDisplayName()
         else:
