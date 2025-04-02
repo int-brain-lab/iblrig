@@ -30,6 +30,10 @@ from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
 
 SOFTCODE = IntEnum('SOFTCODE', ['STOP_SOUND', 'PLAY_TONE', 'PLAY_NOISE', 'TRIGGER_CAMERA'])
+DTYPE_AMBIENT_SENSOR_RAW = np.dtype(
+    [('Temperature_C', np.float32), ('AirPressure_mb', np.float32), ('RelativeHumidity', np.float32)]
+)
+DTYPE_AMBIENT_SENSOR_BIN = np.dtype([('Trial', np.uint16)] + DTYPE_AMBIENT_SENSOR_RAW.descr)
 
 # some annotated types
 Uint8 = Annotated[int, Ge(0), Le(255)]
@@ -206,23 +210,32 @@ class Bpod(BpodIO):
             }
         )
 
-    def get_ambient_sensor_reading(self):
-        if self.ambient_module is None:
-            return {
-                'Temperature_C': np.nan,
-                'AirPressure_mb': np.nan,
-                'RelativeHumidity': np.nan,
-            }
-        self.ambient_module.start_module_relay()
-        self.bpod_modules.module_write(self.ambient_module, 'R')
-        reply = self.bpod_modules.module_read(self.ambient_module, 12)
-        self.ambient_module.stop_module_relay()
+    def get_ambient_sensor_reading(self) -> np.ndarray:
+        """
+        Retrieve ambient sensor readings.
 
-        return {
-            'Temperature_C': np.frombuffer(bytes(reply[:4]), np.float32)[0],
-            'AirPressure_mb': np.frombuffer(bytes(reply[4:8]), np.float32)[0] / 100,
-            'RelativeHumidity': np.frombuffer(bytes(reply[8:]), np.float32)[0],
-        }
+        If the ambient sensor module is not available, returns an array filled with NaN values.
+        Otherwise, retrieves the temperature, air pressure, and relative humidity readings.
+
+        Returns
+        -------
+        np.ndarray
+            A NumPy array containing the sensor readings in the following order:
+
+            - [0] : Temperature in degrees Celsius
+            - [1] : Air pressure in millibars
+            - [2] : Relative humidity in percentage
+        """
+        if self.ambient_module is None:
+            data = np.full(3, np.nan, np.float32)
+        else:
+            self.ambient_module.start_module_relay()
+            self.bpod_modules.module_write(self.ambient_module, 'R')
+            reply = self.bpod_modules.module_read(self.ambient_module, 12)
+            self.ambient_module.stop_module_relay()
+            data = np.frombuffer(bytes(reply), dtype=np.float32).copy()
+            data[1] /= 100
+        return data
 
     def flush(self):
         """Flushes valve 1."""
