@@ -467,7 +467,7 @@ class BaseSession(ABC):
         return json_file  # PosixPath
 
     @final
-    def save_trial_data_to_json(self, bpod_data: dict):
+    def save_trial_data_to_json(self, bpod_data: dict, validate: bool = True):
         """Validate and save trial data.
 
         This method retrieve's the current trial's data from the trial_table and validates it using a Pydantic model
@@ -478,20 +478,23 @@ class BaseSession(ABC):
         ----------
         bpod_data : dict
             Trial data returned from pybpod.
+        validate : bool, optional
+            Validate trial's data using Pydantic model. Default: True.
         """
         # get trial's data as a dict
         trial_data = self.trials_table.iloc[self.trial_num].to_dict()
 
-        # warn about entries not covered by pydantic model
-        if trial_data.get('trial_num', 1) == 0:
-            for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
-                log.warning(
-                    f'Key "{key}" in trial_data is missing from TrialDataModel - '
-                    f'its value ({trial_data[key]}) will not be validated.'
-                )
+        if validate:
+            # warn about entries not covered by pydantic model
+            if trial_data.get('trial_num', 1) == 0:
+                for key in set(trial_data.keys()) - set(self.TrialDataModel.model_fields) - {'index'}:
+                    log.warning(
+                        f'Key "{key}" in trial_data is missing from TrialDataModel - '
+                        f'its value ({trial_data[key]}) will not be validated.'
+                    )
 
-        # validate by passing through pydantic model
-        trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
+            # validate by passing through pydantic model
+            trial_data = self.TrialDataModel.model_validate(trial_data).model_dump()
 
         # add bpod_data as 'behavior_data'
         trial_data['behavior_data'] = bpod_data
@@ -499,6 +502,7 @@ class BaseSession(ABC):
         # write json data to file
         with open(self.paths['DATA_FILE_PATH'], 'a') as fp:
             fp.write(json.dumps(trial_data) + '\n')
+        log.debug(f'Trial data dumped to `{self.paths["DATA_FILE_PATH"].name}`')
 
     @property
     def one(self):
@@ -581,19 +585,23 @@ class BaseSession(ABC):
             return
         return ses
 
-    def _execute_mixins_shared_function(self, pattern):
+    def _execute_mixins_shared_function(self, pattern: str) -> None:
         """
-        Loop over all methods of the class that start with pattern and execute them.
+        Execute all methods of the class whose names start with the specified pattern.
+
+        This method loops through all callable methods of the class that begin with the given pattern and invokes each
+        of them in the order they are found. It is useful for executing a set of related methods that share a common
+        naming convention, such as initialization, starting, stopping, or cleanup routines.
 
         Parameters
         ----------
         pattern : str
-            'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'
+            The prefix pattern to match method names. Only methods whose names start with this pattern will be executed.
+            Examples: 'init_mixin', 'start_mixin', 'stop_mixin', or 'cleanup_mixin'.
         """
-        method_names = [method for method in dir(self) if method.startswith(pattern)]
-        methods = [getattr(self, method) for method in method_names if inspect.ismethod(getattr(self, method))]
-        for meth in methods:
-            meth()
+        methods = [getattr(self, m) for m in dir(self) if m.startswith(pattern) and callable(getattr(self, m))]
+        for method in methods:
+            method()
 
     @property
     def time_elapsed(self):

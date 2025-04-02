@@ -189,3 +189,39 @@ class TestsBiasedBlocksGeneration(unittest.TestCase):
         c = self.count_contrasts(pc)
         c[4] /= 2
         assert np.all(np.abs(1 - c * 10) <= 0.2)
+
+
+class TestTrainingPhases(unittest.TestCase):
+    def test_training_contrasts_probabilities(self):
+        for phase in range(6):
+            p = iblrig.choiceworld.training_contrasts_probabilities(phase)
+            self.assertEqual(len(np.unique(p[p != 0])), 1)
+            self.assertAlmostEqual(np.sum(p), 1)
+            contrasts = np.unique(np.abs(iblrig.choiceworld.CONTRASTS[p > 0]))
+            match phase:
+                case 0:
+                    assert np.array_equal(contrasts, [0.5, 1.0])
+                case 1:
+                    assert np.array_equal(contrasts, [0.25, 0.5, 1.0])
+                case 2:
+                    assert np.array_equal(contrasts, [0.125, 0.25, 0.5, 1.0])
+                case 3:
+                    assert np.array_equal(contrasts, [0.0625, 0.125, 0.25, 0.5, 1.0])
+                case 4:
+                    assert np.array_equal(contrasts, [0.0, 0.0625, 0.125, 0.25, 0.5, 1.0])
+                case 5:
+                    assert np.array_equal(contrasts, [0.0, 0.0625, 0.125, 0.25, 1.0])
+        with self.assertRaises(ValueError):
+            iblrig.choiceworld.training_contrasts_probabilities(6)
+
+    def test_training_phase_from_contrast_set(self):
+        for phase in range(6):
+            p = iblrig.choiceworld.training_contrasts_probabilities(phase)
+            contrasts1 = iblrig.choiceworld.CONTRASTS[p > 0]
+            contrasts2 = np.abs(contrasts1)
+            contrasts3 = np.unique(contrasts2)
+            self.assertEqual(iblrig.choiceworld.training_phase_from_contrast_set(contrasts1), phase)
+            self.assertEqual(iblrig.choiceworld.training_phase_from_contrast_set(contrasts2), phase)
+            self.assertEqual(iblrig.choiceworld.training_phase_from_contrast_set(contrasts3), phase)
+        with self.assertRaises(ValueError):
+            iblrig.choiceworld.training_phase_from_contrast_set([0.666])

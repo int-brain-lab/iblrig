@@ -7,6 +7,7 @@ import random
 import subprocess
 import time
 from pathlib import Path
+from re import split as re_split
 from string import ascii_letters
 from typing import Annotated, Any
 
@@ -761,50 +762,64 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # call parent method
         super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
-    def trial_completed(self, bpod_data):
+    def trial_completed(self, bpod_data: dict) -> None:
         """
-        The purpose of this method is to
+        Update the trials table with information about the behaviour coming from the bpod.
 
-        - update the trials table with information about the behaviour coming from the bpod
-          Constraints on the state machine data:
+        Constraints on the state machine data:
+
         - mandatory states: ['correct', 'error', 'no_go', 'reward']
         - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
 
-        :param bpod_data:
-        :return:
+        Parameters
+        ----------
+        bpod_data : dict
+            The Bpod data as returned by pybpod
+
+        Raises
+        ------
+        AssertionError
+            If the position is zero or if the number of detected outcomes is not exactly one.
         """
-        # get the response time from the behaviour data
-        response_time = bpod_data['States timestamps']['closed_loop'][0][1] - bpod_data['States timestamps']['stim_on'][0][0]
+        # Get the response time from the behaviour data.
+        # It is defined as the time passing between the start of `stim_on` and the end of `closed_loop`.
+        state_times = bpod_data['States timestamps']
+        response_time = state_times['closed_loop'][0][1] - state_times['stim_on'][0][0]
         self.trials_table.at[self.trial_num, 'response_time'] = response_time
-        # get the trial outcome
-        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.nan]])[0][0]) for sn in state_names}
+
         try:
-            outcome = next(k for k in raw_outcome if raw_outcome[k])
-            # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+            # Get the stimulus position
             position = self.trials_table.at[self.trial_num, 'position']
-            self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
-            if 'correct' in outcome:
-                self.session_info.NTRIALS_CORRECT += 1
-                self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-            elif 'error' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-            elif 'no_go' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = 0
-            super().trial_completed(bpod_data)
-            # here we throw potential errors after having written the trial to disk
-            assert np.sum(list(raw_outcome.values())) == 1
-            assert position != 0, 'the position value should be either 35 or -35'
-        except StopIteration as e:
-            log.error(f'No outcome detected for trial {self.trial_num}.')
-            log.error(f'raw_outcome: {raw_outcome}')
-            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
-            raise e
+            assert position != 0, 'the stimulus position should not be 0'
+
+            # Get the trial's outcome, i.e., the states that have a matching name and a valid time-stamp
+            # Assert that we have exactly one outcome
+            outcome_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+            outcomes = [name for name, times in state_times.items() if name in outcome_names and ~np.isnan(times[0][0])]
+            if (n_outcomes := len(outcomes)) != 1:
+                trial_states = 'Trial states: ' + ', '.join(k for k, v in state_times.items() if ~np.isnan(v[0][0]))
+                assert n_outcomes != 0, f'No outcome detected for trial {self.trial_num}.\n{trial_states}'
+                assert n_outcomes == 1, f'{n_outcomes} outcomes detected for trial {self.trial_num}.\n{trial_states}'
+            outcome = outcomes[0]
+
         except AssertionError as e:
-            log.error(f'Assertion Error in trial {self.trial_num}.')
-            log.error(f'raw_outcome: {raw_outcome}')
-            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
+            # write bpod_data to disk, log exception then raise
+            self.save_trial_data_to_json(bpod_data, validate=False)
+            for line in re_split(r'\n', e.args[0]):
+                log.error(line)
             raise e
+
+        # record the trial's outcome in the trials_table
+        self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
+        if 'correct' in outcome:
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+
+        super().trial_completed(bpod_data)
 
 
 class BiasedChoiceWorldTrialData(ActiveChoiceWorldTrialData):
