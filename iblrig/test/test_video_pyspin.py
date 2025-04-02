@@ -7,6 +7,10 @@ class MockCameraPtr:
     pass
 
 
+class MockCameraList:
+    pass
+
+
 class MockIEnumeration:
     pass
 
@@ -26,6 +30,7 @@ class MockIBoolean:
 # Mock the PySpin module in sys.modules
 mock_pyspin = MagicMock()
 mock_pyspin.CameraPtr = MockCameraPtr
+mock_pyspin.CameraList = MockCameraList
 mock_pyspin.IEnumeration = MockIEnumeration
 mock_pyspin.IInteger = MockIInteger
 mock_pyspin.IFloat = MockIFloat
