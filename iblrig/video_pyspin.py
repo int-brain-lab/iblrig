@@ -252,34 +252,32 @@ def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
         disp_name = node.GetDisplayName()
 
         # assert types
-        node_type = type(node)
         val_type = type(value)
-        match node_type:
-            case PySpin.IInteger:
-                expected_value_types = [int]
-            case PySpin.IFloat:
-                expected_value_types = [int, float]
-            case PySpin.IBoolean:
-                expected_value_types = [bool]
-            case _ if isinstance(node, PySpin.IEnumeration):
-                expected_value_types = [int, str]
-                if val_type is str:
-                    if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
-                        value = getattr(PySpin, enumeration_name)
-                        val_type = type(value)
-                    else:
-                        expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
-                        expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
-                        raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
-            case _:
-                raise TypeError(f'Unsupported node type: {node_type.__name__}')
+        if isinstance(node, PySpin.IInteger):
+            expected_value_types = [int]
+        elif isinstance(node, PySpin.IFloat):
+            expected_value_types = [int, float]
+        elif isinstance(node, PySpin.IBoolean):
+            expected_value_types = [bool]
+        elif isinstance(node, PySpin.IEnumeration):
+            expected_value_types = [int, str]
+            if val_type is str:
+                if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
+                    value = getattr(PySpin, enumeration_name)
+                    val_type = type(value)
+                else:
+                    expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
+                    expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
+                    raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
+        else:
+            raise TypeError(f'Unsupported node type: {type(node).__name__}')
         if val_type not in expected_value_types:
             expected_val_type_str = ', '.join([f'{x.__name__}' for x in expected_value_types])
             expected_val_type_str = ' or'.join(expected_val_type_str.rsplit(',', 1))
             raise TypeError(f'Value for {disp_name} must be of type {expected_val_type_str} - not {val_type.__name__}')
 
         # limit value to valid range
-        if node_type in (PySpin.IInteger, PySpin.IFloat) and not node.GetMin() <= value <= node.GetMax():
+        if isinstance(node, (PySpin.IInteger, PySpin.IFloat)) and not (node.GetMin() <= value <= node.GetMax()):  # noqa: UP038
             value = min(max(value, node.GetMin()), node.GetMax())
 
         # set value (if necessary)
