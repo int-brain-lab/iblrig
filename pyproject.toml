@@ -21,10 +21,10 @@ dependencies = [
     "PyQtWebEngine-Qt5==5.15.2",
     #
     # IBL packages
-    "iblatlas>=0.5.6",
+    "iblatlas>=0.6.0",
     "ibllib>=3.3.0",
-    "iblpybpod @ git+https://github.com/int-brain-lab/iblpybpod.git@no-gui",
-    "iblutil>=1.14.0",
+    "iblpybpod-no-gui>=3.1.0",
+    "iblutil>=1.17.0",
     "iblqt>=0.4.2",
     "ONE-api>=3.0.0",
     "tycmd-wrapper>=0.2.1",
@@ -32,12 +32,12 @@ dependencies = [
     # Everything else
     "annotated-types>=0.7.0",
     "graphviz>=0.20.3",
-    "ipython>=8.26.0",
+    "ipython>=8.34.0",
     "matplotlib>=3.10.0",
     "numpy<2.0.0",
     "packaging>=24.1",
     "pandas>=2.2.3",
-    "pandera>=0.22.1",
+    "pandera>=0.23.1",
     "pydantic>=2.10.6",
     "pyqtgraph>=0.13.7",
     "python-osc>=1.8.3",
@@ -88,7 +88,7 @@ dev = [
 test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
-    "ruff>=0.9.6",
+    "ruff>=0.11.1",
 ]
 doc = [
     "sphinx>=7.4.7",
