@@ -5,6 +5,7 @@ Changelog
 ------
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
 * added: save ambient data to Parquet file
+* added: save task version to settings JSON
 
 -------------------------------
 
