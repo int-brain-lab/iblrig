@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 import PySpin
+from pydantic import validate_call
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ class Cameras:
 
     _instance = None
 
-    def __init__(self, init_cameras: bool = True):
+    @validate_call()
+    def __init__(self, identifier: list[str | int] | None = None, init_cameras: bool = True):
         """Initializes the Cameras instance.
 
         Parameters
@@ -52,6 +54,16 @@ class Cameras:
         """
         self._instance = PySpin.System.GetInstance()
         self._cameras = self._instance.GetCameras()
+
+        if isinstance(identifier, list):
+            device_ids = [id for id in identifier if isinstance(id, str)]
+            indices = [id for id in identifier if isinstance(id, int)]
+            for idx in range(len(self._cameras)):
+                self._cameras[idx].Init()
+                if not (self._cameras[idx].DeviceID() in device_ids or idx in indices):
+                    self._cameras.RemoveByIndex(idx)
+                self._cameras[idx].DeInit()
+
         self._init_cameras = init_cameras
         if init_cameras:
             for i in range(len(self._cameras)):
