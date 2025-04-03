@@ -40,9 +40,7 @@ def get_mock_pyspin():
     return mock_pyspin
 
 
-sys.modules['PySpin'] = get_mock_pyspin()
-import PySpin as MockPySpin  # noqa: E402
-
+sys.modules['PySpin'] = MockPySpin = get_mock_pyspin()
 from iblrig import video_pyspin  # noqa: E402
 
 
