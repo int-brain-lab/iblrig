@@ -225,6 +225,7 @@ class TestSetValueEnumeration(TestCase):
         self.assertTrue(result)
 
     def test_set_value_enumeration_string_invalid(self):
+        del MockPySpin.TestNode_InvalidEnum
         (result,) = video_pyspin.set_value('TestNode', 'InvalidEnum', self.mock_camera)
         self.assertFalse(result)
 
