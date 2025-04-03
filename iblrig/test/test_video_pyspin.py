@@ -27,23 +27,27 @@ class MockIBoolean:
     pass
 
 
-# Mock the PySpin module in sys.modules
-mock_pyspin = MagicMock()
-mock_pyspin.CameraPtr = MockCameraPtr
-mock_pyspin.CameraList = MockCameraList
-mock_pyspin.IEnumeration = MockIEnumeration
-mock_pyspin.IInteger = MockIInteger
-mock_pyspin.IFloat = MockIFloat
-mock_pyspin.IBoolean = MockIBoolean
-mock_pyspin.IsReadable.return_value = True
-mock_pyspin.IsWritable.return_value = True
-sys.modules['PySpin'] = mock_pyspin
+def get_mock_pyspin():
+    mock_pyspin = MagicMock()
+    mock_pyspin.CameraPtr = MockCameraPtr
+    mock_pyspin.CameraList = MockCameraList
+    mock_pyspin.IEnumeration = MockIEnumeration
+    mock_pyspin.IInteger = MockIInteger
+    mock_pyspin.IFloat = MockIFloat
+    mock_pyspin.IBoolean = MockIBoolean
+    mock_pyspin.IsReadable.return_value = True
+    mock_pyspin.IsWritable.return_value = True
+    return mock_pyspin
+
+
+sys.modules['PySpin'] = get_mock_pyspin()
+import PySpin as MockPySpin  # noqa: E402
 
 from iblrig import video_pyspin  # noqa: E402
 
 
 def get_mock_camera():
-    mock_camera = MagicMock(spec=mock_pyspin.CameraPtr)
+    mock_camera = MockPySpin.CameraPtr()
     mock_camera.DeviceID = MagicMock(return_value='123456789')
     mock_camera.TestNode = MagicMock()
     mock_camera.TestNode.GetUnit.return_value = 'MockUnit'
@@ -67,10 +71,10 @@ class TestPrivateMethods(TestCase):
     def test_get_readable_node(self):
         node = video_pyspin._get_readable_node('TestNode', self.mock_camera)
         self.assertIs(self.mock_node, node)
-        mock_pyspin.IsReadable.return_value = False
+        MockPySpin.IsReadable.return_value = False
         with self.assertRaises(AttributeError):
             video_pyspin._get_readable_node('TestNode', self.mock_camera)
-        mock_pyspin.IsReadable.return_value = True
+        MockPySpin.IsReadable.return_value = True
         delattr(self.mock_node, 'GetValue')
         with self.assertRaises(AttributeError):
             video_pyspin._get_readable_node('TestNode', self.mock_camera)
@@ -78,10 +82,10 @@ class TestPrivateMethods(TestCase):
     def test_get_writable_node(self):
         node = video_pyspin._get_writable_node('TestNode', self.mock_camera)
         self.assertIs(self.mock_node, node)
-        mock_pyspin.IsWritable.return_value = False
+        MockPySpin.IsWritable.return_value = False
         with self.assertRaises(AttributeError):
             video_pyspin._get_writable_node('TestNode', self.mock_camera)
-        mock_pyspin.IsWritable.return_value = True
+        MockPySpin.IsWritable.return_value = True
         delattr(self.mock_node, 'SetValue')
         with self.assertRaises(AttributeError):
             video_pyspin._get_writable_node('TestNode', self.mock_camera)
@@ -93,13 +97,13 @@ class TestGetStringValue(TestCase):
         self.mock_node = self.mock_camera.TestNode
 
     def test_get_string_value_integer_node(self):
-        self.mock_node.__class__ = mock_pyspin.IInteger
+        self.mock_node.__class__ = MockPySpin.IInteger
         self.mock_node.GetValue.return_value = 42
         (result,) = video_pyspin.get_string_value('TestNode', self.mock_camera)
         self.assertEqual('42 MockUnit', result)
 
     def test_get_string_value_enumeration_node(self):
-        self.mock_node.__class__ = mock_pyspin.IEnumeration
+        self.mock_node.__class__ = MockPySpin.IEnumeration
         mock_entry = MagicMock()
         mock_entry.GetDisplayName.return_value = 'Entry 1'
         self.mock_node.GetEntry.return_value = mock_entry
@@ -108,7 +112,7 @@ class TestGetStringValue(TestCase):
 
     def test_get_string_value_exception(self):
         self.mock_camera.GetNodeMap.side_effect = Exception('Oh no!!')
-        self.mock_node.__class__ = mock_pyspin.IInteger
+        self.mock_node.__class__ = MockPySpin.IInteger
         self.mock_node.GetValue.return_value = 42
         (result,) = video_pyspin.get_string_value('TestNode', self.mock_camera)
         self.assertEqual(result, '')
@@ -120,24 +124,24 @@ class TestGetValue(TestCase):
         self.mock_node = self.mock_camera.TestNode
 
     def test_get_value(self):
-        self.mock_node.__class__ = mock_pyspin.IInteger
+        self.mock_node.__class__ = MockPySpin.IInteger
         self.mock_node.GetValue.return_value = 42
         (result,) = video_pyspin.get_value('TestNode', self.mock_camera)
         self.assertEqual(42, result)
 
     def test_get_value_exception(self):
         self.mock_camera.GetNodeMap.side_effect = Exception('Oh no!!')
-        self.mock_node.__class__ = mock_pyspin.IInteger
+        self.mock_node.__class__ = MockPySpin.IInteger
         self.mock_node.GetValue.return_value = 42
         (result,) = video_pyspin.get_value('TestNode', self.mock_camera)
-        self.assertFalse(result)
+        self.assertIsNone(result)
 
 
 class TestSetValueInt(TestCase):
     def setUp(self):
         self.mock_camera = get_mock_camera()
         self.mock_node = self.mock_camera.TestNode
-        self.mock_node.__class__ = mock_pyspin.IInteger
+        self.mock_node.__class__ = MockPySpin.IInteger
         self.mock_node.GetValue.return_value = 100
         self.mock_node.GetMin.return_value = 50
         self.mock_node.GetMax.return_value = 150
@@ -167,7 +171,7 @@ class TestSetValueFloat(TestCase):
     def setUp(self):
         self.mock_camera = get_mock_camera()
         self.mock_node = self.mock_camera.TestNode
-        self.mock_node.__class__ = mock_pyspin.IFloat
+        self.mock_node.__class__ = MockPySpin.IFloat
         self.mock_node.GetValue.return_value = 1.5
         self.mock_node.GetMin.return_value = 0.0
         self.mock_node.GetMax.return_value = 5.0
@@ -185,7 +189,7 @@ class TestSetValueBoolean(TestCase):
     def setUp(self):
         self.mock_camera = get_mock_camera()
         self.mock_node = self.mock_camera.TestNode
-        self.mock_node.__class__ = mock_pyspin.IBoolean
+        self.mock_node.__class__ = MockPySpin.IBoolean
         self.mock_node.GetValue.return_value = False
 
     def test_set_value_boolean_correct_type(self):
@@ -201,7 +205,7 @@ class TestSetValueEnumeration(TestCase):
     def setUp(self):
         self.mock_camera = get_mock_camera()
         self.mock_node = self.mock_camera.TestNode
-        self.mock_node.__class__ = mock_pyspin.IEnumeration
+        self.mock_node.__class__ = MockPySpin.IEnumeration
         self.mock_node.GetIntValue.return_value = 100
         entry1 = MagicMock()
         entry1.GetName.return_value = 'TestNode_Mono8'
@@ -217,7 +221,7 @@ class TestSetValueEnumeration(TestCase):
         self.assertTrue(result)
 
     def test_set_value_enumeration_string_valid(self):
-        mock_pyspin.TestNode_Mono12 = 300
+        MockPySpin.TestNode_Mono12 = 300
         (result,) = video_pyspin.set_value('TestNode', 'Mono12', self.mock_camera)
         self.mock_node.SetValue.assert_called_with(300)
         self.assertTrue(result)

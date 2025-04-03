@@ -103,7 +103,7 @@ def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
         # find camera parameter
         if 'camera' in kwargs:
             camera = kwargs.pop('camera')
-        elif len(args) > 0 and isinstance(args[-1], (PySpin.CameraPtr, PySpin.CameraList)):  # noqa: UP038
+        elif len(args) > 0 and isinstance(args[-1], PySpin.CameraPtr | PySpin.CameraList):
             camera = args[-1]
             args = args[:-1]
         else:
@@ -148,11 +148,9 @@ def acquisition_ok() -> bool:
                 if image.IsValid() and image.GetImageStatus() == PySpin.SPINNAKER_IMAGE_STATUS_NO_ERROR:
                     camera_log(logging.INFO, cameras[i], 'Acquisition test was successful')
                 else:
-                    camera_log(logging.ERROR, cameras[i], 'Acquisition test failed')
-                    success = False
+                    success = camera_log(logging.ERROR, cameras[i], 'Acquisition test failed')
             except Exception as e:
-                camera_log(logging.ERROR, cameras[i], f'Acquisition test failed: {e.args[0]}')
-                success = False
+                success = camera_log(logging.ERROR, cameras[i], f'Acquisition test failed: {e.args[0]}')
             else:
                 if image.IsValid():
                     image.Release()
@@ -294,7 +292,7 @@ def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
 
 
 @process_camera
-def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any:
+def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any | None:
     """
     Get the value of a camera node.
 
@@ -310,12 +308,15 @@ def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any:
     -------
     Any
         The value of the node.
+    None
+        If there was an error reading the node.
     """
     try:
         node = _get_readable_node(node_name, camera)
         return node.GetValue()
     except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
+        camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
+        return None
 
 
 @process_camera
