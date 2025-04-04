@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 import PySpin
-from pydantic import validate_call
+from pydantic import validate_call, NonNegativeInt
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,72 @@ def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: i
     """
     logger.log(level=level, msg=f'Camera #{camera.DeviceID()}: {message.strip(" .")}.', stacklevel=stacklevel)
     return level < logging.ERROR
+
+
+class Camera:
+    """A class to manage a single camera instance using the PySpin library.
+
+    This class provides a context manager for initializing and deinitializing a camera. It ensures that the camera is
+    properly initialized when entering the context and deinitialized when exiting.
+    """
+
+    _instance = None
+
+    @validate_call()
+    def __init__(self, identifier: str | NonNegativeInt | None, init_camera: bool = True):
+        """Initializes the Cameras instance.
+
+        Parameters
+        ----------
+        init_cameras : bool, optional
+            If True, initializes the cameras upon creation of the instance (default is True).
+        """
+        self._instance = PySpin.System.GetInstance()
+
+        cameras = self._instance.GetCameras()
+        if isinstance(identifier, int):
+            try:
+                self._camera = cameras.GetByIndex(identifier)
+            except (PySpin.SpinnakerException, OverflowError) as e:
+                raise ValueError(f'No camera with index {identifier}') from e
+        elif isinstance(identifier, str):
+            self._camera = cameras.GetBySerial(identifier)
+            if not self._camera.IsValid():
+                raise ValueError(f"No camera with serial '{identifier}'")
+        elif identifier is None:
+            if len(cameras) == 0:
+                raise ValueError('No cameras available')
+            elif len(cameras) == 1:
+                self._camera = cameras[0]
+            elif len(cameras) > 1:
+                raise ValueError('More than one camera available. Please specify by index or serial.')
+
+        self._init_camera = init_camera
+        if init_camera:
+            self._camera.Init()
+            camera_log(logging.INFO, self._camera, 'Initializing')
+
+    def __enter__(self) -> PySpin.CameraList:
+        """Enters the runtime context related to this object.
+
+        Returns
+        -------
+        PySpin.CameraList
+            The list of initialized cameras.
+        """
+        return self._camera
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exits the runtime context related to this object.
+
+        Deinitializes the cameras if they were initialized and releases the system instance.
+        """
+        if self._init_camera:
+            camera_log(logging.INFO, self._camera, 'Deinitializing')
+            self._camera.DeInit()
+        self._camera.Clear()
+        del self._camera
+        self._instance.ReleaseInstance()
 
 
 class Cameras:
