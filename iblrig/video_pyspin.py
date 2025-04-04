@@ -100,11 +100,11 @@ class Camera:
     def _initialize(self):
         if not self._camera.IsInitialized():
             self._camera.Init()
-            self._log(logging.INFO, 'Initializing')
+            self._log(logging.INFO, f'Initializing {self._camera.DeviceModelName()}')
 
     def _deinitialize(self):
         if self._camera.IsInitialized():
-            self._log(logging.INFO, 'Deinitializing')
+            self._log(logging.INFO, f'Deinitializing {self._camera.DeviceModelName()}')
             self._camera.DeInit()
 
     def _get_node(self, node_name: str) -> PySpin.INode:
