@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 import PySpin
-from pydantic import validate_call, NonNegativeInt
+from pydantic import NonNegativeInt, validate_call
 
 logger = logging.getLogger(__name__)
 
@@ -57,22 +57,22 @@ class Camera:
         """
         self._instance = PySpin.System.GetInstance()
 
-        self._cameras = self._instance.GetCameras()
+        self._camera_list = self._instance.GetCameras()
         if isinstance(identifier, int):
             try:
-                self._camera = self._cameras.GetByIndex(identifier)
+                self._camera = self._camera_list.GetByIndex(identifier)
             except (PySpin.SpinnakerException, OverflowError) as e:
                 raise ValueError(f'No camera with index {identifier}') from e
         elif isinstance(identifier, str):
-            self._camera = self._cameras.GetBySerial(identifier)
+            self._camera = self._camera_list.GetBySerial(identifier)
             if not self._camera.IsValid():
                 raise ValueError(f"No camera with serial '{identifier}'")
         elif identifier is None:
-            if len(self._cameras) == 0:
+            if len(self._camera_list) == 0:
                 raise ValueError('No cameras available')
-            elif len(self._cameras) == 1:
-                self._camera = self._cameras[0]
-            elif len(self._cameras) > 1:
+            elif len(self._camera_list) == 1:
+                self._camera = self._camera_list[0]
+            elif len(self._camera_list) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
 
         self._init_camera = init_camera
@@ -98,8 +98,8 @@ class Camera:
         if self._init_camera:
             camera_log(logging.INFO, self._camera, 'Deinitializing')
             self._camera.DeInit()
-        self._cameras.Clear()
-        del self._cameras
+        self._camera_list.Clear()
+        del self._camera_list
         del self._camera
         self._instance.ReleaseInstance()
 
@@ -114,7 +114,7 @@ class Cameras:
     _instance = None
 
     @validate_call()
-    def __init__(self, identifier: list[str | int] | None = None, init_cameras: bool = True):
+    def __init__(self, identifier: list[str | NonNegativeInt] | None = None, init_cameras: bool = True):
         """Initializes the Cameras instance.
 
         Parameters
