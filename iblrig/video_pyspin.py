@@ -99,6 +99,7 @@ class Camera:
             camera_log(logging.INFO, self._camera, 'Deinitializing')
             self._camera.DeInit()
         self._cameras.Clear()
+        del self._cameras
         del self._camera
         self._instance.ReleaseInstance()
 
