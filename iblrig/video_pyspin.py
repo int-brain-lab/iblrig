@@ -39,7 +39,7 @@ class Camera:
 
     @validate_call()
     def __init__(self, identifier: str | NonNegativeInt | None = None):
-        """Initializes the Cameras instance.
+        """Initializes the Camera instance.
 
         Parameters
         ----------
@@ -68,34 +68,44 @@ class Camera:
             elif len(self._camera_list) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
 
-        self._camera.Init()
-        camera_log(logging.INFO, self._camera, 'Initializing')
+        self._initialize()
 
     def __enter__(self) -> PySpin.CameraList:
         """Enters the runtime context related to this object.
 
         Returns
         -------
-        PySpin.CameraList
-            The list of initialized cameras.
+        Camera
+            The current instance.
         """
-        return self._camera
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Exits the runtime context related to this object."""
-        self._disconnect()
+        self._release()
 
     def __del__(self):
         """Destructor."""
-        self._disconnect()
+        self._release()
 
-    def _disconnect(self):
-        camera_log(logging.INFO, self._camera, 'Deinitializing')
-        self._camera.DeInit()
-        self._camera_list.Clear()
-        del self._camera_list
-        del self._camera
+    def _release(self):
+        if hasattr(self, '_camera_list'):
+            self._camera_list.Clear()
+            delattr(self, '_camera_list')
+        if hasattr(self, '_camera'):
+            self._deinitialize()
+            delattr(self, '_camera')
         self._instance.ReleaseInstance()
+
+    def _initialize(self):
+        if not self._camera.IsInitialized():
+            self._camera.Init()
+            self._log(logging.INFO, 'Initializing')
+
+    def _deinitialize(self):
+        if self._camera.IsInitialized():
+            self._log(logging.INFO, 'Deinitializing')
+            self._camera.DeInit()
 
     def _get_node(self, node_name: str) -> PySpin.INode:
         if self._camera.GetNodeMap().GetNode(node_name) is None:
@@ -104,7 +114,7 @@ class Camera:
         return node
 
     def _get_writable_node(self, node_name: str) -> PySpin.INode:
-        node = _get_node(node_name, self._camera)
+        node = self._get_node(node_name)
         if not hasattr(node, 'SetValue'):
             raise AttributeError(f"node '{node_name}' has no SetValue() attribute")
         if not PySpin.IsWritable(node):
@@ -112,7 +122,7 @@ class Camera:
         return node
 
     def _get_readable_node(self, node_name: str) -> PySpin.INode:
-        node = _get_node(node_name, self._camera)
+        node = self._get_node(node_name)
         if not hasattr(node, 'GetValue'):
             raise AttributeError(f"node '{node_name}' has no GetValue() attribute")
         if not PySpin.IsReadable(node):
@@ -139,11 +149,97 @@ class Camera:
             If there was an error reading the node.
         """
         try:
-            node = _get_readable_node(node_name)
+            node = self._get_readable_node(node_name)
             return node.GetValue()
         except Exception as e:
             self._log(logging.ERROR, f'Error getting value: {e.args[0]}')
             return None
+
+    def get_formatted_value(self, node_name: str) -> str:
+        """
+        Get the value of a camera node, formatted as a string.
+
+        Parameters
+        ----------
+        node_name : str
+            The name of the node to get the value of.
+
+        Returns
+        -------
+        str
+            The value of the node, formatted as a string.
+        """
+        try:
+            node = self._get_readable_node(node_name)
+            if isinstance(node, PySpin.IEnumeration):
+                return node.GetEntry(node.GetIntValue()).GetDisplayName()
+            else:
+                return f'{node.GetValue():g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+        except Exception as e:
+            self._log(logging.ERROR, f'Error getting value: {e.args[0]}')
+            return ''
+
+    def set_value(self, node_name: str, value: Any) -> bool:
+        """
+        Set the value of a camera node to a specified value.
+
+        Parameters
+        ----------
+        node_name : str
+            The name of the node to set the value for.
+        value : Any
+            The value to set for the specified node. The type of value must match the node's expected type.
+
+        Returns
+        -------
+        bool
+            True if the property was set successfully, False otherwise.
+        """
+        try:
+            # get node
+            node = self._get_writable_node(node_name)
+            disp_name = node.GetDisplayName()
+
+            # assert types
+            val_type = type(value)
+            if isinstance(node, PySpin.IInteger):
+                expected_value_types = [int]
+            elif isinstance(node, PySpin.IFloat):
+                expected_value_types = [int, float]
+            elif isinstance(node, PySpin.IBoolean):
+                expected_value_types = [bool]
+            elif isinstance(node, PySpin.IEnumeration):
+                expected_value_types = [int, str]
+                if val_type is str:
+                    if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
+                        value = getattr(PySpin, enumeration_name)
+                        val_type = type(value)
+                    else:
+                        expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
+                        expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
+                        raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
+            else:
+                raise TypeError(f'Unsupported node type: {type(node).__name__}')
+            if val_type not in expected_value_types:
+                expected_val_type_str = ', '.join([f'{x.__name__}' for x in expected_value_types])
+                expected_val_type_str = ' or'.join(expected_val_type_str.rsplit(',', 1))
+                raise TypeError(f'Value for {disp_name} must be of type {expected_val_type_str} - not {val_type.__name__}')
+
+            # limit value to valid range
+            if isinstance(node, (PySpin.IInteger, PySpin.IFloat)) and not (node.GetMin() <= value <= node.GetMax()):  # noqa: UP038
+                value = min(max(value, node.GetMin()), node.GetMax())
+
+            # set value (if necessary)
+            if isinstance(node, PySpin.IEnumeration) and value != node.GetIntValue():
+                value_str = node.GetEntry(value).GetDisplayName()
+            elif value != node.GetValue():
+                value_str = f'{value:g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+            else:
+                return True
+            node.SetValue(value)
+            return self._log(logging.INFO, f'Setting {disp_name} to {value_str}')
+        except Exception as e:
+            return self._log(logging.ERROR, f'Error setting value: {e.args[0]}')
 
 
 class Cameras:
