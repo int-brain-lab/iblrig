@@ -44,32 +44,35 @@ class Camera:
     _instance = None
 
     @validate_call()
-    def __init__(self, identifier: str | NonNegativeInt | None, init_camera: bool = True):
+    def __init__(self, identifier: str | NonNegativeInt | None = None, init_camera: bool = True):
         """Initializes the Cameras instance.
 
         Parameters
         ----------
+        identifier : str or int, optional
+            Index or serial number of the camera.
+            If not provided and only one camera is available, this camera will be used.
         init_cameras : bool, optional
             If True, initializes the cameras upon creation of the instance (default is True).
         """
         self._instance = PySpin.System.GetInstance()
 
-        cameras = self._instance.GetCameras()
+        self._cameras = self._instance.GetCameras()
         if isinstance(identifier, int):
             try:
-                self._camera = cameras.GetByIndex(identifier)
+                self._camera = self._cameras.GetByIndex(identifier)
             except (PySpin.SpinnakerException, OverflowError) as e:
                 raise ValueError(f'No camera with index {identifier}') from e
         elif isinstance(identifier, str):
-            self._camera = cameras.GetBySerial(identifier)
+            self._camera = self._cameras.GetBySerial(identifier)
             if not self._camera.IsValid():
                 raise ValueError(f"No camera with serial '{identifier}'")
         elif identifier is None:
-            if len(cameras) == 0:
+            if len(self._cameras) == 0:
                 raise ValueError('No cameras available')
-            elif len(cameras) == 1:
-                self._camera = cameras[0]
-            elif len(cameras) > 1:
+            elif len(self._cameras) == 1:
+                self._camera = self._cameras[0]
+            elif len(self._cameras) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
 
         self._init_camera = init_camera
@@ -95,7 +98,7 @@ class Camera:
         if self._init_camera:
             camera_log(logging.INFO, self._camera, 'Deinitializing')
             self._camera.DeInit()
-        self._camera.Clear()
+        self._cameras.Clear()
         del self._camera
         self._instance.ReleaseInstance()
 
