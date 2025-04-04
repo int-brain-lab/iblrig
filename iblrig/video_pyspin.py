@@ -35,16 +35,10 @@ def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: i
 
 
 class Camera:
-    """A class to manage a single camera instance using the PySpin library.
-
-    This class provides a context manager for initializing and deinitializing a camera. It ensures that the camera is
-    properly initialized when entering the context and deinitialized when exiting.
-    """
-
-    _instance = None
+    """A class to manage a camera instance using the PySpin library."""
 
     @validate_call()
-    def __init__(self, identifier: str | NonNegativeInt | None = None, init_camera: bool = True):
+    def __init__(self, identifier: str | NonNegativeInt | None = None):
         """Initializes the Cameras instance.
 
         Parameters
@@ -56,7 +50,6 @@ class Camera:
             If True, initializes the cameras upon creation of the instance (default is True).
         """
         self._instance = PySpin.System.GetInstance()
-
         self._camera_list = self._instance.GetCameras()
         if isinstance(identifier, int):
             try:
@@ -75,10 +68,8 @@ class Camera:
             elif len(self._camera_list) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
 
-        self._init_camera = init_camera
-        if init_camera:
-            self._camera.Init()
-            camera_log(logging.INFO, self._camera, 'Initializing')
+        self._camera.Init()
+        camera_log(logging.INFO, self._camera, 'Initializing')
 
     def __enter__(self) -> PySpin.CameraList:
         """Enters the runtime context related to this object.
@@ -91,17 +82,68 @@ class Camera:
         return self._camera
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exits the runtime context related to this object.
+        """Exits the runtime context related to this object."""
+        self._disconnect()
 
-        Deinitializes the cameras if they were initialized and releases the system instance.
-        """
-        if self._init_camera:
-            camera_log(logging.INFO, self._camera, 'Deinitializing')
-            self._camera.DeInit()
+    def __del__(self):
+        """Destructor."""
+        self._disconnect()
+
+    def _disconnect(self):
+        camera_log(logging.INFO, self._camera, 'Deinitializing')
+        self._camera.DeInit()
         self._camera_list.Clear()
         del self._camera_list
         del self._camera
         self._instance.ReleaseInstance()
+
+    def _get_node(self, node_name: str) -> PySpin.INode:
+        if self._camera.GetNodeMap().GetNode(node_name) is None:
+            raise AttributeError(f'No such node: {node_name}')
+        node = getattr(self._camera, node_name)
+        return node
+
+    def _get_writable_node(self, node_name: str) -> PySpin.INode:
+        node = _get_node(node_name, self._camera)
+        if not hasattr(node, 'SetValue'):
+            raise AttributeError(f"node '{node_name}' has no SetValue() attribute")
+        if not PySpin.IsWritable(node):
+            raise AttributeError(f'{node.GetDisplayName()} is not writable')
+        return node
+
+    def _get_readable_node(self, node_name: str) -> PySpin.INode:
+        node = _get_node(node_name, self._camera)
+        if not hasattr(node, 'GetValue'):
+            raise AttributeError(f"node '{node_name}' has no GetValue() attribute")
+        if not PySpin.IsReadable(node):
+            raise AttributeError(f'{node.GetDisplayName()} is not readable')
+        return node
+
+    def _log(self, level: int, message: str, stacklevel: int = 3):
+        camera_log(level, self._camera, message, stacklevel)
+
+    def get_value(self, node_name: str) -> Any | None:
+        """
+        Get the value of a camera node.
+
+        Parameters
+        ----------
+        node_name : str
+            The name of the node to get the value of.
+
+        Returns
+        -------
+        Any
+            The value of the node.
+        None
+            If there was an error reading the node.
+        """
+        try:
+            node = _get_readable_node(node_name)
+            return node.GetValue()
+        except Exception as e:
+            self._log(logging.ERROR, f'Error getting value: {e.args[0]}')
+            return None
 
 
 class Cameras:
