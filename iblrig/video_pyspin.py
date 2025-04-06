@@ -17,7 +17,7 @@ def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: i
     Parameters
     ----------
     level : int
-        The logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        The logging level.
     camera : PySpin.CameraPtr
         A pointer to the camera object from the PySpin library.
     message : str
@@ -53,18 +53,18 @@ class Camera:
         self._camera_list = self._instance.GetCameras()
         if isinstance(identifier, int):
             try:
-                self._camera = self._camera_list.GetByIndex(identifier)
+                self._camera_ptr = self._camera_list.GetByIndex(identifier)
             except (PySpin.SpinnakerException, OverflowError) as e:
                 raise ValueError(f'No camera with index {identifier}') from e
         elif isinstance(identifier, str):
-            self._camera = self._camera_list.GetBySerial(identifier)
-            if not self._camera.IsValid():
+            self._camera_ptr = self._camera_list.GetBySerial(identifier)
+            if not self._camera_ptr.IsValid():
                 raise ValueError(f"No camera with serial '{identifier}'")
         elif identifier is None:
             if len(self._camera_list) == 0:
                 raise ValueError('No cameras available')
             elif len(self._camera_list) == 1:
-                self._camera = self._camera_list[0]
+                self._camera_ptr = self._camera_list[0]
             elif len(self._camera_list) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
 
@@ -92,25 +92,25 @@ class Camera:
         if hasattr(self, '_camera_list'):
             self._camera_list.Clear()
             delattr(self, '_camera_list')
-        if hasattr(self, '_camera'):
+        if hasattr(self, '_camera_ptr'):
             self._deinitialize()
-            delattr(self, '_camera')
+            delattr(self, '_camera_ptr')
         self._instance.ReleaseInstance()
 
     def _initialize(self):
-        if not self._camera.IsInitialized():
-            self._camera.Init()
-            self._log(logging.INFO, f'Initializing {self._camera.DeviceModelName()}')
+        if not self._camera_ptr.IsInitialized():
+            self._camera_ptr.Init()
+            self._log(logging.INFO, f'Initializing {self._camera_ptr.DeviceModelName()}')
 
     def _deinitialize(self):
-        if self._camera.IsInitialized():
-            self._log(logging.INFO, f'Deinitializing {self._camera.DeviceModelName()}')
-            self._camera.DeInit()
+        if self._camera_ptr.IsInitialized():
+            self._log(logging.INFO, f'Deinitializing {self._camera_ptr.DeviceModelName()}')
+            self._camera_ptr.DeInit()
 
     def _get_node(self, node_name: str) -> PySpin.INode:
-        if self._camera.GetNodeMap().GetNode(node_name) is None:
+        if self._camera_ptr.GetNodeMap().GetNode(node_name) is None:
             raise AttributeError(f'No such node: {node_name}')
-        node = getattr(self._camera, node_name)
+        node = getattr(self._camera_ptr, node_name)
         return node
 
     def _get_writable_node(self, node_name: str) -> PySpin.INode:
@@ -129,8 +129,8 @@ class Camera:
             raise AttributeError(f'{node.GetDisplayName()} is not readable')
         return node
 
-    def _log(self, level: int, message: str, stacklevel: int = 3):
-        camera_log(level, self._camera, message, stacklevel)
+    def _log(self, level: int, message: str, stacklevel: int = 3) -> bool:
+        return camera_log(level, self._camera_ptr, message, stacklevel)
 
     def get_value(self, node_name: str) -> Any | None:
         """
@@ -241,6 +241,28 @@ class Camera:
         except Exception as e:
             return self._log(logging.ERROR, f'Error setting value: {e.args[0]}')
 
+    def reset(self):
+        """Reset camera and wait for it to come back online."""
+        try:
+            self._camera_ptr.DeviceReset()
+        except PySpin.SpinnakerException as e:
+            self._log(logging.ERROR, f'Error resetting camera: {e}')
+        else:
+            self._log(logging.INFO, 'Resetting camera')
+        finally:
+            self._deinitialize()
+        self._log(logging.INFO, 'Waiting for camera to come back online (~10 s)')
+        online = False
+        while not online:
+            online = True
+            try:
+                self._initialize()
+            except PySpin.SpinnakerException:
+                online = False
+                time.sleep(0.2)
+            else:
+                self._log(logging.INFO, 'Camera is back online')
+
 
 class Cameras:
     """A class to manage camera instances using the PySpin library.
@@ -298,53 +320,6 @@ class Cameras:
         self._cameras.Clear()
         del self._cameras
         self._instance.ReleaseInstance()
-
-
-def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
-    """Decorator to process a camera or a list of cameras.
-
-    This decorator allows a function to accept a single camera instance, a list of camera instances, or None. If None
-    is provided, the decorator will iterate over all available cameras managed by the Cameras context manager and call
-    the decorated function for each camera.
-
-    Parameters
-    ----------
-    func : Callable
-        The function to be decorated, which will be called with each camera instance.
-
-    Returns
-    -------
-    Callable
-        The wrapped function that processes the camera input.
-    """
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> tuple[Any, ...]:
-        # find camera parameter
-        if 'camera' in kwargs:
-            camera = kwargs.pop('camera')
-        elif len(args) > 0 and isinstance(args[-1], PySpin.CameraPtr | PySpin.CameraList):
-            camera = args[-1]
-            args = args[:-1]
-        else:
-            camera = None
-
-        # call the wrapped function
-        results = []
-        if isinstance(camera, PySpin.CameraPtr):
-            results.append(func(*args, camera=camera, **kwargs))
-        elif isinstance(camera, PySpin.CameraList):
-            for i in range(len(camera)):
-                results.append(func(*args, camera=camera[i], **kwargs))
-        if camera is None:
-            with Cameras() as camera_list:
-                for i in range(len(camera_list)):
-                    results.append(func(*args, camera=camera_list[i], **kwargs))
-
-        # return results as tuple
-        return tuple(results)
-
-    return wrapper  # type: ignore
 
 
 def acquisition_ok() -> bool:
@@ -419,193 +394,44 @@ def reset_all_cameras():
                 time.sleep(0.2)
 
 
-def _get_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
-    if camera.GetNodeMap().GetNode(node_name) is None:
-        raise AttributeError(f'No such node: {node_name}')
-    node = getattr(camera, node_name)
-    return node
-
-
-def _get_writable_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
-    node = _get_node(node_name, camera)
-    if not hasattr(node, 'SetValue'):
-        raise AttributeError(f"node '{node_name}' has no SetValue() attribute")
-    if not PySpin.IsWritable(node):
-        raise AttributeError(f'{node.GetDisplayName()} is not writable')
-    return node
-
-
-def _get_readable_node(node_name: str, camera: PySpin.CameraPtr) -> PySpin.INode:
-    node = _get_node(node_name, camera)
-    if not hasattr(node, 'GetValue'):
-        raise AttributeError(f"node '{node_name}' has no GetValue() attribute")
-    if not PySpin.IsReadable(node):
-        raise AttributeError(f'{node.GetDisplayName()} is not readable')
-    return node
-
-
-@process_camera
-def set_value(node_name: str, value: Any, camera: PySpin.CameraPtr) -> bool:
-    """
-    Set the value of a camera node to a specified value.
-
-    Parameters
-    ----------
-    node_name : str
-        The name of the node to set the value for.
-    value : Any
-        The value to set for the specified node. The type of value must match the node's expected type.
-    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
-        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
-        cameras will be considered.
-
-    Returns
-    -------
-    bool
-        True if the property was set successfully, False otherwise.
-    """
-    try:
-        # get node
-        node = _get_writable_node(node_name, camera)
-        disp_name = node.GetDisplayName()
-
-        # assert types
-        val_type = type(value)
-        if isinstance(node, PySpin.IInteger):
-            expected_value_types = [int]
-        elif isinstance(node, PySpin.IFloat):
-            expected_value_types = [int, float]
-        elif isinstance(node, PySpin.IBoolean):
-            expected_value_types = [bool]
-        elif isinstance(node, PySpin.IEnumeration):
-            expected_value_types = [int, str]
-            if val_type is str:
-                if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
-                    value = getattr(PySpin, enumeration_name)
-                    val_type = type(value)
-                else:
-                    expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
-                    expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
-                    raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
-        else:
-            raise TypeError(f'Unsupported node type: {type(node).__name__}')
-        if val_type not in expected_value_types:
-            expected_val_type_str = ', '.join([f'{x.__name__}' for x in expected_value_types])
-            expected_val_type_str = ' or'.join(expected_val_type_str.rsplit(',', 1))
-            raise TypeError(f'Value for {disp_name} must be of type {expected_val_type_str} - not {val_type.__name__}')
-
-        # limit value to valid range
-        if isinstance(node, (PySpin.IInteger, PySpin.IFloat)) and not (node.GetMin() <= value <= node.GetMax()):  # noqa: UP038
-            value = min(max(value, node.GetMin()), node.GetMax())
-
-        # set value (if necessary)
-        if isinstance(node, PySpin.IEnumeration) and value != node.GetIntValue():
-            value_str = node.GetEntry(value).GetDisplayName()
-        elif value != node.GetValue():
-            value_str = f'{value:g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
-        else:
-            return True
-        node.SetValue(value)
-        return camera_log(logging.INFO, camera, f'Setting {disp_name} to {value_str}')
-    except Exception as e:
-        return camera_log(logging.ERROR, camera, f'Error setting value: {e.args[0]}')
-
-
-@process_camera
-def get_value(node_name: str, camera: PySpin.CameraPtr) -> Any | None:
-    """
-    Get the value of a camera node.
-
-    Parameters
-    ----------
-    node_name : str
-        The name of the node to get the value of.
-    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
-        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
-        cameras will be considered.
-
-    Returns
-    -------
-    Any
-        The value of the node.
-    None
-        If there was an error reading the node.
-    """
-    try:
-        node = _get_readable_node(node_name, camera)
-        return node.GetValue()
-    except Exception as e:
-        camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
-        return None
-
-
-@process_camera
-def get_string_value(node_name: str, camera: PySpin.CameraPtr) -> str:
-    """
-    Get the value of a camera node, formatted as a string.
-
-    Parameters
-    ----------
-    node_name : str
-        The name of the node to get the value of.
-    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
-        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
-        cameras will be considered.
-
-    Returns
-    -------
-    str
-        The value of the node, formatted as a string.
-    """
-    try:
-        node = _get_readable_node(node_name, camera)
-        if isinstance(node, PySpin.IEnumeration):
-            return node.GetEntry(node.GetIntValue()).GetDisplayName()
-        else:
-            return f'{node.GetValue():g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
-    except Exception as e:
-        camera_log(logging.ERROR, camera, f'Error getting value: {e.args[0]}')
-        return ''
-
-
-@process_camera
-def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
-    """Enable or disable the trigger for a specified camera or all cameras.
-
-    This function allows you to enable or disable the trigger mode for a given camera / given cameras.
-    If no camera is specified, it will enable or disable the trigger mode for all available cameras.
-
-    Parameters
-    ----------
-    enable : bool
-        A flag indicating whether to enable (True) or disable (False) the camera trigger.
-    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
-        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
-        cameras will be considered.
-
-    Raises
-    ------
-    PySpin.SpinnakerException
-        If there is an error while setting the trigger mode for the camera.
-    """
-    return set_value(node_name='TriggerMode', value=int(enable), camera=camera)
-
-
-@process_camera
-def select_line(line: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_value(node_name='LineSelector', value=line, camera=camera)
-
-
-@process_camera
-def set_line_mode(value: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_value(node_name='LineMode', value=value, camera=camera)
-
-
-@process_camera
-def set_line_source(value: int | str, camera: PySpin.CameraPtr) -> bool:
-    return set_value(node_name='LineSource', value=value, camera=camera)
-
-
-@process_camera
-def set_framerate(value: float, camera: PySpin.CameraPtr) -> bool:
-    return set_value(node_name='AcquisitionFrameRate', value=value, camera=camera)
+# @process_camera
+# def enable_camera_trigger(enable: bool, camera: PySpin.CameraPtr) -> bool:
+#     """Enable or disable the trigger for a specified camera or all cameras.
+#
+#     This function allows you to enable or disable the trigger mode for a given camera / given cameras.
+#     If no camera is specified, it will enable or disable the trigger mode for all available cameras.
+#
+#     Parameters
+#     ----------
+#     enable : bool
+#         A flag indicating whether to enable (True) or disable (False) the camera trigger.
+#     camera : PySpin.CameraPtr, PySpin.CameraList or None, optional
+#         A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available
+#         cameras will be considered.
+#
+#     Raises
+#     ------
+#     PySpin.SpinnakerException
+#         If there is an error while setting the trigger mode for the camera.
+#     """
+#     return set_value(node_name='TriggerMode', value=int(enable), camera=camera)
+#
+#
+# @process_camera
+# def select_line(line: int | str, camera: PySpin.CameraPtr) -> bool:
+#     return set_value(node_name='LineSelector', value=line, camera=camera)
+#
+#
+# @process_camera
+# def set_line_mode(value: int | str, camera: PySpin.CameraPtr) -> bool:
+#     return set_value(node_name='LineMode', value=value, camera=camera)
+#
+#
+# @process_camera
+# def set_line_source(value: int | str, camera: PySpin.CameraPtr) -> bool:
+#     return set_value(node_name='LineSource', value=value, camera=camera)
+#
+#
+# @process_camera
+# def set_framerate(value: float, camera: PySpin.CameraPtr) -> bool:
+#     return set_value(node_name='AcquisitionFrameRate', value=value, camera=camera)
