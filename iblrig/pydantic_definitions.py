@@ -212,8 +212,7 @@ class HardwareSettingsCameraProfile(BunchModel, extra='allow'):
             raise ValueError('Parameters for at least one camera must be specified.')
         for key, val in list(data.items()):
             if key != 'BONSAI_WORKFLOW':
-                if 'LABEL' not in val:
-                    val['LABEL'] = key
+                val['LABEL'] = key  # So we can assess the camera label from within the sub-model
                 data[key] = HardwareSettingsCameraParameters.model_validate(val)
         return data
 
