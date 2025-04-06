@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import pandas as pd
 from annotated_types import Ge, Le
@@ -12,13 +12,16 @@ from pydantic import (
     DirectoryPath,
     Field,
     FilePath,
+    NonNegativeInt,
     PlainSerializer,
     PositiveFloat,
     PositiveInt,
     field_serializer,
     field_validator,
+    model_validator,
 )
 from pydantic_core._pydantic_core import PydanticUndefined
+from typing_extensions import Self
 
 from iblrig.constants import BASE_PATH
 
@@ -141,27 +144,43 @@ class HardwareSettingsScale(BunchModel):
 
 
 class HardwareSettingsCamera(BunchModel):
-    INDEX: int
+    INDEX: NonNegativeInt | None = Field(
+        title='Camera Index',
+        default=None,
+        description="The camera's index as reported by FlyCapture",
+        deprecated='Use of INDEX is deprecated. Please use SERIAL instead.',
+    )
+    SERIAL: str | None = Field(
+        title='Camera serial number',
+        default=None,
+        description="The camera's serial number as reported by FlyCapture"
+    )
     FPS: PositiveInt | None = Field(
         title='Camera frame rate',
         default=None,
-        description='An optional frame rate (for camera QC only)',
+        description='An optional frame rate',
     )
     WIDTH: PositiveInt | None = Field(
         title='Camera frame width',
         default=None,
-        description='An optional frame width (for camera QC only)',
+        description='An optional frame width',
     )
     HEIGHT: PositiveInt | None = Field(
         title='Camera frame height',
         default=None,
-        description='An optional frame hight (for camera QC only)',
+        description='An optional frame height',
     )
     SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',
         default=None,
         description='The name of the DAQ channel wired to the camera GPIO',
     )
+
+    @model_validator(mode='after')
+    def check_index_or_serial(self) -> Self:
+        if self.INDEX is None and self.SERIAL is None:
+            raise ValueError('Either SERIAL or INDEX is required')
+        return self
 
 
 class HardwareSettingsNeurophotometrics(BunchModel):

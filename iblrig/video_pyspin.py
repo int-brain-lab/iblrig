@@ -1,11 +1,12 @@
-import functools
 import logging
 import time
-from collections.abc import Callable
+import warnings
 from typing import Any
 
 import PySpin
 from pydantic import NonNegativeInt, validate_call
+
+from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCamera
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,9 @@ class Camera:
         return node
 
     def _log(self, level: int, message: str, stacklevel: int = 2) -> bool:
-        logger.log(level=level, msg=f'Camera {self._index} (SN: {self._serial_number}): {message.strip(" .")}.', stacklevel=stacklevel)
+        logger.log(
+            level=level, msg=f'Camera {self._index} (SN: {self._serial_number}): {message.strip(" .")}.', stacklevel=stacklevel
+        )
         return level < logging.ERROR
 
     def get_value(self, node_name: str) -> Any | None:
@@ -272,6 +275,18 @@ class Camera:
                 time.sleep(0.2)
             else:
                 self._log(logging.INFO, 'Camera is back online')
+
+    def apply_settings(self, settings: HardwareSettingsCamera):
+        # Make sure we're dealing with the correct camera
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if (settings.SERIAL != self._serial_number) and (settings.INDEX == self._index):
+                raise ValueError('Supplied settings are intended for a camera with different index or serial number.')
+
+        # Set frame rate
+        if settings.FPS is not None:
+            self.set_value(node_name='TriggerMode', value=0)
+            self.set_value(node_name='AcquisitionFrameRate', value=settings.FPS)
 
 
 class Cameras:

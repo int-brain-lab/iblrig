@@ -253,7 +253,7 @@ class TestCameraSetValueInt(TestCase):
         self.assertTrue(result)
 
 
-class TestSetValueFloat(TestCase):
+class TestCameraSetValueFloat(TestCase):
     def setUp(self):
         with patch.object(MockCameraList, 'GetByIndex', return_value=get_mock_camera()):
             self.mock_camera = video_pyspin.Camera(0)
@@ -272,7 +272,7 @@ class TestSetValueFloat(TestCase):
         self.assertTrue(result)
 
 
-class TestSetValueBoolean(TestCase):
+class TestCameraSetValueBoolean(TestCase):
     def setUp(self):
         with patch.object(MockCameraList, 'GetByIndex', return_value=get_mock_camera()):
             self.mock_camera = video_pyspin.Camera(0)
@@ -289,7 +289,7 @@ class TestSetValueBoolean(TestCase):
         self.assertFalse(result)
 
 
-class TestSetValueEnumeration(TestCase):
+class TestCameraSetValueEnumeration(TestCase):
     def setUp(self):
         with patch.object(MockCameraList, 'GetByIndex', return_value=get_mock_camera()):
             self.mock_camera = video_pyspin.Camera(0)
@@ -321,7 +321,7 @@ class TestSetValueEnumeration(TestCase):
         self.assertFalse(result)
 
 
-class TestSetValueUnsupportedNodeType(TestCase):
+class TestCameraSetValueUnsupportedNodeType(TestCase):
     def test_set_value_unsupported_node_type(self):
         with patch.object(MockCameraList, 'GetByIndex', return_value=get_mock_camera()):
             mock_camera = video_pyspin.Camera(0)
