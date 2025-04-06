@@ -143,7 +143,8 @@ class HardwareSettingsScale(BunchModel):
     COM_SCALE: str | None = None
 
 
-class HardwareSettingsCamera(BunchModel):
+class HardwareSettingsCameraParameters(BunchModel):
+    LABEL: str = Field(title='Camera label', description="The camera's label", exclude=True)
     INDEX: NonNegativeInt | None = Field(
         title='Camera Index',
         default=None,
@@ -151,9 +152,7 @@ class HardwareSettingsCamera(BunchModel):
         deprecated='Use of INDEX is deprecated. Please use SERIAL instead.',
     )
     SERIAL: str | None = Field(
-        title='Camera serial number',
-        default=None,
-        description="The camera's serial number as reported by FlyCapture"
+        title='Camera serial number', default=None, description="The camera's serial number as reported by FlyCapture"
     )
     FPS: PositiveInt | None = Field(
         title='Camera frame rate',
@@ -183,13 +182,6 @@ class HardwareSettingsCamera(BunchModel):
         return self
 
 
-class HardwareSettingsNeurophotometrics(BunchModel):
-    DEVICE_MODEL: Literal['NP3002'] = 'NP3002'
-    BONSAI_EXECUTABLE: ExistingFilePath = Path(Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe'))
-    BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
-    COM_NEUROPHOTOMETRY: str | None = None
-
-
 class HardwareSettingsCameraWorkflow(BunchModel):
     setup: ExistingFilePath | None = Field(
         title='Optional camera setup workflow',
@@ -205,6 +197,44 @@ class HardwareSettingsCameraWorkflow(BunchModel):
         if not Path(v).is_absolute():  # assume relative to iblrig repo
             v = BASE_PATH.joinpath(v)
         return v
+
+
+class HardwareSettingsCameraProfile(BunchModel, extra='allow'):
+    """Pydantic Model for a camera profile, defining BONSAI workflows and parameters for one or multiple cameras."""
+
+    BONSAI_WORKFLOW: HardwareSettingsCameraWorkflow
+
+    @model_validator(mode='before')
+    @classmethod
+    def parse_extra_as_camera_parameters(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate all fields other than BONSAI_WORKFLOW as HardwareSettingsCameraParameters."""
+        if len(data) == 1:
+            raise ValueError('Parameters for at least one camera must be specified.')
+        for key, val in list(data.items()):
+            if key != 'BONSAI_WORKFLOW':
+                if 'LABEL' not in val:
+                    val['LABEL'] = key
+                data[key] = HardwareSettingsCameraParameters.model_validate(val)
+        return data
+
+
+class HardwareSettingsCamera(BunchModel, extra='allow'):
+    """Pydantic Model for cameras, containing one or several camera profiles."""
+
+    @model_validator(mode='before')
+    @classmethod
+    def parse_extra_as_camera_profiles(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate all fields as HardwareSettingsCameraProfile."""
+        if len(data) == 0:
+            raise ValueError('At least one camera profile must be specified.')
+        return {key: HardwareSettingsCameraProfile.model_validate(val) for key, val in data.items()}
+
+
+class HardwareSettingsNeurophotometrics(BunchModel):
+    DEVICE_MODEL: Literal['NP3002'] = 'NP3002'
+    BONSAI_EXECUTABLE: ExistingFilePath = Path(Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe'))
+    BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
+    COM_NEUROPHOTOMETRY: str | None = None
 
 
 class HardwareSettingsMicrophone(BunchModel):
@@ -226,7 +256,7 @@ class HardwareSettings(BunchModel):
     device_sound: HardwareSettingsSound | None = None
     device_valve: HardwareSettingsValve | None = None
     device_scale: HardwareSettingsScale = HardwareSettingsScale()
-    device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
+    device_cameras: HardwareSettingsCamera | None
     device_microphone: HardwareSettingsMicrophone | None = None
     device_neurophotometrics: HardwareSettingsNeurophotometrics | None = None
     VERSION: str

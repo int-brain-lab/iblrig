@@ -238,7 +238,7 @@ def validate_video(video_path, config):
     ----------
     video_path : pathlib.Path
         Path to the video file.
-    config : iblrig.pydantic_definitions.HardwareSettingsCamera
+    config : iblrig.pydantic_definitions.HardwareSettingsCameraParameters
         The expected video configuration.
 
     Returns

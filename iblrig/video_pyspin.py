@@ -6,7 +6,7 @@ from typing import Any
 import PySpin
 from pydantic import NonNegativeInt, validate_call
 
-from iblrig.pydantic_definitions import HardwareSettings, HardwareSettingsCamera
+from iblrig.pydantic_definitions import HardwareSettingsCameraParameters
 
 logger = logging.getLogger(__name__)
 
@@ -276,11 +276,11 @@ class Camera:
             else:
                 self._log(logging.INFO, 'Camera is back online')
 
-    def apply_settings(self, settings: HardwareSettingsCamera):
+    def apply_settings(self, settings: HardwareSettingsCameraParameters):
         # Make sure we're dealing with the correct camera
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            if (settings.SERIAL != self._serial_number) and (settings.INDEX == self._index):
+            warnings.simplefilter('ignore')
+            if (self._serial_number != settings.SERIAL) and (self._index == settings.INDEX):
                 raise ValueError('Supplied settings are intended for a camera with different index or serial number.')
 
         # Set frame rate
