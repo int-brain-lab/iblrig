@@ -37,6 +37,10 @@ def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: i
 class Camera:
     """A class to manage a camera instance using the PySpin library."""
 
+    _serial_number: str
+    _model_name: str
+    _index: int
+
     @validate_call()
     def __init__(self, identifier: str | NonNegativeInt | None = None):
         """Initializes the Camera instance.
@@ -67,6 +71,9 @@ class Camera:
                 self._camera_ptr = self._camera_list[0]
             elif len(self._camera_list) > 1:
                 raise ValueError('More than one camera available. Please specify by index or serial.')
+        for idx, ptr in enumerate(self._camera_list):
+            if ptr == self._camera_ptr:
+                self._index = idx
 
         self._initialize()
 
@@ -100,11 +107,13 @@ class Camera:
     def _initialize(self):
         if not self._camera_ptr.IsInitialized():
             self._camera_ptr.Init()
-            self._log(logging.INFO, f'Initializing {self._camera_ptr.DeviceModelName()}')
+            self._serial_number = self._camera_ptr.DeviceSerialNumber()
+            self._model_name = self._camera_ptr.DeviceModelName()
+            self._log(logging.INFO, f'Initializing {self._model_name}')
 
     def _deinitialize(self):
         if self._camera_ptr.IsInitialized():
-            self._log(logging.INFO, f'Deinitializing {self._camera_ptr.DeviceModelName()}')
+            self._log(logging.INFO, f'Deinitializing {self._model_name}')
             self._camera_ptr.DeInit()
 
     def _get_node(self, node_name: str) -> PySpin.INode:
@@ -129,8 +138,9 @@ class Camera:
             raise AttributeError(f'{node.GetDisplayName()} is not readable')
         return node
 
-    def _log(self, level: int, message: str, stacklevel: int = 3) -> bool:
-        return camera_log(level, self._camera_ptr, message, stacklevel)
+    def _log(self, level: int, message: str, stacklevel: int = 2) -> bool:
+        logger.log(level=level, msg=f'Camera {self._index} (SN: {self._serial_number}): {message.strip(" .")}.', stacklevel=stacklevel)
+        return level < logging.ERROR
 
     def get_value(self, node_name: str) -> Any | None:
         """
