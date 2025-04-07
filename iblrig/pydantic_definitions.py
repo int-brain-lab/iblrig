@@ -165,6 +165,13 @@ class HardwareSettingsCameraParameters(BunchModel):
         default=None,
         description='An optional frame rate',
     )
+    VIDEO_MODE: NonNegativeInt = Field(
+        title='Video Mode',
+        default=0,
+        description='Current video mode',
+        ge=0,
+        le=1,
+    )
     WIDTH: PositiveInt | None = Field(
         title='Camera frame width',
         default=None,

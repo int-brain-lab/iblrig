@@ -310,6 +310,9 @@ class Camera:
         # Disable trigger mode
         self.set_value(node_name='TriggerMode', value=0)
 
+        # Set video mode
+        self.set_value('VideoMode', settings.VIDEO_MODE)
+
         # Set frame width
         if settings.WIDTH is not None:
             self.set_value('Width', settings.WIDTH)
