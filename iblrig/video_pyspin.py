@@ -10,6 +10,20 @@ from iblrig.pydantic_definitions import HardwareSettingsCameraParameters
 
 logger = logging.getLogger(__name__)
 
+NODE_MAPPING = {
+    PySpin.intfIValue: PySpin.CValuePtr,
+    PySpin.intfIBase: PySpin.CBasePtr,
+    PySpin.intfIInteger: PySpin.CIntegerPtr,
+    PySpin.intfIBoolean: PySpin.CBooleanPtr,
+    PySpin.intfICommand: PySpin.CCommandPtr,
+    PySpin.intfIFloat: PySpin.CFloatPtr,
+    PySpin.intfIString: PySpin.CStringPtr,
+    PySpin.intfIRegister: PySpin.CRegisterPtr,
+    PySpin.intfICategory: PySpin.CCategoryPtr,
+    PySpin.intfIEnumeration: PySpin.CEnumerationPtr,
+    PySpin.intfIEnumEntry: PySpin.CEnumEntryPtr,
+}
+
 
 def camera_log(level: int, camera: PySpin.CameraPtr, message: str, stacklevel: int = 2) -> bool:
     """
@@ -117,24 +131,28 @@ class Camera:
             self._log(logging.INFO, f'Deinitializing {self._model_name}')
             self._camera_ptr.DeInit()
 
+    def _cast_node(self, node: PySpin.INode) -> Any:
+        interface_type = node.GetPrincipalInterfaceType()
+        caster = NODE_MAPPING.get(interface_type)
+        if caster is None:
+            raise TypeError(f'Unknown node interface type: {interface_type}')
+        return caster(node)
+
     def _get_node(self, node_name: str) -> PySpin.INode:
-        if self._camera_ptr.GetNodeMap().GetNode(node_name) is None:
+        node_map = self._camera_ptr.GetNodeMap()
+        node = node_map.GetNode(node_name)
+        if node is None:
             raise AttributeError(f'No such node: {node_name}')
-        node = getattr(self._camera_ptr, node_name)
-        return node
+        return self._cast_node(node)
 
     def _get_writable_node(self, node_name: str) -> PySpin.INode:
         node = self._get_node(node_name)
-        if not hasattr(node, 'SetValue'):
-            raise AttributeError(f"node '{node_name}' has no SetValue() attribute")
         if not PySpin.IsWritable(node):
             raise AttributeError(f'{node.GetDisplayName()} is not writable')
         return node
 
     def _get_readable_node(self, node_name: str) -> PySpin.INode:
         node = self._get_node(node_name)
-        if not hasattr(node, 'GetValue'):
-            raise AttributeError(f"node '{node_name}' has no GetValue() attribute")
         if not PySpin.IsReadable(node):
             raise AttributeError(f'{node.GetDisplayName()} is not readable')
         return node
@@ -202,12 +220,15 @@ class Camera:
             The name of the node to set the value for.
         value : Any
             The value to set for the specified node. The type of value must match the node's expected type.
+            The routine will be skipped if value is None.
 
         Returns
         -------
         bool
             True if the property was set successfully, False otherwise.
         """
+        if value is None:
+            return True
         try:
             # get node
             node = self._get_writable_node(node_name)
@@ -215,20 +236,22 @@ class Camera:
 
             # assert types
             val_type = type(value)
-            if isinstance(node, PySpin.IInteger):
+            if isinstance(node, PySpin.CIntegerPtr):
                 expected_value_types = [int]
-            elif isinstance(node, PySpin.IFloat):
+            elif isinstance(node, PySpin.CFloatPtr):
                 expected_value_types = [int, float]
-            elif isinstance(node, PySpin.IBoolean):
+            elif isinstance(node, PySpin.CBooleanPtr):
                 expected_value_types = [bool]
-            elif isinstance(node, PySpin.IEnumeration):
+            elif isinstance(node, PySpin.CEnumerationPtr):
                 expected_value_types = [int, str]
                 if val_type is str:
-                    if hasattr(PySpin, enumeration_name := f'{node_name}_{value}'):
-                        value = getattr(PySpin, enumeration_name)
+                    entries = [self._cast_node(entry) for entry in node.GetEntries()]
+                    valid = {entry.GetSymbolic(): entry.GetValue() for entry in entries}
+                    if value in valid:
+                        value = valid[value]
                         val_type = type(value)
                     else:
-                        expected_val_str = ', '.join([f"'{n.GetName().rsplit('_', 1)[-1]}'" for n in node.GetEntries()])
+                        expected_val_str = ', '.join(valid.keys())
                         expected_val_str = ' or'.join(expected_val_str.rsplit(',', 1))
                         raise ValueError(f'String value for {disp_name} must be {expected_val_str}')
             else:
@@ -243,13 +266,14 @@ class Camera:
                 value = min(max(value, node.GetMin()), node.GetMax())
 
             # set value (if necessary)
-            if isinstance(node, PySpin.IEnumeration) and value != node.GetIntValue():
+            if isinstance(node, PySpin.CEnumerationPtr) and value != node.GetIntValue():
                 value_str = node.GetEntry(value).GetDisplayName()
-            elif value != node.GetValue():
+                node.SetIntValue(value)
+            elif not isinstance(node, PySpin.CEnumerationPtr) and value != node.GetValue():
                 value_str = f'{value:g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+                node.SetValue(value)
             else:
                 return True
-            node.SetValue(value)
             return self._log(logging.INFO, f'Setting {disp_name} to {value_str}')
         except Exception as e:
             return self._log(logging.ERROR, f'Error setting value: {e.args[0]}')
@@ -283,10 +307,41 @@ class Camera:
             if (self._serial_number != settings.SERIAL) and (self._index == settings.INDEX):
                 raise ValueError('Supplied settings are intended for a camera with different index or serial number.')
 
+        # Disable trigger mode
+        self.set_value(node_name='TriggerMode', value=0)
+
+        # Set frame width
+        if settings.WIDTH is not None:
+            self.set_value('Width', settings.WIDTH)
+
+        # Set frame height
+        if settings.HEIGHT is not None:
+            self.set_value('Height', settings.HEIGHT)
+
         # Set frame rate
         if settings.FPS is not None:
-            self.set_value(node_name='TriggerMode', value=0)
-            self.set_value(node_name='AcquisitionFrameRate', value=settings.FPS)
+            self.set_value('AcquisitionFrameRateAuto', 'Off')
+            self.set_value('AcquisitionFrameRate', settings.FPS)
+
+        # Set exposure time
+        self.set_value('ExposureAuto', 'Off')
+        self.set_value('ExposureTime', settings.EXPOSURE_TIME_US)
+
+        # set gain
+        self.set_value('GainAuto', 'Off')
+        self.set_value('Gain', settings.GAIN_DB)
+
+        # Set exposure compensation
+        self.set_value('pgrExposureCompensationAuto', 'Off')
+        self.set_value('pgrExposureCompensation', settings.EXPOSURE_COMPENSATION_EV)
+
+        # Set GPIO
+        for line in range(4):
+            self.set_value('LineSelector', line)
+            self.set_value('LineMode', settings.LINE_MODE[line])
+            self.set_value('LineSource', settings.LINE_SOURCE[line])
+            self.set_value('StrobeDuration', settings.STROBE_DURATION_US[line])
+            self.set_value('StrobeDelay', settings.STROBE_DELAY_US[line])
 
 
 class Cameras:

@@ -12,6 +12,7 @@ from pydantic import (
     DirectoryPath,
     Field,
     FilePath,
+    NonNegativeFloat,
     NonNegativeInt,
     PlainSerializer,
     PositiveFloat,
@@ -145,6 +146,11 @@ class HardwareSettingsScale(BunchModel):
 
 class HardwareSettingsCameraParameters(BunchModel):
     LABEL: str = Field(title='Camera label', description="The camera's label", exclude=True)
+    SYNC_LABEL: str | None = Field(
+        title='Camera DAQ sync label',
+        default=None,
+        description='The name of the DAQ channel wired to the camera GPIO',
+    )
     INDEX: NonNegativeInt | None = Field(
         title='Camera Index',
         default=None,
@@ -169,10 +175,48 @@ class HardwareSettingsCameraParameters(BunchModel):
         default=None,
         description='An optional frame height',
     )
-    SYNC_LABEL: str | None = Field(
-        title='Camera DAQ sync label',
-        default=None,
-        description='The name of the DAQ channel wired to the camera GPIO',
+    EXPOSURE_TIME_US: PositiveFloat = Field(
+        title='Exposure Time',
+        default=10000,
+        description='Exposure time in microseconds',
+    )
+    EXPOSURE_COMPENSATION_EV: float = Field(
+        title='Camera exposure compensation',
+        default=0.7,
+        description='The measured or target image plane illuminance in EV',
+    )
+    GAIN_DB: NonNegativeFloat = Field(
+        title='Gain',
+        default=12,
+        description='Gain applied to the image in dB',
+    )
+    LINE_MODE: list[Literal['Input', 'Output']] = Field(
+        title='Line Mode',
+        default=['Input', 'Output', 'Output', 'Input'],
+        description='Controls whether the physical Line is used to Input or Output a signal',
+        min_length=2,
+        max_length=2,
+    )
+    LINE_SOURCE: list[Literal['ExposureActive', 'ExternalTriggerActive', 'UserOutput2'], None] = Field(
+        title='Line Source',
+        default=[None, 'ExposureActive', 'ExposureActive', None],
+        description='Selects which internal acquisition or I/O source signal to output on the selected line',
+        min_length=2,
+        max_length=2,
+    )
+    STROBE_DURATION_US: list[NonNegativeFloat] = Field(
+        title='Strobe Duration',
+        default=[None, 10e3, 10e3, None],
+        description='Sets the duration (in microseconds) of the Strobe Signal',
+        min_length=2,
+        max_length=2,
+    )
+    STROBE_DELAY_US: list[NonNegativeFloat] = Field(
+        title='Strobe Delay',
+        default=[None, 0, 0, None],
+        description='Sets the duration (in microseconds) of the delay before starting the Strobe Signal.',
+        min_length=2,
+        max_length=2,
     )
 
     @model_validator(mode='after')
