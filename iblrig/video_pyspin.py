@@ -270,7 +270,7 @@ class Camera:
                 value_str = node.GetEntry(value).GetDisplayName()
                 node.SetIntValue(value)
             elif not isinstance(node, PySpin.CEnumerationPtr) and value != node.GetValue():
-                value_str = f'{value:g}{" " + node.GetUnit() if hasattr(node, "GetUnit") else ""}'
+                value_str = f'{value:g}{(" " + node.GetUnit()) if hasattr(node, "GetUnit") else ""}'
                 node.SetValue(value)
             else:
                 return True
@@ -310,14 +310,17 @@ class Camera:
         # Disable trigger mode
         self.set_value(node_name='TriggerMode', value=0)
 
+        # set analog parameters
+        self.set_value('BlackLevel', settings.BLACK_LEVEL)
+        self.set_value('GainAuto', 'Off')
+        self.set_value('Gain', settings.GAIN_DB)
+
         # Set video mode
         self.set_value('VideoMode', settings.VIDEO_MODE)
 
-        # Set frame width
+        # Set frame dimensions
         if settings.WIDTH is not None:
             self.set_value('Width', settings.WIDTH)
-
-        # Set frame height
         if settings.HEIGHT is not None:
             self.set_value('Height', settings.HEIGHT)
 
@@ -327,12 +330,9 @@ class Camera:
             self.set_value('AcquisitionFrameRate', settings.FPS)
 
         # Set exposure time
+        self.set_value('ExposureMode', 'Timed')
         self.set_value('ExposureAuto', 'Off')
         self.set_value('ExposureTime', settings.EXPOSURE_TIME_US)
-
-        # set gain
-        self.set_value('GainAuto', 'Off')
-        self.set_value('Gain', settings.GAIN_DB)
 
         # Set exposure compensation
         self.set_value('pgrExposureCompensationAuto', 'Off')

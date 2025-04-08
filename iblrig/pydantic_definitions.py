@@ -192,6 +192,11 @@ class HardwareSettingsCameraParameters(BunchModel):
         default=0.7,
         description='The measured or target image plane illuminance in EV',
     )
+    BLACK_LEVEL: NonNegativeFloat = Field(
+        title='Black Level',
+        default=2,
+        description='Analog black level in percent',
+    )
     GAIN_DB: NonNegativeFloat = Field(
         title='Gain',
         default=12,
