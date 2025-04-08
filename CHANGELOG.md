@@ -1,6 +1,30 @@
 Changelog
 =========
 
+8.27.6
+------
+* fixed: detection of LED control ability broken for Bpods with old firmware  
+
+8.27.5
+------
+* fixed: issues in serial communication resolved through update to iblpybpod-no-gui 3.1.0
+
+8.27.4
+------
+* fixed: passive choice world did not play noise stimulus
+* changed: update to ONE-api>=3.0.0 and ibllib>=3.3.0
+
+8.27.3
+------
+* changed: reset camera(s) prior to starting task when inconsistencies have been detected
+* changed: include stock subjects if user is stock manager
+* changed: skip validation of Ambient Module if device_bpod.USE_AMBIENT_MODULE is false
+* added: `remove_bonsai_layouts` command for troubleshooting BONSAI GUIs not appearing 
+
+8.27.2
+------
+* fixed: error when using task arguments of type bool
+
 8.27.1
 ------
 * fixed: resolved warning about chained assignment in TrainingChoiceWorld.compute_performance()

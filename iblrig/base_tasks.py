@@ -806,11 +806,14 @@ class BonsaiRecordingMixin(BaseSession):
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
 
+        # test acquisition and reset cameras if needed
         # enable trigger of cameras (so Bonsai can disable it again ... sigh)
         if PYSPIN_AVAILABLE:
-            from iblrig.video_pyspin import enable_camera_trigger
+            from iblrig import video_pyspin
 
-            enable_camera_trigger(True)
+            if not video_pyspin.acquisition_ok():
+                video_pyspin.reset_all_cameras()
+            video_pyspin.enable_camera_trigger(True)
 
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
@@ -1146,7 +1149,7 @@ class SoundMixin(BaseSession, HasBpod):
         Play the noise sound for the error feedback using bpod state machine.
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_noise], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
@@ -1166,7 +1169,7 @@ class SoundMixin(BaseSession, HasBpod):
         sma.add_state(
             state_name=state_name,
             state_timer=state_timer,
-            output_actions=[self.bpod.actions.play_tone],
+            output_actions=output_actions,
             state_change_conditions={'BNC2Low': 'exit', 'Tup': 'exit'},
         )
         self.bpod.send_state_machine(sma)

@@ -301,6 +301,11 @@ class ValidatorAmbientModule(Validator):
     _name = 'Bpod Ambient Module'
 
     def _run(self):
+        # skip if ambient module is not being used
+        if not self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            yield Result(Status.SKIP, 'Ambient module is not being used - skipping validation')
+            return False
+
         # yield Bpod's connection status
         bpod = yield from self._get_bpod()
         if bpod is None:

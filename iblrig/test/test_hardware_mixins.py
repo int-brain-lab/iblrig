@@ -6,6 +6,11 @@ The start() methods of those mixins require the hardware to be connected.
 
 import unittest
 from unittest import mock
+from unittest.mock import patch
+
+import numpy as np
+from scipy.fft import fft, fftfreq
+from scipy.stats import ks_2samp
 
 from iblrig.base_choice_world import ChoiceWorldSession
 from iblrig.base_tasks import (
@@ -20,6 +25,7 @@ from iblrig.base_tasks import (
 )
 from iblrig.hardware import SOFTCODE
 from iblrig.test.base import TASK_KWARGS
+from iblutil.util import Bunch
 
 
 class EmptyHardwareSession(BaseSession):
@@ -129,11 +135,62 @@ class TestOtherMixins(BaseTestHardwareMixins):
 
     def test_sound_card_mixin(self):
         """
-        Instantiates a bare session with the sound card mixin
+        Test the functionality of the SoundMixin in a session.
+
+        This test checks that the sound card mixin correctly initializes sound
+        components and verifies the properties of the generated sounds.
         """
         session = self.session
         SoundMixin.init_mixin_sound(session)
-        assert session.sound.GO_TONE is not None
+
+        go_tone = session.sound.get('GO_TONE')
+        white_noise = session.sound.get('WHITE_NOISE')
+        assert not np.array_equal(go_tone, white_noise)
+        fs = session.sound['samplerate']
+
+        # test go tone
+        x = go_tone[:, 0]
+        n = len(x)
+        assert np.isclose(n / fs, 0.11)
+        yf = np.abs(fft(x))  # magnitude of the FFT
+        xf = fftfreq(n, 1 / fs)  # frequency bins
+        idx_peak = np.argmax(yf[: n // 2])  # index of peak magnitude
+        assert np.isclose(xf[idx_peak], 5000)
+        assert yf[idx_peak] > 100000 * np.median(yf)
+
+        # test white noise
+        x = white_noise[:, 0]
+        assert np.isclose(len(x) / fs, 0.5)
+        _, p_value = ks_2samp(x, np.random.uniform(min(x), max(x), len(x)))
+        assert p_value > 0.05
+
+    @patch('iblrig.hardware.Bpod', autospec=True)
+    @patch('iblrig.base_tasks.StateMachine', autospec=True)
+    def test_sound_card_and_bpod_mixin(self, mock_state_machine, mock_bpod):
+        """
+        Test the integration of SoundMixin with BpodMixin in a session.
+
+        This test verifies that sound actions are correctly set up and
+        executed within the Bpod state machine.
+        """
+        session = mixin_factory(SoundMixin, BpodMixin)
+        session.bpod = mock_bpod.return_value
+
+        session.bpod.actions = Bunch()
+        session.bpod.actions['play_tone'] = ('MockSoftCode', 23)
+        session.bpod.actions['play_noise'] = ('MockSoftCode', 42)
+
+        # Check the sound play methods
+        session.sound_play_tone()
+        mock_sma = mock_state_machine.return_value
+        kwargs = mock_sma.add_state.call_args.kwargs
+        assert kwargs['output_actions'] == [('MockSoftCode', 23)]
+
+        # Check the sound play noise method
+        session.sound_play_noise()
+        mock_sma = mock_state_machine.return_value
+        kwargs = mock_sma.add_state.call_args.kwargs
+        assert kwargs['output_actions'] == [('MockSoftCode', 42)]
 
     def test_valve_mixin(self):
         session = self.session

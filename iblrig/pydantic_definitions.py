@@ -96,6 +96,7 @@ class HardwareSettingsBpod(BunchModel):
     SOUND_BOARD_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
     ROTARY_ENCODER_BPOD_PORT: Literal['Serial1', 'Serial2', 'Serial3', 'Serial4', 'Serial5', None] = None
     DISABLE_BEHAVIOR_INPUT_PORTS: list[BehaviourInputPort] = [2, 3, 4]
+    USE_AMBIENT_MODULE: bool = True
 
 
 class HardwareSettingsFrame2TTL(BunchModel):
