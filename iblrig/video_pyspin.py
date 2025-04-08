@@ -54,10 +54,12 @@ class Camera:
 
     _serial_number: str
     _model_name: str
+    _label: str = ''
     _index: int
+    _settings: HardwareSettingsCameraParameters
 
     @validate_call()
-    def __init__(self, identifier: str | NonNegativeInt | None = None):
+    def __init__(self, identifier: str | NonNegativeInt | HardwareSettingsCameraParameters | None = None):
         """Initializes the Camera instance.
 
         Parameters
@@ -70,6 +72,10 @@ class Camera:
         """
         self._instance = PySpin.System.GetInstance()
         self._camera_list = self._instance.GetCameras()
+        if isinstance(identifier, HardwareSettingsCameraParameters):
+            self._settings = identifier
+            self._label = identifier.LABEL.upper()
+            identifier = getattr(identifier, 'SERIAL', identifier.INDEX)
         if isinstance(identifier, int):
             try:
                 self._camera_ptr = self._camera_list.GetByIndex(identifier)
@@ -124,11 +130,11 @@ class Camera:
             self._camera_ptr.Init()
             self._serial_number = self._camera_ptr.DeviceSerialNumber()
             self._model_name = self._camera_ptr.DeviceModelName()
-            self._log(logging.INFO, f'Initializing {self._model_name}')
+            self._log(logging.INFO, f'Initializing {self._model_name} (Index {self._index}, SN {self._serial_number})')
 
     def _deinitialize(self):
         if self._camera_ptr.IsInitialized():
-            self._log(logging.INFO, f'Deinitializing {self._model_name}')
+            self._log(logging.INFO, f'Deinitializing {self._model_name} (Index {self._index}, SN {self._serial_number})')
             self._camera_ptr.DeInit()
 
     def _cast_node(self, node: PySpin.INode) -> Any:
@@ -159,7 +165,9 @@ class Camera:
 
     def _log(self, level: int, message: str, stacklevel: int = 2) -> bool:
         logger.log(
-            level=level, msg=f'Camera {self._index} (SN: {self._serial_number}): {message.strip(" .")}.', stacklevel=stacklevel
+            level=level,
+            msg=f'Camera {self._index if len(self._label) == 0 else self._label }: {message.strip(" .")}.',
+            stacklevel=stacklevel,
         )
         return level < logging.ERROR
 
@@ -315,10 +323,8 @@ class Camera:
         self.set_value('GainAuto', 'Off')
         self.set_value('Gain', settings.GAIN_DB)
 
-        # Set video mode
+        # Set video mode and frame dimensions
         self.set_value('VideoMode', settings.VIDEO_MODE)
-
-        # Set frame dimensions
         if settings.WIDTH is not None:
             self.set_value('Width', settings.WIDTH)
         if settings.HEIGHT is not None:
@@ -329,12 +335,10 @@ class Camera:
             self.set_value('AcquisitionFrameRateAuto', 'Off')
             self.set_value('AcquisitionFrameRate', settings.FPS)
 
-        # Set exposure time
+        # Set exposure
         self.set_value('ExposureMode', 'Timed')
         self.set_value('ExposureAuto', 'Off')
         self.set_value('ExposureTime', settings.EXPOSURE_TIME_US)
-
-        # Set exposure compensation
         self.set_value('pgrExposureCompensationAuto', 'Off')
         self.set_value('pgrExposureCompensation', settings.EXPOSURE_COMPENSATION_EV)
 
