@@ -89,7 +89,7 @@ def init_neurophotometrics_subject(
     # if this folder doesn't exist, it's the first session
     subject_date_folder = dict_paths['local_subjects_folder'] / subject / date
     subject_date_folder.mkdir(parents=True, exist_ok=True)
-    n = len([path for path in subject_date_folder.iterdir() if path.isdir()])
+    n = len([path for path in subject_date_folder.iterdir() if path.is_dir()])
 
     session_number = f'{n + 1:03}'
     stub_name = f'{subject}/{date}/{session_number}'
