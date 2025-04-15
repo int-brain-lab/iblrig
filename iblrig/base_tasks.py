@@ -1381,7 +1381,7 @@ class NetworkSession(BaseSession):
                 details = {
                     'error': e.__class__.__name__,  # exception name str
                     'message': str(e),  # error str
-                    'traceback': traceback.format_exc(),  # stack str
+                    'traceback': traceback.format_exc(limit=2),  # stack str
                     'file': tb.tb_frame.f_code.co_filename,  # filename str
                     'line_no': (tb.tb_lineno, tb.tb_lasti),  # (int, int)
                 }
