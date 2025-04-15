@@ -1289,6 +1289,10 @@ class NetworkSession(BaseSession):
         """
         self.remote_rigs = net.Auxiliaries(remote_rigs or {})
         assert not remote_rigs or self.remote_rigs.is_connected
+        # For the UCL ScanImage computer the low input buffer can lead to truncated messages.
+        # Here we hard-code the buffer size so that truncated echo messages are handled correctly
+        if self.remote_rigs.services and (service := self.remote_rigs.services.get('expcontrol')):
+            service.max_message_size = 4096
         # Handle termination event by graciously completing thread
         signal.signal(signal.SIGTERM, lambda sig, frame: self.cleanup_mixin_network())
 
