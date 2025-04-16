@@ -173,7 +173,7 @@ class SessionCopier:
             self.initialize_experiment()
         if self.state == CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
-            self.initialize_experiment()
+            # self.initialize_experiment()
         if self.state == CopyState.PENDING:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
@@ -591,9 +591,8 @@ class NeurophotometricsCopier(SessionCopier):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # this can never be true
-        # if self.file_experiment_description.exists() and self.experiment_description is None:
-        #     self._experiment_description = session_params.read_params(self.file_experiment_description)
+        if self.file_experiment_description.exists() and self.experiment_description is None:
+            self._experiment_description = session_params.read_params(self.file_experiment_description)
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
         # this kills the copy process currently
@@ -694,10 +693,12 @@ class NeurophotometricsCopier(SessionCopier):
         folders = (neurophotometrics_folder / session_date).rglob('*/')
         folders = [folder for folder in folders if folder.name.startswith('T')]
         # get the folder of the last acquisition start before the subject initialization
-        neurophotometrics_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders]
+        neurophotometrics_start_times = [
+            datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders
+        ]
         timedeltas = [start_time - subject_ini_time for start_time in neurophotometrics_start_times]
         # smallest positive timedelta
-        dt_min = min([dt for dt in timedeltas if dt > 0])
+        dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
         neurophotometrics_session_folder = folders[timedeltas.index(dt_min)]
 
         # depending on the settings in the bonsai node, the file is exported directly into the folder
