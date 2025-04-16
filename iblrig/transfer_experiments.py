@@ -591,10 +591,12 @@ class NeurophotometricsCopier(SessionCopier):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.file_experiment_description.exists() and self.experiment_description is None:
-            self._experiment_description = session_params.read_params(self.file_experiment_description)
+        # this can never be true
+        # if self.file_experiment_description.exists() and self.experiment_description is None:
+        #     self._experiment_description = session_params.read_params(self.file_experiment_description)
 
     def initialize_experiment(self, acquisition_description=None, **kwargs):
+        # this kills the copy process currently
         assert acquisition_description is not None, 'No acquisition description provided'
         self._experiment_description = acquisition_description
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
@@ -677,47 +679,61 @@ class NeurophotometricsCopier(SessionCopier):
         description['fibers'] = {roi: {'location': location} for roi, location in zip(rois, locations, strict=False)}
         return {'devices': {'neurophotometrics': description}}
 
-    def _copy_collections(self, folder_neurophotometric: Path | None = None) -> bool:
-        ed = self.experiment_description['devices']['neurophotometrics']
-        dt = datetime.datetime.fromisoformat(ed['datetime'])
-        # Here we find the first photometry folder after the start_time. In case this is failing
-        # we can feed a custom start_time to go to the desired folder, or just rename the folder
-        # FIXME TODO
-        folder_neurophotometric = (
-            self.session_path.parents[4].joinpath('neurophotometrics')
-            if folder_neurophotometric is None
-            else folder_neurophotometric
-        )
-        folder_day = next(folder_neurophotometric.glob(ed['datetime'][:10]), None)
-        assert folder_day is not None, f"Neurophotometrics folder {folder_neurophotometric} doesn't contain data"
-        folder_times = list(folder_day.glob('T*'))
-        assert len(folder_times) >= 1, f'No neurophotometrics acquisition files found in {folder_day}'
-        hhmmss = sorted([int(stem[1:]) for stem in [f.stem for f in folder_times]])
-        i = np.searchsorted(hhmmss, int(dt.strftime('%H%M%S'))) - 1
+    def _copy_collections(self) -> bool:
+        # this experiment description file is generateby during the subject initialization
+        neurophotometrics_description = self.experiment_description['devices']['neurophotometrics']
+        subject_ini_time = datetime.datetime.fromisoformat(neurophotometrics_description['datetime'])
+
+        # Here we find the first photometry folder after the start_time
+        iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
+        neurophotometrics_folder = iblrig_paths['local_data_folder'] / 'neurophotometrics'
+
+        # find the corresponding neurophotometrics folder. The syntax is YYYY-MM-DD/THHMMSS
+        session_date = subject_ini_time.date().strftime('%Y-%m-%d')
+        # all folders of that day
+        folders = (neurophotometrics_folder / session_date).rglob('*/')
+        folders = [folder for folder in folders if folder.name.startswith('T')]
+        # get the folder of the last acquisition start before the subject initialization
+        neurophotometrics_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders]
+        timedeltas = [start_time - subject_ini_time for start_time in neurophotometrics_start_times]
+        # smallest positive timedelta
+        dt_min = min([dt for dt in timedeltas if dt > 0])
+        neurophotometrics_session_folder = folders[timedeltas.index(dt_min)]
+
         # depending on the settings in the bonsai node, the file is exported directly into the folder
         # or a subfolder named "raw_photometry"
-        if (folder_day / f'T{hhmmss[i]}' / 'raw_photometry').exists():
-            csv_raw_photometry = folder_day / f'T{hhmmss[i]}' / 'raw_photometry' / 'raw_photometry.csv'
+        if (neurophotometrics_session_folder / 'raw_photometry').exists():
+            csv_raw_photometry = neurophotometrics_session_folder / 'raw_photometry' / 'raw_photometry.csv'
         else:
-            csv_raw_photometry = folder_day / f'T{hhmmss[i]}' / 'raw_photometry.csv'
-        csv_digital_inputs = folder_day.joinpath(f'T{hhmmss[i]}', 'digital_inputs.csv')
-        assert csv_raw_photometry.exists(), f'Raw photometry file {csv_raw_photometry} not found'
-        assert csv_digital_inputs.exists(), f'Digital inputs file {csv_digital_inputs} not found'
+            csv_raw_photometry = neurophotometrics_session_folder / 'raw_photometry.csv'
+
+        # depending on the sync mode this file exists or not
+        # but: the sync mode might not be part of the experiment_description
+        # because it might be an acquisition description only
+        if self.experiment_description['sync'] == 'bpod':
+            csv_digital_inputs = neurophotometrics_session_folder, 'digital_inputs.csv'
 
         # Copy the raw and digital inputs files to the server
-        # read in and
-        df_raw_photometry = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
-        # explicitly explicitly with the data from the experiment description file
-        cols = ed['fibers'].keys()
-        df_raw_photometry = fpio.validate_neurophotometrics_df(df_raw_photometry, data_columns=cols)
-        df_digital_inputs = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-        remote_photometry_path = self.remote_session_path.joinpath(ed['collection'])
+        remote_photometry_path = self.remote_session_path / neurophotometrics_description['collection']
         remote_photometry_path.mkdir(parents=True, exist_ok=True)
+
+        # explicitly explicitly with the data from the experiment description file
+        df_raw_photometry = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
+        cols = neurophotometrics_description['fibers'].keys()
+        df_raw_photometry = fpio.validate_neurophotometrics_df(df_raw_photometry, data_columns=cols)
         df_raw_photometry.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+
+        # grabbing digial inputs depends on the sync mode
+        if self.experiment_description['sync'] == 'bpod':  # this is probably not the correct way to do it
+            df_digital_inputs = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
         df_digital_inputs.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
+
+        # TODO why are we explicitly copying this file?
         shutil.copy(
             Path(iblrig.__file__).parents[1].joinpath('devices', 'neurophotometrics', '_neurophotometrics_fpData.channels.csv'),
             remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv'),
         )
+
+        # TODO include here the copying of the fiber bundle image
 
         return True

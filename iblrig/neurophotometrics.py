@@ -1,5 +1,5 @@
 import argparse
-import datetime
+from datetime import datetime
 import logging
 from collections.abc import Iterable
 
@@ -10,18 +10,13 @@ from iblrig.pydantic_definitions import HardwareSettings
 from iblrig.tools import call_bonsai
 from iblrig.transfer_experiments import NeurophotometricsCopier
 from iblutil.util import setup_logger
+from typing import Literal
+import re
 
 _logger = logging.getLogger(__name__)
 
 
-def _get_neurophotometrics_copier(session_stub: str) -> tuple[NeurophotometricsCopier, dict]:
-    dict_paths = iblrig.path_helper.get_local_and_remote_paths()
-    session_path = dict_paths['local_subjects_folder'].joinpath(session_stub)
-    npc = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=dict_paths['remote_subjects_folder'])
-    return npc, dict_paths
-
-
-def start_workflow_cmd(debug: bool = False):
+def start_workflow_cmd(debug: bool = False, sync: Literal['bpod', 'daqami'] = 'bpod'):
     """
     Start a photometry recording regardless of behaviour.
     This should happen before the neurophotometrics recording has been started.
@@ -29,24 +24,37 @@ def start_workflow_cmd(debug: bool = False):
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     settings = hardware_settings.device_neurophotometrics
     # format the current date and time as a standard string
-    datestr = datetime.datetime.now().strftime('%Y-%m-%d')
-    timestr = datetime.datetime.now().strftime('T%H%M%S')
-    dict_paths = iblrig.path_helper.get_local_and_remote_paths()
-    folder_neurophotometrics = dict_paths['local_data_folder'].joinpath('neurophotometrics', datestr, timestr)
-    bonsai_params = {
-        'FileNamePhotometry': str(folder_neurophotometrics.joinpath('raw_photometry.csv')),
-        'FileNameDigitalInput': str(folder_neurophotometrics.joinpath('digital_inputs.csv')),
-        'PortName': settings.COM_NEUROPHOTOMETRY,
-    }
+    datestr = datetime.now().strftime('%Y-%m-%d')
+    timestr = datetime.now().strftime('T%H%M%S')
+    iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
+    # this defines the way how the data is stored stored on disk at acquisition
+    # note that this is not taken into account by the neurophotometrics node, as it stored the raw_photometry file
+    # in a subfolder if it also exports the snapshot of the bundle
+    # also note that this is going to change if DAQ based synchronization scheme is applied,
+    # as there are no digital inputs (rather the BNC is used as a digital output of the frametrigger / clock)
+    folder_neurophotometrics = (
+        iblrig_paths['local_data_folder'] / 'neurophotometrics' / datestr / timestr
+    )  # this here also defines where the neurophotometrics data is stored
     _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
     folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
-    workflow_file = BASE_PATH.joinpath(settings.BONSAI_WORKFLOW)
-    call_bonsai(
-        workflow_file=workflow_file,
-        parameters=bonsai_params,
-        bonsai_executable=settings.BONSAI_EXECUTABLE,
-        start=False,
-    )
+
+    match sync:
+        case 'bpod':
+            bonsai_params = {
+                'FileNamePhotometry': str(folder_neurophotometrics / 'raw_photometry.csv'),
+                'FileNameDigitalInput': str(folder_neurophotometrics / 'digital_inputs.csv'),
+                'PortName': settings.COM_NEUROPHOTOMETRY,
+            }
+            workflow_file = BASE_PATH.joinpath(settings.BONSAI_WORKFLOW)
+            call_bonsai(
+                workflow_file=workflow_file,
+                parameters=bonsai_params,
+                bonsai_executable=settings.BONSAI_EXECUTABLE,
+                start=False,
+            )
+        case 'daqami':
+            # this will need to select an alternative workflow with different settings
+            raise NotImplementedError
 
 
 def init_neurophotometrics_subject(
@@ -83,29 +91,32 @@ def init_neurophotometrics_subject(
         _logger.warning(f'Brain regions {locations} not found in BrainRegions acronyms')
 
     # constructing the stub name
-    dict_paths = iblrig.path_helper.get_local_and_remote_paths()
-    date = datetime.datetime.today().strftime('%Y-%m-%d')
-    ## counting the number of directories (to get the session number)
-    # if this folder doesn't exist, it's the first session
-    subject_date_folder = dict_paths['local_subjects_folder'] / subject / date
-    subject_date_folder.mkdir(parents=True, exist_ok=True)
-    n = len([path for path in subject_date_folder.iterdir() if path.is_dir()])
+    iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
+    date = datetime.today().strftime('%Y-%m-%d')
 
+    # counting the number of directories (to get the session number)
+    # if this folder doesn't exist, it's the first session
+    subject_date_folder = iblrig_paths['local_subjects_folder'] / subject / date
+    subject_date_folder.mkdir(parents=True, exist_ok=True)
+
+    # inferring session number
+    folders = subject_date_folder.glob('*/')
+    # filter to only those folders that are three numbers (and nothing else)
+    session_folders = [folder for folder in folders if re.match(r'^\d{3}$', folder) and folder.is_dir()]
+
+    # this is continuously incrementing. A problem
+    n = len(session_folders)
     session_number = f'{n + 1:03}'
     stub_name = f'{subject}/{date}/{session_number}'
 
     # creating the copier from the stub name and initializing
-    npc, dict_paths = _get_neurophotometrics_copier(stub_name)
+    session_path = iblrig_paths['local_subjects_folder'] / stub_name
+    # instantiating the copier - does not create folders on disk
+    copier = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=iblrig_paths['remote_subjects_folder'])
     description = NeurophotometricsCopier.neurophotometrics_description(rois, locations, sync_channel, **kwargs)
-    npc.initialize_experiment(acquisition_description=description)
-    return npc
-
-
-def copy_photometry_subject(session_stub: str) -> bool:
-    npc, dict_paths = _get_neurophotometrics_copier(session_stub)
-    folder_neurophotometric = dict_paths['local_data_folder'].joinpath('neurophotometrics')
-    status = npc.copy_collections(folder_neurophotometric=folder_neurophotometric)
-    return status
+    # this does
+    copier.initialize_experiment(acquisition_description=description)
+    return copier
 
 
 def start_photometry_task_cmd():
@@ -135,6 +146,7 @@ def start_photometry_task_cmd():
 
     assert len(args.rois) == len(args.locations), 'The number of ROIs and locations must be the same.'
     assert len(set(args.rois)) == len(args.rois), 'duplicate rois are not possible'
+    # TODO docme and the rationale behind this - will be subject of DAWG meeting
     band = 'G' if any([roi.startswith('G') for roi in args.rois]) else 'R'
     ix = [i for i, roi in enumerate(args.rois) if roi.startswith(band)]
     locations = [args.locations[i] for i in ix]
