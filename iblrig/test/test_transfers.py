@@ -22,6 +22,7 @@ from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
+from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 
 
 def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
@@ -93,8 +94,8 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
     def create_fake_data(self):
         datestr = datetime.now().strftime('%Y-%m-%d')
         timestr = datetime.now().strftime('T%H%M%S')
-        folder_neurophotometrics = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
-        folder_neurophotometrics.mkdir(exist_ok=True, parents=True)
+        neurophotometrics_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
+        neurophotometrics_folder.mkdir(exist_ok=True, parents=True)
 
         cols_dtypes = dict(
             ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
@@ -104,36 +105,16 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        schema_digital_inputs = pandera.DataFrameSchema(
-            columns=dict(
-                ChannelName=pandera.Column(str, coerce=True),
-                Channel=pandera.Column(pandera.Int8, coerce=True),
-                AlwaysTrue=pandera.Column(bool, coerce=True),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-            )
-        )
-        digital_inputs_df = schema_digital_inputs.validate(digital_inputs_df)
-        digital_inputs_df.to_csv(folder_neurophotometrics / 'digital_inputs.csv', index=False, header=False)
+        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
+        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
 
-        # raw
-        schema_raw_data = pandera.DataFrameSchema(
-            columns=dict(
-                FrameCounter=pandera.Column(pandera.Int64),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                LedState=pandera.Column(pandera.Int16, coerce=True),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-                Region00=pandera.Column(pandera.Float64),  # hard coding regions here
-                Region01=pandera.Column(pandera.Float64),
-            )
-        )
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
             LedState='int16',
             ComputerTimestamp='float64',
-            Region00='float64',
-            Region01='float64',
+            Region1G='float64',
+            Region2G='float64',
         )
 
         cols = list(cols_dtypes.keys())
@@ -141,9 +122,11 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
-        (folder_neurophotometrics / 'raw_photometry').mkdir(exist_ok=True)
-        raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry' / 'raw_photometry.csv', index=False)
+        # raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
+
+        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
+        (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
+        raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
     def test_copier(self):
         # session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
@@ -155,9 +138,9 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             # the actual code to test
             iblrig.neurophotometrics.init_neurophotometrics_subject(
                 subject='test_subject',
-                # session_stub=f'test_subject/{datetime.today().strftime("%Y-%m-%d")}/001',
-                rois=['Region00', 'Region01'],
+                rois=['Region1G', 'Region2G'],
                 locations=['VTA', 'SNc'],
+                sync_channel=0,
             )
             # iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
             (sc,) = iblrig.commands.transfer_data(tag='neurophotometrics')

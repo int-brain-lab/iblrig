@@ -609,6 +609,7 @@ class NeurophotometricsCopier(SessionCopier):
         start_time: datetime.datetime = None,
         sync_label: str = None,
         collection: str = 'raw_photometry_data',
+        sync_mode: str = 'bpod',
     ) -> dict:
         """
         Create the `neurophotometrics` description part for the specified parameters.
@@ -645,6 +646,7 @@ class NeurophotometricsCopier(SessionCopier):
                 sync_label: bnc1out
                 sync_channel: 1
                 datetime: 2024-09-19T14:13:18.749259
+                sync_mode: bpod
             sync:
                 bpod
 
@@ -661,6 +663,7 @@ class NeurophotometricsCopier(SessionCopier):
                 collection: raw_photometry_data
                 sync_channel: 5
                 datetime: 2024-09-19T14:13:18.749259
+                sync_mode: daqami
             sync:
                 daqami:
                     acquisition_software: daqami
@@ -672,6 +675,7 @@ class NeurophotometricsCopier(SessionCopier):
             'sync_channel': sync_channel,
             'datetime': date_time.isoformat(),
             'collection': collection,
+            'sync_mode': sync_mode,
         }
         if sync_label is not None:
             description['sync_label'] = sync_label
@@ -690,13 +694,13 @@ class NeurophotometricsCopier(SessionCopier):
         # find the corresponding neurophotometrics folder. The syntax is YYYY-MM-DD/THHMMSS
         session_date = subject_ini_time.date().strftime('%Y-%m-%d')
         # all folders of that day
-        folders = (neurophotometrics_folder / session_date).rglob('*/')
+        folders = (neurophotometrics_folder / session_date).glob('*/')
         folders = [folder for folder in folders if folder.name.startswith('T')]
         # get the folder of the last acquisition start before the subject initialization
         neurophotometrics_start_times = [
             datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders
         ]
-        timedeltas = [start_time - subject_ini_time for start_time in neurophotometrics_start_times]
+        timedeltas = [subject_ini_time - start_time for start_time in neurophotometrics_start_times]
         # smallest positive timedelta
         dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
         neurophotometrics_session_folder = folders[timedeltas.index(dt_min)]
@@ -711,8 +715,8 @@ class NeurophotometricsCopier(SessionCopier):
         # depending on the sync mode this file exists or not
         # but: the sync mode might not be part of the experiment_description
         # because it might be an acquisition description only
-        if self.experiment_description['sync'] == 'bpod':
-            csv_digital_inputs = neurophotometrics_session_folder, 'digital_inputs.csv'
+        if neurophotometrics_description['sync_mode'] == 'bpod':
+            csv_digital_inputs = neurophotometrics_session_folder / 'digital_inputs.csv'
 
         # Copy the raw and digital inputs files to the server
         remote_photometry_path = self.remote_session_path / neurophotometrics_description['collection']
@@ -725,7 +729,7 @@ class NeurophotometricsCopier(SessionCopier):
         df_raw_photometry.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
 
         # grabbing digial inputs depends on the sync mode
-        if self.experiment_description['sync'] == 'bpod':  # this is probably not the correct way to do it
+        if neurophotometrics_description['sync_mode'] == 'bpod':
             df_digital_inputs = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
         df_digital_inputs.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
 
