@@ -97,14 +97,13 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
 
 
 def initialize_subject_cli():
-    args = _start_photometry_session_parser()
-    # args = _start_neurophotometrics_parser('start the neurophotometrics device')
+    args = _initialize_subject_parser()
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
     init_neurophotometrics_subject(**vars(args))
 
 
-def _start_photometry_session_parser() -> argparse.ArgumentParser:
+def _initialize_subject_parser() -> argparse.ArgumentParser:
     """
     Command line interface for preparing a neurophotometrics session on the photometry computer.
     start_photometry_task --subject Mickey --rois G0 G1 --location NBM SI
