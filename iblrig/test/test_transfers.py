@@ -1,15 +1,14 @@
 import copy
 import random
 import tempfile
+import time
 import unittest
 from datetime import datetime
 from pathlib import Path
 from unittest import mock
-import time
 
 import numpy as np
 import pandas as pd
-import pandera
 from packaging import version
 
 import ibllib
@@ -19,11 +18,11 @@ import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
+from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier, CopyState
+from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
-from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 
 
 def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):

@@ -6,12 +6,9 @@ import shutil
 import socket
 import traceback
 import uuid
-from collections.abc import Iterable
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
-
-import numpy as np
 
 import ibllib.pipes.misc
 import iblphotometry.io as fpio

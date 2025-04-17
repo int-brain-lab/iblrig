@@ -12,10 +12,15 @@ import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, NeurophotometricsCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import (
+    BehaviorCopier,
+    CopyState,
+    EphysCopier,
+    NeurophotometricsCopier,
+    SessionCopier,
+    VideoCopier,
+)
 from iblutil.util import setup_logger
-
-from iblrig.transfer_experiments import CopyState
 
 logger = logging.getLogger(__name__)
 
