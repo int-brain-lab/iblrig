@@ -5,6 +5,7 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 from unittest import mock
+import time
 
 import numpy as np
 import pandas as pd
@@ -20,7 +21,7 @@ from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier, CopyState
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 
@@ -97,6 +98,7 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         neurophotometrics_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
         neurophotometrics_folder.mkdir(exist_ok=True, parents=True)
 
+        # creating fake digital_inputs.csv
         cols_dtypes = dict(
             ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
         )
@@ -117,19 +119,22 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             Region2G='float64',
         )
 
+        # creating fake photometry data file
         cols = list(cols_dtypes.keys())
         raw_photometry_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
-
-        # raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
 
         raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
         (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
         raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
     def test_copier(self):
-        # session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
+        # create multiple folders, mimicking several experiments on the same day
+        self.create_fake_data()
+        time.sleep(1)
+        self.create_fake_data()
+        time.sleep(1)
         self.create_fake_data()
 
         # the workaround to find the settings.yaml
@@ -141,10 +146,10 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
                 rois=['Region1G', 'Region2G'],
                 locations=['VTA', 'SNc'],
                 sync_channel=0,
+                sync_mode='bpod',
             )
-            # iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
-            (sc,) = iblrig.commands.transfer_data(tag='neurophotometrics')
-            self.assertEqual(sc.state, 2)
+            (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(copier.state, CopyState.COMPLETE)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):

@@ -601,87 +601,6 @@ class NeurophotometricsCopier(SessionCopier):
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
         self.session_path.joinpath('transfer_me.flag').touch()
 
-    @staticmethod
-    def neurophotometrics_description(
-        rois: Iterable[str],
-        locations: Iterable[str],
-        sync_channel: int,
-        start_time: datetime.datetime = None,
-        sync_label: str = None,
-        collection: str = 'raw_photometry_data',
-        sync_mode: str = 'bpod',
-    ) -> dict:
-        """
-        Create the `neurophotometrics` description part for the specified parameters.
-
-        Parameters
-        ----------
-        rois: list of strings
-            List of ROIs
-        locations: list of strings
-            List of brain regions
-        sync_channel: int
-            Channel number for sync
-        start_time: datetime.datetime, optional
-            Date and time of the recording
-        sync_label: str, optional
-            Label for the sync channel
-
-        Returns
-        -------
-        dict
-            Description of the neurophotometrics data
-            {neurophotometrics': ...}, see below for the yaml rendition of dictionaries
-
-
-        Example where bpod sends sync to the neurophotometrics:
-        -------
-            neurophotometrics:
-                fibers:
-                - roi: G0
-                  location: VTA
-                - roi: G1
-                  location: DR
-                collection: raw_photometry_data
-                sync_label: bnc1out
-                sync_channel: 1
-                datetime: 2024-09-19T14:13:18.749259
-                sync_mode: bpod
-            sync:
-                bpod
-
-        Here MAIN_SYNC=True on behaviour
-
-        Example where a DAQ records frame times and sync:
-        -------
-            neurophotometrics:
-                fibers:
-                - roi: G0
-                  location: VTA
-                - roi: G1
-                  location: DR
-                collection: raw_photometry_data
-                sync_channel: 5
-                datetime: 2024-09-19T14:13:18.749259
-                sync_mode: daqami
-            sync:
-                daqami:
-                    acquisition_software: daqami
-                    collection: raw_sync_data
-                    extension: bin
-        """
-        date_time = datetime.datetime.now() if start_time is None else start_time
-        description = {
-            'sync_channel': sync_channel,
-            'datetime': date_time.isoformat(),
-            'collection': collection,
-            'sync_mode': sync_mode,
-        }
-        if sync_label is not None:
-            description['sync_label'] = sync_label
-        description['fibers'] = {roi: {'location': location} for roi, location in zip(rois, locations, strict=False)}
-        return {'devices': {'neurophotometrics': description}}
-
     def _copy_collections(self) -> bool:
         # this experiment description file is generateby during the subject initialization
         neurophotometrics_description = self.experiment_description['devices']['neurophotometrics']
@@ -731,7 +650,7 @@ class NeurophotometricsCopier(SessionCopier):
         # grabbing digial inputs depends on the sync mode
         if neurophotometrics_description['sync_mode'] == 'bpod':
             df_digital_inputs = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-        df_digital_inputs.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
+            df_digital_inputs.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
 
         # TODO why are we explicitly copying this file?
         shutil.copy(
