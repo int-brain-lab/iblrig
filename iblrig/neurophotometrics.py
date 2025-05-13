@@ -82,6 +82,9 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
                 start=False,
             )
         case 'daqami':
+            # prompt user to start the daq
+            input('Please start the DAQ recording and press Enter to continue...')
+
             # this will need to select an alternative workflow with different settings
             bonsai_params = {
                 'FileNamePhotometry': str(folder_neurophotometrics / 'raw_photometry.csv'),
@@ -332,4 +335,20 @@ def neurophotometrics_description(
     if sync_label is not None:
         description['sync_label'] = sync_label
     description['fibers'] = {roi: {'location': location} for roi, location in zip(rois, locations, strict=False)}
-    return {'devices': {'neurophotometrics': description}}
+
+    match sync_mode:
+        case 'bpod':
+            return {'devices': {'neurophotometrics': description}}
+        case 'daqami':
+            experiment_description = {'devices': {'neurophotometrics': description}}
+            experiment_description['sync'] = dict(
+                daqami=dict(
+                    acquisition_software='daqami',
+                    collection='raw_sync_data',
+                    sampling_rate=1000,
+                    frameclock_channel=7,
+                )
+            )
+            return experiment_description
+        case _:
+            raise NotImplementedError(f'unknown sync mode {sync_mode}')
