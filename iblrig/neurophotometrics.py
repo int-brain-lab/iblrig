@@ -17,6 +17,7 @@ _logger = logging.getLogger(__name__)
 
 
 def start_neurophotometrics_cli():
+    # helper function that is registered in the pyproject.toml to be called from the command line
     args = _start_neurophotometrics_parser('start the neurophotometrics device')
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
@@ -24,6 +25,7 @@ def start_neurophotometrics_cli():
 
 
 def _start_neurophotometrics_parser() -> argparse.ArgumentParser:
+    # accompanying parser. Single use function, TODO to be removed
     parser = argparse.ArgumentParser(
         prog='neurophotometrics',
         description='initialize neurophotometrics FP3002 device',
@@ -46,27 +48,22 @@ def _start_neurophotometrics_parser() -> argparse.ArgumentParser:
 
 
 def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daqami'] = 'bpod'):
-    """
-    Start a photometry recording regardless of behaviour.
-    This should happen before the neurophotometrics recording has been started.
-    """
+    # starts the neurophotometrics device / bonsai workflow
+
+    # settings
     hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     settings = hardware_settings.device_neurophotometrics
-    # format the current date and time as a standard string
+    iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
+
+    # this defines where the data is stored stored on disk at acquisition
     datestr = datetime.now().strftime('%Y-%m-%d')
     timestr = datetime.now().strftime('T%H%M%S')
-    iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
-    # this defines the way how the data is stored stored on disk at acquisition
-    # note that this is not taken into account by the neurophotometrics node, as it stored the raw_photometry file
-    # in a subfolder if it also exports the snapshot of the bundle
-    # also note that this is going to change if DAQ based synchronization scheme is applied,
-    # as there are no digital inputs (rather the BNC is used as a digital output of the frametrigger / clock)
-    folder_neurophotometrics = (
-        iblrig_paths['local_data_folder'] / 'neurophotometrics' / datestr / timestr
-    )  # this here also defines where the neurophotometrics data is stored
+    folder_neurophotometrics = iblrig_paths['local_data_folder'] / 'neurophotometrics' / datestr / timestr
     _logger.info(f'Creating folder for neurophotometrics data: {folder_neurophotometrics}')
     folder_neurophotometrics.mkdir(parents=True, exist_ok=True)
 
+    # depending on the sync mode: launch different bonsai workflows that are configured
+    # for the respective synchronization modes
     match sync_mode:
         case 'bpod':
             bonsai_params = {
@@ -75,14 +72,8 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
                 'PortName': settings.COM_NEUROPHOTOMETRY,
             }
             workflow_file = BASE_PATH.joinpath(settings.BONSAI_WORKFLOW)
-            call_bonsai(
-                workflow_file=workflow_file,
-                parameters=bonsai_params,
-                bonsai_executable=settings.BONSAI_EXECUTABLE,
-                start=False,
-            )
         case 'daqami':
-            # prompt user to start the daq
+            # prompt user to start the DAQ
             input('Please start the DAQ recording and press Enter to continue...')
 
             # this will need to select an alternative workflow with different settings
@@ -91,15 +82,20 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
                 'PortName': settings.COM_NEUROPHOTOMETRY,
             }
             workflow_file = BASE_PATH.joinpath(settings.BONSAI_WORKFLOW_DAQ)
-            call_bonsai(
-                workflow_file=workflow_file,
-                parameters=bonsai_params,
-                bonsai_executable=settings.BONSAI_EXECUTABLE,
-                start=False,
-            )
+        case _:
+            raise NotImplementedError(f'Unknown sync mode: {sync_mode}')
+
+    # launch bonsai
+    call_bonsai(
+        workflow_file=workflow_file,
+        parameters=bonsai_params,
+        bonsai_executable=settings.BONSAI_EXECUTABLE,
+        start=False,
+    )
 
 
 def initialize_subject_cli():
+    # helper function that is registered in the pyproject.toml to be called from the command line
     args = _initialize_subject_parser()
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
@@ -190,10 +186,8 @@ def init_neurophotometrics_subject(
      NeurophotometricsCopier
         An instance of the NeurophotometricsCopier class initialized with the provided session details.
     """
-    # I put the import here as it may slow down
-    regions = BrainRegions()
-    if not all(map(lambda x: x in regions.acronym, locations)):
-        _logger.warning(f'Brain regions {locations} not found in BrainRegions acronyms')
+    # generate acquisition description from input arguments
+    acquisition_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode, **kwargs)
 
     # constructing the stub name
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -209,22 +203,22 @@ def init_neurophotometrics_subject(
     # filter to only those folders that are three numbers (and nothing else)
     session_folders = [folder for folder in folders if re.match(r'^\d{3}$', folder) and folder.is_dir()]
 
-    # this is continuously incrementing. A problem
+    # this is continuously incrementing. A problem that UDP based communiction between the rigs and the
+    # neurophotometrics computer can fix.
     n = len(session_folders)
     session_number = f'{n + 1:03}'
     stub_name = f'{subject}/{date}/{session_number}'
 
-    # creating the copier from the stub name and initializing
-    session_path = iblrig_paths['local_subjects_folder'] / stub_name
     # instantiating the copier - does not create folders on disk
+    session_path = iblrig_paths['local_subjects_folder'] / stub_name
     copier = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=iblrig_paths['remote_subjects_folder'])
-    acquisition_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode, **kwargs)
-    # this does
+
+    # initializing the experiment - creates the folders
     copier.initialize_experiment(acquisition_description=acquisition_description)
     return copier
 
 
-def verify_init_arguments(
+def _validate_neurophotometrics_description(
     subject=None,
     rois=None,
     locations=None,
@@ -240,6 +234,18 @@ def verify_init_arguments(
         sync_channel (_type_, optional): _description_. Defaults to None.
         sync_mode (_type_, optional): _description_. Defaults to None.
     """
+    # verify if brain regions are valid allen acronyms
+    regions = BrainRegions()
+    for location in locations:
+        if location not in regions.acronym:
+            _logger.warning(f'brain region {location} is not a valid Allen Acronym')
+
+    # verify if sync channel is valid
+    if sync_mode == 'bpod':
+        assert sync_channel in (0, 1), 'sync channel must be either 1 or 2'
+    if sync_mode == 'daqami':
+        assert sync_channel in (0, 1, 2, 3, 4, 5, 6), 'sync channel must be between 0 and 6'
+
     assert len(rois) == len(locations), 'The number of ROIs and locations must be the same.'
     assert len(set(rois)) == len(rois), 'duplicate rois are not possible'
     # TODO docme and the rationale behind this - will be subject of DAWG meeting
@@ -258,6 +264,7 @@ def neurophotometrics_description(
     sync_label: str = None,
     sync_mode: str = 'bpod',
     collection: str = 'raw_photometry_data',
+    validate: bool = True,
 ) -> dict:
     """
     Create the `neurophotometrics` description part for the specified parameters.
@@ -281,7 +288,6 @@ def neurophotometrics_description(
     -------
     dict
         Description of the neurophotometrics data
-        {neurophotometrics': ...}, see below for the yaml rendition of dictionaries
 
 
     Example where bpod sends sync to the neurophotometrics:
@@ -299,8 +305,6 @@ def neurophotometrics_description(
             sync_mode: bpod
         sync:
             bpod
-
-    Here MAIN_SYNC=True on behaviour
 
     Example where a DAQ records frame times and sync:
     -------
@@ -320,8 +324,8 @@ def neurophotometrics_description(
                 collection: raw_sync_data
                 extension: bin
     """
-    # verify arguments first
-    verify_init_arguments(rois=rois, locations=locations, sync_mode=sync_mode)
+    if validate:
+        _validate_neurophotometrics_description(rois=rois, locations=locations, sync_channel=sync_channel, sync_mode=sync_mode)
 
     # generate description
     date_time = datetime.now() if start_time is None else start_time
