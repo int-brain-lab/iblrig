@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 def start_neurophotometrics_cli():
     # helper function that is registered in the pyproject.toml to be called from the command line
-    args = _start_neurophotometrics_parser('start the neurophotometrics device')
+    args = _start_neurophotometrics_parser()
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
     start_neurophotometrics(**vars(args))
@@ -303,8 +303,7 @@ def neurophotometrics_description(
             sync_channel: 1
             datetime: 2024-09-19T14:13:18.749259
             sync_mode: bpod
-        sync:
-            bpod
+
 
     Example where a DAQ records frame times and sync:
     -------
@@ -315,14 +314,15 @@ def neurophotometrics_description(
             - roi: G1
                 location: DR
             collection: raw_photometry_data
-            sync_channel: 5
+            sync_channel: 1
             datetime: 2024-09-19T14:13:18.749259
             sync_mode: daqami
-        sync:
-            daqami:
+            sync_metadata:
                 acquisition_software: daqami
-                collection: raw_sync_data
-                extension: bin
+                collection: raw_photometry_data
+                sampling_rate: 1000
+                frameclock_channel: 7
+
     """
     if validate:
         _validate_neurophotometrics_description(rois=rois, locations=locations, sync_channel=sync_channel, sync_mode=sync_mode)
@@ -345,10 +345,10 @@ def neurophotometrics_description(
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
             experiment_description = {'devices': {'neurophotometrics': description}}
-            experiment_description['sync'] = dict(
-                daqami=dict(
+            experiment_description['devices']['neurophotometrics'] = dict(
+                sync_metadata=dict(
                     acquisition_software='daqami',
-                    collection='raw_sync_data',
+                    collection='raw_photometry_data',
                     sampling_rate=1000,
                     frameclock_channel=7,
                 )
