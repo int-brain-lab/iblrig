@@ -187,7 +187,7 @@ def init_neurophotometrics_subject(
         An instance of the NeurophotometricsCopier class initialized with the provided session details.
     """
     # generate acquisition description from input arguments
-    acquisition_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode, **kwargs)
+    acquisition_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode)
 
     # constructing the stub name
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -199,9 +199,9 @@ def init_neurophotometrics_subject(
     subject_date_folder.mkdir(parents=True, exist_ok=True)
 
     # inferring session number
-    folders = subject_date_folder.glob('*/')
+    folders = list(subject_date_folder.glob('*/'))
     # filter to only those folders that are three numbers (and nothing else)
-    session_folders = [folder for folder in folders if re.match(r'^\d{3}$', folder) and folder.is_dir()]
+    session_folders = [folder for folder in folders if re.match(r'\d{3}', folder.name) and folder.is_dir()]
 
     # this is continuously incrementing. A problem that UDP based communiction between the rigs and the
     # neurophotometrics computer can fix.
@@ -345,13 +345,10 @@ def neurophotometrics_description(
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
             experiment_description = {'devices': {'neurophotometrics': description}}
-            experiment_description['devices']['neurophotometrics'] = dict(
-                sync_metadata=dict(
-                    acquisition_software='daqami',
-                    collection='raw_photometry_data',
-                    sampling_rate=1000,
-                    frameclock_channel=7,
-                )
+            experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
+                acquisition_software='daqami',
+                collection='raw_photometry_data',
+                frameclock_channel=7,
             )
             return experiment_description
         case _:

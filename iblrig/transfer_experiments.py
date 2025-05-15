@@ -634,12 +634,15 @@ class NeurophotometricsCopier(SessionCopier):
         remote_photometry_path.mkdir(parents=True, exist_ok=True)
 
         # copying the relevant files, depending on the sync mode
-        match neurophotometrics_description['sync_mode']:
+        sync_mode = neurophotometrics_description.get('sync_mode', 'bpod')
+        match sync_mode:
             case 'bpod':
+                # copy the digital inputs file
                 csv_digital_inputs = neurophotometrics_session_folder / 'digital_inputs.csv'
                 digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
                 digital_inputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalIntputs.pqt')
             case 'daqami':
+                # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
                 # all folders of that day, parse by start with T
                 folders = (iblrig_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
@@ -650,17 +653,15 @@ class NeurophotometricsCopier(SessionCopier):
 
                 # get the daqami file that was started just before the start of the neurophotometrics
                 neurophotometrics_start_time = datetime.datetime.strptime(
-                    '/'.join(neurophotometrics_folder.parts[-2:]), '%Y-%m-%d/T%H%M%S'
+                    '/'.join(neurophotometrics_session_folder.parts[-2:]), '%Y-%m-%d/T%H%M%S'
                 )
 
-                # get the corresponding daqami folder
-                timedeltas = [start_time - neurophotometrics_start_time for start_time in daqami_start_times]
-
-                # find the corresponding daqami folder by the same strategy as above, the smallest positive timedelta
+                # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
+                timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
                 dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
                 daqami_folder = folders[timedeltas.index(dt_min)]
                 # check here if multiple daqami files exist
-                if len(list(daqami_folder.glob('*/*'))) == 2:
+                if len(list(daqami_folder.glob('*'))) == 2:
                     # this is the expected case, all is fine
                     daqami_file = daqami_folder / 'daqami_sync.tdms'
                 else:
@@ -674,11 +675,17 @@ class NeurophotometricsCopier(SessionCopier):
                     daqami_file = daqami_folder / f'daqami_sync_{max(indices)}.tdms'
 
                 # copy to the remote folder
-                remote_sync_path = self.remote_session_path / self.experiment_description['sync']['daqami']['collection']
+                remote_sync_path = self.remote_session_path / neurophotometrics_description['sync_metadata']['collection']
+                remote_sync_path.mkdir(exist_ok=True, parents=True)
                 shutil.copy(
                     daqami_file,
                     remote_sync_path / '_mcc_DAQdata.raw.tdms',
                 )
+
+                # digital outputs file
+                # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
+                # digital_outputs_df = fpio.read_digital_outputs_csv(csv_digital_outputs, validate=True)
+                # digital_outputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalOutputs.pqt')
 
         # explicitly with the data from the experiment description file
         raw_photometry_df = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
