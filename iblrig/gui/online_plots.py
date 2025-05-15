@@ -84,8 +84,8 @@ class Colors:
 
 @dataclass
 class EngagedCriterion:
-    SECONDS = 20  # 45 * 60
-    TRIAL_COUNT = 20  # 400
+    SECONDS = 45 * 60
+    TRIAL_COUNT = 400
 
 
 class PlotWidget(pg.PlotWidget):
@@ -753,7 +753,7 @@ class OnlinePlotsModel(QObject):
 
         if self.titleColor != color:
             self.titleColor = color
-        self.titleColorChanged.emit(color)
+            self.titleColorChanged.emit(color)
 
     def getSessionString(self) -> None:
         training_info, _ = get_subject_training_info(
@@ -844,6 +844,7 @@ class OnlinePlotsView(QMainWindow):
         font.setBold(True)
         self.title.setFont(font)
         self.title.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.setTitleBackground(self.model.titleColor)
         title_layout.addWidget(self.title)
 
         # sub title
@@ -906,10 +907,9 @@ class OnlinePlotsView(QMainWindow):
 
         # connect signals / slots
         self.model.titleChanged.connect(self.setTitle)
+        self.model.titleColorChanged.connect(self.setTitleBackground)
         self.model.currentTrialChanged.connect(self.updatePlots)
         self.updatePlots(self.model.nTrials() - 1)
-        self.model.titleColorChanged.connect(self.setTitleBackground)
-        # self.setTitleBackground(self.model.titleColor)
 
         # manage settings
         self.settings = QSettings()
@@ -917,13 +917,12 @@ class OnlinePlotsView(QMainWindow):
         self.resize(self.settings.value('size', self.size(), QSize))
 
     @Slot(str)
-    def setTitle(self, str):
-        self.title.setText(str)
+    def setTitle(self, title: str):
+        self.title.setText(title)
 
     @Slot(str)
     def setTitleBackground(self, color: str):
         """Set the background color of the title area to a gradient of the specified color."""
-        print(color)
         self.titleFrame.setStyleSheet(
             f'QFrame {{ background-color: qlineargradient(x1: 0, x2: 1, '
             f'stop: 0 {color}, stop: 0.2 transparent, stop: 0.8 transparent, stop: 1 {color}); }}\n'
@@ -946,9 +945,9 @@ class OnlinePlotsView(QMainWindow):
             statusbar.clearMessage()
         elif event.currentItem.vb.sceneBoundingRect().contains(event.scenePos()):
             if event.currentItem == self.psychometricWidget.plotItem:
-                statusbar.showMessage('Psychometric Function, shaded areas represent Standard Error of the Mean')
+                statusbar.showMessage('Psychometric Function, SEM')
             else:
-                statusbar.showMessage('Chronometric Function, shaded areas represent Standard Error of the Mean')
+                statusbar.showMessage('Chronometric Function, SEM')
 
     @Slot(int)
     def updatePlots(self, trial: int):
