@@ -4,10 +4,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import matplotlib
-import numpy as np
 
 import iblrig.gui.online_plots as op
-from iblrig.raw_data_loaders import load_task_jsonable
 
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
 matplotlib.use('Agg')  # avoid pyqt testing issues
@@ -29,7 +27,7 @@ class TestOnlinePlots(unittest.TestCase):
         assert hasattr(model, 'jsonableWatcher')
         assert Path(model.jsonableWatcher.files()[0]) == self.task_file
         assert (n_trials := model._n_trials) > 0
-        with open(self.task_file, 'r') as f:
+        with open(self.task_file) as f:
             line = f.readline()
         with open(self.task_file, 'a') as f:
             f.writelines([line])

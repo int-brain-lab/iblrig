@@ -56,7 +56,7 @@ from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.raw_data_loaders import bpod_trial_data_to_dataframes, load_task_jsonable
+from iblrig.raw_data_loaders import bpod_trial_data_to_dataframe, load_task_jsonable
 from one.alf.spec import is_session_path
 from one.api import ONE
 
@@ -671,6 +671,7 @@ class OnlinePlotsModel(QObject):
         )
         self.psychometrics['count'] = 0
         self.reward_amount = 0
+        self._t0 = 0
         self._n_trials = 0
         self._n_trials_correct = 0
         self._n_trials_engaged = 0
@@ -693,7 +694,9 @@ class OnlinePlotsModel(QObject):
         trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonable_offset)
         self._jsonable_offset = self.jsonable_file.stat().st_size
         self._trial_data = pd.concat([self._trial_data, trial_data])
-        self._bpod_data = bpod_trial_data_to_dataframes(bpod_data, self._bpod_data)
+        if len(self._bpod_data) == 0:
+            self._t0 = bpod_data[0]['Trial start timestamp']
+        self._bpod_data.extend(bpod_data)
         self._n_trials = len(self._trial_data)
 
         # update data for trial history table
@@ -712,9 +715,8 @@ class OnlinePlotsModel(QObject):
         self.tableModel.setDataFrame(table)
 
         # update psychometrics using online statistics method
-        t0 = self._bpod_data[0].index[0]
         for trial, row in trial_data.iterrows():
-            self._seconds_elapsed = (self._bpod_data[trial].index[-1] - t0).total_seconds()
+            self._seconds_elapsed = self._bpod_data[trial]['Trial end timestamp'] - self._t0
             if self._seconds_elapsed <= EngagedCriterion.SECONDS:
                 self._n_trials_engaged += 1
             self._n_trials_correct += row.trial_correct
@@ -805,16 +807,14 @@ class OnlinePlotsModel(QObject):
     def timeElapsed(self) -> datetime.timedelta:
         if self._n_trials == 0:
             return datetime.timedelta(seconds=0)
-        i = self._current_trial
-        t0 = self._bpod_data[0][self._bpod_data[0].Type == 'TrialStart'].index[0]
-        t1 = self._bpod_data[i][self._bpod_data[i].Type == 'TrialEnd'].index[-1]
-        return datetime.timedelta(seconds=(t1 - t0).seconds)
+        t1 = self._bpod_data[self._current_trial]['Trial end timestamp']
+        return datetime.timedelta(seconds=round(t1 - self._t0))
 
     def percentCorrect(self) -> float:
         return self._n_trials_correct / (self._n_trials if self._n_trials > 0 else np.nan) * 100
 
     def bpod_data(self, trial: int) -> pd.DataFrame:
-        return self._bpod_data[trial]
+        return bpod_trial_data_to_dataframe(self._bpod_data[trial], trial)
 
     def getTitle(self) -> str:
         protocol = getattr(self, 'task_settings', dict()).get('PYBPOD_PROTOCOL', 'unknown task protocol')
