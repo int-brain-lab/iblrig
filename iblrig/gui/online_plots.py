@@ -694,7 +694,6 @@ class OnlinePlotsModel(QObject):
         trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonable_offset)
         self._jsonable_offset = self.jsonable_file.stat().st_size
         self._trial_data = pd.concat([self._trial_data, trial_data])
-        self._n_trials = len(self._trial_data)
         if len(self._bpod_data) == 0:
             self._t0 = bpod_data[0]['Trial start timestamp']
         self._bpod_data.extend(bpod_data)
@@ -715,6 +714,7 @@ class OnlinePlotsModel(QObject):
         self.tableModel.setDataFrame(table)
 
         # update some counters
+        self._n_trials += len(trial_data)
         if len(bpod_data) > 1:
             seconds_elapsed = np.array([trial['Trial end timestamp'] for trial in bpod_data]) - self._t0
             self._seconds_elapsed = seconds_elapsed[-1]
