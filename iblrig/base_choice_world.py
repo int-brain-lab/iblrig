@@ -741,7 +741,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         if self.interactive:
             log.info('Starting subprocess: online plots')
             self.plot_subprocess = subprocess.Popen(
-                ['view_session2', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
+                ['view_session', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.STDOUT,
             )
