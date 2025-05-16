@@ -339,24 +339,6 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     return removed
 
 
-def view_session():
-    """
-    Entry point for command line: usage as below
-    >>> view_session /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
-    :return: None
-    """
-    from iblutil.util import setup_logger
-
-    setup_logger('iblrig', level='INFO')
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file_jsonable', help='full file path to jsonable file')
-    parser.add_argument('file_settings', help='full file path to settings file', nargs='?', default=None)
-    args = parser.parse_args()
-
-    online_plots = OnlinePlots(settings_file=args.file_settings)
-    online_plots.run(file_jsonable=args.file_jsonable)
-
-
 def flush():
     """Flush the valve until the user hits enter."""
     file_settings = Path(iblrig.__file__).parents[1].joinpath('settings', 'hardware_settings.yaml')
