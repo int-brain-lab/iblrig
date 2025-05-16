@@ -88,6 +88,12 @@ class EngagedCriterion:
     TRIAL_COUNT = 400
 
 
+@dataclass
+class DefaultSettings:
+    CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
+    PROBABILITY_SET = np.array([0.2, 0.5, 0.8])
+
+
 class PlotWidget(pg.PlotWidget):
     """PyQtGraph PlotWidget with tuned default settings."""
 
@@ -597,6 +603,8 @@ class OnlinePlotsModel(QObject):
     sessionStringAvailable = Signal(str)
     tableModel = TrialsTableModel()
     sessionString = ''
+    probability_set = DefaultSettings.PROBABILITY_SET
+    contrast_set = DefaultSettings.CONTRAST_SET
     _trial_data = pd.DataFrame()
     _bpod_data: list[pd.DataFrame] = list()
     _jsonable_offset = 0
@@ -634,9 +642,9 @@ class OnlinePlotsModel(QObject):
             self.raw_data_folder = session
             self.jsonable_file = self.raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
             self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
-            if not self.jsonable_file.exists() or not self.settings_file.exists():
+            if not self.jsonable_file.exists():
                 print('Waiting for data ...')
-                while not self.jsonable_file.exists() or not self.settings_file.exists():
+                while not self.jsonable_file.exists():
                     time.sleep(0.2)
             is_live = True
 
@@ -648,10 +656,14 @@ class OnlinePlotsModel(QObject):
             self.raw_data_folder = session.parent
             self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
 
-        with self.settings_file.open('r') as f:
-            self.task_settings = json.load(f)
-        self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get('BLOCK_PROBABILITY_SET', [])
-        self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
+        if self.settings_file.exists():
+            with self.settings_file.open('r') as f:
+                self.task_settings = json.load(f)
+            self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get(
+                'BLOCK_PROBABILITY_SET', []
+            )
+            self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
+
         self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
         self.psychometrics = pd.DataFrame(
             columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
@@ -689,10 +701,13 @@ class OnlinePlotsModel(QObject):
         table.columns = ['Trial', 'Stimulus', 'Contrast']
         table['Debias'] = self._trial_data.get('debias_trial', False)
         table['Outcome'] = self._trial_data.apply(
-            lambda row: 'no-go' if row['response_side'] == 0 else ('correct' if row['trial_correct'] else 'error'), axis=1
+            lambda row: 'no-go'
+            if (row.get('response_side') == 0 or row.get('response_time') > 60)
+            else ('correct' if row.get('trial_correct') else 'error'),
+            axis=1,
         )
         table['Response Time / s'] = self._trial_data.apply(
-            lambda row: np.NAN if row['response_side'] == 0 else row['response_time'], axis=1
+            lambda row: np.NAN if row.get('response_side') == 0 else row.get('response_time'), axis=1
         )
         self.tableModel.setDataFrame(table)
 
@@ -704,7 +719,7 @@ class OnlinePlotsModel(QObject):
                 self._n_trials_engaged += 1
             self._n_trials_correct += row.trial_correct
             self.reward_amount += row.reward_amount
-            if row.response_side == 0:
+            if row.get('response_side') == 0:
                 continue  # do not count no-go trials
             signed_contrast = np.sign(row.position) * row.contrast
             choice = row.position > 0 if row.trial_correct else row.position < 0
@@ -756,6 +771,8 @@ class OnlinePlotsModel(QObject):
             self.titleColorChanged.emit(color)
 
     def getSessionString(self) -> None:
+        if not hasattr(self, 'task_settings'):
+            return
         training_info, _ = get_subject_training_info(
             subject_name=self.task_settings.get('SUBJECT_NAME'),
             task_name=self.task_settings.get('PYBPOD_PROTOCOL'),
@@ -800,7 +817,7 @@ class OnlinePlotsModel(QObject):
         return self._bpod_data[trial]
 
     def getTitle(self) -> str:
-        protocol = self.task_settings.get('PYBPOD_PROTOCOL', 'unknown task protocol')
+        protocol = getattr(self, 'task_settings', dict()).get('PYBPOD_PROTOCOL', 'unknown task protocol')
         spacer = '  ·  '
         return f'{protocol}{spacer}Trial {self._current_trial}{spacer}Elapsed Time: {self.timeElapsed()}'
 
