@@ -43,11 +43,11 @@ jobs:
           cache: true
       - name: Install requirements
         run: pdm sync -G project-extraction -dG test -dG ci
-      - name: Install additional packages(Ubuntu only)
+      - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get install -y libportaudio2 libgl1 libegl1 libdbus-1-3 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 x11-utils
-          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+        run: sudo apt-get install -y libportaudio2
+      - name: Set environment variable
+        run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
       - name: iblrig unit tests
         run: pdm run pytest
       - name: coveralls.io
