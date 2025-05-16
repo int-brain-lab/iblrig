@@ -43,9 +43,9 @@ jobs:
           cache: true
       - name: Install requirements
         run: pdm sync -G project-extraction -dG test -dG ci
-      - name: Install audio library (Ubuntu only)
+      - name: Install libportaudio2 and libegl1 (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2
+        run: sudo apt-get install -y libportaudio2 libegl1
       - name: iblrig unit tests
         run: pdm run pytest
       - name: coveralls.io
