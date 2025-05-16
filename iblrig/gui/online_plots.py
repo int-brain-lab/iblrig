@@ -690,14 +690,14 @@ class OnlinePlotsModel(QObject):
 
     @Slot(str)
     def readJsonable(self, _: str) -> None:
-        # load jsonable data / convert bpod data to list of dataframes
+        # load jsonable data
         trial_data, bpod_data = load_task_jsonable(self.jsonable_file, offset=self._jsonable_offset)
         self._jsonable_offset = self.jsonable_file.stat().st_size
         self._trial_data = pd.concat([self._trial_data, trial_data])
+        self._n_trials = len(self._trial_data)
         if len(self._bpod_data) == 0:
             self._t0 = bpod_data[0]['Trial start timestamp']
         self._bpod_data.extend(bpod_data)
-        self._n_trials = len(self._trial_data)
 
         # update data for trial history table
         table = self._trial_data[['trial_num', 'position', 'contrast']].copy()
@@ -714,18 +714,24 @@ class OnlinePlotsModel(QObject):
         )
         self.tableModel.setDataFrame(table)
 
-        # update psychometrics using online statistics method
-        for trial, row in trial_data.iterrows():
-            self._seconds_elapsed = self._bpod_data[trial]['Trial end timestamp'] - self._t0
-            if self._seconds_elapsed <= EngagedCriterion.SECONDS:
-                self._n_trials_engaged += 1
-            self._n_trials_correct += row.trial_correct
-            self.reward_amount += row.reward_amount
+        # update some counters
+        if len(bpod_data) > 1:
+            seconds_elapsed = np.array([trial['Trial end timestamp'] for trial in bpod_data]) - self._t0
+            self._seconds_elapsed = seconds_elapsed[-1]
+            self._n_trials_engaged += (seconds_elapsed <= EngagedCriterion.SECONDS).sum()
+        else:
+            self._seconds_elapsed = bpod_data[-1]['Trial end timestamp'] - self._t0
+            self._n_trials_engaged += self._seconds_elapsed <= EngagedCriterion.SECONDS
+        self._n_trials_correct += trial_data['trial_correct'].sum()
+        self.reward_amount += trial_data['trial_correct'].sum()
+
+        # update psychometrics
+        trial_data['signed_contrast'] = np.sign(trial_data['position']) * trial_data['contrast']
+        for _, row in trial_data.iterrows():
             if row.get('response_side') == 0:
-                continue  # do not count no-go trials
-            signed_contrast = np.sign(row.position) * row.contrast
+                continue
             choice = row.position > 0 if row.trial_correct else row.position < 0
-            indexer = (row.stim_probability_left, signed_contrast)
+            indexer = (row.stim_probability_left, row.signed_contrast)
             if indexer not in self.psychometrics.index:
                 self.psychometrics.loc[indexer, :] = np.nan
                 self.psychometrics.loc[indexer, 'count'] = 0
@@ -808,7 +814,7 @@ class OnlinePlotsModel(QObject):
         if self._n_trials == 0:
             return datetime.timedelta(seconds=0)
         t1 = self._bpod_data[self._current_trial]['Trial end timestamp']
-        return datetime.timedelta(seconds=round(t1 - self._t0))
+        return datetime.timedelta(seconds=t1 - self._t0)
 
     def percentCorrect(self) -> float:
         return self._n_trials_correct / (self._n_trials if self._n_trials > 0 else np.nan) * 100
@@ -819,7 +825,8 @@ class OnlinePlotsModel(QObject):
     def getTitle(self) -> str:
         protocol = getattr(self, 'task_settings', dict()).get('PYBPOD_PROTOCOL', 'unknown task protocol')
         spacer = '  ·  '
-        return f'{protocol}{spacer}Trial {self._current_trial}{spacer}Elapsed Time: {self.timeElapsed()}'
+        t_elapsed = str(self.timeElapsed()).split('.')[0]
+        return f'{protocol}{spacer}Trial {self._current_trial}{spacer}Elapsed Time: {t_elapsed}'
 
 
 class OnlinePlotsView(QMainWindow):
