@@ -203,6 +203,7 @@ class Bpod(BpodIO):
                 'bonsai_closed_loop': (module_port, self._define_message(module, [ord('#'), 3])),
                 'bonsai_freeze_stim': (module_port, self._define_message(module, [ord('#'), 4])),
                 'bonsai_show_center': (module_port, self._define_message(module, [ord('#'), 5])),
+                'bonsai_freeze_center': (module_port, self._define_message(module, [ord('#'), 9])),
             }
         )
 
