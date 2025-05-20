@@ -2,7 +2,7 @@ Changelog
 =========
 
 8.27.7
-* fixed: visual stimulus could sometimes be moved after reaching the center position
+* fixed: choice world family: visual stimulus could sometimes be moved after reward delivery
 
 8.27.6
 ------

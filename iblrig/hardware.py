@@ -371,7 +371,7 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
         self.enable_evt_transmission()
 
     def close(self):
-        if getattr(self, 'arcom') is not None:
+        if getattr(self, 'arcom') is not None:  # noqa: B009
             log.debug(f'Closing serial connection to {self._name} on port {self.settings.COM_ROTARY_ENCODER}')
             super().close()
 
