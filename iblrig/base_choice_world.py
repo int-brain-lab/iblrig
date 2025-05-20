@@ -269,6 +269,7 @@ class ChoiceWorldSession(
                 'bonsai_closed_loop': daction,
                 'bonsai_freeze_stim': daction,
                 'bonsai_show_center': daction,
+                'bonsai_freeze_center': daction,
             }
         )
 
