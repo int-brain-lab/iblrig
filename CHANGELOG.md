@@ -1,6 +1,9 @@
 Changelog
 =========
 
+8.27.7
+* fixed: visual stimulus could sometimes be moved after reaching the center position
+
 8.27.6
 ------
 * fixed: detection of LED control ability broken for Bpods with old firmware  
