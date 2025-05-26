@@ -71,7 +71,7 @@ class BaseSession(ABC):
     """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
     """dict: The experiment description."""
-    extractor_tasks: list | None = None
+    _extractor_tasks: list | None = None
     """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
@@ -114,7 +114,6 @@ class BaseSession(ABC):
         :param stub: A full path to an experiment description file containing experiment information.
         :param append: bool, if True, append to the latest existing session of the same subject for the same day
         """
-        self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
@@ -171,6 +170,14 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    @property
+    def extractor_tasks(self) -> list[str] | None:
+        return self._extractor_tasks
+
+    @extractor_tasks.setter
+    def extractor_tasks(self, value: list[str] | None):
+        self._extractor_tasks = value
 
     def _load_settings(
         self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
