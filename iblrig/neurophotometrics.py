@@ -244,15 +244,21 @@ def _validate_neurophotometrics_description(
     if sync_mode == 'bpod':
         assert sync_channel in (0, 1), 'sync channel must be either 1 or 2'
     if sync_mode == 'daqami':
-        assert sync_channel in (0, 1, 2, 3, 4, 5, 6), 'sync channel must be between 0 and 6'
+        assert sync_channel in (1, 2, 3, 4, 5, 6), 'sync channel must be between 1 and 6'
+        # actually now - placed the frame clock on DI0 so it should exclude 0
 
+    # assert compatible shapes
     assert len(rois) == len(locations), 'The number of ROIs and locations must be the same.'
     assert len(set(rois)) == len(rois), 'duplicate rois are not possible'
-    # TODO docme and the rationale behind this - will be subject of DAWG meeting
-    band = 'G' if any([roi.startswith('G') for roi in rois]) else 'R'
-    ix = [i for i, roi in enumerate(rois) if roi.startswith(band)]
-    locations = [locations[i] for i in ix]
-    assert len(set(locations)) == len(locations), 'duplicate brain regions are not possible'
+
+    # assert each location being sampled at max twice and if so, by different bands
+    for location in set(locations):
+        ix = [i for i, loc in enumerate(locations) if loc == location]
+        assert len(ix) == 2, 'there are only 2 possible bands'
+        rois_per_loc = [rois[i] for i in ix]
+        # check that each band is present only once
+        assert sum(True for roi in rois_per_loc if roi.startswith('G')) == 1, 'duplicate green band'
+        assert sum(True for roi in rois_per_loc if roi.startswith('R')) == 1, 'duplicate red band'
     assert sync_mode in ('bpod', 'daqami'), 'sync mode must be either bpod or daqami'
 
 
@@ -321,7 +327,7 @@ def neurophotometrics_description(
                 acquisition_software: daqami
                 collection: raw_photometry_data
                 sampling_rate: 1000
-                frameclock_channel: 7
+                frameclock_channel: 0
 
     """
     if validate:
@@ -348,7 +354,7 @@ def neurophotometrics_description(
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
                 acquisition_software='daqami',
                 collection='raw_photometry_data',
-                frameclock_channel=7,
+                frameclock_channel=0,
             )
             return experiment_description
         case _:
