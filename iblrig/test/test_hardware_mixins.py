@@ -5,10 +5,13 @@ The start() methods of those mixins require the hardware to be connected.
 """
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 from scipy.fft import fft, fftfreq
 from scipy.stats import ks_2samp
 
@@ -107,6 +110,27 @@ class TestBpodMixin(unittest.TestCase):
         self.assertIsNone(session.bpod.softcodes)  # will only be assigned a dict value in `start_hardware`
         with self.assertRaises(ValueError):
             softcode_dict[SOFTCODE.TRIGGER_CAMERA]()  # since we didn't instantiate with CameraMixin
+
+    @patch('iblrig.hardware.Bpod', autospec=True)
+    def test_ambient_conversion(self, _):
+        session = mixin_factory(BpodMixin)
+        assert 'AMBIENT_FILE_PATH' in session.paths
+        with TemporaryDirectory() as temp_dir:
+            session.paths['AMBIENT_FILE_PATH'] = Path(temp_dir).joinpath(session.paths['AMBIENT_FILE_PATH'].name)
+            bin_path = session.paths['AMBIENT_FILE_PATH']
+            pqt_path = session.paths['AMBIENT_FILE_PATH'].with_suffix('.pqt')
+
+            bin_path.touch()
+            assert bin_path.exists()
+            session.stop_mixin_bpod()
+            assert not bin_path.exists()
+            assert pqt_path.exists()
+
+            data = pd.read_parquet(pqt_path)
+            assert 'Trial' in data.columns
+            assert 'Temperature_C' in data.columns
+            assert 'AirPressure_mb' in data.columns
+            assert 'RelativeHumidity' in data.columns
 
 
 class TestOtherMixins(BaseTestHardwareMixins):

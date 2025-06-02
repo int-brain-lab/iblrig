@@ -1013,7 +1013,7 @@
               <Name>BpodEvent</Name>
             </Expression>
             <Expression xsi:type="Condition">
-              <Name>STOP</Name>
+              <Name>Event #1 Hide Stim</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">
@@ -1067,7 +1067,7 @@
               </Workflow>
             </Expression>
             <Expression xsi:type="Condition">
-              <Name>SHOW STIM</Name>
+              <Name>Event #8 Show Stim</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">
@@ -1151,7 +1151,7 @@ probably there is no need to reset the position also
               </Workflow>
             </Expression>
             <Expression xsi:type="Condition">
-              <Name>CLOSE LOOP</Name>
+              <Name>Event #3 Closed Loop</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">
@@ -1396,7 +1396,46 @@ Value = whhel_radius for wheel_perim</Description>
                     <Name>BpodEvent</Name>
                   </Expression>
                   <Expression xsi:type="Condition">
-                    <Name>StopConditionBpod</Name>
+                    <Name>Event #9 Freeze Center</Name>
+                    <Workflow>
+                      <Nodes>
+                        <Expression xsi:type="WorkflowInput">
+                          <Name>Source1</Name>
+                        </Expression>
+                        <Expression xsi:type="Equal">
+                          <Operand xsi:type="FloatProperty">
+                            <Value>9</Value>
+                          </Operand>
+                        </Expression>
+                        <Expression xsi:type="WorkflowOutput" />
+                      </Nodes>
+                      <Edges>
+                        <Edge From="0" To="1" Label="Source1" />
+                        <Edge From="1" To="2" Label="Source1" />
+                      </Edges>
+                    </Workflow>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="FloatProperty">
+                      <Value>0</Value>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Sample" />
+                  </Expression>
+                  <Expression xsi:type="Combinator">
+                    <Combinator xsi:type="rx:Take">
+                      <rx:Count>1</rx:Count>
+                    </Combinator>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>StimLocationX</Name>
+                  </Expression>
+                  <Expression xsi:type="MulticastSubject">
+                    <Name>UpdateSyncSquare</Name>
+                  </Expression>
+                  <Expression xsi:type="Condition">
+                    <Name>Event #4 Freeze</Name>
                     <Workflow>
                       <Nodes>
                         <Expression xsi:type="WorkflowInput">
@@ -1443,25 +1482,32 @@ Value = whhel_radius for wheel_perim</Description>
                   <Edge From="1" To="2" Label="Source1" />
                   <Edge From="2" To="4" Label="Source1" />
                   <Edge From="2" To="5" Label="Source1" />
-                  <Edge From="2" To="14" Label="Source2" />
+                  <Edge From="2" To="20" Label="Source2" />
                   <Edge From="3" To="4" Label="Source2" />
                   <Edge From="3" To="6" Label="Source1" />
-                  <Edge From="4" To="14" Label="Source1" />
+                  <Edge From="4" To="20" Label="Source1" />
                   <Edge From="5" To="7" Label="Source2" />
                   <Edge From="6" To="7" Label="Source1" />
                   <Edge From="7" To="8" Label="Source1" />
                   <Edge From="8" To="9" Label="Source1" />
                   <Edge From="9" To="10" Label="Source1" />
-                  <Edge From="10" To="13" Label="Source2" />
+                  <Edge From="10" To="19" Label="Source3" />
                   <Edge From="11" To="12" Label="Source1" />
-                  <Edge From="12" To="13" Label="Source1" />
-                  <Edge From="13" To="18" Label="Source2" />
+                  <Edge From="11" To="18" Label="Source1" />
+                  <Edge From="12" To="19" Label="Source2" />
+                  <Edge From="12" To="14" Label="Source2" />
+                  <Edge From="13" To="14" Label="Source1" />
                   <Edge From="14" To="15" Label="Source1" />
                   <Edge From="15" To="16" Label="Source1" />
                   <Edge From="16" To="17" Label="Source1" />
-                  <Edge From="16" To="20" Label="Source1" />
-                  <Edge From="17" To="18" Label="Source1" />
                   <Edge From="18" To="19" Label="Source1" />
+                  <Edge From="19" To="24" Label="Source2" />
+                  <Edge From="20" To="21" Label="Source1" />
+                  <Edge From="21" To="22" Label="Source1" />
+                  <Edge From="22" To="23" Label="Source1" />
+                  <Edge From="22" To="26" Label="Source1" />
+                  <Edge From="23" To="24" Label="Source1" />
+                  <Edge From="24" To="25" Label="Source1" />
                 </Edges>
               </Workflow>
             </Expression>
@@ -1469,7 +1515,7 @@ Value = whhel_radius for wheel_perim</Description>
               <Combinator xsi:type="rx:Switch" />
             </Expression>
             <Expression xsi:type="Condition">
-              <Name>SHOWCENTER</Name>
+              <Name>Event #5: Show Center</Name>
               <Workflow>
                 <Nodes>
                   <Expression xsi:type="WorkflowInput">

@@ -34,13 +34,14 @@ from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.hardware import SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
 from iblrig.tools import call_bonsai, get_number
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblrig.valve import Valve
+from iblutil.io import binary
 from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, flatten, setup_logger
@@ -59,7 +60,7 @@ class HasBpod(Protocol):
 
 class BaseSession(ABC):
     version = None
-    """str: !!CURRENTLY UNUSED!! task version string."""
+    """str: Task version string."""
     # protocol_name: str | None = None
     """str: The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
@@ -278,6 +279,8 @@ class BaseSession(ABC):
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00`
             *   DATA_FILE_PATH: contains the bpod trials
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskData.raw.jsonable`
+            *   AMBIENT_FILE_PATH: contains the ambient sensor data
+                `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_ambientSensorData.raw.bin`
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
@@ -319,6 +322,7 @@ class BaseSession(ABC):
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.AMBIENT_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_ambientSensorData.raw.bin')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         return paths
 
@@ -440,6 +444,8 @@ class BaseSession(ABC):
         }
         with contextlib.suppress(importlib.metadata.PackageNotFoundError):
             patch_dict['PROJECT_EXTRACTION_VERSION'] = importlib.metadata.version('project_extraction')
+        if self.version is not None:
+            patch_dict['TASK_VERSION'] = self.version
         output_dict.update(patch_dict)
         return output_dict
 
@@ -659,9 +665,9 @@ class BaseSession(ABC):
             self.session_info.POOP_COUNT = get_number('Droppings count: ', int, lambda x: x >= 0)
 
         self.save_task_parameters_to_json_file()
-        self.register_to_alyx()
         self._execute_mixins_shared_function('stop_mixin')
         self._execute_mixins_shared_function('cleanup_mixin')
+        self.register_to_alyx()
 
     @abstractmethod
     def start_hardware(self):
@@ -971,6 +977,13 @@ class BpodMixin(BaseSession):
 
     def stop_mixin_bpod(self):
         self.bpod.close()
+
+        # convert ambient data from binary to parquet
+        if self.paths['AMBIENT_FILE_PATH'].exists():
+            pqt_file = binary.convert_to_parquet(
+                filepath_bin=self.paths['AMBIENT_FILE_PATH'], dtype=DTYPE_AMBIENT_SENSOR_BIN, delete_bin_file=True
+            )
+            log.info(f"'{self.paths['AMBIENT_FILE_PATH'].name}' converted to parqet and stored as '{pqt_file.name}'")
 
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
@@ -1330,6 +1343,7 @@ class NetworkSession(BaseSession):
 
         paths.SESSION_RAW_DATA_FOLDER = paths.SESSION_FOLDER.joinpath(paths.TASK_COLLECTION)
         paths.DATA_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskData.raw.jsonable')
+        paths.AMBIENT_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_ambientSensorData.raw.bin')
         paths.SETTINGS_FILE_PATH = paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         self.session_info.SESSION_NUMBER = int(paths.SESSION_FOLDER.name)
         return paths
