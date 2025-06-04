@@ -658,8 +658,13 @@ class NeurophotometricsCopier(SessionCopier):
 
                 # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
                 timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
-                dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
+
+                # note: the timestamp of the neurophotometric is written when the Bonsai workflow is opened, NOT when the
+                # bonsai workflow is started! Therefore the neurophotometrics file is still timestamped BEFORE the
+                # daqami file, even though the bonsai recording starts after ...
+                dt_min = min([dt for dt in timedeltas if dt < datetime.timedelta(0)])
                 daqami_folder = folders[timedeltas.index(dt_min)]
+
                 # check here if multiple daqami files exist
                 if len(list(daqami_folder.glob('*'))) == 2:
                     # this is the expected case, all is fine
