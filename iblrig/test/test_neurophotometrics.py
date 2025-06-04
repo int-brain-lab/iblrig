@@ -8,7 +8,7 @@ class TestExperimentDescription(unittest.TestCase):
     def test_neurophotometrics_description(self):
         dt = datetime.datetime.fromisoformat('2024-10-11T11:11:00')
         d = neurophotometrics_description(
-            rois=['Region1G', 'Region2G'], locations=['SI', 'VTA'], sync_channel=1, start_time=dt, sync_mode='bpod'
+            rois=['G0', 'G1'], locations=['SI', 'VTA'], sync_channel=1, start_time=dt, sync_mode='bpod'
         )
         dexpected = {
             'devices': {
@@ -16,7 +16,7 @@ class TestExperimentDescription(unittest.TestCase):
                     'sync_channel': 1,
                     'datetime': '2024-10-11T11:11:00',
                     'collection': 'raw_photometry_data',
-                    'fibers': {'G1': {'location': 'SI'}, 'G2': {'location': 'VTA'}},
+                    'fibers': {'G0': {'location': 'SI'}, 'G1': {'location': 'VTA'}},
                     'sync_mode': 'bpod',
                 }
             }
