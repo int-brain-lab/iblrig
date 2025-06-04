@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "ci", "dev", "doc", "test", "typing"]
+groups = ["default", "ci", "dev", "doc", "project-extraction", "test", "typing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
 content_hash = "sha256:806592dc8e13410e842b5516dd42db1db3cd0cec553d06fed2c039e651c73c36"
@@ -1825,6 +1825,15 @@ files = [
     {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
     {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
 ]
+
+[[package]]
+name = "project-extraction"
+version = "0.8.4"
+requires_python = "~=3.10"
+git = "https://github.com/int-brain-lab/project_extraction.git"
+revision = "7bfa0f1c4fc7c6b7d27a8534131bc7523a29ce57"
+summary = "Custom extractors for satellite tasks"
+groups = ["project-extraction"]
 
 [[package]]
 name = "prompt-toolkit"
