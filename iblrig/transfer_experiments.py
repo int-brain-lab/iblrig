@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import shutil
 import socket
 import traceback
@@ -9,7 +10,6 @@ import uuid
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
-import re
 
 import ibllib.pipes.misc
 import iblphotometry.io as fpio
