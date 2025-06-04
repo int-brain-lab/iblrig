@@ -242,9 +242,9 @@ def _validate_neurophotometrics_description(
 
     # verify if sync channel is valid
     if sync_mode == 'bpod':
-        assert sync_channel in (0, 1), 'sync channel must be either 1 or 2'
+        assert sync_channel in (0, 1), 'sync channel must be either 0 or 1'
     if sync_mode == 'daqami':
-        assert sync_channel in (1, 2, 3, 4, 5, 6), 'sync channel must be between 1 and 6'
+        assert sync_channel in (0, 1, 2, 3, 4, 5, 6), 'sync channel must be between 0 and 6'
         # actually now - placed the frame clock on DI0 so it should exclude 0
 
     # assert compatible shapes
