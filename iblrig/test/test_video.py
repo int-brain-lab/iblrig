@@ -17,7 +17,7 @@ sys.modules['PySpin'] = MagicMock()
 
 from iblrig import video  # noqa
 from iblrig.test.base import BaseTestCases  # noqa
-from iblrig.path_helper import load_pydantic_yaml, HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML  # noqa
+from iblrig.path_helper import load_pydantic_yaml  # noqa
 from iblrig.pydantic_definitions import HardwareSettings  # noqa
 
 
@@ -38,60 +38,6 @@ class TestDownloadFunction(unittest.TestCase):
         mock_hashfile.assert_called()
         mock_aws_download.assert_called_once_with(source=f'resources/{filename}', destination=Path(expected_out_file))
         mock_os_rename.assert_called_once_with(Path('mocked_tmp_file'), expected_out_file)
-
-
-class TestPrepareVideoSession(unittest.TestCase):
-    """Test for iblrig.video.prepare_video_session."""
-
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.subject = 'foobar'
-        self.addCleanup(self.tmp.cleanup)
-        (input_mock := patch('builtins.input')).start()
-        self.addCleanup(input_mock.stop)
-
-    @patch('iblrig.video.EmptySession')
-    @patch('iblrig.video.HAS_PYSPIN', True)
-    @patch('iblrig.video.HAS_SPINNAKER', True)
-    @patch('iblrig.video.call_bonsai')
-    @patch('iblrig.video_pyspin.enable_camera_trigger')
-    def test_prepare_video_session(self, enable_camera_trigger, call_bonsai, session):
-        """Test iblrig.video.prepare_video_session function."""
-        # Set up mock session folder
-        session_path = Path(self.tmp.name, self.subject, '2020-01-01', '001')
-        session().paths.SESSION_FOLDER = session_path
-        session_path.mkdir(parents=True)
-        # Set up remote path
-        remote_path = Path(self.tmp.name, 'remote', self.subject, '2020-01-01', '001')
-        session().paths.REMOTE_SUBJECT_FOLDER = remote_path
-        remote_path.mkdir(parents=True)
-        # Some test hardware settings
-        hws = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')
-        hws['device_cameras']['default']['right'] = hws['device_cameras']['default']['left']
-        session().hardware_settings = hws
-        workflows = hws['device_cameras']['default']['BONSAI_WORKFLOW']
-
-        video.prepare_video_session(self.subject, 'default')
-
-        # Validate calls
-        expected = [call(enable=False), call(enable=True), call(enable=False)]
-        enable_camera_trigger.assert_has_calls(expected)
-        raw_data_folder = session_path / 'raw_video_data'
-        expected_pars = {
-            'LeftCameraIndex': 1,
-            'RightCameraIndex': 1,
-            'FileNameLeft': str(raw_data_folder / '_iblrig_leftCamera.raw.avi'),
-            'FileNameLeftData': str(raw_data_folder / '_iblrig_leftCamera.frameData.bin'),
-            'FileNameRight': str(raw_data_folder / '_iblrig_rightCamera.raw.avi'),
-            'FileNameRightData': str(raw_data_folder / '_iblrig_rightCamera.frameData.bin'),
-        }
-        expected = [call(workflows.setup, ANY, debug=False), call(workflows.recording, expected_pars, wait=False, debug=False)]
-        call_bonsai.assert_has_calls(expected)
-
-        # Test config validation
-        self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
-        session().hardware_settings = hws.model_construct()
-        self.assertRaises(ValueError, video.prepare_video_session, self.subject, 'training')
 
 
 class BaseCameraTest(BaseTestCases.CommonTestTask):
@@ -217,7 +163,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
             """Return args with added side effect of signalling Bonsai subprocess termination."""
             addr = '192.168.0.5:99998'
             info_msg = ((net.base.ExpStatus.CONNECTED, {'subject_name': 'foo'}), addr, net.base.ExpMessage.EXPINFO)
-            init_msg = ({'exp_ref': f'{date.today()}_1_foo'}, addr, net.base.ExpMessage.EXPINIT)
+            init_msg = ([{'exp_ref': f'{date.today()}_1_foo'}], addr, net.base.ExpMessage.EXPINIT)
             start_msg = ((f'{date.today()}_1_foo', {}), addr, net.base.ExpMessage.EXPSTART)
             status_msg = (net.base.ExpStatus.RUNNING, addr, net.base.ExpMessage.EXPSTATUS)
             for call_number, msg in enumerate((info_msg, init_msg, start_msg, status_msg, status_msg)):

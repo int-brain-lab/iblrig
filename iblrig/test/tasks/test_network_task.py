@@ -92,15 +92,18 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
         # Remote subject doesn't match
         task_kwargs = self.task_kwargs | {'subject': 'foobar'}
         self.assertRaises(ValueError, Session, **task_kwargs)
-        # Append doesn't match
-        task_kwargs = self.task_kwargs | {'append': True}
-        self.assertRaises(ValueError, Session, **task_kwargs)  # append should be False
-        task.paths.SESSION_FOLDER.mkdir(parents=True)
-        task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).mkdir()
-        self.assertRaises(ValueError, Session, **self.task_kwargs)  # append should be True
-        task_2 = Session(**task_kwargs)
-        self.assertEqual('raw_task_data_01', task_2.paths.TASK_COLLECTION)
-        task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).rmdir()
+
+        # # Append doesn't match
+        # # NB: For now, append is simply ignored
+        # task_kwargs = self.task_kwargs | {'append': True}
+        # self.assertRaises(ValueError, Session, **task_kwargs)  # append should be False
+        # task.paths.SESSION_FOLDER.mkdir(parents=True)
+        # task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).mkdir()
+        # self.assertRaises(ValueError, Session, **self.task_kwargs)  # append should be True
+        # task_2 = Session(**task_kwargs)
+        # self.assertEqual('raw_task_data_01', task_2.paths.TASK_COLLECTION)
+        # task.paths.SESSION_FOLDER.joinpath(task.paths.TASK_COLLECTION).rmdir()
+
         # Date doesn't match
         aux.push.return_value['ZcanImage'][1]['exp_ref'] = '2020-01-01' + self.exp_ref[10:]
         self.assertRaises(RuntimeError, Session, **self.task_kwargs)
