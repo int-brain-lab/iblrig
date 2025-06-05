@@ -256,9 +256,9 @@ def _validate_neurophotometrics_description(
         ix = [i for i, loc in enumerate(locations) if loc == location]
         assert len(ix) <= 2, 'there are only 2 possible bands'
         rois_per_loc = [rois[i] for i in ix]
-        # check that each band is present only once
-        assert sum(True for roi in rois_per_loc if roi.startswith('G')) == 1, 'duplicate green band'
-        assert sum(True for roi in rois_per_loc if roi.startswith('R')) == 1, 'duplicate red band'
+        # check that each band is present once or none
+        assert sum(True for roi in rois_per_loc if roi.startswith('G')) in [0, 1], 'duplicate green band'
+        assert sum(True for roi in rois_per_loc if roi.startswith('R')) in [0, 1], 'duplicate red band'
     assert sync_mode in ('bpod', 'daqami'), 'sync mode must be either bpod or daqami'
 
 
@@ -326,7 +326,6 @@ def neurophotometrics_description(
             sync_metadata:
                 acquisition_software: daqami
                 collection: raw_photometry_data
-                sampling_rate: 1000
                 frameclock_channel: 0
 
     """
