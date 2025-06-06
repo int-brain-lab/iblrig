@@ -302,7 +302,7 @@ class TestCameraSessionNetworked(unittest.IsolatedAsyncioTestCase, BaseCameraTes
         with self.assertLogs(self.session.logger.name, 'ERROR') as cm:
             await self.session.run()
             record = next((r.getMessage() for r in cm.records if r.levelno == 40), '')
-            self.assertRegex(record, '2020-01-01_1_bar received; already running 2025-03-12_1_foo')
+            self.assertRegex(record, r'2020-01-01_1_bar received; already running [\d\-_]+foo')
 
     async def test_process_keyboard_input(self):
         """Test iblrig.video.CameraSessionNetworked._process_keyboard_input method."""
