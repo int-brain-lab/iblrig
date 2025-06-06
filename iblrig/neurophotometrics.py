@@ -353,7 +353,7 @@ def neurophotometrics_description(
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
                 acquisition_software='daqami',
                 collection='raw_photometry_data',
-                frameclock_channel=0,
+                frameclock_channel='AI7',
             )
             return experiment_description
         case _:
