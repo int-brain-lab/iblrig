@@ -1252,6 +1252,7 @@ class NetworkSession(BaseSession):
             remote_rigs = {k: v for k, v in all_remote_rigs.items() if k in remote_rigs}
         # Load and connect to remote services
         self.connect(remote_rigs)
+        self.session_info.update('REMOTE_RIGS', remote_rigs)
         self.exp_ref = {}
         try:
             super().__init__(**kwargs)
