@@ -19,9 +19,9 @@ from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
 from iblrig import choiceworld, misc
-from iblrig.hardware import SOFTCODE
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
 from iblrig.pydantic_definitions import TrialDataModel
-from iblutil.io import jsonable
+from iblutil.io import binary, jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
@@ -136,12 +136,9 @@ class ChoiceWorldSession(
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
         self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
-            {
-                'Temperature_C': np.zeros(NTRIALS_INIT) * np.nan,
-                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.nan,
-                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
-            }
+            np.nan, index=range(NTRIALS_INIT), columns=['Temperature_C', 'AirPressure_mb', 'RelativeHumidity'], dtype=np.float32
         )
+        self.ambient_sensor_table.rename_axis('Trial', inplace=True)
 
     @staticmethod
     def extra_parser():
@@ -310,7 +307,6 @@ class ChoiceWorldSession(
 
             # save trial and update log
             self.trial_completed(self.bpod.session.current_trial.export())
-            self.ambient_sensor_table.loc[trial_number] = self.bpod.get_ambient_sensor_reading()
             self.show_trial_log()
 
             # handle stop event
@@ -361,6 +357,7 @@ class ChoiceWorldSession(
                 'bonsai_closed_loop': daction,
                 'bonsai_freeze_stim': daction,
                 'bonsai_show_center': daction,
+                'bonsai_freeze_center': daction,
             }
         )
 
@@ -514,7 +511,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_show_center],
+            output_actions=[self.bpod.actions.bonsai_freeze_center],
             state_change_conditions={'Tup': 'reward'},
         )
         sma.add_state(
@@ -601,6 +598,13 @@ class ChoiceWorldSession(
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
         self.save_trial_data_to_json(bpod_data)
+
+        # save ambient data
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            self.ambient_sensor_table.iloc[self.trial_num] = (sensor_reading := self.bpod.get_ambient_sensor_reading())
+            with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
+                binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
+
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
@@ -839,6 +843,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         Update the trials table with information about the behaviour coming from the bpod.
 
         Constraints on the state machine data:
+
         - mandatory states: ['correct', 'error', 'no_go', 'reward']
         - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
 
@@ -873,22 +878,24 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 assert n_outcomes == 1, f'{n_outcomes} outcomes detected for trial {self.trial_num}.\n{trial_states}'
             outcome = outcomes[0]
 
-            # record the trial's outcome in the trials_table
-            self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
-            if 'correct' in outcome:
-                self.session_info.NTRIALS_CORRECT += 1
-                self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-            elif 'error' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-            elif 'no_go' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = 0
-            super().trial_completed(bpod_data)
-
         except AssertionError as e:
-            # log assertion errors, then raise
+            # write bpod_data to disk, log exception then raise
+            self.save_trial_data_to_json(bpod_data, validate=False)
             for line in re_split(r'\n', e.args[0]):
                 log.error(line)
             raise e
+
+        # record the trial's outcome in the trials_table
+        self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
+        if 'correct' in outcome:
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+
+        super().trial_completed(bpod_data)
 
 
 class BiasedChoiceWorldTrialData(ActiveChoiceWorldTrialData):

@@ -5,7 +5,10 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
+import warnings
 import zipfile
+from datetime import datetime
 from pathlib import Path
 
 from ibllib.io.raw_data_loaders import load_embedded_frame_data
@@ -192,10 +195,7 @@ def prepare_video_session_cmd():
         parser.error('--subject-name is mandatory if --service-uri has not been provided.')
 
     log_level = 'DEBUG' if args.debug else 'INFO'
-    setup_logger(name='iblrig', level=log_level)
     service_uri = args.service_uri
-    # Technically `prepare_video_service` should behave the same as `prepare_video_session` if the service_uri arg is
-    # False but until fully tested, let's call the old function
     if service_uri is False:
         session = CameraSession(subject=args.subject_name, config_name=args.profile, log_level=log_level)
         session.run()
@@ -320,6 +320,14 @@ class CameraSession(EmptySession):
         if kwargs.get('append'):
             raise NotImplementedError
         super().__init__(subject=subject or '', **kwargs)
+        try:  # Attempt to create log
+            log_file = Path(tempfile.gettempdir()).joinpath(
+                'iblrig_logs', f'{datetime.now().strftime("%Y%m%d-%H%M%S")}_camera-session.log'
+            )
+            log_file.parent.mkdir(parents=True, exist_ok=True)
+            self._setup_loggers(level=kwargs.get('log_level', 'INFO'), file=log_file)
+        except Exception as ex:
+            warnings.warn(f'Failed to set up logs: {ex}', stacklevel=2)
         self.experiment_description = None
         self.bonsai_process = None
         try:
@@ -369,8 +377,28 @@ class CameraSession(EmptySession):
             self._one = OneAlyx(silent=True, mode='local')
         return self._one
 
-    def _setup_loggers(self, level='INFO', **_):
-        self.logger = setup_logger(name='iblrig', level=level)
+    def _setup_loggers(self, level='INFO', file=None, **_):
+        self.logger = setup_logger(name='iblrig', level=level, file=file)
+
+    def _copy_log_to_session(self):
+        """Copy the log file to the session folder.
+
+        This copies the iblrig_logs file handler to the session raw video data folder after closing and removing.
+        This should be run at the end of an acquisition. If no file handler is found or the SESSION_RAW_DATA_FOLDER
+        path is not set, the method will do nothing.
+        """
+        tmplog = Path(tempfile.gettempdir(), 'iblrig_logs')
+        file_handlers = filter(
+            lambda h: isinstance(h, logging.FileHandler) and Path(h.baseFilename).is_relative_to(tmplog), self.logger.handlers
+        )
+        if file_handler := next(file_handlers, None):
+            file_handler.close()
+            self.logger.removeHandler(file_handler)
+            if self.paths.get('SESSION_RAW_DATA_FOLDER'):
+                new_file = self.paths['SESSION_RAW_DATA_FOLDER'].joinpath('_ibl_log.info-acquisition.log')
+                new_file.parent.mkdir(parents=True, exist_ok=True)
+                self.logger.debug('Moving log file: %s -> %s', file_handler.baseFilename, new_file)
+                Path(file_handler.baseFilename).replace(new_file)
 
     @property
     def cameras(self):
@@ -443,6 +471,10 @@ class CameraSession(EmptySession):
         self.bonsai_process.wait()
         self._status = net.base.ExpStatus.STOPPED
         self.stop_recording()
+        try:
+            self._copy_log_to_session()
+        except Exception as ex:
+            self.logger.error('Failed to copy log to session: %s', ex)
 
 
 class CameraSessionNetworked(CameraSession):
@@ -519,6 +551,7 @@ class CameraSessionNetworked(CameraSession):
             await self.listen(service_uri)
         self.run_setup_workflow()
         while self.is_connected:
+            # TODO Add a check here with an attempt to reconnect if not connected and Bonsai workflow is running
             # FIXME Run this as worker for asynchronicity
             # Ensure we are awaiting a message from the remote rig.
             # This task must be re-added each time a message is received.
@@ -540,7 +573,17 @@ class CameraSessionNetworked(CameraSession):
                             self.logger.error('Remote communicator closed')
                             break  # TODO cleanup and interact with com closed callbacks
                         else:
-                            await self._process_message(*task.result())
+                            try:
+                                await self._process_message(*task.result())
+                            except Exception as ex:
+                                if self.status is net.base.ExpStatus.RUNNING:
+                                    # If running, keep connected and log error
+                                    # The behaviour rig can still connect at a later point
+                                    self.logger.error('Failed to process message: %s', ex)
+                                else:
+                                    # If not running raise the exception after closing communicator
+                                    self.close()
+                                    raise ex
                     case 'bonsai':
                         # Bonsai process was ended, most likely it was closed
                         status = task.result()
@@ -552,9 +595,13 @@ class CameraSessionNetworked(CameraSession):
                         self.finalize_recording()
                         # TODO We could send a message to remote here
                     case _:
-                        raise NotImplementedError(f'Unexpected task "{task.get_name()}"')
+                        self.logger.error(f'Unexpected task "{task.get_name()}"')
                 self._async_tasks.remove(task)
         self.close()
+        try:
+            self._copy_log_to_session()
+        except Exception as ex:
+            self.logger.error('Failed to copy log to session: %s', ex)
 
     def close(self):
         """End experiment and cleanup object.
@@ -588,7 +635,7 @@ class CameraSessionNetworked(CameraSession):
         if name.startswith('exp'):
             name = name[3:]
         fcn = getattr(self, 'on_' + name, None)
-        assert callable(fcn)
+        assert callable(fcn), f'on_{name} is not a callable method'
         await fcn(data, addr)
 
     async def _process_keyboard_input(self, line):
@@ -601,8 +648,8 @@ class CameraSessionNetworked(CameraSession):
                 await self.stop_recording()
             case 'QUIT':
                 self.communicator.close()
-                process_finished = self.bonsai_process and self.bonsai_process.returncode is not None
-                if not (self.status is net.base.ExpStatus.STOPPED and process_finished):
+                process_running = self.bonsai_process and self.bonsai_process.returncode is None
+                if process_running and self.status is not net.base.ExpStatus.STOPPED:
                     await self.stop_recording()
             case line if line.startswith('QUIT!'):
                 self.close()
@@ -618,31 +665,59 @@ class CameraSessionNetworked(CameraSession):
             case _:
                 self.logger.error('Command "%s" not recognized. Options: "START", "QUIT" or "QUIT!"', line)
 
+    async def _init(self, exp_ref):
+        """Initialize the recording.
+
+        This should be called by on_init but may be called by on_start if EXPSTART received before EXPINIT
+        or user manually starts session with START.
+
+        Parameters
+        ----------
+        exp_ref : dict
+            The exp_ref to initialize.
+        """
+        current_subject_name = self.session_info['SUBJECT_NAME']  # subject passed in by user (if any)
+        subject_name = exp_ref['subject']
+        assert not current_subject_name or (current_subject_name == subject_name), (
+            f'subject mismatch: {current_subject_name} != {subject_name}'
+        )
+        self._init_paths(exp_ref)
+        await self.initialize_recording()
+        assert self.session_info['SUBJECT_NAME'] == subject_name, (
+            f'subject mismatch: {self.session_info["SUBJECT_NAME"]} != {subject_name}'
+        )
+
     async def on_init(self, data, addr):
-        """Process init command from remote rig."""
+        """Process init command from remote rig.
+
+        This method will initialize the recording and send a response to the remote rig. If an acquisition is already
+        running it will assert that the received experiment description matches the current one (this should be the
+        case when running chained protocols). If the expRef is wrong, the method will raise an error before responding,
+        which should be caught by the calling run method.  Thus one should be able to re-start the behaviour session
+        with the correct subject expRef or turn off UDPs at the behaviour rig without affecting the camera session.
+        """
         self.logger.info('INIT message received')
         data = data[0] if any(data) else {}
-        assert (exp_ref := data.get('exp_ref')), (
-            'No experiment reference found'
-        )  # FIXME graceful error (stop thread somehow so there's no hanging)
-        if isinstance(exp_ref, str):
+        if not (exp_ref := data.get('exp_ref')):
+            raise ValueError('No experiment reference included with EXPINIT data')
+        elif not self.one.is_exp_ref(exp_ref):
+            raise ValueError(f'Invalid experiment reference included with EXPINIT data: {exp_ref}')
+        else:
             exp_ref = self.one.ref2dict(exp_ref)
         # NB: Only the first match case for which predicate is true will be run so we can update the status dynamically
         match self.status:
             case net.base.ExpStatus.CONNECTED:
-                subject_name = self.session_info['SUBJECT_NAME']
-                assert not subject_name or (subject_name == exp_ref['subject'])
-                self._init_paths(exp_ref)
-                await self.initialize_recording()
-                assert self.session_info['SUBJECT_NAME'] == exp_ref['subject']
+                await self._init(exp_ref)
                 self.logger.info('initialized.')
             case net.base.ExpStatus.RUNNING:
                 # Already running - this is fine so long as the exp refs match
-                assert self.exp_ref == self.one.dict2ref(exp_ref)
                 self.logger.warning('received init message while already running.')
+                assert self.exp_ref == self.one.dict2ref(exp_ref), (
+                    f'INIT message for {self.one.dict2ref(exp_ref)} received; already running {self.exp_ref}'
+                )
             case net.base.ExpStatus.INITIALIZED:
                 # Already initialized - this is fine so long as the exp refs match
-                assert self.exp_ref == self.one.dict2ref(exp_ref)
+                assert self.exp_ref == self.one.dict2ref(exp_ref), f'expected {self.exp_ref}, got {self.one.dict2ref(exp_ref)}'
                 self.logger.warning('received init message while already initialized.')
             case net.base.ExpStatus.STOPPED:
                 """
@@ -666,12 +741,10 @@ class CameraSessionNetworked(CameraSession):
             exp_ref = self.one.ref2dict(exp_ref)
         match self.status:
             case S.CONNECTED:
-                self.logger.error('Received EXPSTART before EXPINIT')
-                subject_name = self.session_info['SUBJECT_NAME']
-                assert not subject_name or (subject_name == exp_ref['subject'])
-                self._init_paths(exp_ref)
-                await self.initialize_recording()
-                assert self.session_info['SUBJECT_NAME'] == exp_ref['subject']
+                self.logger.warning(
+                    'Received EXPSTART before EXPINIT'
+                )  # this is fine is user manually starts session via keyboard
+                await self._init(exp_ref)
                 self.start_recording()
             case S.INITIALIZED:
                 self.logger.info('START message received')

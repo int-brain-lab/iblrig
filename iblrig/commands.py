@@ -279,7 +279,7 @@ def transfer_data(
     copiers = _get_copiers(copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
+        logger.info(f'\033[1m{copier.state}, {copier.session_path}\033[1m')
         if not dry:
             copier.run(number_of_expected_devices=expected_devices)
 

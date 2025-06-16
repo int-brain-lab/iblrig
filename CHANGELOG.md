@@ -5,6 +5,23 @@ Changelog
 ------
 * changed: Handling of camera and initial delay moved out of ChoiceWorld's state machine definition
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+* added: save acquisistion log for camera sessions
+* added: save ambient data to Parquet file
+* added: save task version to settings JSON
+* added: check for remote data folder during hardware validation
+
+-------------------------------
+
+8.27.7
+* fixed: choice world family: visual stimulus could sometimes be moved after reward delivery
+
+8.27.6
+------
+* fixed: detection of LED control ability broken for Bpods with old firmware  
+
+8.27.5
+------
+* fixed: issues in serial communication resolved through update to iblpybpod-no-gui 3.1.0
 
 -------------------------------
 

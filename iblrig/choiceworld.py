@@ -103,6 +103,8 @@ def get_subject_training_info(
                 f'(training phase: {training_info["training_phase"]}, adaptive reward: '
                 f'{training_info["adaptive_reward"]}, adaptive gain: {training_info["adaptive_gain"]})'
             )
+            log.warning("This is to be expected if the subject hasn't been trained before.")
+            log.warning('ATTENTION: If the subject *has* been trained before, it could be regressing in training phase!')
             return training_info, None
         else:
             raise ValueError(f'The training status for {subject_name} could not be determined as no previous sessions were found')
