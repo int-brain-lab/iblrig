@@ -1,8 +1,9 @@
 import copy
+import logging
 import random
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
@@ -22,6 +23,8 @@ from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
+
+logger = logging.getLogger(__name__)
 
 
 def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
@@ -90,9 +93,11 @@ class TestIntegrationTransferExperimentsBase(unittest.TestCase):
 class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperimentsBase):
     """for testing the photometry"""
 
-    def create_fake_data(self):
-        datestr = datetime.now().strftime('%Y-%m-%d')
-        timestr = datetime.now().strftime('T%H%M%S')
+    def create_fake_data(self, start_time: datetime | None = None) -> Path:
+        if start_time is None:
+            start_time = datetime.now()
+        datestr = start_time.strftime('%Y-%m-%d')
+        timestr = start_time.strftime('T%H%M%S')
         folder_neurophotometrics = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
         folder_neurophotometrics.mkdir(exist_ok=True, parents=True)
 
@@ -144,20 +149,40 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
         raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry.csv', index=False)
 
+        logger.info('Created fake photometry data in %s', folder_neurophotometrics)
+        return folder_neurophotometrics
+
     def test_copier(self):
         session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
-        self.create_fake_data()
+        timestamp_session = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
 
-        # the workaround to find the settings.yaml
-        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-            mocker.side_effect = self.side_effect
-            # the actual code to test
+        # create several fake photometry datasets
+        # this is to assure that the correct dataset is picked by the copier
+        timestamp_neurophotometrics = timestamp_session + timedelta(minutes=-5)
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-20))
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-10))
+        local_photometry_path = self.create_fake_data(timestamp_neurophotometrics)  # this is the relevant one
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=10))
+
+        # copy data
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
             iblrig.neurophotometrics.init_neurophotometrics_subject(
                 session_stub=session.paths['SESSION_FOLDER'],
                 rois=['Region00', 'Region01'],
                 locations=['VTA', 'SNc'],
             )
-            iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
+            assert iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
+
+        # check that the correct data was copied
+        relative_session_path = session.paths['SESSION_FOLDER'].relative_to(session.paths['LOCAL_SUBJECT_FOLDER'])
+        remote_session_path = session.paths['REMOTE_SUBJECT_FOLDER'].joinpath(relative_session_path)
+        remote_photometry_path = remote_session_path.joinpath('raw_photometry_data')
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
+        data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry.csv'))
+        data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
