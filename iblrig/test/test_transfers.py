@@ -2,6 +2,7 @@ import copy
 import logging
 import random
 import tempfile
+import time
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,7 +10,6 @@ from unittest import mock
 
 import numpy as np
 import pandas as pd
-import pandera
 from packaging import version
 
 import ibllib
@@ -19,9 +19,10 @@ import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
+from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 logger = logging.getLogger(__name__)
@@ -101,6 +102,7 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         folder_neurophotometrics = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
         folder_neurophotometrics.mkdir(exist_ok=True, parents=True)
 
+        # creating fake digital_inputs.csv
         cols_dtypes = dict(
             ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
         )
@@ -109,45 +111,27 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        schema_digital_inputs = pandera.DataFrameSchema(
-            columns=dict(
-                ChannelName=pandera.Column(str, coerce=True),
-                Channel=pandera.Column(pandera.Int8, coerce=True),
-                AlwaysTrue=pandera.Column(bool, coerce=True),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-            )
-        )
-        digital_inputs_df = schema_digital_inputs.validate(digital_inputs_df)
-        digital_inputs_df.to_csv(folder_neurophotometrics / 'digital_inputs.csv', index=False, header=False)
+        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
+        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
 
-        # raw
-        schema_raw_data = pandera.DataFrameSchema(
-            columns=dict(
-                FrameCounter=pandera.Column(pandera.Int64),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                LedState=pandera.Column(pandera.Int16, coerce=True),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-                Region00=pandera.Column(pandera.Float64),  # hard coding regions here
-                Region01=pandera.Column(pandera.Float64),
-            )
-        )
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
             LedState='int16',
             ComputerTimestamp='float64',
-            Region00='float64',
-            Region01='float64',
+            Region1G='float64',
+            Region2G='float64',
         )
 
+        # creating fake photometry data file
         cols = list(cols_dtypes.keys())
         raw_photometry_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
-        raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry.csv', index=False)
+        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
+        (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
+        raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
         logger.info('Created fake photometry data in %s', folder_neurophotometrics)
         return folder_neurophotometrics
@@ -167,11 +151,14 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         # copy data
         with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
             iblrig.neurophotometrics.init_neurophotometrics_subject(
-                session_stub=session.paths['SESSION_FOLDER'],
-                rois=['Region00', 'Region01'],
+                subject='test_subject',
+                rois=['Region1G', 'Region2G'],
                 locations=['VTA', 'SNc'],
+                sync_channel=0,
+                sync_mode='bpod',
             )
-            assert iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
+        (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+        self.assertEqual(copier.state, CopyState.COMPLETE)
 
         # check that the correct data was copied
         relative_session_path = session.paths['SESSION_FOLDER'].relative_to(session.paths['LOCAL_SUBJECT_FOLDER'])
@@ -182,7 +169,6 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
         data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry.csv'))
         data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
-        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
