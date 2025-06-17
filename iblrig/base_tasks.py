@@ -1255,6 +1255,7 @@ class NetworkSession(BaseSession):
         self.exp_ref = {}
         try:
             super().__init__(**kwargs)
+            self.session_info['REMOTE_RIGS'] = remote_rigs
         except Exception as ex:
             self.cleanup_mixin_network()
             raise ex
