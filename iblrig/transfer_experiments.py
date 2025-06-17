@@ -683,12 +683,12 @@ class NeurophotometricsCopier(SessionCopier):
 
         # the folder containing the day's neurophotometrics data
         folder_day = folder_neurophotometric.joinpath(start_time.strftime('%Y-%m-%d'))
-        assert folder_day.exists(), f'No neurophotometrics data for {folder_day.stem} in {folder_neurophotometric}'
+        assert folder_day.exists(), f'No neurophotometrics data for {folder_day.name} in {folder_neurophotometric}'
 
         # get the first photometry folder after the experiment's start time
         folders_time = list(folder_day.glob('T*'))
         assert len(folders_time) >= 1, f'No neurophotometrics acquisition files found in {folder_day}'
-        dt_list = sorted([datetime.strptime(folder_day.stem + f.stem[1:], '%Y-%m-%d%H%M%S') for f in folders_time])
+        dt_list = sorted([datetime.strptime(folder_day.name + f.name[1:], '%Y-%m-%d%H%M%S') for f in folders_time])
         dt_first = next((dt for dt in dt_list if dt >= start_time), None)
         assert dt_first is not None, f'No neurophotometrics data in {folder_day} for experiment starting at {start_time.time()}'
         folder_time = folder_day.joinpath(f'T{dt_first.strftime("%H%M%S")}')
