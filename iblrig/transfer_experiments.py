@@ -6,13 +6,10 @@ import shutil
 import socket
 import traceback
 import uuid
-from collections.abc import Iterable
 from datetime import datetime, timedelta
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
-import pandas as pd
-import pandera
 
 import ibllib.pipes.misc
 import iblphotometry.io as fpio
@@ -604,7 +601,7 @@ class NeurophotometricsCopier(SessionCopier):
     def _copy_collections(self) -> bool:
         # this experiment description file is generated during the subject initialization
         neurophotometrics_description = self.experiment_description['devices']['neurophotometrics']
-        subject_ini_time = datetime.datetime.fromisoformat(neurophotometrics_description['datetime'])
+        subject_ini_time = datetime.fromisoformat(neurophotometrics_description['datetime'])
 
         # Here we find the first photometry folder after the start_time
         iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -618,11 +615,11 @@ class NeurophotometricsCopier(SessionCopier):
         folders = [folder for folder in folders if folder.name.startswith('T')]
         # get the folder of the last acquisition start before the subject initialization
         neurophotometrics_start_times = [
-            datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders
+            datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders
         ]
         timedeltas = [subject_ini_time - start_time for start_time in neurophotometrics_start_times]
         # smallest positive timedelta = most recent folder
-        dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
+        dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
         neurophotometrics_session_folder = folders[timedeltas.index(dt_min)]
 
         # depending on the settings in the bonsai node, the file is exported directly into the folder
@@ -651,11 +648,11 @@ class NeurophotometricsCopier(SessionCopier):
                 folders = (iblrig_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
                 folders = [folder for folder in folders if folder.name.startswith('T')]
                 daqami_start_times = [
-                    datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders
+                    datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders
                 ]
 
                 # get the daqami file that was started just before the start of the neurophotometrics
-                neurophotometrics_start_time = datetime.datetime.strptime(
+                neurophotometrics_start_time = datetime.strptime(
                     '/'.join(neurophotometrics_session_folder.parts[-2:]), '%Y-%m-%d/T%H%M%S'
                 )
 
@@ -665,7 +662,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # note: the timestamp of the neurophotometric is written when the Bonsai workflow is opened, NOT when the
                 # bonsai workflow is started! Therefore the neurophotometrics file is still timestamped BEFORE the
                 # daqami file, even though the bonsai recording starts after ...
-                dt_min = min([dt for dt in timedeltas if dt < datetime.timedelta(0)])
+                dt_min = min([dt for dt in timedeltas if dt < timedelta(0)])
                 daqami_folder = folders[timedeltas.index(dt_min)]
 
                 # check here if multiple daqami files exist

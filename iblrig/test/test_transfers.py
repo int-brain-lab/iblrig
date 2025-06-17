@@ -99,8 +99,8 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             start_time = datetime.now()
         datestr = start_time.strftime('%Y-%m-%d')
         timestr = start_time.strftime('T%H%M%S')
-        folder_neurophotometrics = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
-        folder_neurophotometrics.mkdir(exist_ok=True, parents=True)
+        neurophotometrics_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
+        neurophotometrics_folder.mkdir(exist_ok=True, parents=True)
 
         # creating fake digital_inputs.csv
         cols_dtypes = dict(
@@ -133,8 +133,8 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
         raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
-        logger.info('Created fake photometry data in %s', folder_neurophotometrics)
-        return folder_neurophotometrics
+        logger.info('Created fake photometry data in %s', neurophotometrics_folder)
+        return neurophotometrics_folder
 
     def test_copier(self):
         session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
@@ -157,18 +157,19 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
                 sync_channel=0,
                 sync_mode='bpod',
             )
-        (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
-        self.assertEqual(copier.state, CopyState.COMPLETE)
+            (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(copier.state, CopyState.COMPLETE)
 
         # check that the correct data was copied
         relative_session_path = session.paths['SESSION_FOLDER'].relative_to(session.paths['LOCAL_SUBJECT_FOLDER'])
-        remote_session_path = session.paths['REMOTE_SUBJECT_FOLDER'].joinpath(relative_session_path)
-        remote_photometry_path = remote_session_path.joinpath('raw_photometry_data')
+        remote_session_path = copier.remote_session_path.joinpath(relative_session_path)
+        remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
-        data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry.csv'))
+        data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
         data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
