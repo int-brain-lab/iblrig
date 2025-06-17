@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 import os
@@ -7,6 +6,7 @@ import socket
 import traceback
 import uuid
 from collections.abc import Iterable
+from datetime import datetime, timedelta
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
@@ -521,8 +521,8 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
                 raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
                 # cast the timestamp in a datetime object and add the session length to it
-                end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-                end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+                end_time += timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
@@ -606,7 +606,7 @@ class NeurophotometricsCopier(SessionCopier):
         rois: Iterable[str],
         locations: Iterable[str],
         sync_channel: int,
-        start_time: datetime.datetime = None,
+        start_time: datetime = None,
         sync_label: str = None,
         collection: str = 'raw_photometry_data',
     ) -> dict:
@@ -621,7 +621,7 @@ class NeurophotometricsCopier(SessionCopier):
             List of brain regions
         sync_channel: int
             Channel number for sync
-        start_time: datetime.datetime, optional
+        start_time: datetime, optional
             Date and time of the recording
         sync_label: str, optional
             Label for the sync channel
@@ -667,7 +667,7 @@ class NeurophotometricsCopier(SessionCopier):
                     collection: raw_sync_data
                     extension: bin
         """
-        date_time = datetime.datetime.now() if start_time is None else start_time
+        date_time = datetime.now() if start_time is None else start_time
         description = {
             'sync_channel': sync_channel,
             'datetime': date_time.isoformat(),
@@ -680,19 +680,26 @@ class NeurophotometricsCopier(SessionCopier):
 
     def _copy_collections(self, folder_neurophotometric: Path) -> bool:
         ed = self.experiment_description['neurophotometrics']
-        dt = datetime.datetime.fromisoformat(ed['datetime'])
-        # Here we find the first photometry folder after the start_time. In case this is failing
-        # we can feed a custom start_time to go to the desired folder, or just rename the folder
-        folder_day = next(folder_neurophotometric.glob(ed['datetime'][:10]), None)
-        assert folder_day is not None, f"Neurophotometrics folder {folder_neurophotometric} doesn't contain data"
-        folder_times = list(folder_day.glob('T*'))
-        assert len(folder_times) >= 1, f'No neurophotometrics acquisition files found in {folder_day}'
-        hhmmss = sorted([int(stem[1:]) for stem in [f.stem for f in folder_times]])
-        i = np.searchsorted(hhmmss, int(dt.strftime('%H%M%S'))) - 1
-        csv_raw_photometry = folder_day.joinpath(f'T{hhmmss[i]}', 'raw_photometry.csv')
-        csv_digital_inputs = folder_day.joinpath(f'T{hhmmss[i]}', 'digital_inputs.csv')
+        start_time = datetime.fromisoformat(ed['datetime']).replace(microsecond=0)
+
+        # the folder containing the day's neurophotometrics data
+        folder_day = folder_neurophotometric.joinpath(start_time.strftime('%Y-%m-%d'))
+        assert folder_day.exists(), f'No neurophotometrics data for {folder_day.stem} in {folder_neurophotometric}'
+
+        # get the first photometry folder after the experiment's start time
+        folders_time = list(folder_day.glob('T*'))
+        assert len(folders_time) >= 1, f'No neurophotometrics acquisition files found in {folder_day}'
+        dt_list = sorted([datetime.strptime(folder_day.stem + f.stem[1:], '%Y-%m-%d%H%M%S') for f in folders_time])
+        dt_first = next((dt for dt in dt_list if dt >= start_time), None)
+        assert dt_first is not None, f'No neurophotometrics data in {folder_day} for experiment starting at {start_time.time()}'
+        folder_time = folder_day.joinpath(f'T{dt_first.strftime("%H%M%S")}')
+
+        # assert that the expected files are present
+        csv_raw_photometry = folder_time.joinpath('raw_photometry.csv')
+        csv_digital_inputs = folder_time.joinpath('digital_inputs.csv')
         assert csv_raw_photometry.exists(), f'Raw photometry file {csv_raw_photometry} not found'
         assert csv_digital_inputs.exists(), f'Digital inputs file {csv_digital_inputs} not found'
+
         # Copy the raw and digital inputs files to the server
         # TODO move this into a data loader ? Especially the schemas will apply to both the csv and parquet format
         df_raw_photometry = pd.read_csv(csv_raw_photometry)
