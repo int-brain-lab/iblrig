@@ -8,6 +8,7 @@ Changelog
 * added: save ambient data to Parquet file
 * added: save task version to settings JSON
 * added: check for remote data folder during hardware validation
+* fixed: Neurophotometrics copier failed for recordings started before 10am
 
 -------------------------------
 
