@@ -2,7 +2,6 @@ import copy
 import logging
 import random
 import tempfile
-import time
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -64,12 +63,8 @@ class TestIntegrationTransferExperimentsBase(unittest.TestCase):
     """this base class copier testing"""
 
     def setUp(self):
-        self.iblrig_settings = iblrig.path_helper.load_pydantic_yaml(
-            iblrig.path_helper.RigSettings, 'iblrig_settings_template.yaml'
-        )
-        self.hardware_settings = iblrig.path_helper.load_pydantic_yaml(
-            iblrig.path_helper.HardwareSettings, 'hardware_settings_template.yaml'
-        )
+        self.iblrig_settings = load_pydantic_yaml(iblrig.path_helper.RigSettings, 'iblrig_settings_template.yaml')
+        self.hardware_settings = load_pydantic_yaml(iblrig.path_helper.HardwareSettings, 'hardware_settings_template.yaml')
         self.td = tempfile.TemporaryDirectory()
         self.session_kwargs = copy.deepcopy(TASK_KWARGS)
         self.iblrig_settings.update(
@@ -161,8 +156,6 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             self.assertEqual(copier.state, CopyState.COMPLETE)
 
         # check that the correct data was copied
-        relative_session_path = session.paths['SESSION_FOLDER'].relative_to(session.paths['LOCAL_SUBJECT_FOLDER'])
-        remote_session_path = copier.remote_session_path.joinpath(relative_session_path)
         remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
@@ -185,8 +178,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         for hard_crash in [False, True]:
             session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-                mocker.side_effect = self.side_effect
+            with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
                 iblrig.commands.transfer_data(
                     local_path=session.iblrig_settings['iblrig_local_data_path'],
                     remote_path=session.iblrig_settings['iblrig_remote_data_path'],
@@ -200,8 +192,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
         session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
-        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-            mocker.side_effect = self.side_effect
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
             iblrig.commands.transfer_data(tag='behavior')
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(sc.state, 3)
