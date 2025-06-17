@@ -604,22 +604,21 @@ class NeurophotometricsCopier(SessionCopier):
         neurophotometrics_description = self.experiment_description['devices']['neurophotometrics']
         subject_ini_time = datetime.fromisoformat(neurophotometrics_description['datetime'])
 
-        # Here we find the first photometry folder after the start_time
-        iblrig_paths = path_helper.get_local_and_remote_paths()
-        neurophotometrics_folder = iblrig_paths['local_data_folder'].joinpath('neurophotometrics')
+        # Construct path to the neurophotometrics data folder
+        local_and_remote_paths = path_helper.get_local_and_remote_paths()
+        neurophotometrics_path = local_and_remote_paths['local_data_folder'].joinpath('neurophotometrics')
+        assert neurophotometrics_path.exists(), f'Local Neurophotometrics folder {neurophotometrics_path} does not exist'
 
-        # find the corresponding session folder. The syntax is YYYY-MM-DD/THHMMSS in thie
-        # neurophotometrics folder (where all aquisitions are stored)
-        session_date = subject_ini_time.date().strftime('%Y-%m-%d')
-        # all folders of that day
-        folders = (neurophotometrics_folder / session_date).glob('*/')
-        folders = [folder for folder in folders if folder.name.startswith('T')]
-        # get the folder of the last acquisition start before the subject initialization
-        neurophotometrics_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders]
-        timedeltas = [subject_ini_time - start_time for start_time in neurophotometrics_start_times]
-        # smallest positive timedelta = most recent folder
-        dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
-        neurophotometrics_session_path = folders[timedeltas.index(dt_min)]
+        # Construct path to the day's neurophotometry data folder based on the subject initialization time
+        days_path = neurophotometrics_path.joinpath(subject_ini_time.strftime('%Y-%m-%d'))
+        assert days_path.exists(), f'No Neurophotometrics data for {days_path.name} in {neurophotometrics_path}'
+
+        # get the last photometry folder before the experiment's start time
+        session_paths = list(days_path.glob('T*'))
+        dt_list = sorted([datetime.strptime(days_path.name + f.name[1:], '%Y-%m-%d%H%M%S') for f in session_paths])
+        dt_last = next((dt for dt in reversed(dt_list) if dt < subject_ini_time), None)
+        assert dt_last, f'No Neurophotometrics data for subject initialized at {subject_ini_time.time()} in {days_path}'
+        neurophotometrics_session_path = days_path.joinpath(f'T{dt_last.strftime("%H%M%S")}')
 
         # depending on the settings in the bonsai node, the file is exported directly into the folder
         # or a subfolder named "raw_photometry"
@@ -637,14 +636,14 @@ class NeurophotometricsCopier(SessionCopier):
         match sync_mode:
             case 'bpod':
                 # copy the digital inputs file
-                csv_digital_inputs = neurophotometrics_session_path / 'digital_inputs.csv'
+                csv_digital_inputs = neurophotometrics_session_path.joinpath('digital_inputs.csv')
                 digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-                digital_inputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalIntputs.pqt')
+                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
             case 'daqami':
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
                 # all folders of that day, parse by start with T
-                folders = (iblrig_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
+                folders = local_and_remote_paths['local_data_folder'].joinpath('daqami', session_date).glob('*/')
                 folders = [folder for folder in folders if folder.name.startswith('T')]
                 daqami_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders]
 
@@ -665,7 +664,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # check here if multiple daqami files exist
                 if len(list(daqami_folder.glob('*'))) == 2:
                     # this is the expected case, all is fine
-                    daqami_file = daqami_folder / 'daqami_sync.tdms'
+                    daqami_file = daqami_folder.joinpath('daqami_sync.tdms')
                 else:
                     # this happens when daqami was started multiple times
                     # assuming then here the last file is the one we want
@@ -674,14 +673,14 @@ class NeurophotometricsCopier(SessionCopier):
                     for file in files:
                         match = re.search(r'daqami_sync_(\d).tdms', file)
                         indices.append(int(match.group(0)))
-                    daqami_file = daqami_folder / f'daqami_sync_{max(indices)}.tdms'
+                    daqami_file = daqami_folder.joinpath(f'daqami_sync_{max(indices)}.tdms')
 
                 # copy to the remote folder
-                remote_sync_path = self.remote_session_path / neurophotometrics_description['sync_metadata']['collection']
+                remote_sync_path = self.remote_session_path.joinpath(neurophotometrics_description['sync_metadata']['collection'])
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
                 shutil.copy(
                     daqami_file,
-                    remote_sync_path / '_mcc_DAQdata.raw.tdms',
+                    remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms')
                 )
 
             # digital outputs file
@@ -693,7 +692,7 @@ class NeurophotometricsCopier(SessionCopier):
         raw_photometry_df = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
         cols = neurophotometrics_description['fibers'].keys()
         raw_photometry_df = fpio.validate_neurophotometrics_df(raw_photometry_df, data_columns=cols)
-        raw_photometry_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.raw.pqt')
+        raw_photometry_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
 
         # TODO why are we explicitly copying this file?
         shutil.copy(
