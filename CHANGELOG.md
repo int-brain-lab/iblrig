@@ -8,6 +8,7 @@ Changelog
 * added: save ambient data to Parquet file
 * added: save task version to settings JSON
 * added: check for remote data folder during hardware validation
+* added: indicate remote rigs in `_iblrig_taskSettings.raw.json`
 
 -------------------------------
 
