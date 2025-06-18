@@ -136,16 +136,23 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "B",   # flake8-bugbear
-    "E",   # pycodestyle Error
-    "W",   # pycodestyle Warning
-    "F",   # Pyflakes
-    "I",   # isort
-    "N",   # pep8-naming
-    "PL",  # pylint
-    "SIM", # flake8-simplify
-    "UP",  # pyupgrade
-    "D",   # pydocstyle
+    "A",    # flake8-builtins
+    "B",    # flake8-bugbear
+    "ICN",  # flake8-import-conventions
+    "LOG",  # flake8-logging
+    "PIE",  # flake8-pie
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "TC",   # flake8-type-checking
+    "E",    # pycodestyle Error
+    "W",    # pycodestyle Warning
+    "F",    # Pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "PL",   # pylint
+    "UP",   # pyupgrade
+    "D",    # pydocstyle
+    "FURB", # refurb
 ]
 ignore = [
     # TODO: The following entries should be gradually removed / fixed:

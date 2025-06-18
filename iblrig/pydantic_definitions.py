@@ -39,13 +39,13 @@ class BunchModel(BaseModel, abc.MutableMapping):
         return len(self.__dict__)
 
     def __iter__(self):
-        return iter(self.model_fields.keys())
+        return iter(self.__class__.model_fields.keys())
 
     def items(self):
         return [(key, getattr(self, key)) for key in self.keys()]
 
     def keys(self):
-        return self.model_fields.keys()
+        return self.__class__.model_fields.keys()
 
     def values(self):
         return (getattr(self, key) for key in self.keys())

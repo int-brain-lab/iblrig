@@ -61,7 +61,6 @@ try:
     CUSTOM_TASKS = True
 except ImportError:
     CUSTOM_TASKS = False
-    pass
 
 log = logging.getLogger(__name__)
 pg.setConfigOption('foreground', 'k')
