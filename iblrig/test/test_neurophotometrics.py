@@ -41,9 +41,9 @@ class TestExperimentDescription(unittest.TestCase):
                     'sync_metadata': {
                         'acquisition_software': 'daqami',
                         'collection': 'raw_photometry_data',
-                        'frameclock_channel': 0,
+                        'frameclock_channel': 'AI7',
                     },
                 }
             }
         }
-        self.assertEqual(dexpected, d)
+        self.assertDictEqual(dexpected, d)
