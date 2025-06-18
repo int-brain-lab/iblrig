@@ -24,7 +24,7 @@ class TestExperimentDescription(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(dexpected, d)
+        self.assertDictEqual(dexpected, d)
 
         # for daqami sync
         d = neurophotometrics_description(
