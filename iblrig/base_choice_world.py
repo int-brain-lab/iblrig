@@ -257,6 +257,7 @@ class ChoiceWorldSession(
                 'bonsai_closed_loop': daction,
                 'bonsai_freeze_stim': daction,
                 'bonsai_show_center': daction,
+                'bonsai_freeze_center': daction,
             }
         )
 
@@ -285,9 +286,9 @@ class ChoiceWorldSession(
             if ~np.isnan(sma.state_timer_matrix[i]):
                 out_state = states_indices[sma.state_timer_matrix[i]]
                 edges.append(f'{letter}{states_letters[out_state]}')
-            for input in sma.input_matrix[i]:
-                if input[0] == 0:
-                    edges.append(f'{letter}{states_letters[states_indices[input[1]]]}')
+            for inputs in sma.input_matrix[i]:
+                if inputs[0] == 0:
+                    edges.append(f'{letter}{states_letters[states_indices[inputs[1]]]}')
         dot.edges(edges)
         if output_file is not None:
             try:
@@ -427,7 +428,7 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_show_center],
+            output_actions=[self.bpod.actions.bonsai_freeze_center],
             state_change_conditions={'Tup': 'reward'},
         )
         sma.add_state(

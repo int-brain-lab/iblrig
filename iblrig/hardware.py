@@ -207,6 +207,7 @@ class Bpod(BpodIO):
                 'bonsai_closed_loop': (module_port, self._define_message(module, [ord('#'), 3])),
                 'bonsai_freeze_stim': (module_port, self._define_message(module, [ord('#'), 4])),
                 'bonsai_show_center': (module_port, self._define_message(module, [ord('#'), 5])),
+                'bonsai_freeze_center': (module_port, self._define_message(module, [ord('#'), 9])),
             }
         )
 
@@ -251,14 +252,14 @@ class Bpod(BpodIO):
             Duration of valve opening in seconds.
         """
         if duration is None:
-            self.open_valve(open=True, valve_number=1)
+            self.open_valve(state=True, valve_number=1)
             input('Press ENTER when done.')
-            self.open_valve(open=False, valve_number=1)
+            self.open_valve(state=False, valve_number=1)
         else:
             self.pulse_valve(open_time_s=duration)
 
-    def open_valve(self, open: bool, valve_number: int = 1):
-        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_number, open)
+    def open_valve(self, state: bool, valve_number: int = 1):
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_number, state)
 
     def pulse_valve(self, open_time_s: float, valve: str = 'Valve1'):
         sma = StateMachine(self)
@@ -383,7 +384,7 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
         self.enable_evt_transmission()
 
     def close(self):
-        if self.arcom is not None:
+        if getattr(self, 'arcom') is not None:  # noqa: B009
             log.debug(f'Closing serial connection to {self._name} on port {self.settings.COM_ROTARY_ENCODER}')
             super().close()
 
