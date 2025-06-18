@@ -45,8 +45,7 @@ def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
         with open(Path(__file__).parent.joinpath('fixtures', 'task_data_short.jsonable')) as fid:
             lines = fid.readlines()
         with open(Path(session.paths.DATA_FILE_PATH), 'w') as fid:
-            for _ in range(ntrials):
-                fid.write(random.choice(lines))
+            fid.writelines(random.choice(lines) for _ in range(ntrials))
         if not hard_crash:
             session.session_info['NTRIALS'] = ntrials
             session.session_info['SESSION_END_TIME'] = session.session_info['SESSION_START_TIME']
