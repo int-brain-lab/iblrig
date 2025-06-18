@@ -16,7 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/ruff-action@v3
-        name: ruff
         with:
           version-file: 'pyproject.toml'
           args: 'check --output-format=github'
