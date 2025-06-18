@@ -16,7 +16,7 @@ Setup
       device_neurophotometrics:
          DEVICE_MODEL: NP3002
          BONSAI_EXECUTABLE: C:\Users\IBLuser\AppData\Local\Bonsai\Bonsai.exe
-         BONSAI_WORKFLOW: devices\neurophotometrics\FP3002.bonsai
+         BONSAI_WORKFLOW: devices\neurophotometrics\FP3002_digital_inputs.bonsai
          COM_NEUROPHOTOMETRY: COM3
 
 
@@ -46,7 +46,7 @@ Starting a photometry session
 
    cd C:\iblrigv8\
    venv\scripts\Activate.ps1
-   start_photometry_session --subject=Mickey --roi G0 G1 --location NBM SI
+   start_photometry_task --subject Mickey --rois G0 G1 --locations NBM SI
 
 
 

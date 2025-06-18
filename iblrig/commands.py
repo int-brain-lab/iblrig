@@ -12,7 +12,14 @@ import iblrig
 from iblrig.hardware import Bpod
 from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, NeurophotometricsCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import (
+    BehaviorCopier,
+    CopyState,
+    EphysCopier,
+    NeurophotometricsCopier,
+    SessionCopier,
+    VideoCopier,
+)
 from iblutil.util import setup_logger
 
 logger = logging.getLogger(__name__)
@@ -329,7 +336,7 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             sc = copier(session_path, remote_subjects_folder=remote_subject_folder, tag=tag)
         else:
             sc = copier(session_path, remote_subjects_folder=remote_subject_folder)
-        if sc.state == 3:
+        if sc.state == CopyState.FINALIZED:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
             logger.info(f'{sc.session_path}, {session_size:0.02f} Go')
             size += session_size

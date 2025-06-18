@@ -218,7 +218,7 @@ class Auxiliaries:
                         case net.base.ExpMessage.EXPINIT:
                             responses = await self.services.init(*args)
                         case net.base.ExpMessage.EXPEND | net.base.ExpMessage.EXPINTERRUPT:
-                            responses = await self.services.stop(args, immediately=event is net.base.ExpMessage.EXPINTERRUPT)
+                            responses = await self.services.stop(*args, immediately=event is net.base.ExpMessage.EXPINTERRUPT)
                         case net.base.ExpMessage.EXPINFO:
                             # TODO Instead of waiting for all responses, cancel futures when main sync responds?
                             # async def first(aiterable, condition=lambda i: True):

@@ -10,10 +10,13 @@ Changelog
 * added: save task version to settings JSON
 * added: check for remote data folder during hardware validation
 * added: indicate remote rigs in `_iblrig_taskSettings.raw.json`
+* added: `ibl-photometry` dependency
+* changed: reduce traceback size in UDP message
 
 -------------------------------
 
 8.27.7
+------
 * fixed: choice world family: visual stimulus could sometimes be moved after reward delivery
 
 8.27.6
