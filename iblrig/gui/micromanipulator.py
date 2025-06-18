@@ -1,7 +1,7 @@
 # convert_uis *micro*
 import argparse
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
 from PyQt5 import QtCore, QtWidgets
@@ -11,7 +11,7 @@ from iblrig.ephys import neuropixel24_micromanipulator_coordinates
 from iblrig.gui.ui_micromanipulator import Ui_MainWindow
 from iblrig.gui.wizard import RigWizardModel
 
-matplotlib.use('QT5Agg')
+mpl.use('QT5Agg')
 
 
 class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):

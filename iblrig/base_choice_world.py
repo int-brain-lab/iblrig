@@ -286,9 +286,9 @@ class ChoiceWorldSession(
             if ~np.isnan(sma.state_timer_matrix[i]):
                 out_state = states_indices[sma.state_timer_matrix[i]]
                 edges.append(f'{letter}{states_letters[out_state]}')
-            for input in sma.input_matrix[i]:
-                if input[0] == 0:
-                    edges.append(f'{letter}{states_letters[states_indices[input[1]]]}')
+            for inputs in sma.input_matrix[i]:
+                if inputs[0] == 0:
+                    edges.append(f'{letter}{states_letters[states_indices[inputs[1]]]}')
         dot.edges(edges)
         if output_file is not None:
             try:

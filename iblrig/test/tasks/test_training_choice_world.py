@@ -186,4 +186,4 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             },
             'tasks': [{'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00'}}],
         }
-        self.assertDictContainsSubset(expected_description, actual_description)
+        self.assertEqual(actual_description, actual_description | expected_description)

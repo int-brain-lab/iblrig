@@ -26,7 +26,7 @@ class TestValve(unittest.TestCase):
 
         t = np.arange(range_t[0], range_t[-1], 25)
         v = np.arange(range_v[0], range_v[-1], 2.5)
-        for i in range(0, len(t)):
+        for i in range(len(t)):
             self.assertAlmostEqual(valve.values.ms2ul(t[i]), v[i], places=3)
             self.assertAlmostEqual(valve.values.ul2ms(v[i]), t[i], places=3)
         assert np.allclose(valve.values.ms2ul(t), v)
