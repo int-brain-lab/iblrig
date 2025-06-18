@@ -80,7 +80,7 @@ class BaseSession(ABC):
     """Logger instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
     """The experiment description."""
-    extractor_tasks: list | None = None
+    _extractor_tasks: list | None = None
     """An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
