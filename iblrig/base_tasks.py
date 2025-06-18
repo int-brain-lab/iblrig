@@ -59,20 +59,29 @@ class HasBpod(Protocol):
 
 
 class BaseSession(ABC):
-    version = None
-    """str: Task version string."""
+    """
+    Abstract base class for all sessions.
+
+    This class defines the common interface and shared logic for sessions,
+    including session initialization, hardware management, Alyx registration,
+    and mixin execution. Subclasses should implement the abstract methods to
+    define task-specific behavior and hardware startup.
+    """
+
+    version: str | None = None
+    """Task version string."""
     # protocol_name: str | None = None
-    """str: The name of the task protocol (NB: avoid spaces)."""
+    # """The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
     """Path: A YAML file containing base, default task parameters."""
-    is_mock = False
-    """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
-    logger: logging.Logger = None
-    """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
+    is_mock: bool = False
+    """Wether the session is a mock session."""
+    logger: logging.Logger | None = None
+    """Logger instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
-    """dict: The experiment description."""
+    """The experiment description."""
     extractor_tasks: list | None = None
-    """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
+    """An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
 
@@ -82,10 +91,10 @@ class BaseSession(ABC):
 
     def __init__(
         self,
-        subject=None,
-        task_parameter_file=None,
-        file_hardware_settings=None,
-        hardware_settings: HardwareSettings = None,
+        subject: str,
+        task_parameter_file: str | Path | None = None,
+        file_hardware_settings: str | Path | None = None,
+        hardware_settings: dict | None | HardwareSettings = None,
         file_iblrig_settings=None,
         iblrig_settings: RigSettings = None,
         one=None,
@@ -100,19 +109,34 @@ class BaseSession(ABC):
         **kwargs,
     ):
         """
-        :param subject: The subject nickname. Required.
-        :param task_parameter_file: an optional path to the task_parameters.yaml file
-        :param file_hardware_settings: name of the hardware file in the settings folder, or full file path
-        :param hardware_settings: an optional dictionary of hardware settings. Keys will override any keys in the file
-        :param file_iblrig_settings: name of the iblrig file in the settings folder, or full file path
-        :param iblrig_settings: an optional dictionary of iblrig settings. Keys will override any keys in the file
-        :param one: an optional instance of ONE
-        :param interactive:
-        :param projects: An optional list of Alyx protocols.
-        :param procedures: An optional list of Alyx procedures.
-        :param subject_weight_grams: weight of the subject
-        :param stub: A full path to an experiment description file containing experiment information.
-        :param append: bool, if True, append to the latest existing session of the same subject for the same day
+        Parameters
+        ----------
+        subject : str
+            The subject nickname. Required.
+        task_parameter_file : str or Path, optional
+            An optional path to the task_parameters.yaml file.
+        file_hardware_settings : str or Path, optional
+            Name of the hardware file in the settings folder, or full file path.
+        hardware_settings : dict, optional
+            An optional dictionary of hardware settings. Keys will override any keys in the file.
+        file_iblrig_settings : str or Path, optional
+            Name of the iblrig file in the settings folder, or full file path.
+        iblrig_settings : dict, optional
+            An optional dictionary of iblrig settings. Keys will override any keys in the file.
+        one : ONE, optional
+            An optional instance of ONE.
+        interactive : bool, optional
+            If True, enables interactive mode.
+        projects : list, optional
+            An optional list of Alyx protocols.
+        procedures : list, optional
+            An optional list of Alyx procedures.
+        subject_weight_grams : float, optional
+            Weight of the subject in grams.
+        stub : str or Path, optional
+            A full path to an experiment description file containing experiment information.
+        append : bool, optional
+            If True, append to the latest existing session of the same subject for the same day.
         """
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
@@ -173,7 +197,12 @@ class BaseSession(ABC):
         )
 
     def _load_settings(
-        self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
+        self,
+        file_hardware_settings: Path | str | None = None,
+        hardware_settings: dict | None = None,
+        file_iblrig_settings: Path | str | None = None,
+        iblrig_settings: dict | None = None,
+        **_,
     ):
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:

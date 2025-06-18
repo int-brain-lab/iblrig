@@ -632,8 +632,7 @@ class CameraSessionNetworked(CameraSession):
     async def _process_message(self, data, addr, event):
         """Callback for all messages received during the main loop."""
         name = event.name.lower()
-        if name.startswith('exp'):
-            name = name[3:]
+        name = name.removeprefix('exp')
         fcn = getattr(self, 'on_' + name, None)
         assert callable(fcn), f'on_{name} is not a callable method'
         await fcn(data, addr)

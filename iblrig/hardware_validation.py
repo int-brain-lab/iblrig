@@ -395,7 +395,7 @@ class ValidatorBpod(ValidatorSerial):
 
         # check for (un)expected input events
         for event_name, timestamps in sorted(events.items()):
-            if event_name.endswith('Out') or event_name.endswith('Low') or event_name == 'Tup':
+            if event_name.endswith(('Out', 'Low')) or event_name == 'Tup':
                 continue
             diff_timestamps = np.diff(timestamps)
             n_timestamps = len(timestamps)
@@ -843,7 +843,7 @@ class ValidatorSound(ValidatorSerial):
 
 
 def get_all_validators() -> list[type[Validator]]:
-    return [cast(type[Validator], x) for x in get_inheritors(Validator) if not isabstract(x)]
+    return [cast('type[Validator]', x) for x in get_inheritors(Validator) if not isabstract(x)]
 
 
 def run_all_validators(
@@ -888,7 +888,7 @@ def run_all_validators_cli():
             print(f'{color}  {symbol}  {result.message}{ANSI.END}')
             if result.solution is not None and len(result.solution) > 0:
                 print(f'{color}     Suggestion: {result.solution}{ANSI.END}')
-        print('')
+        print()
     if fail > 0:
         print(ANSI.RED + ANSI.BOLD + f'{fail} validation{"s" if fail > 1 else ""} failed.')
     if warn > 0:

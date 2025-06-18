@@ -2,21 +2,21 @@ import unittest
 import zipfile
 from pathlib import Path
 
-import matplotlib
+import matplotlib as mpl
 import numpy as np
 
 import iblrig.online_plots as op
 from iblrig.raw_data_loaders import load_task_jsonable
 
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
-matplotlib.use('Agg')  # avoid pyqt testing issues
+mpl.use('Agg')  # avoid pyqt testing issues
 
 
 class TestOnlinePlots(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        with zipfile.ZipFile(zip_jsonable, 'r') as zip:
-            cls.task_file = Path(zip.extract('online_plots.jsonable', path=zip_jsonable.parent))
+        with zipfile.ZipFile(zip_jsonable, 'r') as z:
+            cls.task_file = Path(z.extract('online_plots.jsonable', path=zip_jsonable.parent))
 
     def test_during_task(self):
         myop = op.OnlinePlots()  # the canonical way is to provide a settings file, but this should run without

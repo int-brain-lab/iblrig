@@ -252,14 +252,14 @@ class Bpod(BpodIO):
             Duration of valve opening in seconds.
         """
         if duration is None:
-            self.open_valve(open=True, valve_number=1)
+            self.open_valve(state=True, valve_number=1)
             input('Press ENTER when done.')
-            self.open_valve(open=False, valve_number=1)
+            self.open_valve(state=False, valve_number=1)
         else:
             self.pulse_valve(open_time_s=duration)
 
-    def open_valve(self, open: bool, valve_number: int = 1):
-        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_number, open)
+    def open_valve(self, state: bool, valve_number: int = 1):
+        self.manual_override(self.ChannelTypes.OUTPUT, self.ChannelNames.VALVE, valve_number, state)
 
     def pulse_valve(self, open_time_s: float, valve: str = 'Valve1'):
         sma = StateMachine(self)
