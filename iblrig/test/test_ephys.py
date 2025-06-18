@@ -152,9 +152,9 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
         messages = self._iterate_messages(keyboard_input='ABORT\n')
         self.communicator.on_event.side_effect = lambda evt: next(messages)
         # Should log exp ref mismatch
-        with self.assertLogs('iblrig.ephys', level='CRITICAL'), patch('builtins.input', return_value='y') as input:
+        with self.assertLogs('iblrig.ephys', level='CRITICAL'), patch('builtins.input', return_value='y') as mock_input:
             await iblrig.ephys.main_v8_networked('foo', debug=True)
-            input.assert_called_once()
+            mock_input.assert_called_once()
 
         # The on_event method is awaited at first then each time a message is received
         self.communicator.on_event.assert_awaited_with(net.base.ExpMessage.any())
@@ -183,9 +183,9 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
         self.communicator.reset_mock()  # _iterate_messages asserts no methods were called yet
         messages = self._iterate_messages(keyboard_input='ABORT\n')
         self.communicator.on_event.side_effect = lambda evt: next(messages)
-        with patch('builtins.input', return_value='') as input:
+        with patch('builtins.input', return_value='') as mock_input:
             await iblrig.ephys.main_v8_networked('foo', debug=True)
-            input.assert_called_once()
+            mock_input.assert_called_once()
         self.assertTrue(any(self.tmpdir.rglob('*.*')))
         self.assertTrue(self.tmpdir.joinpath(f'local/foo/{date.today()}/001').exists())
 
