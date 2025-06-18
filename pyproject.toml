@@ -21,30 +21,30 @@ dependencies = [
     "PyQtWebEngine-Qt5==5.15.2",
     #
     # IBL packages
-    "iblatlas>=0.6.0",
-    "ibllib>=3.3.0",
-    "iblpybpod-no-gui>=3.1.0",
-    "iblutil>=1.17.0",
-    "iblqt>=0.4.2",
-    "ONE-api>=3.0.0",
+    "iblatlas>=0.9.0",
+    "ibllib>=3.3.1",
+    "iblpybpod-no-gui>=3.1.1",
+    "iblutil>=1.18.1",
+    "iblqt>=0.4.4",
+    "ONE-api>=3.2.1",
     "tycmd-wrapper>=0.2.1",
     #
     # Everything else
     "annotated-types>=0.7.0",
     "graphviz>=0.20.3",
-    "ipython>=8.34.0",
-    "matplotlib>=3.10.0",
+    "ipython>=8.37.0",
+    "matplotlib>=3.10.3",
     "numpy<2.0.0",
-    "packaging>=24.1",
-    "pandas>=2.2.3",
-    "pandera>=0.23.1",
-    "pydantic>=2.10.6",
+    "packaging>=25.0",
+    "pandas>=2.3.0",
+    "pandera>=0.24.0",
+    "pydantic>=2.11.7",
     "pyqtgraph>=0.13.7",
     "python-osc>=1.8.3",
     "pyusb>=1.2.1",
     "PyYAML>=6.0.2",
-    "scipy>=1.15.2",
-    "sounddevice>=0.5.0",
+    "scipy>=1.15.3",
+    "sounddevice>=0.5.2",
 ]
 [project.optional-dependencies]
 project-extraction = [
@@ -86,9 +86,9 @@ dev = [
     "deadcode>=2.4.1",
 ]
 test = [
-    "pytest>=8.3.4",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.11.1",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.0",
 ]
 doc = [
     "sphinx>=7.4.7",
@@ -98,12 +98,12 @@ doc = [
     "myst-parser>=4.0.1",
 ]
 typing = [
-    "mypy>=1.15.0",
+    "mypy>=1.16.1",
     "PyQt5-stubs>=5.15.6.0",
-    "types-PyYAML>=6.0.12.20241230",
-    "types-requests>=2.32.0.20241016",
-    "types-python-dateutil>=2.9.0.20241206",
-    "types-pyserial>=3.5.0.20250130",
+    "types-PyYAML>=6.0.12.20250516",
+    "types-requests>=2.32.4.20250611",
+    "types-python-dateutil>=2.9.0.20250516",
+    "types-pyserial>=3.5.0.20250326",
 ]
 ci = [
     "pytest-github-actions-annotate-failures>=0.3.0",
@@ -148,6 +148,7 @@ select = [
 ]
 ignore = [
     # TODO: The following entries should be gradually removed / fixed:
+    "PLC0415", # `import` should be at the top-level of a file
     "PLR0912", # Too many branches
     "PLR0913", # Too many arguments
     "PLR0915", # Too many statements

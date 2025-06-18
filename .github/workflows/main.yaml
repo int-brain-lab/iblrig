@@ -20,7 +20,7 @@ jobs:
         with:
           version-file: 'pyproject.toml'
           args: 'check --output-format=github'
-      - run: 'format --check --diff'
+      - run: 'ruff format --check --diff'
   tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     needs: ruff
