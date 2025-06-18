@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 import os
@@ -7,16 +6,18 @@ import shutil
 import socket
 import traceback
 import uuid
+from datetime import datetime, timedelta
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
 
 import ibllib.pipes.misc
 import iblphotometry.io as fpio
-import iblrig
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
 from ibllib.pipes.misc import sleepless
+from iblrig import path_helper
+from iblrig.constants import BASE_PATH
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.io import hashfile
 from iblutil.util import ensure_list
@@ -518,8 +519,8 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
                 raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
                 # cast the timestamp in a datetime object and add the session length to it
-                end_time = datetime.datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-                end_time += datetime.timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
+                end_time += timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
@@ -546,7 +547,7 @@ class EphysCopier(SessionCopier):
             for n in range(nprobes):
                 name = f'probe{n:02}'
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
-            sync_file = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'sync', 'nidq.yaml')
+            sync_file = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = acquisition_description if neuropixel else {}
             if main_sync:
                 acquisition_description.update(session_params.read_params(sync_file))
@@ -564,7 +565,7 @@ class EphysCopier(SessionCopier):
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template
-        path_wiring = Path(iblrig.__file__).parent.joinpath('device_descriptions', 'neuropixel', 'wirings')
+        path_wiring = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'neuropixel', 'wirings')
         probe_model = '3A'
         for file_nidq_bin in self.session_path.joinpath('raw_ephys_data').glob('*.nidq.bin'):
             probe_model = '3B'
@@ -601,33 +602,30 @@ class NeurophotometricsCopier(SessionCopier):
     def _copy_collections(self) -> bool:
         # this experiment description file is generated during the subject initialization
         neurophotometrics_description = self.experiment_description['devices']['neurophotometrics']
-        subject_ini_time = datetime.datetime.fromisoformat(neurophotometrics_description['datetime'])
+        subject_ini_time = datetime.fromisoformat(neurophotometrics_description['datetime'])
 
-        # Here we find the first photometry folder after the start_time
-        iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
-        neurophotometrics_folder = iblrig_paths['local_data_folder'] / 'neurophotometrics'
+        # Construct path to the neurophotometrics data folder
+        local_and_remote_paths = path_helper.get_local_and_remote_paths()
+        neurophotometrics_path = local_and_remote_paths['local_data_folder'].joinpath('neurophotometrics')
+        assert neurophotometrics_path.exists(), f'Local Neurophotometrics folder {neurophotometrics_path} does not exist'
 
-        # find the corresponding session folder. The syntax is YYYY-MM-DD/THHMMSS in thie
-        # neurophotometrics folder (where all aquisitions are stored)
-        session_date = subject_ini_time.date().strftime('%Y-%m-%d')
-        # all folders of that day
-        folders = (neurophotometrics_folder / session_date).glob('*/')
-        folders = [folder for folder in folders if folder.name.startswith('T')]
-        # get the folder of the last acquisition start before the subject initialization
-        neurophotometrics_start_times = [
-            datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M%S') for folder in folders
-        ]
-        timedeltas = [subject_ini_time - start_time for start_time in neurophotometrics_start_times]
-        # smallest positive timedelta = most recent folder
-        dt_min = min([dt for dt in timedeltas if dt > datetime.timedelta(0)])
-        neurophotometrics_session_folder = folders[timedeltas.index(dt_min)]
+        # Construct path to the day's neurophotometry data folder based on the subject initialization time
+        days_path = neurophotometrics_path.joinpath(subject_ini_time.strftime('%Y-%m-%d'))
+        assert days_path.exists(), f'No Neurophotometrics data for {days_path.name} in {neurophotometrics_path}'
+
+        # get the last photometry folder before the experiment's start time
+        session_paths = list(days_path.glob('T*'))
+        dt_list = sorted([datetime.strptime(days_path.name + f.name[1:], '%Y-%m-%d%H%M%S') for f in session_paths])
+        dt_last = next((dt for dt in reversed(dt_list) if dt < subject_ini_time), None)
+        assert dt_last, f'No Neurophotometrics data for subject initialized at {subject_ini_time.time()} in {days_path}'
+        neurophotometrics_session_path = days_path.joinpath(f'T{dt_last.strftime("%H%M%S")}')
 
         # depending on the settings in the bonsai node, the file is exported directly into the folder
         # or a subfolder named "raw_photometry"
-        if (neurophotometrics_session_folder / 'raw_photometry').exists():
-            csv_raw_photometry = neurophotometrics_session_folder / 'raw_photometry' / 'raw_photometry.csv'
+        if neurophotometrics_session_path.joinpath('raw_photometry').exists():
+            csv_raw_photometry = neurophotometrics_session_path.joinpath('raw_photometry', 'raw_photometry.csv')
         else:
-            csv_raw_photometry = neurophotometrics_session_folder / 'raw_photometry.csv'
+            csv_raw_photometry = neurophotometrics_session_path.joinpath('raw_photometry.csv')
 
         # the folder on the local server
         remote_photometry_path = self.remote_session_path / neurophotometrics_description['collection']
@@ -638,22 +636,20 @@ class NeurophotometricsCopier(SessionCopier):
         match sync_mode:
             case 'bpod':
                 # copy the digital inputs file
-                csv_digital_inputs = neurophotometrics_session_folder / 'digital_inputs.csv'
+                csv_digital_inputs = neurophotometrics_session_path.joinpath('digital_inputs.csv')
                 digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-                digital_inputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalIntputs.pqt')
+                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
             case 'daqami':
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
                 # all folders of that day, parse by start with T
-                folders = (iblrig_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
+                folders = local_and_remote_paths['local_data_folder'].joinpath('daqami', session_date).glob('*/')
                 folders = [folder for folder in folders if folder.name.startswith('T')]
-                daqami_start_times = [
-                    datetime.datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders
-                ]
+                daqami_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders]
 
                 # get the daqami file that was started just before the start of the neurophotometrics
-                neurophotometrics_start_time = datetime.datetime.strptime(
-                    '/'.join(neurophotometrics_session_folder.parts[-2:]), '%Y-%m-%d/T%H%M%S'
+                neurophotometrics_start_time = datetime.strptime(
+                    '/'.join(neurophotometrics_session_path.parts[-2:]), '%Y-%m-%d/T%H%M%S'
                 )
 
                 # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
@@ -662,13 +658,13 @@ class NeurophotometricsCopier(SessionCopier):
                 # note: the timestamp of the neurophotometric is written when the Bonsai workflow is opened, NOT when the
                 # bonsai workflow is started! Therefore the neurophotometrics file is still timestamped BEFORE the
                 # daqami file, even though the bonsai recording starts after ...
-                dt_min = min([dt for dt in timedeltas if dt < datetime.timedelta(0)])
+                dt_min = min([dt for dt in timedeltas if dt < timedelta(0)])
                 daqami_folder = folders[timedeltas.index(dt_min)]
 
                 # check here if multiple daqami files exist
                 if len(list(daqami_folder.glob('*'))) == 2:
                     # this is the expected case, all is fine
-                    daqami_file = daqami_folder / 'daqami_sync.tdms'
+                    daqami_file = daqami_folder.joinpath('daqami_sync.tdms')
                 else:
                     # this happens when daqami was started multiple times
                     # assuming then here the last file is the one we want
@@ -677,31 +673,28 @@ class NeurophotometricsCopier(SessionCopier):
                     for file in files:
                         match = re.search(r'daqami_sync_(\d).tdms', file)
                         indices.append(int(match.group(0)))
-                    daqami_file = daqami_folder / f'daqami_sync_{max(indices)}.tdms'
+                    daqami_file = daqami_folder.joinpath(f'daqami_sync_{max(indices)}.tdms')
 
                 # copy to the remote folder
-                remote_sync_path = self.remote_session_path / neurophotometrics_description['sync_metadata']['collection']
+                remote_sync_path = self.remote_session_path.joinpath(neurophotometrics_description['sync_metadata']['collection'])
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
-                shutil.copy(
-                    daqami_file,
-                    remote_sync_path / '_mcc_DAQdata.raw.tdms',
-                )
+                shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
-                # digital outputs file
-                # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
-                # digital_outputs_df = fpio.read_digital_outputs_csv(csv_digital_outputs, validate=True)
-                # digital_outputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalOutputs.pqt')
+            # digital outputs file
+            # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
+            # digital_outputs_df = fpio.read_digital_outputs_csv(csv_digital_outputs, validate=True)
+            # digital_outputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalOutputs.pqt')
 
         # explicitly with the data from the experiment description file
         raw_photometry_df = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
         cols = neurophotometrics_description['fibers'].keys()
         raw_photometry_df = fpio.validate_neurophotometrics_df(raw_photometry_df, data_columns=cols)
-        raw_photometry_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.raw.pqt')
+        raw_photometry_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
 
         # TODO why are we explicitly copying this file?
         shutil.copy(
-            Path(iblrig.__file__).parents[1] / 'devices' / 'neurophotometrics' / '_neurophotometrics_fpData.channels.csv',
-            remote_photometry_path / '_neurophotometrics_fpData.channels.csv',
+            BASE_PATH.joinpath('devices', 'neurophotometrics', '_neurophotometrics_fpData.channels.csv'),
+            remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv'),
         )
         # TODO include here the copying of the fiber bundle image
 
