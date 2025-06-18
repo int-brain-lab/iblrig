@@ -678,10 +678,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # copy to the remote folder
                 remote_sync_path = self.remote_session_path.joinpath(neurophotometrics_description['sync_metadata']['collection'])
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
-                shutil.copy(
-                    daqami_file,
-                    remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms')
-                )
+                shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
             # digital outputs file
             # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
