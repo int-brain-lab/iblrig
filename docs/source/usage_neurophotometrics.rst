@@ -7,10 +7,11 @@ Setup
 -----
 
 - iblrigv8 is installed according to the instructions
-- `settings/iblrig_settings.yaml` file is configured with the local folder and remote folder for the data transfer.
-- `settings/hardware_settings.yaml` file is configured with the neurophotometrics device
+- ``settings/iblrig_settings.yaml`` file is configured with the local folder and remote folder for the data transfer.
+- ``settings/hardware_settings.yaml`` file is configured with the neurophotometrics device::
 
    .. code:: yaml
+
       RIG_NAME: photometry
       MAIN_SYNC: False
       device_neurophotometrics:
@@ -23,12 +24,13 @@ Setup
 Starting a photometry recording
 --------------------------------
 
-- Start the Bonsai workflow by running the following command in powershell:
-.. code:: powershell
+- Start the Bonsai workflow by running the following command in powershell: ::
 
-   cd C:\iblrigv8\
-   venv\scripts\Activate.ps1
-   start_neurophotometrics
+   .. code:: powershell
+
+      cd C:\iblrigv8\
+      venv\scripts\Activate.ps1
+      start_neurophotometrics
 - in Bonsai click on the FP3002 node and load the desired photometry settings file
 - start the task
 
@@ -41,7 +43,8 @@ Where yyyy-mm-dd is the date of the recording and HHMMSS is the time of the reco
 Starting a photometry session
 --------------------------------
 
-- Start the Bonsai workflow by running the following command in powershell:
+Start the Bonsai workflow by running the following command in powershell: ::
+
 .. code:: powershell
 
    cd C:\iblrigv8\
