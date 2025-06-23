@@ -1191,7 +1191,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
            hardware settings by sending a termination command via the serial
            interface.
         """
-
         # kill rogue Bonsai processes
         p_bonsai = [p for p in psutil.process_iter(['name']) if p.info['name'] == 'Bonsai.exe' and p.parent() is None]
         if len(p_bonsai) > 0:
