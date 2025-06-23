@@ -12,6 +12,7 @@ Changelog
 * added: `ibl-photometry` dependency
 * changed: reduce traceback size in UDP message
 * changed: hardware validation - more solid way to estimate TTL rates
+* changed: clean-up after failed session (terminate Bonsai processes and stop state machine)
 
 -------------------------------
 

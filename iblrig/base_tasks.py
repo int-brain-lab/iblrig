@@ -16,6 +16,7 @@ import signal
 import sys
 import time
 import traceback
+import types
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
@@ -196,7 +197,7 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _sigint_handler(self, signum: int, frame: signal.FrameType):
+    def _sigint_handler(self, signum: int, frame: types.FrameType | None):
         """
         Handle SIGINT (Ctrl+C) signal to gracefully stop the session.
 
@@ -204,12 +205,12 @@ class BaseSession(ABC):
         ----------
         signum : int
             The signal number.
-        frame : signal.FrameType
+        frame : signal.FrameType or None
             The current stack frame.
         """
         log.critical('SIGINT received, will exit at the end of the trial')
         if getattr(self, 'paths', False) and (session_folder := self.paths.get('SESSION_FOLDER', None)):
-            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
+            session_folder.joinpath('.stop').touch()
 
     def _load_settings(
         self,
