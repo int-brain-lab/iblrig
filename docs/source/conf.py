@@ -48,6 +48,9 @@ intersphinx_mapping = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
+html_static_path = ['_static']
+if not 'simplepdf' in sys.argv:
+    html_style = ['css/custom.css']
 
 # -- Options for PDF creation ------------------------------------------------
 simplepdf_vars = {
@@ -64,7 +67,7 @@ html_context = {
 }
 
 # -- Settings for automatic API generation -----------------------------------
-autodoc_mock_imports = ["PySpin"]
+autodoc_mock_imports = ['PySpin']
 autodoc_class_signature = 'separated'  # 'mixed', 'separated'
 autodoc_member_order = 'groupwise'  # 'alphabetical', 'groupwise', 'bysource'
 autodoc_inherit_docstrings = False
