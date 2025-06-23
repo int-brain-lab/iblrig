@@ -166,7 +166,7 @@ class Camera:
     def _log(self, level: int, message: str, stacklevel: int = 2) -> bool:
         logger.log(
             level=level,
-            msg=f'Camera {self._index if len(self._label) == 0 else self._label }: {message.strip(" .")}.',
+            msg=f'Camera {self._index if len(self._label) == 0 else self._label}: {message.strip(" .")}.',
             stacklevel=stacklevel,
         )
         return level < logging.ERROR
@@ -373,8 +373,8 @@ class Cameras:
         self._cameras = self._instance.GetCameras()
 
         if isinstance(identifier, list):
-            device_ids = [id for id in identifier if isinstance(id, str)]
-            indices = [id for id in identifier if isinstance(id, int)]
+            device_ids = [i for i in identifier if isinstance(i, str)]
+            indices = [i for i in identifier if isinstance(i, int)]
             for idx in range(len(self._cameras)):
                 self._cameras[idx].Init()
                 if not (self._cameras[idx].DeviceID() in device_ids or idx in indices):
