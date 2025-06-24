@@ -14,13 +14,14 @@ from importlib.metadata import entry_points
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
+import psutil
 import pyqtgraph as pg
 from pydantic import ValidationError
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThreadPool, pyqtSlot
 from PyQt5.QtWidgets import QStyle
 from requests import HTTPError
-from serial import SerialException
+from serial import Serial, SerialException
 from typing_extensions import override
 
 import iblrig.hardware_validation
@@ -1014,8 +1015,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 task = EmptySession(subject=self.model.subject, append=self.append_session, interactive=False)
                 logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
-                if self.model.session_folder.joinpath('.stop').exists():
-                    self.model.session_folder.joinpath('.stop').unlink()
+                self.model.session_folder.joinpath('.stop').unlink(missing_ok=True)
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # disable Bpod status LED
@@ -1120,6 +1120,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def _on_task_finished(self, exit_code, exit_status):
         self.tabLog.appendText('\nSubprocess finished.', 'White')
         if exit_code:
+            self._cleanup_failed_session()
             msg_box = QtWidgets.QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
             msg_box.setText('The task was terminated with an error.\nPlease check the log for details.')
@@ -1174,6 +1175,41 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             session_data['POOP_COUNT'] = droppings
             with open(task_settings_file, 'w') as fid:
                 json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
+
+    def _cleanup_failed_session(self):
+        """
+        Cleans up any failed sessions by terminating rogue Bonsai processes and
+        stopping the running state machine.
+
+        This method performs the following actions:
+        1. Identifies and terminates any rogue instances of the Bonsai application
+           (Bonsai.exe) that are not associated with a parent process.
+        2. If any rogue processes are found, it attempts to gracefully terminate them
+           and logs the termination status. If a process does not terminate within
+           the specified timeout, it forcefully kills the process.
+        3. Terminates the running state machine associated with the specified
+           hardware settings by sending a termination command via the serial
+           interface.
+        """
+        # kill rogue Bonsai processes
+        p_bonsai = [p for p in psutil.process_iter(['name']) if p.info['name'] == 'Bonsai.exe' and p.parent() is None]
+        if len(p_bonsai) > 0:
+            log.warning('Terminating rogue Bonsai processes ...')
+            for proc in p_bonsai:
+                try:
+                    proc.terminate()  # Gracefully terminate the process
+                    proc.wait(timeout=2)
+                    log.info('Terminated %s (PID %d)', proc.info['name'], proc.pid)
+                except psutil.TimeoutExpired:
+                    print('Killing %s (PID %d)', proc.info['name'], proc.pid)
+                    proc.kill()
+
+        # terminate running state machine
+        if Serial(self.hardware_settings['device_bpod']['COM_BPOD']) is not None:
+            log.warning('Killing State Machine ...')
+            with Serial(self.hardware_settings['device_bpod']['COM_BPOD']) as ser:
+                ser.write(b'X')
+                ser.reset_input_buffer()
 
     def flush(self):
         # paint button blue when in toggled state

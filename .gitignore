@@ -48,3 +48,4 @@ devices/camera_recordings/*.layout
 /dist
 *~
 docs/source/api/*
+*.csv#

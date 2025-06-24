@@ -1,0 +1,12 @@
+Qty;Supplier;Product #;Description
+1;`CMVision <https://cmvisionsecurity.com/>`_;`CM-IR30 <https://cmvisionsecurity.com/products/cmvision-ir30-wideangle-60-80-degree-30pc-power-led-100feet-long-range-indoor-ourdoor-ir-array-illuminator>`_;CMVision-IR30 Illuminator
+2;`Digikey <https://www.digikey.com>`_;`1470-3166-ND <https://www.digikey.com/en/products/result?keywords=1470-3166-ND>`_;Power Supply: 12V, 2A, 24W [1]_
+1;`Teledyne FLIR <https://www.teledynevisionsolutions.com/>`_;`ACC-01-0003 <https://www.teledynevisionsolutions.com/products/tripod-adapter-for-bfs-30mm-bfly-cmln-cm3-ffmv-fl2-fl3-fmvu/?model=ACC-01-0003>`_;Tripod Adapter
+1;`Teledyne FLIR <https://www.teledynevisionsolutions.com/>`_;`ACC-01-2300 <https://www.teledynevisionsolutions.com/products/usb-3.1-locking-cable/?model=ACC-01-2300>`_;USB3 Micro-B Locking Cable, 3 m
+1;`Teledyne FLIR <https://www.teledynevisionsolutions.com/>`_;`ACC-01-3013 <https://www.teledynevisionsolutions.com/products/jst-gpio-connector-for-chameleon-3/?model=ACC-01-3013>`_;JST GPIO Cable, 9-pin, 0.15 m
+1;`Teledyne FLIR <https://www.teledynevisionsolutions.com/>`_;`CM3-U3-13Y3M-CS <https://www.teledynevisionsolutions.com/products/chameleon3-usb3/?model=CM3-U3-13Y3M-CS>`_;Chameleon3 Monochrome Camera
+1;`Thorlabs <https://www.thorlabs.com/>`_;`CML05 <https://www.thorlabs.com/thorproduct.cfm?partnumber=CML05>`_;CS- to C-Mount Extension Adapter
+1;`Thorlabs <https://www.thorlabs.com/>`_;`CMSP100 <https://www.thorlabs.com/thorproduct.cfm?partnumber=CMSP100>`_;C-Mount Spacer Ring, 1mm
+1;`Thorlabs <https://www.thorlabs.com/>`_;`MVL16M23 <https://www.thorlabs.com/thorproduct.cfm?partnumber=MVL16M23>`_;16 mm EFL, f/1.4, C-Mount Lens
+1;Lee Filter;87P3 / B10087;IR pass filter #87, Polyester, 100 mm x 100 mm, transmission above 730 nm [2]_
+1;VWR;611-0094;Disposable Weighing Boats

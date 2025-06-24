@@ -16,6 +16,7 @@ import signal
 import sys
 import time
 import traceback
+import types
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
@@ -195,6 +196,21 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+
+    def _sigint_handler(self, signum: int, frame: types.FrameType | None):
+        """
+        Handle SIGINT (Ctrl+C) signal to gracefully stop the session.
+
+        Parameters
+        ----------
+        signum : int
+            The signal number.
+        frame : signal.FrameType or None
+            The current stack frame.
+        """
+        log.critical('SIGINT received, will exit at the end of the trial')
+        if getattr(self, 'paths', False) and (session_folder := self.paths.get('SESSION_FOLDER', None)):
+            session_folder.joinpath('.stop').touch()
 
     def _load_settings(
         self,
@@ -666,6 +682,7 @@ class BaseSession(ABC):
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
         self.create_session()
+
         # When not running the first chained protocol, we can skip the weighing dialog
         first_protocol = int(self.paths.SESSION_RAW_DATA_FOLDER.name.split('_')[-1]) == 0
 
@@ -673,17 +690,12 @@ class BaseSession(ABC):
         if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = get_number('Subject weight (g): ', float, lambda x: x > 0)
 
-        def sigint_handler(*args, **kwargs):
-            # create a signal handler for a graceful exit: create a stop flag in the session folder
-            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            log.critical('SIGINT signal detected, will exit at the end of the trial')
-
         # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
-        if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
-            self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+        self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
-        signal.signal(signal.SIGINT, sigint_handler)
+        signal.signal(signal.SIGINT, self._sigint_handler)
         self._run()  # runs the specific task logic i.e. trial loop etc...
+
         # post task instructions
         log.critical('Graceful exit')
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
