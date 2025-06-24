@@ -11,9 +11,13 @@ Changelog
 * added: indicate remote rigs in `_iblrig_taskSettings.raw.json`
 * added: `ibl-photometry` dependency
 * changed: Handling of camera and initial delay moved out of ChoiceWorld's state machine definition
+* changed: New Qt-based online plots including traces for Bpod inputs
 * changed: reduce traceback size in UDP message
 * changed: hardware validation - more solid way to estimate TTL rates
 * changed: clean-up after failed session (terminate Bonsai processes and stop state machine)
+* fixed: online plots included timeout trials
+* fixed: online plots showed wrong reward amount for adaptive rewards
+* fixed: online plots did not take into account initial delay
 
 -------------------------------
 
