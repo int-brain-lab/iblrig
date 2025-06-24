@@ -22,7 +22,7 @@ try:
 except ValueError:
     HAS_PYSPIN = False
 PYSPIN_AVAILABLE = HAS_SPINNAKER and HAS_PYSPIN
-COPYRIGHT_YEAR = 2024
+COPYRIGHT_YEAR = 2025
 URL_DOC = 'https://int-brain-lab.github.io/iblrig'
 URL_REPO = 'https://github.com/int-brain-lab/iblrig/tree/iblrigv8'
 URL_ISSUES = 'https://github.com/int-brain-lab/iblrig/issues'

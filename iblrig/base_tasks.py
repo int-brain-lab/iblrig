@@ -494,8 +494,8 @@ class BaseSession(ABC):
             if self.iblrig_settings['ALYX_URL'] is None:
                 return
             info_str = (
-                f"alyx client with user name {self.iblrig_settings['ALYX_USER']} "
-                + f"and url: {self.iblrig_settings['ALYX_URL']}"
+                f'alyx client with user name {self.iblrig_settings["ALYX_USER"]} '
+                + f'and url: {self.iblrig_settings["ALYX_URL"]}'
             )
             try:
                 self._one = ONE(
@@ -561,7 +561,7 @@ class BaseSession(ABC):
                     session=ses['url'][-36:],
                     water_type=self.task_params.get('REWARD_TYPE', None),
                 )
-                log.info(f"Water administered registered in Alyx database: {ses['subject']}, " f"{wa['water_administered']}mL")
+                log.info(f'Water administered registered in Alyx database: {ses["subject"]}, {wa["water_administered"]}mL')
         except Exception:
             log.error(traceback.format_exc())
             log.error('Could not register water administration to Alyx')
@@ -806,11 +806,14 @@ class BonsaiRecordingMixin(BaseSession):
         if (workflow_file := self._camera_mixin_bonsai_get_workflow_file(configuration, 'setup')) is None:
             return
 
+        # test acquisition and reset cameras if needed
         # enable trigger of cameras (so Bonsai can disable it again ... sigh)
         if PYSPIN_AVAILABLE:
-            from iblrig.video_pyspin import enable_camera_trigger
+            from iblrig import video_pyspin
 
-            enable_camera_trigger(True)
+            if not video_pyspin.acquisition_ok():
+                video_pyspin.reset_all_cameras()
+            video_pyspin.enable_camera_trigger(True)
 
         call_bonsai(workflow_file, wait=True)  # TODO Parameterize using configuration cameras
         log.info('Bonsai cameras setup module loaded: OK')
@@ -951,9 +954,7 @@ class BpodMixin(BaseSession):
     def start_mixin_bpod(self):
         if self.hardware_settings['device_bpod']['COM_BPOD'] is None:
             raise ValueError(
-                'The value for device_bpod:COM_BPOD in '
-                'settings/hardware_settings.yaml is null. Please '
-                'provide a valid port name.'
+                'The value for device_bpod:COM_BPOD in settings/hardware_settings.yaml is null. Please provide a valid port name.'
             )
         disabled_ports = [x - 1 for x in self.hardware_settings['device_bpod']['DISABLE_BEHAVIOR_INPUT_PORTS']]
         self.bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], disable_behavior_ports=disabled_ports)
@@ -1141,14 +1142,14 @@ class SoundMixin(BaseSession, HasBpod):
                 )
             case _:
                 self.bpod.define_xonar_sounds_actions()
-        log.info(f"Sound module loaded: OK: {self.hardware_settings.device_sound['OUTPUT']}")
+        log.info(f'Sound module loaded: OK: {self.hardware_settings.device_sound["OUTPUT"]}')
 
     def sound_play_noise(self, state_timer=0.510, state_name='play_noise'):
         """
         Play the noise sound for the error feedback using bpod state machine.
         :return: bpod current trial export
         """
-        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_tone], state_timer=state_timer)
+        return self._sound_play(state_name=state_name, output_actions=[self.bpod.actions.play_noise], state_timer=state_timer)
 
     def sound_play_tone(self, state_timer=0.102, state_name='play_tone'):
         """
@@ -1168,7 +1169,7 @@ class SoundMixin(BaseSession, HasBpod):
         sma.add_state(
             state_name=state_name,
             state_timer=state_timer,
-            output_actions=[self.bpod.actions.play_tone],
+            output_actions=output_actions,
             state_change_conditions={'BNC2Low': 'exit', 'Tup': 'exit'},
         )
         self.bpod.send_state_machine(sma)

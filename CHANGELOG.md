@@ -1,6 +1,47 @@
 Changelog
 =========
 
+8.27.7
+* fixed: choice world family: visual stimulus could sometimes be moved after reward delivery
+
+8.27.6
+------
+* fixed: detection of LED control ability broken for Bpods with old firmware  
+
+8.27.5
+------
+* fixed: issues in serial communication resolved through update to iblpybpod-no-gui 3.1.0
+
+8.27.4
+------
+* fixed: passive choice world did not play noise stimulus
+* changed: update to ONE-api>=3.0.0 and ibllib>=3.3.0
+
+8.27.3
+------
+* changed: reset camera(s) prior to starting task when inconsistencies have been detected
+* changed: include stock subjects if user is stock manager
+* changed: skip validation of Ambient Module if device_bpod.USE_AMBIENT_MODULE is false
+* added: `remove_bonsai_layouts` command for troubleshooting BONSAI GUIs not appearing 
+
+8.27.2
+------
+* fixed: error when using task arguments of type bool
+
+8.27.1
+------
+* fixed: resolved warning about chained assignment in TrainingChoiceWorld.compute_performance()
+* changed: make performance calculation for training phase part of choiceworld module
+
+8.27.0
+------
+* feature: allow for external tasks to be registered as plugins
+* changed: initial delay uses minutes instead of seconds
+* fixed: debiasing logic used incorrect range during averaging
+* fixed: broken progression from training stages 0 to 1 and 1 to 2
+
+-------------------------------
+
 8.26.0
 ------
 * feature: added GUI field for session narrative
@@ -8,11 +49,15 @@ Changelog
 * changed: documentation and tests
 * removed: detailed version strings for IBLRIG (+dirty etc)
 
+-------------------------------
+
 8.25.0
 ------
 * feature: fiber photometry loader
 * feature: dataframe converter for Bpod session data 
 * removed: remaining tkinter dialogs
+
+-------------------------------
 
 8.24.7
 ------

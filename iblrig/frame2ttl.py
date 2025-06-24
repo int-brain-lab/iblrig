@@ -32,7 +32,7 @@ class Frame2TTL(SerialSingleton):
         # catch SAMD21 in bootloader mode (Frame2TTL v1)
         if is_samd21mini and port_info.pid == 0x0D21:
             raise OSError(
-                f'SAMD21 Mini Breakout on {port} is in bootloader mode. ' f'Replugging the device should alleviate the issue.'
+                f'SAMD21 Mini Breakout on {port} is in bootloader mode. Replugging the device should alleviate the issue.'
             )
 
         # override default arguments of super-class
@@ -90,7 +90,7 @@ class Frame2TTL(SerialSingleton):
         self.timeout = 5
 
         # log status
-        log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. ' f'Firmware Version: {self.fw_version}.')
+        log.debug(f'Connected to Frame2TTL v{self.hw_version} on port {self.portstr}. Firmware Version: {self.fw_version}.')
 
         # initialize members
         match self.hw_version:

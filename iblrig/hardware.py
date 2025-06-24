@@ -177,7 +177,7 @@ class Bpod(BpodIO):
         )
 
     def define_harp_sounds_actions(self, module: BpodModule, go_tone_index: int = 2, noise_index: int = 3) -> None:
-        module_port = f"Serial{module.serial_port if module is not None else ''}"
+        module_port = f'Serial{module.serial_port if module is not None else ""}'
         self.actions.update(
             {
                 'play_tone': (module_port, self._define_message(module, [ord('P'), go_tone_index])),
@@ -189,7 +189,7 @@ class Bpod(BpodIO):
     def define_rotary_encoder_actions(self, module: BpodModule | None = None) -> None:
         if module is None:
             module = self.rotary_encoder
-        module_port = f"Serial{module.serial_port if module is not None else ''}"
+        module_port = f'Serial{module.serial_port if module is not None else ""}'
         self.actions.update(
             {
                 'rotary_encoder_reset': (
@@ -203,6 +203,7 @@ class Bpod(BpodIO):
                 'bonsai_closed_loop': (module_port, self._define_message(module, [ord('#'), 3])),
                 'bonsai_freeze_stim': (module_port, self._define_message(module, [ord('#'), 4])),
                 'bonsai_show_center': (module_port, self._define_message(module, [ord('#'), 5])),
+                'bonsai_freeze_center': (module_port, self._define_message(module, [ord('#'), 9])),
             }
         )
 
@@ -298,7 +299,7 @@ class Bpod(BpodIO):
                 self._arcom.serial_object.write(command)
                 if self._arcom.read_uint8() == 1:
                     return True
-            except serial.SerialException:
+            except (serial.SerialException, struct.error):
                 pass
             self._arcom.serial_object.reset_input_buffer()
             self._arcom.serial_object.reset_output_buffer()
@@ -370,7 +371,7 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
         self.enable_evt_transmission()
 
     def close(self):
-        if hasattr(self, 'arcom'):
+        if getattr(self, 'arcom') is not None:  # noqa: B009
             log.debug(f'Closing serial connection to {self._name} on port {self.settings.COM_ROTARY_ENCODER}')
             super().close()
 
