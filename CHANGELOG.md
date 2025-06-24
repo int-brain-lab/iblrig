@@ -29,8 +29,6 @@ Changelog
 ------
 * fixed: issues in serial communication resolved through update to iblpybpod-no-gui 3.1.0
 
--------------------------------
-
 8.27.4
 ------
 * fixed: passive choice world did not play noise stimulus
