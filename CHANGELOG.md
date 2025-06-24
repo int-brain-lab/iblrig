@@ -4,10 +4,22 @@ Changelog
 8.28.0
 ------
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
+* added: save acquisistion log for camera sessions
 * added: save ambient data to Parquet file
 * added: save task version to settings JSON
+* added: check for remote data folder during hardware validation
+* added: indicate remote rigs in `_iblrig_taskSettings.raw.json`
+* added: `ibl-photometry` dependency
+* changed: Handling of camera and initial delay moved out of ChoiceWorld's state machine definition
+* changed: reduce traceback size in UDP message
+* changed: hardware validation - more solid way to estimate TTL rates
+* changed: clean-up after failed session (terminate Bonsai processes and stop state machine)
 
 -------------------------------
+
+8.27.7
+------
+* fixed: choice world family: visual stimulus could sometimes be moved after reward delivery
 
 8.27.6
 ------

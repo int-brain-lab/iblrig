@@ -16,6 +16,7 @@ import signal
 import sys
 import time
 import traceback
+import types
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
@@ -59,20 +60,29 @@ class HasBpod(Protocol):
 
 
 class BaseSession(ABC):
-    version = None
-    """str: Task version string."""
+    """
+    Abstract base class for all sessions.
+
+    This class defines the common interface and shared logic for sessions,
+    including session initialization, hardware management, Alyx registration,
+    and mixin execution. Subclasses should implement the abstract methods to
+    define task-specific behavior and hardware startup.
+    """
+
+    version: str | None = None
+    """Task version string."""
     # protocol_name: str | None = None
-    """str: The name of the task protocol (NB: avoid spaces)."""
+    # """The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
     """Path: A YAML file containing base, default task parameters."""
-    is_mock = False
-    """list of str: One or more ibllib.pipes.tasks.Task names for task extraction."""
-    logger: logging.Logger = None
-    """logging.Logger: Log instance used solely to keep track of log level passed to constructor."""
+    is_mock: bool = False
+    """Wether the session is a mock session."""
+    logger: logging.Logger | None = None
+    """Logger instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
-    """dict: The experiment description."""
+    """The experiment description."""
     extractor_tasks: list | None = None
-    """list of str: An optional list of pipeline task class names to instantiate when preprocessing task data."""
+    """An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
 
@@ -82,10 +92,10 @@ class BaseSession(ABC):
 
     def __init__(
         self,
-        subject=None,
-        task_parameter_file=None,
-        file_hardware_settings=None,
-        hardware_settings: HardwareSettings = None,
+        subject: str,
+        task_parameter_file: str | Path | None = None,
+        file_hardware_settings: str | Path | None = None,
+        hardware_settings: dict | None | HardwareSettings = None,
         file_iblrig_settings=None,
         iblrig_settings: RigSettings = None,
         one=None,
@@ -100,19 +110,34 @@ class BaseSession(ABC):
         **kwargs,
     ):
         """
-        :param subject: The subject nickname. Required.
-        :param task_parameter_file: an optional path to the task_parameters.yaml file
-        :param file_hardware_settings: name of the hardware file in the settings folder, or full file path
-        :param hardware_settings: an optional dictionary of hardware settings. Keys will override any keys in the file
-        :param file_iblrig_settings: name of the iblrig file in the settings folder, or full file path
-        :param iblrig_settings: an optional dictionary of iblrig settings. Keys will override any keys in the file
-        :param one: an optional instance of ONE
-        :param interactive:
-        :param projects: An optional list of Alyx protocols.
-        :param procedures: An optional list of Alyx procedures.
-        :param subject_weight_grams: weight of the subject
-        :param stub: A full path to an experiment description file containing experiment information.
-        :param append: bool, if True, append to the latest existing session of the same subject for the same day
+        Parameters
+        ----------
+        subject : str
+            The subject nickname. Required.
+        task_parameter_file : str or Path, optional
+            An optional path to the task_parameters.yaml file.
+        file_hardware_settings : str or Path, optional
+            Name of the hardware file in the settings folder, or full file path.
+        hardware_settings : dict, optional
+            An optional dictionary of hardware settings. Keys will override any keys in the file.
+        file_iblrig_settings : str or Path, optional
+            Name of the iblrig file in the settings folder, or full file path.
+        iblrig_settings : dict, optional
+            An optional dictionary of iblrig settings. Keys will override any keys in the file.
+        one : ONE, optional
+            An optional instance of ONE.
+        interactive : bool, optional
+            If True, enables interactive mode.
+        projects : list, optional
+            An optional list of Alyx protocols.
+        procedures : list, optional
+            An optional list of Alyx procedures.
+        subject_weight_grams : float, optional
+            Weight of the subject in grams.
+        stub : str or Path, optional
+            A full path to an experiment description file containing experiment information.
+        append : bool, optional
+            If True, append to the latest existing session of the same subject for the same day.
         """
         self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
@@ -172,8 +197,28 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
+    def _sigint_handler(self, signum: int, frame: types.FrameType | None):
+        """
+        Handle SIGINT (Ctrl+C) signal to gracefully stop the session.
+
+        Parameters
+        ----------
+        signum : int
+            The signal number.
+        frame : signal.FrameType or None
+            The current stack frame.
+        """
+        log.critical('SIGINT received, will exit at the end of the trial')
+        if getattr(self, 'paths', False) and (session_folder := self.paths.get('SESSION_FOLDER', None)):
+            session_folder.joinpath('.stop').touch()
+
     def _load_settings(
-        self, file_hardware_settings=None, hardware_settings=None, file_iblrig_settings=None, iblrig_settings=None, **_
+        self,
+        file_hardware_settings: Path | str | None = None,
+        hardware_settings: dict | None = None,
+        file_iblrig_settings: Path | str | None = None,
+        iblrig_settings: dict | None = None,
+        **_,
     ):
         self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
@@ -637,6 +682,7 @@ class BaseSession(ABC):
         # this prevents from incrementing endlessly the session number if the hardware fails to connect
         self.start_hardware()
         self.create_session()
+
         # When not running the first chained protocol, we can skip the weighing dialog
         first_protocol = int(self.paths.SESSION_RAW_DATA_FOLDER.name.split('_')[-1]) == 0
 
@@ -644,17 +690,12 @@ class BaseSession(ABC):
         if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = get_number('Subject weight (g): ', float, lambda x: x > 0)
 
-        def sigint_handler(*args, **kwargs):
-            # create a signal handler for a graceful exit: create a stop flag in the session folder
-            self.paths.SESSION_FOLDER.joinpath('.stop').touch()
-            log.critical('SIGINT signal detected, will exit at the end of the trial')
-
         # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
-        if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
-            self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+        self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
-        signal.signal(signal.SIGINT, sigint_handler)
+        signal.signal(signal.SIGINT, self._sigint_handler)
         self._run()  # runs the specific task logic i.e. trial loop etc...
+
         # post task instructions
         log.critical('Graceful exit')
         log.info(f'Session {self.paths.SESSION_RAW_DATA_FOLDER}')
@@ -1255,6 +1296,7 @@ class NetworkSession(BaseSession):
         self.exp_ref = {}
         try:
             super().__init__(**kwargs)
+            self.session_info['REMOTE_RIGS'] = remote_rigs
         except Exception as ex:
             self.cleanup_mixin_network()
             raise ex
@@ -1289,6 +1331,10 @@ class NetworkSession(BaseSession):
         """
         self.remote_rigs = net.Auxiliaries(remote_rigs or {})
         assert not remote_rigs or self.remote_rigs.is_connected
+        # For the UCL ScanImage computer the low input buffer can lead to truncated messages.
+        # Here we hard-code the buffer size so that truncated echo messages are handled correctly
+        if self.remote_rigs.services and (service := self.remote_rigs.services.get('expcontrol')):
+            service.max_message_size = 4096
         # Handle termination event by graciously completing thread
         signal.signal(signal.SIGTERM, lambda sig, frame: self.cleanup_mixin_network())
 
@@ -1381,7 +1427,7 @@ class NetworkSession(BaseSession):
                 details = {
                     'error': e.__class__.__name__,  # exception name str
                     'message': str(e),  # error str
-                    'traceback': traceback.format_exc(),  # stack str
+                    'traceback': traceback.format_exc(limit=2),  # stack str
                     'file': tb.tb_frame.f_code.co_filename,  # filename str
                     'line_no': (tb.tb_lineno, tb.tb_lasti),  # (int, int)
                 }
