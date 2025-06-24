@@ -13,6 +13,7 @@
    hardware
    developer_guide
    faq
+   deprecation_notes
 
 .. if-builder:: html
 

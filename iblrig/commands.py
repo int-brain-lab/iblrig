@@ -10,13 +10,18 @@ import yaml
 
 import iblrig
 from iblrig.hardware import Bpod
-from iblrig.online_plots import OnlinePlots
 from iblrig.path_helper import get_local_and_remote_paths
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, NeurophotometricsCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import (
+    BehaviorCopier,
+    CopyState,
+    EphysCopier,
+    NeurophotometricsCopier,
+    SessionCopier,
+    VideoCopier,
+)
 from iblutil.util import setup_logger
 
 logger = logging.getLogger(__name__)
-
 
 tag2copier = {
     'behavior': BehaviorCopier,
@@ -279,7 +284,7 @@ def transfer_data(
     copiers = _get_copiers(copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
 
     for copier in copiers:
-        logger.critical(f'{copier.state}, {copier.session_path}')
+        logger.info(f'\033[1m{copier.state}, {copier.session_path}\033[1m')
         if not dry:
             copier.run(number_of_expected_devices=expected_devices)
 
@@ -329,7 +334,7 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             sc = copier(session_path, remote_subjects_folder=remote_subject_folder, tag=tag)
         else:
             sc = copier(session_path, remote_subjects_folder=remote_subject_folder)
-        if sc.state == 3:
+        if sc.state == CopyState.FINALIZED:
             session_size = sum(f.stat().st_size for f in session_path.rglob('*') if f.is_file()) / 1024**3
             logger.info(f'{sc.session_path}, {session_size:0.02f} Go')
             size += session_size
@@ -338,24 +343,6 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
             removed.append(session_path)
     logger.info(f'Cleanup size {size:0.02f} Go')
     return removed
-
-
-def view_session():
-    """
-    Entry point for command line: usage as below
-    >>> view_session /full/path/to/jsonable/_iblrig_taskData.raw.jsonable
-    :return: None
-    """
-    from iblutil.util import setup_logger
-
-    setup_logger('iblrig', level='INFO')
-    parser = argparse.ArgumentParser()
-    parser.add_argument('file_jsonable', help='full file path to jsonable file')
-    parser.add_argument('file_settings', help='full file path to settings file', nargs='?', default=None)
-    args = parser.parse_args()
-
-    online_plots = OnlinePlots(settings_file=args.file_settings)
-    online_plots.run(file_jsonable=args.file_jsonable)
 
 
 def flush():
