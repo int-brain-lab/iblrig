@@ -1,14 +1,16 @@
 """Extends the base_tasks modules by providing task logic around the Choice World protocol."""
 
 import abc
+import enum
 import logging
 import math
 import random
 import subprocess
 import time
 from pathlib import Path
+from re import split as re_split
 from string import ascii_letters
-from typing import Annotated, Any
+from typing import Annotated, Any, final
 
 import numpy as np
 import pandas as pd
@@ -17,9 +19,9 @@ from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
 from iblrig import choiceworld, misc
-from iblrig.hardware import SOFTCODE
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
 from iblrig.pydantic_definitions import TrialDataModel
-from iblutil.io import jsonable
+from iblutil.io import binary, jsonable
 from iblutil.util import Bunch
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
@@ -28,6 +30,7 @@ log = logging.getLogger(__name__)
 
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
+
 
 # TODO: task parameters should be verified through a pydantic model
 #
@@ -133,12 +136,9 @@ class ChoiceWorldSession(
         # init the tables, there are 2 of them: a trials table and a ambient sensor data table
         self.trials_table = self.TrialDataModel.preallocate_dataframe(NTRIALS_INIT)
         self.ambient_sensor_table = pd.DataFrame(
-            {
-                'Temperature_C': np.zeros(NTRIALS_INIT) * np.nan,
-                'AirPressure_mb': np.zeros(NTRIALS_INIT) * np.nan,
-                'RelativeHumidity': np.zeros(NTRIALS_INIT) * np.nan,
-            }
+            np.nan, index=range(NTRIALS_INIT), columns=['Temperature_C', 'AirPressure_mb', 'RelativeHumidity'], dtype=np.float32
         )
+        self.ambient_sensor_table.rename_axis('Trial', inplace=True)
 
     @staticmethod
     def extra_parser():
@@ -151,15 +151,6 @@ class ChoiceWorldSession(
             type=float,
             required=False,
             help='initial delay before starting the first trial (default: 0 min)',
-        )
-        parser.add_argument(
-            '--remote',
-            dest='remote_rigs',
-            type=str,
-            required=False,
-            action='append',
-            nargs='+',
-            help='specify one of the remote rigs to interact with over the network',
         )
         return parser
 
@@ -179,37 +170,135 @@ class ChoiceWorldSession(
             self.start_mixin_bonsai_visual_stimulus()
             self.bpod.register_softcodes(self.softcode_dictionary())
 
-    def _run(self):
-        """Run the task with the actual state machine."""
+    @final
+    def _wait_for_camera_and_initial_delay(self) -> None:
+        """Wait for the camera to start recording and manage the initial delay.
+
+        This method implements a temporary state machine to coordinate the process of waiting for the camera recording
+        to commence and to handle any specified initial delay. It should be called just prior to the start of the task.
+        The states defined here were previously part of the task's main state machine (see `get_state_machine_trial()`).
+        """
+        initial_delay = self.task_params.get('SESSION_DELAY_START', 0)
+
+        # temporary IntEnum for storing softcodes
+        # SOFTCODE.TRIGGER_CAMERA is being reused; we add three more unique values
+        class TemporarySoftcodes(enum.IntEnum):
+            START_CAMERA_RECORDING = SOFTCODE.TRIGGER_CAMERA.value
+            WAIT_FOR_CAMERA_TRIGGER = enum.auto()
+            CAMERA_TRIGGER_RECEIVED = enum.auto()
+            STARTING_INITIAL_DELAY = enum.auto()
+
+        # store the original softcode handler
+        original_softcode_handler = self.bpod.softcode_handler_function
+
+        # define temporary softcode handler
+        def temporary_softcode_handler(softcode: int):
+            match softcode:
+                case TemporarySoftcodes.START_CAMERA_RECORDING:
+                    original_softcode_handler(softcode)  # pass to original handler
+                case TemporarySoftcodes.WAIT_FOR_CAMERA_TRIGGER:
+                    log.info('Waiting to receive first camera trigger ...')
+                case TemporarySoftcodes.CAMERA_TRIGGER_RECEIVED:
+                    log.info('Camera trigger received')
+                case TemporarySoftcodes.STARTING_INITIAL_DELAY:
+                    if initial_delay > 0:
+                        log.info(f'Waiting for {initial_delay} s')
+                    else:
+                        log.info('No initial delay defined')
+
+        # overwrite softcode handler
+        self.bpod.softcode_handler_function = temporary_softcode_handler
+
+        # define and run state machine
+        sma = StateMachine(self.bpod)
+        sma.add_state(
+            state_name='start_camera_workflow',
+            output_actions=[('SoftCode', TemporarySoftcodes.START_CAMERA_RECORDING)],
+            state_change_conditions={'Tup': 'wait_for_camera_trigger'},
+        )
+        sma.add_state(
+            state_name='wait_for_camera_trigger',
+            output_actions=[('SoftCode', TemporarySoftcodes.WAIT_FOR_CAMERA_TRIGGER)],
+            state_change_conditions={'Port1In': 'camera_trigger_received'},
+        )
+        sma.add_state(
+            state_name='camera_trigger_received',
+            output_actions=[('SoftCode', TemporarySoftcodes.CAMERA_TRIGGER_RECEIVED)],
+            state_change_conditions={'Tup': 'delay_initiation'},
+        )
+        sma.add_state(
+            state_name='delay_initiation',
+            state_timer=self.task_params.get('SESSION_DELAY_START', 0),
+            output_actions=[('SoftCode', TemporarySoftcodes.STARTING_INITIAL_DELAY)],
+            state_change_conditions={'Tup': 'exit'},
+        )
+        self.bpod.send_state_machine(sma)
+        self.bpod.run_state_machine(sma)  # blocking until state-machine is finished
+        if initial_delay > 0:
+            log.info('Initial delay has passed')
+
+        # restore original softcode handler
+        self.bpod.softcode_handler_function = original_softcode_handler
+
+    def _run(self) -> None:
+        """Execute the task using the defined state machine.
+
+        This method orchestrates the execution of the task by running a state machine for a specified number of trials.
+        """
         time_last_trial_end = time.time()
-        for i in range(self.task_params.NTRIALS):  # Main loop
-            # t_overhead = time.time()
+        for trial_number in range(self.task_params.NTRIALS):  # Main loop
+            # obtain state machine definition
             self.next_trial()
-            log.info(f'Starting trial: {i}')
-            # =============================================================================
-            #     Start state machine definition
-            # =============================================================================
-            sma = self.get_state_machine_trial(i)
+            sma = self.get_state_machine_trial(trial_number)
+
+            # Waiting for camera / initial delay will be handled just prior to the first trial
+            # This is done here to allow for backward compatibility with unadapted tasks
+            if trial_number == 0:
+                # warn if state machine uses deprecated way of waiting for camera / initial delay
+                if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
+                    log.warning('')
+                    log.warning('**********************************************')
+                    log.warning('ATTENTION: YOUR TASK DEFINITION NEEDS UPDATING')
+                    log.warning('**********************************************')
+                    log.warning('Camera and initial delay should not be handled')
+                    log.warning('within the `get_state_machine_trial()` method.')
+                    log.warning('For further details, please refer to section  ')
+                    log.warning("'Deprecation Notes' in IBLRIG's documentation.")
+                    log.warning('**********************************************')
+                    log.warning('')
+                    log.info('Waiting for 10s so you actually read this message ;-)')
+                    time.sleep(10)
+                else:
+                    self._wait_for_camera_and_initial_delay()
+
+            # send state machine description to Bpod device
             log.debug('Sending state machine to bpod')
-            # Send state machine description to Bpod device
             self.bpod.send_state_machine(sma)
-            # t_overhead = time.time() - t_overhead
-            # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
-            # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
-            dead_time = self.task_params.get('DEAD_TIME', 0.5)
-            dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
-            # wait to achieve the desired ITI duration
-            if dt > 0:
-                time.sleep(dt)
-            # Run state machine
+
+            # handle ITI durations
+            if trial_number > 0:
+                # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
+                # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
+                dead_time = self.task_params.get('DEAD_TIME', 0.5)
+                dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
+
+                # wait to achieve the desired ITI duration
+                if dt > 0:
+                    log.debug(f'Waiting {dt} s to achieve an ITI duration of {self.task_params.ITI_DELAY_SECS} s')
+                    time.sleep(dt)
+
+            # run state machine
+            log.info('-----------------------')
+            log.info(f'Starting Trial #{trial_number}')
             log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
+
             # handle pause event
             flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
             flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
-            if flag_pause.exists() and i < (self.task_params.NTRIALS - 1):
-                log.info(f'Pausing session inbetween trials {i} and {i + 1}')
+            if flag_pause.exists() and trial_number < (self.task_params.NTRIALS - 1):
+                log.info(f'Pausing session inbetween trials {trial_number} and {trial_number + 1}')
                 while flag_pause.exists() and not flag_stop.exists():
                     time.sleep(1)
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
@@ -218,12 +307,11 @@ class ChoiceWorldSession(
 
             # save trial and update log
             self.trial_completed(self.bpod.session.current_trial.export())
-            self.ambient_sensor_table.loc[i] = self.bpod.get_ambient_sensor_reading()
             self.show_trial_log()
 
             # handle stop event
             if flag_stop.exists():
-                log.info('Stopping session after trial %d', i)
+                log.info('Stopping session after trial %d', trial_number)
                 flag_stop.unlink()
                 break
 
@@ -298,9 +386,9 @@ class ChoiceWorldSession(
             if ~np.isnan(sma.state_timer_matrix[i]):
                 out_state = states_indices[sma.state_timer_matrix[i]]
                 edges.append(f'{letter}{states_letters[out_state]}')
-            for input in sma.input_matrix[i]:
-                if input[0] == 0:
-                    edges.append(f'{letter}{states_letters[states_indices[input[1]]]}')
+            for inputs in sma.input_matrix[i]:
+                if inputs[0] == 0:
+                    edges.append(f'{letter}{states_letters[states_indices[inputs[1]]]}')
         dot.edges(edges)
         if output_file is not None:
             try:
@@ -316,30 +404,13 @@ class ChoiceWorldSession(
         # we define the trial number here for subclasses that may need it
         sma = self._instantiate_state_machine(trial_number=i)
 
-        if i == 0:  # First trial exception start camera
-            session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
-            log.info('First trial initializing, will move to next trial only if:')
-            log.info('1. camera is detected')
-            log.info(f'2. {session_delay_start} sec have elapsed')
-            sma.add_state(
-                state_name='trial_start',
-                state_timer=0,
-                state_change_conditions={'Port1In': 'delay_initiation'},
-                output_actions=[('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # start camera
-            sma.add_state(
-                state_name='delay_initiation',
-                state_timer=session_delay_start,
-                output_actions=[],
-                state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            )
-        else:
-            sma.add_state(
-                state_name='trial_start',
-                state_timer=0,  # ~100µs hardware irreducible delay
-                state_change_conditions={'Tup': 'reset_rotary_encoder'},
-                output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
-            )  # stop all sounds
+        # Signal trial start and stop all sounds
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
+        )
 
         # Reset the rotary encoder by sending the following opcodes via the modules serial interface
         # - 'Z' (ASCII 90): Set current rotary encoder position to zero
@@ -527,6 +598,13 @@ class ChoiceWorldSession(
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
         self.save_trial_data_to_json(bpod_data)
+
+        # save ambient data
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            self.ambient_sensor_table.iloc[self.trial_num] = (sensor_reading := self.bpod.get_ambient_sensor_reading())
+            with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
+                binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
+
         # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
         Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
@@ -589,10 +667,10 @@ class ChoiceWorldSession(
 
         # log info dict
         log.log(log_level, f'Outcome of Trial #{trial_info.trial_num}:')
-        max_key_length = max(len(key) for key in info_dict)
+        key_format = '- {}: '
+        n_justify = max(len(key) for key in info_dict) + len(key_format.format(''))
         for key, value in info_dict.items():
-            spaces = (max_key_length - len(key)) * ' '
-            log.log(log_level, f'- {key}: {spaces}{str(value)}')
+            log.log(log_level, key_format.format(key).ljust(n_justify) + str(value))
 
     @property
     def iti_reward(self):
@@ -661,24 +739,16 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
 
-        if i == 0:  # First trial exception start camera
-            log.info('Waiting for camera pulses...')
-            sma.add_state(
-                state_name='iti',
-                state_timer=3600,
-                state_change_conditions={'Port1In': 'stim_on'},
-                output_actions=[self.bpod.actions.bonsai_hide_stim, ('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # start camera
-        else:
-            # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
-            # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
-            # the offset of this state is trial start!
-            sma.add_state(
-                state_name='iti',
-                state_timer=1,  # Stim off for 1 sec
-                state_change_conditions={'Tup': 'stim_on'},
-                output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
-            )
+        # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
+        # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
+        # the offset of this state is trial start!
+        sma.add_state(
+            state_name='iti',
+            state_timer=1,  # Stim off for 1 sec
+            state_change_conditions={'Tup': 'stim_on'},
+            output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
+        )
+
         # This stim_on state is considered the actual trial start
         sma.add_state(
             state_name='stim_on',
@@ -736,6 +806,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
+    plot_subprocess: subprocess.Popen | None = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -744,12 +815,23 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     def _run(self):
         # starts online plotting
         if self.interactive:
-            subprocess.Popen(
-                ['view_session', str(self.paths['DATA_FILE_PATH']), str(self.paths['SETTINGS_FILE_PATH'])],
+            log.info('Starting subprocess: online plots')
+            self.plot_subprocess = subprocess.Popen(
+                ['view_session', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.STDOUT,
             )
         super()._run()
+
+    def __del__(self):
+        if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
+            log.info('Terminating subprocess: online plots')
+            self.plot_subprocess.terminate()
+            try:
+                self.plot_subprocess.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                log.warning('Process did not terminate within 5 seconds - killing it.')
+                self.plot_subprocess.kill()
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict
@@ -758,7 +840,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             'Response Time': f'{trial_info.response_time:.2f} s',
             'Trial Correct': trial_info.trial_correct,
             'N Trials Correct': self.session_info.NTRIALS_CORRECT,
-            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT,
+            'N Trials Error': self.trial_num - self.session_info.NTRIALS_CORRECT + 1,
         }
 
         # update info dict with extra_info dict
@@ -768,50 +850,64 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # call parent method
         super().show_trial_log(extra_info=info_dict, log_level=log_level)
 
-    def trial_completed(self, bpod_data):
+    def trial_completed(self, bpod_data: dict) -> None:
         """
-        The purpose of this method is to
+        Update the trials table with information about the behaviour coming from the bpod.
 
-        - update the trials table with information about the behaviour coming from the bpod
-          Constraints on the state machine data:
+        Constraints on the state machine data:
+
         - mandatory states: ['correct', 'error', 'no_go', 'reward']
         - optional states : ['omit_correct', 'omit_error', 'omit_no_go']
 
-        :param bpod_data:
-        :return:
+        Parameters
+        ----------
+        bpod_data : dict
+            The Bpod data as returned by pybpod
+
+        Raises
+        ------
+        AssertionError
+            If the position is zero or if the number of detected outcomes is not exactly one.
         """
-        # get the response time from the behaviour data
-        response_time = bpod_data['States timestamps']['closed_loop'][0][1] - bpod_data['States timestamps']['stim_on'][0][0]
+        # Get the response time from the behaviour data.
+        # It is defined as the time passing between the start of `stim_on` and the end of `closed_loop`.
+        state_times = bpod_data['States timestamps']
+        response_time = state_times['closed_loop'][0][1] - state_times['stim_on'][0][0]
         self.trials_table.at[self.trial_num, 'response_time'] = response_time
-        # get the trial outcome
-        state_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
-        raw_outcome = {sn: ~np.isnan(bpod_data['States timestamps'].get(sn, [[np.nan]])[0][0]) for sn in state_names}
+
         try:
-            outcome = next(k for k in raw_outcome if raw_outcome[k])
-            # Update response buffer -1 for left, 0 for nogo, and 1 for rightward
+            # Get the stimulus position
             position = self.trials_table.at[self.trial_num, 'position']
-            self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
-            if 'correct' in outcome:
-                self.session_info.NTRIALS_CORRECT += 1
-                self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
-            elif 'error' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
-            elif 'no_go' in outcome:
-                self.trials_table.at[self.trial_num, 'response_side'] = 0
-            super().trial_completed(bpod_data)
-            # here we throw potential errors after having written the trial to disk
-            assert np.sum(list(raw_outcome.values())) == 1
-            assert position != 0, 'the position value should be either 35 or -35'
-        except StopIteration as e:
-            log.error(f'No outcome detected for trial {self.trial_num}.')
-            log.error(f'raw_outcome: {raw_outcome}')
-            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
-            raise e
+            assert position != 0, 'the stimulus position should not be 0'
+
+            # Get the trial's outcome, i.e., the states that have a matching name and a valid time-stamp
+            # Assert that we have exactly one outcome
+            outcome_names = ['correct', 'error', 'no_go', 'omit_correct', 'omit_error', 'omit_no_go']
+            outcomes = [name for name, times in state_times.items() if name in outcome_names and ~np.isnan(times[0][0])]
+            if (n_outcomes := len(outcomes)) != 1:
+                trial_states = 'Trial states: ' + ', '.join(k for k, v in state_times.items() if ~np.isnan(v[0][0]))
+                assert n_outcomes != 0, f'No outcome detected for trial {self.trial_num}.\n{trial_states}'
+                assert n_outcomes == 1, f'{n_outcomes} outcomes detected for trial {self.trial_num}.\n{trial_states}'
+            outcome = outcomes[0]
+
         except AssertionError as e:
-            log.error(f'Assertion Error in trial {self.trial_num}.')
-            log.error(f'raw_outcome: {raw_outcome}')
-            log.error('State names: ' + ', '.join(bpod_data['States timestamps'].keys()))
+            # write bpod_data to disk, log exception then raise
+            self.save_trial_data_to_json(bpod_data, validate=False)
+            for line in re_split(r'\n', e.args[0]):
+                log.error(line)
             raise e
+
+        # record the trial's outcome in the trials_table
+        self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
+        if 'correct' in outcome:
+            self.session_info.NTRIALS_CORRECT += 1
+            self.trials_table.at[self.trial_num, 'response_side'] = -np.sign(position)
+        elif 'error' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = np.sign(position)
+        elif 'no_go' in outcome:
+            self.trials_table.at[self.trial_num, 'response_side'] = 0
+
+        super().trial_completed(bpod_data)
 
 
 class BiasedChoiceWorldTrialData(ActiveChoiceWorldTrialData):

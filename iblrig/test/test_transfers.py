@@ -1,14 +1,14 @@
 import copy
+import logging
 import random
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
 import numpy as np
 import pandas as pd
-import pandera
 from packaging import version
 
 import ibllib
@@ -18,10 +18,13 @@ import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
+from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
+
+logger = logging.getLogger(__name__)
 
 
 def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
@@ -45,8 +48,7 @@ def _create_behavior_session(ntrials=None, hard_crash=False, kwargs=None):
         with open(Path(__file__).parent.joinpath('fixtures', 'task_data_short.jsonable')) as fid:
             lines = fid.readlines()
         with open(Path(session.paths.DATA_FILE_PATH), 'w') as fid:
-            for _ in range(ntrials):
-                fid.write(random.choice(lines))
+            fid.writelines(random.choice(lines) for _ in range(ntrials))
         if not hard_crash:
             session.session_info['NTRIALS'] = ntrials
             session.session_info['SESSION_END_TIME'] = session.session_info['SESSION_START_TIME']
@@ -60,12 +62,8 @@ class TestIntegrationTransferExperimentsBase(unittest.TestCase):
     """this base class copier testing"""
 
     def setUp(self):
-        self.iblrig_settings = iblrig.path_helper.load_pydantic_yaml(
-            iblrig.path_helper.RigSettings, 'iblrig_settings_template.yaml'
-        )
-        self.hardware_settings = iblrig.path_helper.load_pydantic_yaml(
-            iblrig.path_helper.HardwareSettings, 'hardware_settings_template.yaml'
-        )
+        self.iblrig_settings = load_pydantic_yaml(iblrig.path_helper.RigSettings, 'iblrig_settings_template.yaml')
+        self.hardware_settings = load_pydantic_yaml(iblrig.path_helper.HardwareSettings, 'hardware_settings_template.yaml')
         self.td = tempfile.TemporaryDirectory()
         self.session_kwargs = copy.deepcopy(TASK_KWARGS)
         self.iblrig_settings.update(
@@ -90,12 +88,15 @@ class TestIntegrationTransferExperimentsBase(unittest.TestCase):
 class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperimentsBase):
     """for testing the photometry"""
 
-    def create_fake_data(self):
-        datestr = datetime.now().strftime('%Y-%m-%d')
-        timestr = datetime.now().strftime('T%H%M%S')
-        folder_neurophotometrics = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
-        folder_neurophotometrics.mkdir(exist_ok=True, parents=True)
+    def create_fake_data(self, start_time: datetime | None = None) -> Path:
+        if start_time is None:
+            start_time = datetime.now()
+        datestr = start_time.strftime('%Y-%m-%d')
+        timestr = start_time.strftime('T%H%M%S')
+        neurophotometrics_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
+        neurophotometrics_folder.mkdir(exist_ok=True, parents=True)
 
+        # creating fake digital_inputs.csv
         cols_dtypes = dict(
             ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
         )
@@ -104,60 +105,63 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        schema_digital_inputs = pandera.DataFrameSchema(
-            columns=dict(
-                ChannelName=pandera.Column(str, coerce=True),
-                Channel=pandera.Column(pandera.Int8, coerce=True),
-                AlwaysTrue=pandera.Column(bool, coerce=True),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-            )
-        )
-        digital_inputs_df = schema_digital_inputs.validate(digital_inputs_df)
-        digital_inputs_df.to_csv(folder_neurophotometrics / 'digital_inputs.csv', index=False, header=False)
+        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
+        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
 
-        # raw
-        schema_raw_data = pandera.DataFrameSchema(
-            columns=dict(
-                FrameCounter=pandera.Column(pandera.Int64),
-                SystemTimestamp=pandera.Column(pandera.Float64),
-                LedState=pandera.Column(pandera.Int16, coerce=True),
-                ComputerTimestamp=pandera.Column(pandera.Float64),
-                Region00=pandera.Column(pandera.Float64),  # hard coding regions here
-                Region01=pandera.Column(pandera.Float64),
-            )
-        )
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
             LedState='int16',
             ComputerTimestamp='float64',
-            Region00='float64',
-            Region01='float64',
+            Region1G='float64',
+            Region2G='float64',
         )
 
+        # creating fake photometry data file
         cols = list(cols_dtypes.keys())
         raw_photometry_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = schema_raw_data.validate(raw_photometry_df)
-        raw_photometry_df.to_csv(folder_neurophotometrics / 'raw_photometry.csv', index=False)
+        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
+        (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
+        raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
+
+        logger.info('Created fake photometry data in %s', neurophotometrics_folder)
+        return neurophotometrics_folder
 
     def test_copier(self):
         session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
-        self.create_fake_data()
+        timestamp_session = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
 
-        # the workaround to find the settings.yaml
-        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-            mocker.side_effect = self.side_effect
-            # the actual code to test
+        # create several fake photometry datasets
+        # this is to assure that the correct dataset is picked by the copier
+        timestamp_neurophotometrics = timestamp_session + timedelta(minutes=-5)
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-20))
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-10))
+        local_photometry_path = self.create_fake_data(timestamp_neurophotometrics)  # this is the relevant one
+        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=10))
+
+        # copy data
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
             iblrig.neurophotometrics.init_neurophotometrics_subject(
-                session_stub=session.paths['SESSION_FOLDER'],
-                rois=['Region00', 'Region01'],
+                subject='test_subject',
+                rois=['Region1G', 'Region2G'],
                 locations=['VTA', 'SNc'],
+                sync_channel=0,
+                sync_mode='bpod',
             )
-            iblrig.neurophotometrics.copy_photometry_subject(session.paths['SESSION_FOLDER'])
+            (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(copier.state, CopyState.COMPLETE)
+
+        # check that the correct data was copied
+        remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
+        data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
+        data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
@@ -173,8 +177,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         for hard_crash in [False, True]:
             session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-                mocker.side_effect = self.side_effect
+            with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
                 iblrig.commands.transfer_data(
                     local_path=session.iblrig_settings['iblrig_local_data_path'],
                     remote_path=session.iblrig_settings['iblrig_remote_data_path'],
@@ -188,8 +191,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
         session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
-        with mock.patch('iblrig.path_helper._load_settings_yaml') as mocker:
-            mocker.side_effect = self.side_effect
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
             iblrig.commands.transfer_data(tag='behavior')
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(sc.state, 3)

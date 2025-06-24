@@ -5,7 +5,6 @@ from pydantic import NonNegativeFloat
 
 import iblrig.misc
 from iblrig.base_choice_world import BiasedChoiceWorldSession, BiasedChoiceWorldTrialData
-from iblrig.hardware import SOFTCODE
 from pybpodapi.protocol import StateMachine
 
 REWARD_AMOUNTS_UL = (1, 3)
@@ -54,30 +53,12 @@ class Session(BiasedChoiceWorldSession):
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
 
-        if i == 0:  # First trial exception start camera
-            session_delay_start = self.task_params.get('SESSION_DELAY_START', 0)
-            log.info('First trial initializing, will move to next trial only if:')
-            log.info('1. camera is detected')
-            log.info(f'2. {session_delay_start} sec have elapsed')
-            sma.add_state(
-                state_name='trial_start',
-                state_timer=0,
-                state_change_conditions={'Port1In': 'delay_initiation'},
-                output_actions=[('SoftCode', SOFTCODE.TRIGGER_CAMERA), ('BNC1', 255)],
-            )  # start camera
-            sma.add_state(
-                state_name='delay_initiation',
-                state_timer=session_delay_start,
-                output_actions=[],
-                state_change_conditions={'Tup': 'reset_rotary_encoder'},
-            )
-        else:
-            sma.add_state(
-                state_name='trial_start',
-                state_timer=0,  # ~100µs hardware irreducible delay
-                state_change_conditions={'Tup': 'reset_rotary_encoder'},
-                output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
-            )  # stop all sounds
+        sma.add_state(
+            state_name='trial_start',
+            state_timer=0,  # ~100µs hardware irreducible delay
+            state_change_conditions={'Tup': 'reset_rotary_encoder'},
+            output_actions=[self.bpod.actions.stop_sound, ('BNC1', 255)],
+        )
 
         sma.add_state(
             state_name='reset_rotary_encoder',

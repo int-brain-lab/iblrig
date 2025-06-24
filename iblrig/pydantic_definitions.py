@@ -39,13 +39,13 @@ class BunchModel(BaseModel, abc.MutableMapping):
         return len(self.__dict__)
 
     def __iter__(self):
-        return iter(self.model_fields.keys())
+        return iter(self.__class__.model_fields.keys())
 
     def items(self):
         return [(key, getattr(self, key)) for key in self.keys()]
 
     def keys(self):
-        return self.model_fields.keys()
+        return self.__class__.model_fields.keys()
 
     def values(self):
         return (getattr(self, key) for key in self.keys())
@@ -166,8 +166,9 @@ class HardwareSettingsCamera(BunchModel):
 
 class HardwareSettingsNeurophotometrics(BunchModel):
     DEVICE_MODEL: Literal['NP3002'] = 'NP3002'
-    BONSAI_EXECUTABLE: ExistingFilePath = Path(Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe'))
+    BONSAI_EXECUTABLE: ExistingFilePath = Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe')
     BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
+    BONSAI_WORKFLOW_DAQ: Path = Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai')
     COM_NEUROPHOTOMETRY: str | None = None
 
 

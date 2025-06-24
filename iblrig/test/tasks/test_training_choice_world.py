@@ -15,18 +15,17 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 
     def test_task(self):
         """
-        This test loops over training phases described in the mice training protocol and runs full
-        sessions with each training phase parameter
-        https://docs.google.com/document/d/1RA6wgbWfxD2kGlpNxt0n3HVcW4TEIx8e-YO7k_W1pHs/edit
-        It then checks for:
+        This test loops over training phases described in the mice training
+        protocol and runs full sessions with each training phase parameter
+        (cf. Appendix 2). It then checks for:
+
         -   the contrast set
         -   the presence or absence of debias trials
         -   the relative frequency of each contrast
-        :return:
         """
         trial_fixtures = get_fixtures()
         adaptive_reward = 1.9
-        nt = 800
+        n_trials = 800
         for training_phase in np.arange(6):
             with self.subTest(training_phase=training_phase):
                 np.random.seed(12354)
@@ -35,9 +34,9 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                 )
                 assert task.training_phase == training_phase
                 task.create_session()
-                for _i in np.arange(nt):
+                for i_trial in range(n_trials):
                     task.next_trial()
-                    # pc = task.psychometric_curve()
+                    assert task.trial_num == i_trial
                     trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
                     task.trial_completed(trial_fixtures[trial_type])
                     if trial_type == 'correct':
@@ -73,9 +72,9 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                         contrast_set = np.array([0.5, 1.0])
 
                 np.testing.assert_equal(contrasts['contrast'].values, contrast_set)
-                normalized_counts = np.abs(nt / contrast_set.size - contrasts['count'].values)
+                normalized_counts = np.abs(n_trials / contrast_set.size - contrasts['count'].values)
                 normalized_counts = normalized_counts * probas / np.sum(probas)
-                normalized_counts = normalized_counts / (nt / contrast_set.size)
+                normalized_counts = normalized_counts / (n_trials / contrast_set.size)
                 np.testing.assert_array_less(normalized_counts, 0.33)
                 if debias:
                     for index, row in trials_table.iterrows():
@@ -95,72 +94,96 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
+    @classmethod
+    def setUpClass(cls):
+        cls.trial_fixtures = get_fixtures()
+        cls.adaptive_reward = 1.9
+
     def setUp(self):
         self.get_task_kwargs()
-        self.task = TrainingChoiceWorldSession(**self.task_kwargs)
+        self.task = TrainingChoiceWorldSession(**self.task_kwargs, adaptive_reward=self.adaptive_reward)
+        self.task.create_session()
 
     def test_task(self):
-        trial_fixtures = get_fixtures()
-        adaptive_reward = 1.9
-        n_trials = 800
-
-        task = TrainingChoiceWorldSession(**self.task_kwargs, adaptive_reward=adaptive_reward)
-        task.create_session()
-        np.random.seed(12354)
-        for i_trial in range(n_trials):
-            original_phase = task.training_phase
-            task.next_trial()
-            performance = choiceworld.compute_performance(task.trials_table)
-            did_progress = task.training_phase > original_phase
-            assert task.trial_num == i_trial
-            # pc = task.psychometric_curve()
+        for i_trial in range(1300):
+            original_phase = self.task.training_phase
+            self.task.next_trial()
+            assert self.task.trial_num == i_trial
+            performance = choiceworld.compute_performance(self.task.trials_table)
+            did_progress = self.task.training_phase > original_phase
             trial_type = np.random.choice(['correct', 'error', 'no_go'], p=[0.9, 0.05, 0.05])
-            task.trial_completed(trial_fixtures[trial_type])
-            if trial_type == 'correct':
-                self.assertTrue(task.trials_table['trial_correct'][task.trial_num])
-                self.assertEqual(task.trials_table['reward_amount'][task.trial_num], adaptive_reward)
-            else:
-                assert not task.trials_table['trial_correct'][task.trial_num]
-            if i_trial == 245:
-                task.show_trial_log()
-            assert not np.isnan(task.reward_time)
+            self.task.trial_completed(self.trial_fixtures[trial_type])
 
-            # assert correct progression through training phases
-            should_graduate = False
+            # assert outcome and reward
+            if trial_type == 'correct':
+                self.assertTrue(self.task.trials_table['trial_correct'][self.task.trial_num])
+                self.assertEqual(self.task.trials_table['reward_amount'][self.task.trial_num], self.adaptive_reward)
+            else:
+                self.assertFalse(self.task.trials_table['trial_correct'][self.task.trial_num])
+            assert not np.isnan(self.task.reward_time)
             if i_trial == 0:
                 continue
+
+            # assert correct progression through training phases
+            should_progress = False
             if original_phase == 0:
-                assert task.trials_table.iloc[i_trial - 1].contrast in [0.5, 1.0]
-                passing = performance[np.abs(performance.index) >= 0.5]['last_50_perf'] > 0.8
-                should_graduate = np.all(passing) and (passing.size == 4)
+                # The proportion of correct responses over the previous 50 trials is recorded.
+                # To progress, the mouse must perform at or above 80% correct for each contrast on both sides.
+                last_50_perf = performance[abs(performance.index) >= 0.5]['last_50_perf']
+                should_progress = all(last_50_perf > 0.8) and (last_50_perf.size == 4)
             elif original_phase == 1:
-                assert task.trials_table.iloc[i_trial - 1].contrast in [0.25, 0.5, 1.0]
-                passing = performance[np.abs(performance.index) == 0.25]['last_50_perf'] > 0.8
-                should_graduate = np.all(passing) and (passing.size == 2)
-            elif original_phase >= 2:
-                if (task.trials_table.loc[: i_trial - 1].training_phase == original_phase).sum() >= 200:
-                    should_graduate = True
-            assert did_progress == should_graduate
-        # we should have progressed beyond phase 3
-        np.testing.assert_equal(task.trials_table['training_phase'].value_counts().sort_index().values, [181, 475, 144])
+                # To progress the mouse must perform at or above 80% on each of the 25% contrast last 50 trials.
+                last_50_perf = performance[abs(performance.index) == 0.25]['last_50_perf'] > 0.8
+                should_progress = all(last_50_perf) and (last_50_perf.size == 2)
+            elif 5 > original_phase >= 2:
+                # To progress the mouse must perform 200 trials, regardless of performance.
+                if (self.task.trials_table.loc[: i_trial - 1].training_phase == original_phase).sum() >= 200:
+                    should_progress = True
+            assert did_progress == should_progress
+        self.assertEqual(self.task.trials_table.at[i_trial, 'training_phase'], 5)
+
+        # assert contrast levels
+        for phase in range(6):
+            actual_contrasts = np.sort(self.task.trials_table[self.task.trials_table.training_phase == phase].contrast.unique())
+            match phase:
+                case 0:  # Only 50% and 100% contrasts are presented.
+                    expected_contrasts = [0.5, 1.0]
+                case 1:  # The 25% contrast is added to the set
+                    expected_contrasts = [0.25, 0.5, 1.0]
+                case 2:  # The 12.5% contrast is added to the set.
+                    expected_contrasts = [0.125, 0.25, 0.5, 1.0]
+                case 3:  # The 6.25% contrast is added to the set.
+                    expected_contrasts = [0.0625, 0.125, 0.25, 0.5, 1.0]
+                case 4:  # The 0% contrast is added to the set.
+                    expected_contrasts = [0, 0.0625, 0.125, 0.25, 0.5, 1.0]
+                case _:  # The 50% contrast is removed from the set.
+                    expected_contrasts = [0, 0.0625, 0.125, 0.25, 1.0]
+            np.testing.assert_equal(actual_contrasts, expected_contrasts)
 
     def test_acquisition_description(self):
-        task = TrainingChoiceWorldSession(**self.task_kwargs)
-        ad = task.experiment_description
-        ed = {
-            'sync': {'bpod': {'collection': 'raw_task_data_00', 'extension': '.jsonable', 'acquisition_software': 'pybpod'}},
-            'devices': {
-                'cameras': {'left': {'collection': 'raw_video_data', 'sync_label': 'audio'}},
-                'microphone': {'microphone': {'collection': 'raw_task_data_00', 'sync_label': 'audio'}},
+        actual_description = self.task.experiment_description
+        expected_description = {
+            'sync': {
+                'bpod': {
+                    'collection': 'raw_task_data_00',
+                    'extension': '.jsonable',
+                    'acquisition_software': 'pybpod',
+                },
             },
-            'tasks': [
-                {
-                    '_iblrig_tasks_trainingChoiceWorld': {
+            'devices': {
+                'cameras': {
+                    'left': {
+                        'collection': 'raw_video_data',
+                        'sync_label': 'audio',
+                    },
+                },
+                'microphone': {
+                    'microphone': {
                         'collection': 'raw_task_data_00',
-                        # 'extractors': ['TrialRegisterRaw', 'ChoiceWorldTrials', 'TrainingStatus'],
-                    }
-                }
-            ],
+                        'sync_label': 'audio',
+                    },
+                },
+            },
+            'tasks': [{'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00'}}],
         }
-        for key, ed_value in ed.items():
-            assert ad[key] == ed_value, f'Failed on {key}'
+        self.assertEqual(actual_description, actual_description | expected_description)

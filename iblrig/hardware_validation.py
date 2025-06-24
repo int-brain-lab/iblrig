@@ -382,8 +382,9 @@ class ValidatorBpod(ValidatorSerial):
 
         # run a simple state machine to collect events on digital inputs
         try:
+            sampling_period = 0.2
             sma = StateMachine(bpod)
-            sma.add_state(sma.add_state('state', 0.2, {'Tup': 'exit'}))
+            sma.add_state(sma.add_state('state', sampling_period, {'Tup': 'exit'}))
             bpod.send_state_machine(sma)
             bpod.run_state_machine(sma)
             bpod_data = bpod.session.current_trial.export()
@@ -394,18 +395,23 @@ class ValidatorBpod(ValidatorSerial):
 
         # check for (un)expected input events
         for event_name, timestamps in sorted(events.items()):
-            if event_name.endswith('Out') or event_name.endswith('Low') or event_name == 'Tup':
+            if event_name.endswith(('Out', 'Low')) or event_name == 'Tup':
                 continue
-            rate = np.mean(1 / np.diff(timestamps))
+            diff_timestamps = np.diff(timestamps)
+            n_timestamps = len(timestamps)
+            if len(diff_timestamps) > 0 and np.allclose(diff_timestamps, np.mean(diff_timestamps), atol=0.0005):
+                rate = np.mean(1 / diff_timestamps)
+            else:
+                rate = 1 / (sampling_period / n_timestamps)
             port = re.sub('(In)|(High)', '', event_name)
             port = re.sub('Port', 'Behavior Port ', port)
             port = re.sub('BNC', 'BNC Input ', port)
             if event_name in ['Port1In']:
-                yield Result(Status.INFO, f"Expected input events on Bpod's '{port}' at ~{rate:0.0f} Hz")
+                yield Result(Status.INFO, f"{n_timestamps} expected input events (~{rate:0.0f} Hz) on Bpod's '{port}'")
             else:
                 yield Result(
                     Status.FAIL,
-                    f"Unexpected input events on Bpod's '{port}' at ~{rate:0.0f} Hz",
+                    f"{n_timestamps} unexpected input events (~{rate:0.0f} Hz) on Bpod's '{port}'",
                     solution=f"Check wiring / device connected on '{port}'.",
                 )
 
@@ -463,7 +469,8 @@ class ValidatorCamera(Validator):
             return False
 
         sma = StateMachine(bpod)
-        sma.add_state(state_name='collect', state_timer=0.2, state_change_conditions={'Tup': 'exit'})
+        sampling_period = 0.2
+        sma.add_state(state_name='collect', state_timer=sampling_period, state_change_conditions={'Tup': 'exit'})
         bpod.send_state_machine(sma)
         bpod.run_state_machine(sma)
         triggers = [i.host_timestamp for i in bpod.session.current_trial.events_occurrences if i.content == 'Port1In']
@@ -477,13 +484,36 @@ class ValidatorCamera(Validator):
             return False
         else:
             yield Result(Status.PASS, "Detected camera TTL on Bpod's behavior port #1")
-            trigger_rate = np.mean(1 / np.diff(triggers))
+            diff_timestamps = np.diff(triggers)
+            if len(diff_timestamps) > 0 and np.allclose(diff_timestamps, np.mean(diff_timestamps), atol=0.0005):
+                trigger_rate = np.mean(1 / diff_timestamps)
+            else:
+                trigger_rate = 1 / (sampling_period / len(triggers))
             target_rate = 30
             if isclose(trigger_rate, target_rate, rel_tol=0.1):
                 yield Result(Status.PASS, f'Measured TTL rate: {trigger_rate:.1f} Hz')
             else:
                 yield Result(Status.WARN, f'Measured TTL rate: {trigger_rate:.1f} Hz (expecting {target_rate} Hz)')
         return True
+
+
+class ValidatorDataFolders(Validator):
+    _name = 'Data Folders'
+
+    def _run(self):
+        if self.iblrig_settings.iblrig_remote_data_path in (None, False):
+            yield Result(Status.SKIP, 'iblrig_remote_data_path has not been set in hardware_settings.yaml - skipping validation')
+            return False
+        elif self.iblrig_settings.iblrig_remote_data_path.exists():
+            yield Result(Status.PASS, f"Remote data path '{self.iblrig_settings.iblrig_remote_data_path}' is accessible")
+            return True
+        else:
+            yield Result(
+                Status.FAIL,
+                f"Cannot access remote data path '{self.iblrig_settings.iblrig_remote_data_path}'",
+                solution='Check network connection and mapping of network drive',
+            )
+            return False
 
 
 class ValidatorAlyx(Validator):
@@ -813,7 +843,7 @@ class ValidatorSound(ValidatorSerial):
 
 
 def get_all_validators() -> list[type[Validator]]:
-    return [cast(type[Validator], x) for x in get_inheritors(Validator) if not isabstract(x)]
+    return [cast('type[Validator]', x) for x in get_inheritors(Validator) if not isabstract(x)]
 
 
 def run_all_validators(
@@ -858,7 +888,7 @@ def run_all_validators_cli():
             print(f'{color}  {symbol}  {result.message}{ANSI.END}')
             if result.solution is not None and len(result.solution) > 0:
                 print(f'{color}     Suggestion: {result.solution}{ANSI.END}')
-        print('')
+        print()
     if fail > 0:
         print(ANSI.RED + ANSI.BOLD + f'{fail} validation{"s" if fail > 1 else ""} failed.')
     if warn > 0:
