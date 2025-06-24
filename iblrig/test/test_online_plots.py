@@ -20,8 +20,8 @@ class TestOnlinePlots:
         temp_dir = TemporaryDirectory()
         task_dir = Path(temp_dir.name).joinpath('raw_task_data_00')
         task_dir.mkdir()
-        with zipfile.ZipFile(zip_jsonable, 'r') as zip:
-            task_file = Path(zip.extract('online_plots.jsonable', path=task_dir))
+        with zipfile.ZipFile(zip_jsonable, 'r') as z:
+            task_file = Path(z.extract('online_plots.jsonable', path=task_dir))
             task_file_renamed = Path(task_dir).joinpath('_iblrig_taskData.raw.jsonable')
             task_file.rename(task_file_renamed)
 
