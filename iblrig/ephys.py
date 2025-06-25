@@ -131,7 +131,7 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
     communicator, _ = await get_server_communicator(service_uri, 'neuropixel')
     copier.initialize_experiment(nprobes=n_probes)
 
-    one = OneAlyx(silent=True, mode='local')
+    one = OneAlyx(silent=True)
     exp_ref = one.path2ref(session_path)
     tasks = set()
 
