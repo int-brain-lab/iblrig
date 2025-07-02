@@ -18,6 +18,7 @@ Changelog
 * fixed: online plots included timeout trials
 * fixed: online plots showed wrong reward amount for adaptive rewards
 * fixed: online plots did not take into account initial delay
+* fixed: data tab did not show correct session copy status 
 
 -------------------------------
 

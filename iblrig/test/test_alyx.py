@@ -3,21 +3,17 @@
 import datetime
 import random
 import string
+import tempfile
 import unittest
 from copy import deepcopy
+from functools import partial
 from unittest.mock import patch
 
+from ibllib.tests import TEST_DB
 from iblrig import __version__
-from iblrig.test.base import BaseTestCases
+from iblrig.test.base import BaseTestCases, get_file
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from one.api import ONE
-
-TEST_DB = {
-    'base_url': 'https://test.alyx.internationalbrainlab.org',
-    'username': 'test_user',
-    'password': 'TapetesBloc18',
-    'silent': True,
-}
 
 
 class TestRegisterSession(BaseTestCases.CommonTestTask):
@@ -28,7 +24,9 @@ class TestRegisterSession(BaseTestCases.CommonTestTask):
         self.get_task_kwargs()
 
         # Create a random new subject
-        self.one = ONE(**TEST_DB, cache_rest=None)
+        self.one_temp_dir = tempfile.TemporaryDirectory()
+        with patch('one.params.iopar.getfile', new=partial(get_file, self.one_temp_dir.name)):
+            self.one = ONE(**TEST_DB, cache_rest=None)
         self.subject = ''.join(random.choices(string.ascii_letters, k=10))
         self.lab = 'mainenlab'
         self.one.alyx.rest('subjects', 'create', data={'lab': self.lab, 'nickname': self.subject})

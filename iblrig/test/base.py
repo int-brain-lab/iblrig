@@ -7,7 +7,9 @@ import random
 import string
 import tempfile
 import unittest
+from functools import partial
 from pathlib import Path
+from unittest.mock import patch
 
 import ibllib.pipes.dynamic_pipeline
 import iblrig
@@ -154,7 +156,9 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         have completed
         :return:
         """
-        cls.one = ONE(**TEST_DB, mode='remote')
+        cls.one_temp_dir = tempfile.TemporaryDirectory()
+        with patch('one.params.iopar.getfile', new=partial(get_file, cls.one_temp_dir.name)):
+            cls.one = ONE(**TEST_DB, mode='remote')
         cls.task_kwargs, cls._tmp = TaskArgsMixin.create_task_kwargs()
         cls.task_kwargs.update({'subject': 'iblrig_unit_test_' + ''.join(random.choices(string.ascii_letters, k=8))})
         if cls.create_subject:
@@ -167,3 +171,26 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         cls.cleanup_handlers()
         if cls._tmp:
             cls._tmp.cleanup()
+        cls.one_temp_dir.cleanup()
+
+
+def get_file(root: str, str_id: str) -> str:
+    """A stub function for `iblutil.io.params.getfile`.
+
+    Allows the injection of a different param dir.
+
+    Parameters
+    ----------
+    root : str, pathlib.Path
+        The root directory of the new parameters
+    str_id : str
+        The parameter string identifier
+
+    Returns
+    -------
+    str
+        The parameter file path
+    """
+    parts = ['.' + p if not p.startswith('.') else p for p in Path(str_id).parts]
+    pfile = Path(root, *parts).as_posix()
+    return pfile

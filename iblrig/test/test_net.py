@@ -3,6 +3,7 @@
 import asyncio
 import tempfile
 import unittest
+from functools import partial
 from pathlib import Path
 from unittest.mock import ANY, Mock, patch
 
@@ -10,8 +11,12 @@ import yaml
 
 import iblrig.net
 import one.params
+from ibllib.tests import TEST_DB
+from iblrig.test.base import get_file
 from iblutil.io import net
 from one.api import One, OneAlyx
+
+TEST_ALYX_URL = TEST_DB['base_url']
 
 
 class TestRemoteDeviceFunctions(unittest.IsolatedAsyncioTestCase):
@@ -107,11 +112,15 @@ class TestTokenCallbacks(unittest.TestCase):
 
     def test_update_alyx_token(self):
         """Test update_alyx_token function."""
-        one = OneAlyx(base_url='https://localhost:8000', silent=True, mode='local')
+        one_temp_dir = tempfile.TemporaryDirectory()
+        with patch('one.params.iopar.getfile', new=partial(get_file, one_temp_dir.name)):
+            one = OneAlyx(base_url='https://localhost:8000', silent=True, mode='local')
         one.alyx.logout()
         assert not one.alyx.is_logged_in
-        token = ('https://test.alyx.internationalbrainlab.org', {'j.doe': {'token': '123tok3n321'}})
-        success = iblrig.net.update_alyx_token(token, ('localhost', 11001), one=one)
+        token = (TEST_ALYX_URL, {'j.doe': {'token': '123tok3n321'}})
+
+        with patch('one.params.iopar.getfile', new=partial(get_file, one_temp_dir.name)):
+            success = iblrig.net.update_alyx_token(token, ('localhost', 11001), one=one)
         self.assertTrue(success)
         self.assertTrue(one.alyx.is_logged_in)
         self.assertEqual('j.doe', one.alyx.user)
@@ -121,11 +130,14 @@ class TestTokenCallbacks(unittest.TestCase):
 
         one.alyx.logout()
         assert not one.alyx.is_logged_in
-        success = iblrig.net.update_alyx_token(token, ('localhost', 11001))
+        with patch('one.params.iopar.getfile', new=partial(get_file, one_temp_dir.name)):
+            success = iblrig.net.update_alyx_token(token, ('localhost', 11001))
         self.assertFalse(success)
-        success = iblrig.net.update_alyx_token(token, ('localhost', 11001), one=One())
+        with patch('one.params.iopar.getfile', new=partial(get_file, one_temp_dir.name)):
+            success = iblrig.net.update_alyx_token(token, ('localhost', 11001), one=One())
         self.assertFalse(success)
-        success = iblrig.net.update_alyx_token(('https://test.alyx.internationalbrainlab.org', {}), ('localhost', 11001), one=one)
+        with patch('one.params.iopar.getfile', new=partial(get_file, one_temp_dir.name)):
+            success = iblrig.net.update_alyx_token((TEST_ALYX_URL, {}), ('localhost', 11001), one=one)
         self.assertFalse(success)
 
     @patch('iblutil.io.params.getfile')
@@ -136,7 +148,8 @@ class TestTokenCallbacks(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             getfile.side_effect = Path(tmp).joinpath
-            is_new_user = iblrig.net.install_alyx_token(base_url, token)
+            with tempfile.TemporaryDirectory() as temp_dir, patch('one.params.CACHE_DIR_DEFAULT', temp_dir):
+                is_new_user = iblrig.net.install_alyx_token(base_url, token)
             self.assertTrue(is_new_user)
             par = one.params.get(base_url)
             self.assertEqual(token, par.TOKEN)

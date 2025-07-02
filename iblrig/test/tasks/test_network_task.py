@@ -1,11 +1,14 @@
 """Tests for NetworkSession class."""
 
+import tempfile
 import unittest
 from datetime import date
+from functools import partial
 from unittest.mock import ANY, call, patch
 
+from ibllib.tests import TEST_DB
 from iblrig.base_tasks import EmptySession, NetworkSession
-from iblrig.test.base import TaskArgsMixin
+from iblrig.test.base import TaskArgsMixin, get_file
 from iblutil.io import net
 from one.api import ONE
 
@@ -23,7 +26,9 @@ class TestNetworkTask(unittest.TestCase, TaskArgsMixin):
     def setUp(self):
         self.clients = {'ZcanImage': 'udp://192.168.0.1', 'cameras': 'udp://192.168.0.2'}
         self.get_task_kwargs()
-        self.task_kwargs['one'] = ONE(silent=True, mode='local')
+        self.one_temp_dir = tempfile.TemporaryDirectory()
+        with patch('one.params.iopar.getfile', new=partial(get_file, self.one_temp_dir.name)):
+            self.task_kwargs['one'] = ONE(**TEST_DB)
         self.task_kwargs['remote_rigs'] = self.clients
         self.task_kwargs['hardware_settings']['MAIN_SYNC'] = False
         # An experiment reference for our remote sync to return

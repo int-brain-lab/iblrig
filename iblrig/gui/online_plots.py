@@ -111,7 +111,9 @@ class PlotWidget(pg.PlotWidget):
 class SingleBarChartWidget(PlotWidget):
     """A bar chart with a single column for use with PyQtGraph"""
 
-    def __init__(self, *args, barColor: Any = 0.4, textColor: Any = 1.0, textFormat: str = '{:g}', **kwargs):
+    _font = QFont('Helvetica', 18, QFont.Bold)
+
+    def __init__(self, *args, barColor: Any = 0.2, textColor: Any = 1.0, textFormat: str = '{:g}', **kwargs):
         super().__init__(*args, **kwargs)
 
         y_axis = self.plotItem.getAxis('left')
@@ -124,10 +126,12 @@ class SingleBarChartWidget(PlotWidget):
         x_axis.setStyle(tickLength=0, tickAlpha=0)
         self.plotItem.setXRange(min=0, max=2, padding=0)
 
+        bar_color = pg.mkColor(barColor)
         gradient = QLinearGradient(0, 0, 0, 1)
         gradient.setCoordinateMode(QGradient.ObjectBoundingMode)
-        gradient.setColorAt(0.9, pg.mkColor(barColor))
-        gradient.setColorAt(0, pg.mkColor((255, 255, 255, 0)))
+        gradient.setColorAt(0.9, bar_color)
+        bar_color.setAlpha(128)
+        gradient.setColorAt(0, bar_color)
         self._barGraphItem = pg.BarGraphItem(x=1, width=2, height=0, pen=None, brush=QBrush(gradient))
         self.addItem(self._barGraphItem)
 
@@ -135,6 +139,7 @@ class SingleBarChartWidget(PlotWidget):
         self._textItem = pg.TextItem('0', anchor=(0.5, 0), color=textColor)
         self._textItem.setX(1)
         self._textItem.setY(50)
+        self._textItem.setFont(self._font)
         self.addItem(self._textItem)
 
     @Slot(float)
@@ -142,6 +147,22 @@ class SingleBarChartWidget(PlotWidget):
         self._barGraphItem.setOpts(height=value)
         self._textItem.setText(self._textFormat.format(value))
         self._textItem.setY(value)
+        self._setTextAnchor()
+
+    def resizeEvent(self, ev):
+        super().resizeEvent(ev)
+        if hasattr(self, '_textItem'):
+            self._setTextAnchor()
+
+    def _setTextAnchor(self):
+        """Anchor _textItem above or below upper edge of _barGraphItem, depending on available space"""
+        bar_height_px = self.height() / self.viewRect().height() * self._barGraphItem.boundingRect().height()
+        if self._textItem.boundingRect().height() > bar_height_px:
+            self._textItem.setAnchor((0.5, 1))
+            self._textItem.setColor('black')
+        else:
+            self._textItem.setAnchor((0.5, 0))
+            self._textItem.setColor('white')
 
 
 class FunctionWidget(PlotWidget):
@@ -172,11 +193,11 @@ class FunctionWidget(PlotWidget):
             self.addItem(self.fillItems[p])
             self.plotDataItems[p] = self.plotItem.plot(connect='all')
             self.plotDataItems[p].setData(x=[1, np.NAN], y=[np.NAN, 1])
-            self.plotDataItems[p].setPen(pg.mkPen(color=line_color, width=2))
+            self.plotDataItems[p].setPen(pg.mkPen(color=line_color, width=4))
             self.plotDataItems[p].setSymbol('o')
             self.plotDataItems[p].setSymbolPen(line_color)
-            self.plotDataItems[p].setSymbolBrush(line_color)
-            self.plotDataItems[p].setSymbolSize(5)
+            self.plotDataItems[p].setSymbolBrush(line_color.lighter(150))
+            self.plotDataItems[p].setSymbolSize(4)
             legend.addItem(self.plotDataItems[p], f'p = {p:0.1f}')
 
 
@@ -334,7 +355,6 @@ class ResponseTimeDelegate(QStyledItemDelegate):
     color_error = QColor(219, 67, 37)
     color_nogo = QColor(192, 192, 192)
     color_text = QColor('white')
-    color_gradient0 = QColor(255, 255, 255, 0)
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
@@ -350,10 +370,7 @@ class ResponseTimeDelegate(QStyledItemDelegate):
         norm_value = np.log(value / self.norm_min) / self.norm_div
         filled_rect = QRectF(option.rect)
         filled_rect.setWidth(filled_rect.width() * norm_value)
-        gradient = QLinearGradient(filled_rect.topLeft(), filled_rect.topRight())
-        gradient.setColorAt(0, self.color_gradient0)
-        gradient.setColorAt(1, self.color_correct if outcome == 'correct' else self.color_error)
-        painter.setBrush(gradient)
+        painter.setBrush(self.color_correct if outcome == 'correct' else self.color_error)
         painter.setPen(Qt.NoPen)
         painter.drawRect(filled_rect)
 
@@ -767,7 +784,7 @@ class OnlinePlotsModel(QObject):
             color = Colors.GREEN
 
         # the subject reaction time over the last 20 trials is more than 5 times greater than the overall reaction time
-        elif (self._trial_data['response_time'].median() * 5) < self._trial_data['response_time'][20:].median():
+        elif (self._trial_data['response_time'].median() * 5) < self._trial_data['response_time'][-20:].median():
             color = Colors.YELLOW
 
         # 90 > time > 45 min and subject's avg response time hasn't significantly decreased
@@ -916,7 +933,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.performanceWidget, 1, 2, 1, 1)
 
         # reward chart
-        self.rewardWidget = SingleBarChartWidget(parent=self, barColor=(128, 128, 255), textFormat='{:0.1f} μl')
+        self.rewardWidget = SingleBarChartWidget(parent=self, barColor=(64, 64, 255), textFormat='{:0.1f} μl')
         self.rewardWidget.plotItem.setTitle('Reward Amount', color='k')
         self.rewardWidget.plotItem.getAxis('left').setLabel('Total Reward Volume (μl)')
         self.rewardWidget.plotItem.setYRange(0, 1050, padding=0)
@@ -947,11 +964,7 @@ class OnlinePlotsView(QMainWindow):
     @Slot(str)
     def setTitleBackground(self, color: str):
         """Set the background color of the title area to a gradient of the specified color."""
-        self.titleFrame.setStyleSheet(
-            f'QFrame {{ background-color: qlineargradient(x1: 0, x2: 1, '
-            f'stop: 0 {color}, stop: 0.2 transparent, stop: 0.8 transparent, stop: 1 {color}); }}\n'
-            f'QLabel {{ background-color: transparent; }}'
-        )
+        self.titleFrame.setStyleSheet(f'QFrame {{ background-color: {color}; }}')
 
     def mouseOverBarChart(self, event):
         statusbar = self.window().statusBar()
@@ -1014,11 +1027,13 @@ class OnlinePlotsView(QMainWindow):
         event.accept()
 
     def moveEvent(self, event):
-        self.settings.setValue('pos', self.pos())
+        if hasattr(self, 'settings'):
+            self.settings.setValue('pos', self.pos())
         super().moveEvent(event)
 
     def resizeEvent(self, event):
-        self.settings.setValue('size', self.size())
+        if hasattr(self, 'settings'):
+            self.settings.setValue('size', self.size())
         super().resizeEvent(event)
 
 

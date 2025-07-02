@@ -76,6 +76,7 @@ class TabData(QWidget, Ui_TabData):
         self.setupUi(self)
         self.settings = QSettings()
         self.localSubjectsPath = get_local_and_remote_paths().local_subjects_folder
+        self.remoteSubjectsPath = get_local_and_remote_paths().remote_subjects_folder
 
         # create empty DataFrameTableModel
         data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
@@ -148,6 +149,7 @@ class DataWorker(QThread):
     def __init__(self, parent: TabData):
         super().__init__(parent)
         self.localSubjectsPath = parent.localSubjectsPath
+        self.remoteSubjectsPath = parent.remoteSubjectsPath
         self.tableModel = parent.tableModel
         self.tableModel.modelReset.connect(self.lazyLoadStatus)
 
@@ -179,7 +181,7 @@ class DataWorker(QThread):
     def lazyLoadStatus(self):
         col_status = self.tableModel.dataFrame.columns.get_loc('Copy Status')
         for row, row_data in self.tableModel.dataFrame.iterrows():
-            state = SessionCopier(row_data['Directory']).state
+            state = SessionCopier(row_data['Directory'], remote_subjects_folder=self.remoteSubjectsPath).state
             state = COPY_STATE_STRINGS.get(state, 'N/A')
             index = self.tableModel.index(row, col_status)
             self.update.emit(index, state)

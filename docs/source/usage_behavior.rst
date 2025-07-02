@@ -54,6 +54,93 @@ Supplementary Controls
    We are happy to discuss possible changes with you!
 
 
+Online Plots
+~~~~~~~~~~~~
+
+Tasks that inherit from :class:`~iblrig.base_choice_world.ActiveChoiceWorldSession` will display interactive online plots during an ongoing session.
+These plots are designed to provide real-time feedback during the task, allowing users to visualize key metrics and performance indicators as the experiment progresses.
+
+.. figure:: img/online_plot.gif
+   :alt: Interactive Online Plots
+   :align: center
+
+   Interactive Online Plots
+
+Subpanels
+^^^^^^^^^
+
+The online plots consist of the following subpanels:
+
+Trials History:
+   Indicates the stimulus position and contrast level, debiasing trials, reaction times and the outcome of each trial.
+   Hovering the mouse over a trial row will display these details in the window's status bar.
+   Selecting a trial row by mouse or keyboard (up/down arrows) will show the respective trial's Bpod states and events (see below).
+
+Psychometric Function:
+   Displays the psychometric function based on the current session's data.
+   The x-axis represents the stimulus contrast, while the y-axis shows the proportion of correct responses.
+
+Chronometric Function:
+   Shows the chronometric function, which plots reaction times against stimulus contrast.
+   This function helps to analyze how reaction times vary with different levels of stimulus difficulty.
+   The x-axis represents the stimulus contrast, while the y-axis shows the reaction time (log scale).
+
+Performance:
+   The performance plot displays the percentage of correct responses across all trials.
+
+Reward Amount:
+   The amount of water delivered during the session.
+
+Bpod States and Events:
+   Indicates a trial's Bpod states (background colors) and input channels (line plots).
+   Hover the mouse over a state to see the respective state name in the window's status bar.
+   Use the mouse wheel to zoom in and out, and click and drag to pan the plot.
+
+
+Engagement Criteria / Color-Code
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From 45 minutes after the start of a session, the online plots will indicate engagement criteria by changing the background color of the header area.
+The color-coding is as follows:
+
+Red:
+   The subject has been training for more than 90 minutes.
+
+Green:
+   The subject failed to complete more than 400 trials in the first 45 mins.
+
+Yellow:
+   The subject's reaction time over the last 20 trials is more than 5 times greater than the overall reaction time.
+
+
+Displaying Past Sessions
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Online plots of past sessions can be opened with the ``view_session`` command:
+
+*  by indicating the path to a session's ``raw_task_data`` folder:
+
+   .. code:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      view_session C:\iblrigv8_data\Subjects\KS022\2019-12-10\001\raw_task_data
+
+*  by indicating the path to a session's ``_iblrig_taskData.raw.jsonable`` file:
+
+   .. code:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      view_session C:\iblrigv8_data\Subjects\KS022\2019-12-10\001\raw_task_data\_iblrig_taskData.raw.jsonable
+
+*  by indicating a session's `EID <https://int-brain-lab.github.io/ONE/one_reference.html#experiment-ids>`_ once it's uploaded to Alyx:
+
+   .. code:: powershell
+
+      C:\iblrigv8\venv\scripts\Activate.ps1
+      view_session 3150c751-d5ae-43de-a908-56481b16f821
+
+
+
 Interfacing with Alyx
 ---------------------
 

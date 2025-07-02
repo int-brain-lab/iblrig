@@ -341,7 +341,7 @@ class ChoiceWorldSession(
 
         self.bpod.session.trials = [MockTrial()]
         self.bpod.send_state_machine = lambda k: None
-        self.bpod.run_state_machine = lambda k: time.sleep(1.2)
+        self.bpod.run_state_machine = lambda k: None
 
         daction = ('dummy', 'action')
         self.sound = Bunch({'GO_TONE': daction, 'WHITE_NOISE': daction})

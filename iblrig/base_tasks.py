@@ -1314,7 +1314,7 @@ class NetworkSession(BaseSession):
             An instance of ONE.
         """
         if super().one is None:
-            self._one = OneAlyx(silent=True, mode='local')
+            self._one = OneAlyx(silent=True)
         return self._one
 
     def connect(self, remote_rigs):
