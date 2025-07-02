@@ -164,6 +164,7 @@ class SingleBarChartWidget(PlotWidget):
             self._textItem.setAnchor((0.5, 0))
             self._textItem.setColor('white')
 
+
 class FunctionWidget(PlotWidget):
     """A widget for psychometric and chronometric functions"""
 
