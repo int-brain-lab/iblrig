@@ -40,9 +40,9 @@ jobs:
           cache: true
       - name: Install requirements
         run: pdm sync -G project-extraction -dG test -dG ci
-      - name: Install audio library (Ubuntu only)
+      - name: Install libportaudio2 and libxkbcommon-x11-0
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2
+        run: sudo apt-get install -y libportaudio2 libxkbcommon-x11-0
       - name: Set environment variable
         run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
       - name: iblrig unit tests
