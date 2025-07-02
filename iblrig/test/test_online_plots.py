@@ -1,4 +1,3 @@
-import os
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
