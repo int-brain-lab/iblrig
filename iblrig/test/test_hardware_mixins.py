@@ -86,7 +86,8 @@ class TestBonsaiMixins(unittest.TestCase):
         session.stop_mixin_bonsai_recordings()
 
     @mock.patch('iblrig.base_tasks.call_bonsai')
-    def test_bonsai_visual_stimulus_mixin(self, _):
+    @mock.patch('iblrig.base_tasks.time.sleep')
+    def test_bonsai_visual_stimulus_mixin(self, *_):
         session = mixin_factory(BonsaiVisualStimulusMixin)
         session.start_mixin_bonsai_visual_stimulus()
         session.init_mixin_bonsai_visual_stimulus()

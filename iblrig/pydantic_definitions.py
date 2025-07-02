@@ -166,8 +166,9 @@ class HardwareSettingsCamera(BunchModel):
 
 class HardwareSettingsNeurophotometrics(BunchModel):
     DEVICE_MODEL: Literal['NP3002'] = 'NP3002'
-    BONSAI_EXECUTABLE: ExistingFilePath = Path(Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe'))
+    BONSAI_EXECUTABLE: ExistingFilePath = Path.home().joinpath('AppData', 'Local', 'Bonsai', 'Bonsai.exe')
     BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
+    BONSAI_WORKFLOW_DAQ: Path = Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai')
     COM_NEUROPHOTOMETRY: str | None = None
 
 

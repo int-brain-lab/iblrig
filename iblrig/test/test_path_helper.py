@@ -10,10 +10,13 @@ from pathlib import Path
 import yaml
 
 import ibllib.tests.fixtures.utils as fu
+from ibllib.tests import TEST_DB
 from iblrig import path_helper
 from iblrig.constants import BASE_DIR
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+
+TEST_ALYX_URL = TEST_DB['base_url']
 
 
 class TestPathHelper(unittest.TestCase):
@@ -36,7 +39,7 @@ class TestPathHelper(unittest.TestCase):
             iblrig_local_data_path=tmp / 'iblrigv8_data',
             iblrig_remote_data_path=None,
             ALYX_USER='foo',
-            ALYX_URL='https://test.alyx.internationalbrainlab.org',
+            ALYX_URL=TEST_ALYX_URL,
             ALYX_LAB='barlab',
         )
         iblrig_settings = RigSettings.model_validate(settings)

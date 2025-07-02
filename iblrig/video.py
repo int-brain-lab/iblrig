@@ -374,7 +374,7 @@ class CameraSession(EmptySession):
             An instance of ONE.
         """
         if super().one is None:
-            self._one = OneAlyx(silent=True, mode='local')
+            self._one = OneAlyx(silent=True)
         return self._one
 
     def _setup_loggers(self, level='INFO', file=None, **_):

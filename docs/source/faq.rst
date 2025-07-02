@@ -33,6 +33,9 @@ bug reports and feature-requests via GitHub <https://github.com/int-brain-lab/ib
 Sound Issues
 ============
 
+General
+^^^^^^^
+
 * Double-check all wiring for loose connections.
 
 * Is ``hardware_settings.yaml`` set up correctly? Valid options for sound ``OUTPUT`` are:
@@ -44,6 +47,21 @@ Sound Issues
 
   Make sure that this value matches the actual soundcard used on your rig.
   Note that ``sysdefault`` is only used in test scenarios and should not be used during actual experiments.
+
+Distorted Sound with Bpod HiFi Module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are experiencing distorted sound output with the Bpod HiFi module, the issue may be related to the module's internal SD card.
+This is a known problem that occurred with a batch of Bpod HiFi modules ordered in 2024.
+
+To verify the issue, swap the HiFi module with a known working unit.
+Remember to update the ``COM_SOUND`` setting in ``hardware_settings.yaml`` to reflect the new module's COM port.
+If the sound output from the swapped module works as expected, it is likely that the original HiFi module's SD card is corrupted.
+
+To replace the SD card, open the module's enclosure.
+The SD card is located between the BNC connector and the Ethernet connector and can be removed using a pair of tweezers.
+Replace it with a new SD card (16 GB, Class 10), ensuring it is oriented correctly (with the notch facing the BNC connector).
+Finally, reassemble the enclosure and test the sound output.
 
 
 Screen Issues
