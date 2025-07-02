@@ -41,6 +41,7 @@ jobs:
       - name: Install requirements
         run: pdm sync -G project-extraction -dG test -dG ci
       - uses: awalsh128/cache-apt-pkgs-action@latest
+        if: matrix.os == 'ubuntu-latest'
         with:
           packages: libportaudio2
           version: 1.0
