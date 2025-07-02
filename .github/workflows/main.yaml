@@ -47,7 +47,7 @@ jobs:
       - name: Set environment variable
         run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
       - name: iblrig unit tests
-        run: pdm run pytest
+        run: pdm run pytest -vv
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
