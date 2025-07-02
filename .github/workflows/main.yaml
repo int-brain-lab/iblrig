@@ -42,7 +42,7 @@ jobs:
         run: pdm sync -G project-extraction -dG test -dG ci
       - name: Install libportaudio2
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2
+        run: sudo apt-get install -y libportaudio2 pytest-xvfb
       - uses: tlambert03/setup-qt-libs@v1
       - name: Set environment variable
         run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
