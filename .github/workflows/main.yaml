@@ -40,15 +40,14 @@ jobs:
           cache: true
       - name: Install requirements
         run: pdm sync -G project-extraction -dG test -dG ci
-      - name: Install libportaudio2
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2
-#      - uses: tlambert03/setup-qt-libs@v1
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          version: '5.*.*'
-          cache: true
+          packages: libportaudio2
+          version: 1.0
+#      - name: Install libportaudio2
+#        if: matrix.os == 'ubuntu-latest'
+#        run: sudo apt-get install -y libportaudio2
+#      - uses: tlambert03/setup-qt-libs@v1
       - name: Set environment variable
         run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
       - name: iblrig unit tests
