@@ -45,6 +45,7 @@ jobs:
         with:
           packages: libportaudio2
           version: 1.0
+          execute_install_scripts: true
 #      - name: Install libportaudio2
 #        if: matrix.os == 'ubuntu-latest'
 #        run: sudo apt-get install -y libportaudio2
