@@ -693,6 +693,9 @@ class BaseSession(ABC):
         if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = get_number('Subject weight (g): ', float, lambda x: x > 0)
 
+        # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
+        self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
+
         signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
 
@@ -1562,7 +1565,7 @@ class SpontaneousSession(BaseSession):
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
                 break
-
+            self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
 class SpontaneousBpodSession(SpontaneousSession, BpodMixin):
     """
