@@ -207,11 +207,11 @@ class BaseSession(ABC):
         return getattr(self, 'paths', {}).get('SESSION_FOLDER', None)
 
     def _stdin_callback(self, message: bytes):
-        log.critical(message)
         match message:
             case b'stop':
                 self.stop()
             case b'pause':
+                log.warning('Pausing session at the end of the current trial')
                 self._pause_flag = True
             case b'resume':
                 self._pause_flag = False
