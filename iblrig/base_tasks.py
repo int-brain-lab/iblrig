@@ -1567,6 +1567,7 @@ class SpontaneousSession(BaseSession):
                 break
             self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
+
 class SpontaneousBpodSession(SpontaneousSession, BpodMixin):
     """
     Like SpontaneousSession but with the BpodMixin added in.
