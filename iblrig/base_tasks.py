@@ -1565,7 +1565,9 @@ class SpontaneousSession(BaseSession):
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
                 break
-            self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
+            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+                break
 
 
 class SpontaneousBpodSession(SpontaneousSession, BpodMixin):
