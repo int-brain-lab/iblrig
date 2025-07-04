@@ -218,8 +218,6 @@ class BaseSession(ABC):
 
     def stop(self, *_):
         """Gracefully stop the session."""
-        if (session_path := self.session_path) is None:
-            return
         log.warning('Stopping session at the end of the current trial')
         self._stop_flag = True
 
