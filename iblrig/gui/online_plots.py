@@ -740,7 +740,7 @@ class OnlinePlotsModel(QObject):
             self._seconds_elapsed = bpod_data[-1]['Trial end timestamp'] - self._t0
             self._n_trials_engaged += self._seconds_elapsed <= EngagedCriterion.SECONDS
         self._n_trials_correct += trial_data['trial_correct'].sum()
-        self.reward_amount += trial_data['trial_correct'].sum()
+        self.reward_amount += trial_data['reward_amount'].sum()
 
         # update psychometrics
         trial_data['signed_contrast'] = np.sign(trial_data['position']) * trial_data['contrast']

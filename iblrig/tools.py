@@ -438,7 +438,7 @@ def get_number(
 class InputThread(threading.Thread):
     """A thread that reads input from stdin and invokes a callback function for each line read."""
 
-    def __init__(self, callback: Callable[bytes, None]) -> None:
+    def __init__(self, callback: Callable[[bytes], None]) -> None:
         """
         Initialize the InputThread.
 
