@@ -16,7 +16,6 @@ import signal
 import sys
 import time
 import traceback
-import types
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
@@ -39,7 +38,7 @@ from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEnco
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
-from iblrig.tools import call_bonsai, get_number
+from iblrig.tools import InputThread, call_bonsai, get_number
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblrig.valve import Valve
 from iblutil.io import binary
@@ -162,7 +161,10 @@ class BaseSession(ABC):
             file_iblrig_settings=file_iblrig_settings,
             iblrig_settings=iblrig_settings,
         )
+
         self.wizard = wizard
+        if self.wizard:
+            self._input_thread = InputThread(self._stdin_callback)
 
         # Load the tasks settings, from the task folder or override with the input argument
         self.task_params = self.read_task_parameter_files(task_parameter_file)
@@ -197,20 +199,32 @@ class BaseSession(ABC):
             extractors=self.extractor_tasks,
         )
 
-    def _sigint_handler(self, signum: int, frame: types.FrameType | None):
-        """
-        Handle SIGINT (Ctrl+C) signal to gracefully stop the session.
+    @property
+    def session_path(self) -> Path | None:
+        return getattr(self, 'paths', {}).get('SESSION_FOLDER', None)
 
-        Parameters
-        ----------
-        signum : int
-            The signal number.
-        frame : signal.FrameType or None
-            The current stack frame.
-        """
-        log.critical('SIGINT received, will exit at the end of the trial')
-        if getattr(self, 'paths', False) and (session_folder := self.paths.get('SESSION_FOLDER', None)):
-            session_folder.joinpath('.stop').touch()
+    def _stdin_callback(self, message: bytes):
+        match message:
+            case b'stop':
+                self._stop()
+            case b'pause':
+                self._pause()
+            case b'restume':
+                self._resume()
+
+    def _pause(self):
+        if (session_path := self.session_path) is not None:
+            session_path.joinpath('.pause').touch()
+
+    def _resume(self):
+        if (session_path := self.session_path) is not None:
+            session_path.joinpath('.pause').unlink(missing_ok=True)
+
+    def _stop(self, *_):
+        """Gracefully stop the session."""
+        log.critical('will exit at the end of the trial')
+        if (session_path := self.session_path) is not None:
+            session_path.joinpath('.stop').touch()
 
     def _load_settings(
         self,
@@ -693,7 +707,7 @@ class BaseSession(ABC):
         # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
         self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
-        signal.signal(signal.SIGINT, self._sigint_handler)
+        signal.signal(signal.SIGINT, self._stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
 
         # post task instructions

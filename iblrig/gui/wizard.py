@@ -1076,8 +1076,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.tabLog.narrativeUpdated.disconnect()
                 self.tabLog.plainTextEditNarrative.setEnabled(False)
 
-                if self.model.session_folder and self.model.session_folder.exists():
-                    self.model.session_folder.joinpath('.stop').touch()
+                self.running_task_process.write(b'stop\n')
 
     @pyqtSlot(bytes)
     def _on_updated_narrative(self, narrative: bytes):
