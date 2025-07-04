@@ -436,21 +436,16 @@ def get_number(
 
 
 class InputThread(threading.Thread):
-    """
-    A thread that reads input from standard input (stdin) and invokes a callback function with the input data.
+    """A thread that reads input from stdin and invokes a callback function for each line read."""
 
-    Attributes
-    ----------
-        _callback (Callable): A function to be called with the input data.
-    """
-
-    def __init__(self, callback: Callable):
+    def __init__(self, callback: Callable[bytes, None]) -> None:
         """
-        Initializes the InputThread.
+        Initialize the InputThread.
 
-        Args:
-            callback (Callable): A function that will be called with
-                                 each line of input read from stdin.
+        Parameters
+        ----------
+        callback : Callable
+            A function that will be called with each line of input read from stdin.
         """
         super().__init__()
         self.name = 'InputThread'
@@ -458,8 +453,8 @@ class InputThread(threading.Thread):
         self._callback = callback
         self.start()
 
-    def run(self):
+    def run(self) -> None:
         """Continuously reads lines from standard input and passes them to the callback function until thread is terminated."""
         while True:
-            data = sys.stdin.buffer.raw.readline().rstrip()
-            self._callback(data)
+            line = sys.stdin.buffer.raw.readline().rstrip()
+            self._callback(line)
