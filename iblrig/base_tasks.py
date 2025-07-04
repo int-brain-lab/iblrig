@@ -206,23 +206,34 @@ class BaseSession(ABC):
     def _stdin_callback(self, message: bytes):
         match message:
             case b'stop':
-                self._stop()
+                self.stop()
             case b'pause':
-                self._pause()
-            case b'restume':
-                self._resume()
+                self.pause(True)
+            case b'resume':
+                self.pause(False)
 
-    def _pause(self):
+    @property
+    def paused(self) -> bool:
+        return self._pause_flag
+
+    def pause(self, value: bool = True) -> None:
+        if not value ^ self._pause_flag:
+            return
+        log.info('Pausing session' if value else 'Resuming session')
+            self._pause_flag = True
         if (session_path := self.session_path) is not None:
             session_path.joinpath('.pause').touch()
 
-    def _resume(self):
+    def resume(self):
+        if self._pause_flag:
+            log.info('Resuming session')
+            self._pause_flag = False
         if (session_path := self.session_path) is not None:
             session_path.joinpath('.pause').unlink(missing_ok=True)
 
-    def _stop(self, *_):
+    def stop(self, *_):
         """Gracefully stop the session."""
-        log.critical('will exit at the end of the trial')
+        log.info('Stopping session at the end of the current trial')
         if (session_path := self.session_path) is not None:
             session_path.joinpath('.stop').touch()
 
@@ -707,7 +718,7 @@ class BaseSession(ABC):
         # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
         self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
-        signal.signal(signal.SIGINT, self._stop)
+        signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
 
         # post task instructions
