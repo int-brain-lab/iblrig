@@ -295,14 +295,12 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
 
             # handle pause event
-            flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
-            flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
-            if flag_pause.exists() and trial_number < (self.task_params.NTRIALS - 1):
+            if self._pause_flag and trial_number < (self.task_params.NTRIALS - 1):
                 log.info(f'Pausing session inbetween trials {trial_number} and {trial_number + 1}')
-                while flag_pause.exists() and not flag_stop.exists():
+                while self._pause_flag and not self._stop_flag:
                     time.sleep(1)
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
-                if not flag_stop.exists():
+                if not self._stop_flag:
                     log.info('Resuming session')
 
             # save trial and update log
@@ -310,9 +308,8 @@ class ChoiceWorldSession(
             self.show_trial_log()
 
             # handle stop event
-            if flag_stop.exists():
+            if self._stop_flag:
                 log.info('Stopping session after trial %d', trial_number)
-                flag_stop.unlink()
                 break
 
     def mock(self, file_jsonable_fixture=None):

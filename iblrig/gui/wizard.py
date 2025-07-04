@@ -957,16 +957,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiComboSubject.setModel(QtCore.QStringListModel(result))
 
     def pause(self):
+        if self.running_task_process is None:
+            return
         self.uiPushPause.setStyleSheet('QPushButton {background-color: yellow;}' if self.uiPushPause.isChecked() else '')
         match self.uiPushPause.isChecked():
             case True:
                 print('Pausing after current trial ...')
-                if self.model.session_folder.exists():
-                    self.model.session_folder.joinpath('.pause').touch()
+                self._message_task_process(b'pause')
             case False:
                 print('Resuming ...')
-                if self.model.session_folder.joinpath('.pause').exists():
-                    self.model.session_folder.joinpath('.pause').unlink()
+                self._message_task_process(b'resume')
 
     def start_stop(self):
         match self.uiPushStart.text():
@@ -1015,7 +1015,6 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 task = EmptySession(subject=self.model.subject, append=self.append_session, interactive=False)
                 logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
-                self.model.session_folder.joinpath('.stop').unlink(missing_ok=True)
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # disable Bpod status LED
@@ -1076,7 +1075,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.tabLog.narrativeUpdated.disconnect()
                 self.tabLog.plainTextEditNarrative.setEnabled(False)
 
-                self.running_task_process.write(b'stop\n')
+                self._message_task_process(b'stop')
+
+    def _message_task_process(self, message: bytes):
+        if self.running_task_process is not None:
+            self.running_task_process.write(b'\n' + message + b'\n')
 
     @pyqtSlot(bytes)
     def _on_updated_narrative(self, narrative: bytes):

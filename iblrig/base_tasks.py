@@ -85,6 +85,9 @@ class BaseSession(ABC):
 
     TrialDataModel: type[TrialDataModel]
 
+    _stop_flag = False
+    _pause_flag = False
+
     @property
     @abstractmethod
     def protocol_name(self) -> str: ...
@@ -204,16 +207,21 @@ class BaseSession(ABC):
         return getattr(self, 'paths', {}).get('SESSION_FOLDER', None)
 
     def _stdin_callback(self, message: bytes):
+        log.critical(message)
         match message:
             case b'stop':
                 self.stop()
+            case b'pause':
+                self._pause_flag = True
+            case b'resume':
+                self._pause_flag = False
 
     def stop(self, *_):
         """Gracefully stop the session."""
         if (session_path := self.session_path) is None:
             return
-        log.info('Stopping session at the end of the current trial')
-        session_path.joinpath('.stop').touch()
+        log.warning('Stopping session at the end of the current trial')
+        self._stop_flag = True
 
     def _load_settings(
         self,
@@ -692,9 +700,6 @@ class BaseSession(ABC):
         # get subject weight
         if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = get_number('Subject weight (g): ', float, lambda x: x > 0)
-
-        # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
-        self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
 
         signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
@@ -1565,8 +1570,7 @@ class SpontaneousSession(BaseSession):
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
                 break
-            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
-                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+            if self._stop_flag:
                 break
 
 
