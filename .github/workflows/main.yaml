@@ -48,7 +48,7 @@ jobs:
           qt: true
           pyvista: false
       - name: iblrig unit tests
-        run: pdm run pytest -vv
+        run: pdm run pytest
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
