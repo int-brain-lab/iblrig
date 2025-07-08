@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.28.1
+------
+* fixed: online plots showed incorrect reward amount
+
 8.28.0
 ------
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
