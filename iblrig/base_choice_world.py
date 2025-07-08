@@ -295,12 +295,12 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
 
             # handle pause event
-            if self._pause_flag and trial_number < (self.task_params.NTRIALS - 1):
+            if self.paused and trial_number < (self.task_params.NTRIALS - 1):
                 log.info(f'Pausing session inbetween trials {trial_number} and {trial_number + 1}')
-                while self._pause_flag and not self._stop_flag:
+                while self.paused and not self.stopped:
                     time.sleep(1)
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
-                if not self._stop_flag:
+                if not self.stopped:
                     log.info('Resuming session')
 
             # save trial and update log
@@ -308,7 +308,7 @@ class ChoiceWorldSession(
             self.show_trial_log()
 
             # handle stop event
-            if self._stop_flag:
+            if self.stopped:
                 log.info('Stopping session after trial %d', trial_number)
                 break
 

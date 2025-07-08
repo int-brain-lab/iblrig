@@ -254,16 +254,13 @@ class _PauseChoiceWorldSession(ChoiceWorldSession):
     def start_hardware(self):
         pass
 
-    def _delete_pause_flag(self):
-        self._pause_flag = False
-
     def run_state_machine(self, _):
         # simulate pause button press by user
         if self.pause_trial is not None and self.pause_trial == self.trial_num:
-            self._pause_flag = True
-            Timer(0.1, self._delete_pause_flag).start()
+            self.pause()
+            Timer(0.1, self.resume).start()
         if self.stop_trial is not None and self.stop_trial == self.trial_num:
-            self._stop_flag = True
+            self.stop()
 
     def mock(self, **kwargs):
         super().mock(**kwargs)

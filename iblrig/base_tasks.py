@@ -212,14 +212,30 @@ class BaseSession(ABC):
                 self.stop()
             case b'pause':
                 log.warning('Pausing session at the end of the current trial')
-                self._pause_flag = True
+                self.pause()
             case b'resume':
-                self._pause_flag = False
+                self.resume()
 
-    def stop(self, *_):
+    def stop(self, *_) -> None:
         """Gracefully stop the session."""
         log.warning('Stopping session at the end of the current trial')
         self._stop_flag = True
+
+    def pause(self) -> None:
+        """Pause the session."""
+        self._pause_flag = True
+
+    def resume(self) -> None:
+        """Resume the session."""
+        self._pause_flag = False
+
+    @property
+    def stopped(self) -> bool:
+        return self._stop_flag
+
+    @property
+    def paused(self) -> bool:
+        return self._pause_flag
 
     def _load_settings(
         self,
@@ -1568,7 +1584,7 @@ class SpontaneousSession(BaseSession):
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
                 break
-            if self._stop_flag:
+            if self.stopped:
                 break
 
 
