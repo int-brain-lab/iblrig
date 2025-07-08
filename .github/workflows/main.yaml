@@ -43,9 +43,11 @@ jobs:
       - name: Install libportaudio2
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2 pytest-xvfb
-      - uses: tlambert03/setup-qt-libs@v1
-      - name: Set environment variable
-        run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
+      - uses: pyvista/setup-headless-display-action@v3
+        with:
+          qt: true
+#      - name: Set environment variable
+#        run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
       - name: iblrig unit tests
         run: pdm run pytest -vv
       - name: coveralls.io
