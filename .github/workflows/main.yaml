@@ -46,8 +46,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@v3
         with:
           qt: true
-#      - name: Set environment variable
-#        run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
+          pyvista: false
       - name: iblrig unit tests
         run: pdm run pytest -vv
       - name: coveralls.io
