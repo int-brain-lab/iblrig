@@ -3,7 +3,7 @@ from PyQt5.QtCore import QThreadPool, pyqtSlot
 from PyQt5.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QHeaderView
 
-from iblrig.gui.tools import Worker
+from iblqt.core import Worker
 from iblrig.gui.ui_validation import Ui_validation
 from iblrig.hardware_validation import Result, Status, Validator, get_all_validators
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings

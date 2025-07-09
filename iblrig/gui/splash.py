@@ -3,9 +3,9 @@ from PyQt5.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QThreadPool, 
 from PyQt5.QtWidgets import QDialog
 from typing_extensions import override
 
+from iblqt.core import Worker
 from iblrig import __version__ as version
 from iblrig.constants import COPYRIGHT_YEAR
-from iblrig.gui.tools import Worker
 from iblrig.gui.ui_splash import Ui_splash
 from iblrig.hardware_validation import Result, get_all_validators
 from iblrig.path_helper import load_pydantic_yaml

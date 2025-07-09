@@ -28,6 +28,7 @@ import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
+from iblqt.core import Worker
 from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR
@@ -37,7 +38,7 @@ from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel, Worker
+from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
