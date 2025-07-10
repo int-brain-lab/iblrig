@@ -9,12 +9,11 @@ from PyQt5.QtCore import (
     QObject,
     Qt,
     QThreadPool,
-    pyqtProperty,
     pyqtSignal,
     pyqtSlot,
 )
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QAction, QLineEdit, QListView, QProgressBar, QPushButton
+from PyQt5.QtWidgets import QAction, QLineEdit, QListView, QProgressBar
 from requests import HTTPError
 
 from iblqt.core import Worker
