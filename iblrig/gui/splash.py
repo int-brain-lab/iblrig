@@ -1,6 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QThreadPool, QTimer
-from PyQt5.QtWidgets import QDialog
+from qtpy import QtCore
+from qtpy.QtCore import QEasingCurve, QPoint, QPropertyAnimation, QThreadPool, QTimer
+from qtpy.QtWidgets import QDialog
 from typing_extensions import override
 
 from iblqt.core import Worker

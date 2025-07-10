@@ -4,16 +4,15 @@ import subprocess
 from pathlib import Path
 from shutil import disk_usage
 
-from PyQt5 import QtGui
-from PyQt5.QtCore import (
+from qtpy.QtCore import (
     QObject,
     Qt,
     QThreadPool,
-    pyqtSignal,
-    pyqtSlot,
+    Signal,
+    Slot,
 )
-from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QAction, QLineEdit, QListView, QProgressBar
+from qtpy.QtGui import QColor, QIcon, QPalette, QStandardItem, QStandardItemModel
+from qtpy.QtWidgets import QAction, QLineEdit, QListView, QProgressBar
 from requests import HTTPError
 
 from iblqt.core import Worker
@@ -101,7 +100,7 @@ class DiskSpaceIndicator(QProgressBar):
         self.setValue(round(self._percent_full))
         if self.critical:
             p = self.palette()
-            p.setColor(QtGui.QPalette.Highlight, QtGui.QColor('red'))
+            p.setColor(QPalette.Highlight, QColor('red'))
             self.setPalette(p)
         self.setStatusTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  available space: {self._gigs_free:.1f} GB')
 
@@ -124,7 +123,7 @@ class RemoteDevicesItemModel(QStandardItemModel):
         self.remote_devices = get_remote_devices(iblrig_settings=iblrig_settings)
         self.update()
 
-    @pyqtSlot()
+    @Slot()
     def update(self):
         self.clear()
         for device_name, device_address in self.remote_devices.items():
@@ -153,20 +152,20 @@ class AlyxObject(QObject):
         Indicates whether a user is currently logged in.
     username : str or None
         The username of the logged-in user, or None if not logged in.
-    statusChanged : pyqtSignal
+    statusChanged : Signal
         Emitted when the login status changes (logged in or out). The signal carries a boolean indicating the new status.
-    loggedIn : pyqtSignal
+    loggedIn : Signal
         Emitted when a user logs in. The signal carries a string representing the username.
-    loggedOut : pyqtSignal
+    loggedOut : Signal
         Emitted when a user logs out. The signal carries a string representing the username.
-    loginFailed : pyqtSignal
+    loginFailed : Signal
         Emitted when a login attempt fails. The signal carries a string representing the username.
     """
 
-    statusChanged = pyqtSignal(bool)
-    loggedIn = pyqtSignal(str)
-    loggedOut = pyqtSignal(str)
-    loginFailed = pyqtSignal(str)
+    statusChanged = Signal(bool)
+    loggedIn = Signal(str)
+    loggedOut = Signal(str)
+    loginFailed = Signal(str)
 
     def __init__(self, *args, alyxUrl: str | None = None, alyxClient: AlyxClient | None = None, **kwargs):
         """
@@ -191,9 +190,9 @@ class AlyxObject(QObject):
         else:
             self.client = alyxClient
 
-    @pyqtSlot(str)
-    @pyqtSlot(str, str)
-    @pyqtSlot(str, str, bool)
+    @Slot(str)
+    @Slot(str, str)
+    @Slot(str, str, bool)
     def logIn(self, username: str, password: str | None = None, cacheToken: bool = False) -> bool:
         """
         Logs in a user with the provided username and password.
@@ -230,7 +229,7 @@ class AlyxObject(QObject):
             self.loggedIn.emit(username)
         return status
 
-    @pyqtSlot()
+    @Slot()
     def logOut(self) -> None:
         """
         Logs out the currently logged-in user.
@@ -294,7 +293,7 @@ class LineEditAlyxUser(QLineEdit):
         self.alyx = alyx
 
         # Use a QAction to indicate the connection status
-        self._checkmarkIcon = QAction(parent=self, icon=QtGui.QIcon(':/images/check'))
+        self._checkmarkIcon = QAction(parent=self, icon=QIcon(':/images/check'))
         self.addAction(self._checkmarkIcon, self.ActionPosition.TrailingPosition)
 
         if self.alyx.client is None:
@@ -305,7 +304,7 @@ class LineEditAlyxUser(QLineEdit):
             self.returnPressed.connect(self.logIn)
             self._onStatusChanged(self.alyx.isLoggedIn)
 
-    @pyqtSlot(bool)
+    @Slot(bool)
     def _onStatusChanged(self, connected: bool):
         """Set some of the widget's properties depending on the current connection-status."""
         self._checkmarkIcon.setVisible(connected)
@@ -313,7 +312,7 @@ class LineEditAlyxUser(QLineEdit):
         self.setText(self.alyx.username or '')
         self.setReadOnly(connected)
 
-    @pyqtSlot()
+    @Slot()
     def logIn(self):
         """Attempt to log in using the line edit's current text."""
         self.alyx.logIn(self.text())

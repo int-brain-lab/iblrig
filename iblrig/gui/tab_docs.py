@@ -1,8 +1,8 @@
 import webbrowser
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtWebEngineWidgets import QWebEnginePage
-from PyQt5.QtWidgets import QWidget
+from qtpy.QtCore import QUrl
+from qtpy.QtWebEngineWidgets import QWebEnginePage
+from qtpy.QtWidgets import QWidget
 from typing_extensions import override
 
 from iblrig.constants import URL_DOC

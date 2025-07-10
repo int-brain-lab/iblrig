@@ -1,7 +1,7 @@
 import webbrowser
 
-from PyQt5.QtCore import QThreadPool
-from PyQt5.QtWidgets import QWidget
+from qtpy.QtCore import QThreadPool
+from qtpy.QtWidgets import QWidget
 
 from iblqt.core import Worker
 from iblrig import __version__ as iblrig_version
