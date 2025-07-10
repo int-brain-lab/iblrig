@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.28.2
+------
+* fixed: ensure that reward amount shown in online plots stays visible at all times
+
 8.28.1
 ------
 * fixed: online plots showed incorrect reward amount
