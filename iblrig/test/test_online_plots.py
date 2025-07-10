@@ -1,4 +1,3 @@
-import os
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,10 +9,6 @@ import iblrig.gui.online_plots as op
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
 
 
-@pytest.mark.skipif(
-    os.getenv('GITHUB_ACTIONS') == 'true' and os.name == 'posix' and os.uname().sysname == 'Linux',
-    reason='Skipping test on GitHub Actions Ubuntu runners',
-)
 class TestOnlinePlots:
     @pytest.fixture
     def task_file(self):
