@@ -43,8 +43,10 @@ jobs:
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
-      - name: Set environment variable
-        run: echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
+      - uses: pyvista/setup-headless-display-action@v3
+        with:
+          qt: true
+          pyvista: false
       - name: iblrig unit tests
         run: pdm run pytest
       - name: coveralls.io

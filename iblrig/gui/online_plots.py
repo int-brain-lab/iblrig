@@ -146,7 +146,7 @@ class SingleBarChartWidget(PlotWidget):
     def setValue(self, value: float):
         self._barGraphItem.setOpts(height=value)
         self._textItem.setText(self._textFormat.format(value))
-        self._textItem.setY(value)
+        self._textItem.setY(min(self.plotItem.viewRange()[1][1], value))
         self._setTextAnchor()
 
     def resizeEvent(self, ev):
