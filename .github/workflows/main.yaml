@@ -40,13 +40,12 @@ jobs:
           activate-environment: true
       - name: Install dependencies
         run: uv sync --no-default-groups --group test --group ci --extra project-extraction
-      - name: Install audio library (Ubuntu only)
+      - name: Install required libraries (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2 libegl1 libxkbcommon-x11-0
-#      - uses: pyvista/setup-headless-display-action@v3
-#        with:
-#          qt: true
-#          pyvista: false
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libportaudio2 libegl1 libxkbcommon-x11-0
+          version: 1.0
       - name: iblrig unit tests
         run: pytest
         env:
