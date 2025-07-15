@@ -58,14 +58,14 @@ import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
 from iblqt.core import Worker
+from iblqt.widgets import RestrictedWebView
 from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
+from iblrig.constants import BASE_DIR, URL_DOC
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
 from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
-from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
 from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel
 from iblrig.gui.ui_login import Ui_login
@@ -335,7 +335,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         # load tabs
         self.tabLog = TabLog(parent=self.tabWidget)
         self.tabData = TabData(parent=self.tabWidget)
-        self.tabDocs = TabDocs(parent=self.tabWidget)
+        self.tabDocs = RestrictedWebView(url=URL_DOC, parent=self.tabWidget)
         self.tabAbout = TabAbout(parent=self.tabWidget)
         self.tabWidget.addTab(self.tabLog, QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QIcon(':/images/sessions'), 'Data')

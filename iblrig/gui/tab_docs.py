@@ -2,32 +2,15 @@ import webbrowser
 
 from qtpy.QtCore import QUrl
 from qtpy.QtWebEngineWidgets import QWebEnginePage
-from qtpy.QtWidgets import QWidget
 from typing_extensions import override
 
+from iblqt.widgets import RestrictedWebView
 from iblrig.constants import URL_DOC
-from iblrig.gui.ui_tab_docs import Ui_TabDocs
 
 
-class TabDocs(QWidget, Ui_TabDocs):
+class TabDocs(RestrictedWebView):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setupUi(self)
-
-        # connect signals to slots
-        self.uiPushWebHome.clicked.connect(lambda: self.webEngineView.load(QUrl(URL_DOC)))
-        self.uiPushWebBack.clicked.connect(lambda: self.webEngineView.back())
-        self.uiPushWebForward.clicked.connect(lambda: self.webEngineView.forward())
-        self.uiPushWebBrowser.clicked.connect(lambda: webbrowser.open(str(self.webEngineView.url().url())))
-        self.webEngineView.urlChanged.connect(self._on_doc_url_changed)
-
-        # initialize webEngineView
-        self.webEngineView.setPage(CustomWebEnginePage(self))
-        self.webEngineView.setUrl(QUrl(URL_DOC))
-
-    def _on_doc_url_changed(self):
-        self.uiPushWebBack.setEnabled(len(self.webEngineView.history().backItems(1)) > 0)
-        self.uiPushWebForward.setEnabled(len(self.webEngineView.history().forwardItems(1)) > 0)
+        super().__init__(*args)
 
 
 class CustomWebEnginePage(QWebEnginePage):
