@@ -42,13 +42,17 @@ jobs:
         run: uv sync --no-default-groups --group test --group ci --extra project-extraction
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2 libegl1
+        run: sudo apt-get install -y libportaudio2 libegl1 libxkbcommon-x11-0
 #      - uses: pyvista/setup-headless-display-action@v3
 #        with:
 #          qt: true
 #          pyvista: false
       - name: iblrig unit tests
         run: pytest
+        env:
+          QT_QPA_PLATFORM=offscreen
+          QT_QUICK_BACKEND=software
+          QT_OPENGL=software
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
