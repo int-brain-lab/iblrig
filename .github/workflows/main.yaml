@@ -50,9 +50,9 @@ jobs:
       - name: iblrig unit tests
         run: pytest
         env:
-          QT_QPA_PLATFORM=offscreen
-          QT_QUICK_BACKEND=software
-          QT_OPENGL=software
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software
+          QT_OPENGL: software
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
