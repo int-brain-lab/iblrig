@@ -46,6 +46,7 @@ jobs:
         with:
           packages: libportaudio2 libegl1 libxkbcommon-x11-0
           version: 1.0
+          execute_install_scripts: true
       - name: iblrig unit tests
         run: pytest
         env:
