@@ -18,17 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          cache: true
-          python-version-file: pyproject.toml
-      - name: Install requirements
-        run: pdm sync -dG doc
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install dependencies
+        run: uv sync --no-default-groups --group doc
       - name: Install PortAudio and GraphViz
         run: sudo apt-get install -y libportaudio2 graphviz
       - name: Sphinx build
-        run: pdm run sphinx-build docs/source docs/build/html
+        run: uv run --frozen sphinx-build docs/source docs/build/html
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:

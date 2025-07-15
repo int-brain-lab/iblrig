@@ -101,6 +101,8 @@ doc = [
     "sphinx-lesson>=0.8.19",
     "sphinx-simplepdf>=1.6.0",
     "myst-parser>=4.0.1",
+    "sphinx-design>=0.6.1",
+    "sphinx-copybutton>=0.5.2",
 ]
 typing = [
     "mypy>=1.16.1",
