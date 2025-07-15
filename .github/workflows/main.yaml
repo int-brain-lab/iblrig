@@ -20,6 +20,7 @@ jobs:
           version-file: 'pyproject.toml'
           args: 'check --output-format=github'
       - run: 'ruff format --check --diff'
+        
   tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     needs: ruff
@@ -38,8 +39,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: true
-      - name: Install requirements
-        run: pdm sync -G project-extraction -dG test -dG ci
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          activate-environment: true
+      - name: Install dependencies
+        run: uv sync --no-default-groups --group test --group ci --extra project-extraction
       - name: Install audio library (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y libportaudio2
@@ -48,7 +53,7 @@ jobs:
           qt: true
           pyvista: false
       - name: iblrig unit tests
-        run: pdm run pytest
+        run: pytest
       - name: coveralls.io
         uses: coverallsapp/github-action@v2
         with:
@@ -56,14 +61,6 @@ jobs:
           parallel: true
           file: coverage.xml
           compare-ref: iblrigv8
-      - name: Generate requirements_frozen.txt
-        run: pdm export -o requirements_frozen.txt --no-hashes
-      - name: Store frozen requirements as artifacts
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: requirements_frozen
-          path: requirements_frozen.txt
 
   finish:
     needs: [ruff, tests]
