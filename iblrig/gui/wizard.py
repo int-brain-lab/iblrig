@@ -335,7 +335,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         # load tabs
         self.tabLog = TabLog(parent=self.tabWidget)
         self.tabData = TabData(parent=self.tabWidget)
-        self.tabDocs = RestrictedWebView(url=URL_DOC, parent=self.tabWidget)
+        self.tabDocs = RestrictedWebView(url=URL_DOC, use_status_tips=True, use_tool_tips=False, parent=self.tabWidget)
         self.tabAbout = TabAbout(parent=self.tabWidget)
         self.tabWidget.addTab(self.tabLog, QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QIcon(':/images/sessions'), 'Data')
