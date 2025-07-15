@@ -22,11 +22,7 @@
     <file alias="bug">resources/icon_bug.svg</file>
     <file alias="github">resources/icon_github.svg</file>
     <file alias="discussion">resources/icon_discussion.svg</file>
-    <file alias="globe">resources/icon_globe.svg</file>
     <file alias="wheel">resources/icon_wheel.svg</file>
-    <file alias="home">resources/icon_home.svg</file>
-    <file alias="next">resources/icon_next.svg</file>
-    <file alias="previous">resources/icon_previous.svg</file>
     <file alias="iblrig_logo">resources/wizard.png</file>
     <file alias="flush">resources/icon_flush.svg</file>
     <file alias="help">resources/icon_help.svg</file>
