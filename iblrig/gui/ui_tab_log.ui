@@ -90,7 +90,7 @@
              </property>
              <item>
               <widget class="QLabel" name="labelFontSize">
-               <property name="statusTip">
+               <property name="toolTip">
                 <string>Set the log's font size</string>
                </property>
                <property name="text">
@@ -103,7 +103,7 @@
              </item>
              <item>
               <widget class="QSpinBox" name="spinBoxFontSize">
-               <property name="statusTip">
+               <property name="toolTip">
                 <string>Set the log's font size</string>
                </property>
                <property name="alignment">
@@ -141,7 +141,7 @@
              </item>
              <item>
               <widget class="QPushButton" name="pushButtonClipboard">
-               <property name="statusTip">
+               <property name="toolTip">
                 <string>Copy log to clipboard</string>
                </property>
                <property name="text">

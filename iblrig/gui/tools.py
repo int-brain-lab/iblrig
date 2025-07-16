@@ -98,7 +98,7 @@ class DiskSpaceIndicator(QProgressBar):
             p = self.palette()
             p.setColor(QPalette.Highlight, QColor('red'))
             self.setPalette(p)
-        self.setStatusTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  available space: {self._gigs_free:.1f} GB')
+        self.setToolTip(f'{self._directory}: {self._gigs_dir:.1f} GB  •  available space: {self._gigs_free:.1f} GB')
 
 
 class RemoteDevicesListView(QListView):
@@ -124,6 +124,6 @@ class RemoteDevicesItemModel(QStandardItemModel):
         self.clear()
         for device_name, device_address in self.remote_devices.items():
             item = QStandardItem(device_name)
-            item.setStatusTip(f'Remote Device "{device_name}" - {device_address}')
+            item.setToolTip(f'Remote Device "{device_name}" - {device_address}')
             item.setData(device_name, Qt.UserRole)
             self.appendRow(item)

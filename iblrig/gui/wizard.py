@@ -335,7 +335,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         # load tabs
         self.tabLog = TabLog(parent=self.tabWidget)
         self.tabData = TabData(parent=self.tabWidget)
-        self.tabDocs = RestrictedWebView(url=URL_DOC, use_status_tips=True, use_tool_tips=False, parent=self.tabWidget)
+        self.tabDocs = RestrictedWebView(url=URL_DOC, parent=self.tabWidget)
         self.tabAbout = TabAbout(parent=self.tabWidget)
         self.tabWidget.addTab(self.tabLog, QIcon(':/images/log'), 'Log')
         self.tabWidget.addTab(self.tabData, QIcon(':/images/sessions'), 'Data')
@@ -420,8 +420,8 @@ class RigWizard(QMainWindow, Ui_wizard):
         # tools
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushReward.clicked.connect(self.model.free_reward)
-        self.uiPushReward.setStatusTip(
-            f'Click to grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
+        self.uiPushReward.setToolTip(
+            f'Grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
         )
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
@@ -878,7 +878,7 @@ class RigWizard(QMainWindow, Ui_wizard):
 
             # display help strings as status tip
             if arg.help:
-                widget.setStatusTip(arg.help)
+                widget.setToolTip(arg.help)
 
             # some customizations
             match widget.property('parameter_dest'):
@@ -1094,7 +1094,7 @@ class RigWizard(QMainWindow, Ui_wizard):
                     self.running_task_process.readyReadStandardOutput.connect(self._on_read_standard_output)
                     self.running_task_process.readyReadStandardError.connect(self._on_read_standard_error)
                     self.running_task_process.start(shutil.which('python'), cmd)
-                self.uiPushStart.setStatusTip('stop the session after the current trial')
+                self.uiPushStart.setToolTip('Stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tabLog))
             case 'Stop':
@@ -1159,7 +1159,7 @@ class RigWizard(QMainWindow, Ui_wizard):
 
         # re-enable UI elements
         self.uiPushStart.setText('Start')
-        self.uiPushStart.setStatusTip('start the session')
+        self.uiPushStart.setToolTip('Start the session')
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self._enable_ui_elements()
 
