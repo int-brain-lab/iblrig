@@ -96,7 +96,7 @@ class SettingsDialog(QDialog):
             'warn',
             'Warn about MAIN_SYNC Sync before starting session',
             False,
-            'Display a dialog box with the current MAIN_SYNC setting prior to starting a session',
+            'Display a dialog box with the current MAIN_SYNC setting prior to starting a session.',
         )
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
