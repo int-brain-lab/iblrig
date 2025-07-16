@@ -49,11 +49,10 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from iblqt.core import DataFrameTableModel
+from iblqt.core import DataFrameTableModel, Worker
 from iblrig import __version__ as iblrig_version
 from iblrig.choiceworld import get_subject_training_info
 from iblrig.gui import resources_rc  # noqa: F401
-from iblrig.gui.tools import Worker
 from iblrig.misc import online_std
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframe, load_task_jsonable
