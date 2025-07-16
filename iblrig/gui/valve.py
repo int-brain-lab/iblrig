@@ -12,7 +12,7 @@ from qtpy.QtWidgets import QDialog, QInputDialog, QLineEdit
 from serial import SerialException
 from typing_extensions import override
 
-from iblrig.gui.tools import Worker
+from iblqt.core import Worker
 from iblrig.gui.ui_valve import Ui_valve
 from iblrig.hardware import Bpod
 from iblrig.path_helper import save_pydantic_yaml

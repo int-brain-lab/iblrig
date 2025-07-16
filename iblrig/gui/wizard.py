@@ -40,6 +40,7 @@ from qtpy.QtWidgets import (
     QDoubleSpinBox,
     QFileDialog,
     QInputDialog,
+    QLabel,
     QLayout,
     QLineEdit,
     QListView,
@@ -58,7 +59,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
 from iblqt.core import Worker
-from iblqt.widgets import RestrictedWebView
+from iblqt.widgets import DiskSpaceIndicator, RestrictedWebView
 from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR, URL_DOC
@@ -67,7 +68,7 @@ from iblrig.gui.splash import Splash
 from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel
+from iblrig.gui.tools import RemoteDevicesItemModel
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -420,9 +421,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         # tools
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushReward.clicked.connect(self.model.free_reward)
-        self.uiPushReward.setToolTip(
-            f'Grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
-        )
+        self.uiPushReward.setToolTip(f'Grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)')
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
@@ -432,8 +431,9 @@ class RigWizard(QMainWindow, Ui_wizard):
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
+        self.statusbar.addPermanentWidget(QLabel('Disk Usage:', self.statusbar))
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
-        self.statusbar.setContentsMargins(0, 0, 6, 0)
+        self.statusbar.setContentsMargins(4, 0, 6, 3)
 
         # disable control of LED if Bpod does not have the respective capability
         try:
