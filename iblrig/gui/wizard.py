@@ -429,7 +429,7 @@ class RigWizard(QMainWindow, Ui_wizard):
 
         # # statusbar: main sync toggle
         self.uiSyncToggle = SlideToggle(self)
-        self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False))
+        self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False, bool))
         self.uiSyncToggle.setChecked(self.model.hardware_settings.MAIN_SYNC)
         self.uiSyncToggle.toggled.connect(self._on_toggle_main_sync)
         self._on_toggle_main_sync(self.model.hardware_settings.MAIN_SYNC)
@@ -638,7 +638,7 @@ class RigWizard(QMainWindow, Ui_wizard):
     def _on_gui_settings(self) -> None:
         accepted = SettingsDialog('gui_settings', 'GUI Settings', self).exec()
         if accepted:
-            self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle'))
+            self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False, bool))
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -1023,7 +1023,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         match self.uiPushStart.text():
             case 'Start':
                 # Check Main Sync setting
-                if self.settings.value('gui_settings/sync/warn', False):
+                if self.settings.value('gui_settings/sync/warn', False, bool):
                     response = QMessageBox.warning(
                         self,
                         'Main Sync',
