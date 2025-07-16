@@ -59,7 +59,7 @@ import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
 from iblqt.core import Worker
-from iblqt.widgets import DiskSpaceIndicator, RestrictedWebView
+from iblqt.widgets import DiskSpaceIndicator, RestrictedWebView, SlideToggle
 from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
 from iblrig.constants import BASE_DIR, URL_DOC
@@ -68,7 +68,7 @@ from iblrig.gui.splash import Splash
 from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import RemoteDevicesItemModel
+from iblrig.gui.tools import RemoteDevicesItemModel, SettingsDialog
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -77,7 +77,7 @@ from iblrig.gui.valve import ValveCalibrationDialog
 from iblrig.hardware import Bpod
 from iblrig.hardware_validation import Status
 from iblrig.misc import get_task_argument_parser
-from iblrig.path_helper import load_pydantic_yaml
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.tools import alyx_reachable, get_lab_location_dict, internet_available
@@ -391,6 +391,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
+        self.uiActionGuiSettings.triggered.connect(self._on_gui_settings)
 
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
@@ -426,12 +427,22 @@ class RigWizard(QMainWindow, Ui_wizard):
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
 
+        # # statusbar: main sync toggle
+        self.uiSyncToggle = SlideToggle(self)
+        self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False))
+        self.uiSyncToggle.setChecked(self.model.hardware_settings.MAIN_SYNC)
+        self.uiSyncToggle.toggled.connect(self._on_toggle_main_sync)
+        self._on_toggle_main_sync(self.model.hardware_settings.MAIN_SYNC)
+        self.statusbar.addPermanentWidget(self.uiSyncToggle)
+        self.statusbar.addPermanentWidget(QLabel('Main Sync', self.statusbar), stretch=1)
+
         # statusbar / disk stats
         local_data = self.iblrig_settings['iblrig_local_data_path']
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
-        self.statusbar.addPermanentWidget(QLabel('Disk Usage:', self.statusbar))
+        self.uiDiskSpaceIndicator.setMaximumHeight(20)
+        self.statusbar.addPermanentWidget(QLabel('Disk Usage', self.statusbar))
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
         self.statusbar.setContentsMargins(4, 0, 6, 3)
 
@@ -474,6 +485,13 @@ class RigWizard(QMainWindow, Ui_wizard):
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
             msg_box.exec()
+
+    def _on_toggle_main_sync(self, value: bool):
+        self.uiSyncToggle.setToolTip(f'Bpod is{" " if value else " NOT "}used as Main Sync')
+        if value == self.model.hardware_settings.MAIN_SYNC:
+            return
+        self.model.hardware_settings.MAIN_SYNC = value
+        save_pydantic_yaml(self.model.hardware_settings)
 
     @property
     def iblrig_settings(self) -> RigSettings:
@@ -616,6 +634,11 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QWidget, '--adaptive_gain').setValue(stim_gain)
             self.uiGroupTaskParameters.findChild(QWidget, '--adaptive_reward').setValue(reward_amount)
             self.uiGroupTaskParameters.findChild(QWidget, '--training_phase').setValue(training_phase)
+
+    def _on_gui_settings(self) -> None:
+        accepted = SettingsDialog('gui_settings', 'GUI Settings', self).exec()
+        if accepted:
+            self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle'))
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -999,44 +1022,52 @@ class RigWizard(QMainWindow, Ui_wizard):
     def start_stop(self):
         match self.uiPushStart.text():
             case 'Start':
-                self.uiPushStart.setText('Stop')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self._enable_ui_elements()
-
-                self.tabLog.plainTextEditNarrative.clear()
-                self.tabLog.narrativeUpdated.connect(self._on_updated_narrative)
+                # Check Main Sync setting
+                if self.settings.value('gui_settings/sync/warn', False):
+                    response = QMessageBox.warning(
+                        self,
+                        'Main Sync',
+                        f'Bpod is{" " if self.model.hardware_settings.MAIN_SYNC else " NOT "}set as Main Sync.\n'
+                        f'Do you want to continue?',
+                        QMessageBox.No | QMessageBox.Yes,
+                    )
+                    if response != QMessageBox.Yes:
+                        return
 
                 # Manage appended session
                 self.append_session = False
                 if self.previous_subject == self.model.subject and not self.model.hardware_settings.MAIN_SYNC:
-                    self.append_session = (
-                        QMessageBox.question(
-                            self,
-                            'Appended Session',
-                            'Would you like to append to the previous session?',
-                            QMessageBox.Yes | QMessageBox.No,
-                            QMessageBox.No,
-                        )
-                        == QMessageBox.Yes
+                    response = QMessageBox.question(
+                        self,
+                        'Append Session?',
+                        'Would you like to append to the previous session?',
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No,
                     )
+                    if response == QMessageBox.Cancel:
+                        return
+                    self.append_session = response == QMessageBox.Yes
 
                 # Manage subject weight
-                dlg = QInputDialog()
-                weight, ok = dlg.getDouble(
+                weight, ok = QInputDialog().getDouble(
                     self,
                     'Subject Weight',
                     'Subject Weight (g):',
                     value=0,
                     min=0,
                     decimals=2,
-                    flags=dlg.windowFlags() & ~Qt.WindowContextHelpButtonHint,
+                    flags=QInputDialog().windowFlags() & ~Qt.WindowContextHelpButtonHint,
                 )
                 if not ok or weight == 0:
-                    self.uiPushStart.setText('Start')
-                    self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-                    self._enable_ui_elements()
+                    return
+                if weight > 100 and QMessageBox.question(self, 'Really?', 'That heavy?!') != QMessageBox.Yes:
                     return
 
+                self.uiPushStart.setText('Stop')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+                self._enable_ui_elements()
+                self.tabLog.plainTextEditNarrative.clear()
+                self.tabLog.narrativeUpdated.connect(self._on_updated_narrative)
                 self.controller2model()
 
                 logging.disable(logging.INFO)

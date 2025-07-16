@@ -1,14 +1,13 @@
 import argparse
 import logging
 import subprocess
+from typing import Any
 
-from qtpy.QtCore import (
-    Qt,
-    Slot,
-)
+from qtpy.QtCore import QSettings, Qt, Slot
 from qtpy.QtGui import QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QListView
+from qtpy.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QGroupBox, QLabel, QLayout, QListView, QVBoxLayout, QWidget
 
+from iblqt.widgets import SlideToggle
 from iblrig.constants import BASE_PATH
 from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.net import get_remote_devices
@@ -67,3 +66,82 @@ class RemoteDevicesItemModel(QStandardItemModel):
             item.setToolTip(f'Remote Device "{device_name}" - {device_address}')
             item.setData(device_name, Qt.UserRole)
             self.appendRow(item)
+
+
+class SettingsDialog(QDialog):
+    def __init__(self, main_key: str, title: str = 'Settings', parent: QWidget | None = None):
+        super().__init__(parent)
+
+        self.setWindowTitle(title)
+        self._main_key = main_key
+        self._settings = QSettings()
+        self._group_boxes: dict[str, QGroupBox] = {}
+        self._new_values: dict[str, Any] = {}
+
+        layout = QVBoxLayout(self)
+        layout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.setLayout(layout)
+
+        self._add_group('sync', 'Synchronization')
+        self._add_setting(
+            'sync',
+            'toggle',
+            'Allow changing MAIN_SYNC from GUI',
+            False,
+            'Allows toggling the MAIN_SYNC option from the lower left corner of the GUI. Only change this if you are '
+            'using your rig for, both, behavior experiments and experiments that involve multiple computer.',
+        )
+        self._add_setting(
+            'sync',
+            'warn',
+            'Warn about MAIN_SYNC Sync before starting session',
+            False,
+            'Display a dialog box with the current MAIN_SYNC setting prior to starting a session',
+        )
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self._save_and_close)
+        layout.addWidget(buttons)
+
+    def _add_group(self, key: str, label: str) -> QGroupBox:
+        if key in self._group_boxes:
+            raise ValueError(f"A settings group with key '{key}' already exists")
+        widget = QGroupBox(title=label, parent=self)
+        layout = QFormLayout(widget)
+        layout.setContentsMargins(10, 10, 10, 0)
+        layout.setVerticalSpacing(0)
+        widget.setLayout(layout)
+        self.layout().addWidget(widget)
+        self._group_boxes[key] = widget
+        return widget
+
+    def _add_setting(self, group_key: str, setting_key: str, label: str, default: Any, description: str | None = None) -> QWidget:
+        if group_key not in self._group_boxes:
+            raise ValueError(f"No settings group with key '{group_key}'")
+
+        key = f'{self._main_key}/{group_key}/{setting_key}'
+        value = self._settings.value(key, default, type(default))
+
+        group_box = self._group_boxes[group_key]
+        widget = SlideToggle(group_box)
+        widget.setChecked(value)
+        widget.toggled.connect(lambda v: self._new_values.update({key: v}))
+        group_box.layout().addRow(widget, QLabel(label))
+
+        if description is not None:
+            label = QLabel(description)
+            font = label.font()
+            font.setPointSize(font.pointSize() - 1)
+            font.setItalic(True)
+            label.setFont(font)
+            label.setWordWrap(True)
+            label.setContentsMargins(0, 0, 0, 10)
+            group_box.layout().addRow(None, label)
+
+        return widget
+
+    def _save_and_close(self):
+        for key, value in self._new_values.items():
+            self._settings.setValue(key, value)
+        self.accept()

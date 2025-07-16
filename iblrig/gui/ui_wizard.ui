@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>450</width>
-    <height>633</height>
+    <height>717</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -556,8 +556,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>352</width>
-                <height>108</height>
+                <width>326</width>
+                <height>110</height>
                </rect>
               </property>
               <layout class="QFormLayout" name="formLayout_2"/>
@@ -760,7 +760,7 @@
      <x>0</x>
      <y>0</y>
      <width>450</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="uiMenuTools">
@@ -772,7 +772,14 @@
     <addaction name="uiActionCalibrateValve"/>
     <addaction name="uiActionTrainingLevelV7"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="uiActionGuiSettings"/>
+   </widget>
    <addaction name="uiMenuTools"/>
+   <addaction name="menuSettings"/>
   </widget>
   <action name="uiActionTrainingLevelV7">
    <property name="text">
@@ -792,6 +799,11 @@
   <action name="uiActionValidateHardware">
    <property name="text">
     <string>Validate System</string>
+   </property>
+  </action>
+  <action name="uiActionGuiSettings">
+   <property name="text">
+    <string>GUI Settings</string>
    </property>
   </action>
  </widget>
