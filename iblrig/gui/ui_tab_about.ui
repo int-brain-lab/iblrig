@@ -115,8 +115,8 @@
    </item>
    <item row="4" column="1" colspan="3">
     <widget class="QCommandLinkButton" name="commandLinkButtonGitHub">
-     <property name="statusTip">
-      <string>Click to open the IBLRIG GitHub repository</string>
+     <property name="toolTip">
+      <string>Open the IBLRIG GitHub repository</string>
      </property>
      <property name="text">
       <string>&amp;GitHub</string>
@@ -142,8 +142,8 @@
    </item>
    <item row="5" column="1" colspan="3">
     <widget class="QCommandLinkButton" name="commandLinkButtonDoc">
-     <property name="statusTip">
-      <string>Click to open the IBLRIG documentation</string>
+     <property name="toolTip">
+      <string>Open the IBLRIG documentation</string>
      </property>
      <property name="text">
       <string>&amp;Documentation</string>
@@ -156,8 +156,8 @@
    </item>
    <item row="6" column="1" colspan="3">
     <widget class="QCommandLinkButton" name="commandLinkButtonDiscussion">
-     <property name="statusTip">
-      <string>Click to open the IBLRIG discussion board</string>
+     <property name="toolTip">
+      <string>Open the IBLRIG discussion board</string>
      </property>
      <property name="text">
       <string>Discussion &amp;Board</string>
@@ -170,8 +170,8 @@
    </item>
    <item row="7" column="1" colspan="3">
     <widget class="QCommandLinkButton" name="commandLinkButtonIssues">
-     <property name="statusTip">
-      <string>Click to open the IBLRIG issue tracker</string>
+     <property name="toolTip">
+      <string>Open the IBLRIG issue tracker</string>
      </property>
      <property name="text">
       <string>&amp;Issue Tracker</string>

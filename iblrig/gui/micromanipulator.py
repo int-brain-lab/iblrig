@@ -4,7 +4,8 @@ import argparse
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
-from PyQt5 import QtCore, QtWidgets
+from qtpy.QtCore import QCoreApplication
+from qtpy.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget
 
 from iblatlas.atlas import NeedlesAtlas
 from iblrig.ephys import neuropixel24_micromanipulator_coordinates
@@ -14,7 +15,7 @@ from iblrig.gui.wizard import RigWizardModel
 mpl.use('QT5Agg')
 
 
-class GuiMicroManipulator(QtWidgets.QMainWindow, Ui_MainWindow):
+class GuiMicroManipulator(QMainWindow, Ui_MainWindow):
     def __init__(self, **kwargs):
         super().__init__()
         self.setupUi(self)
@@ -66,15 +67,15 @@ class MplCanvas(Canvas):
     def __init__(self):
         self.fig, self.ax = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, 2]})
         Canvas.__init__(self, self.fig)
-        Canvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        Canvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         Canvas.updateGeometry(self)
 
 
-class MplWidget(QtWidgets.QWidget):
+class MplWidget(QWidget):
     def __init__(self, parent=None):
-        QtWidgets.QWidget.__init__(self, parent)  # Inherit from QWidget
+        QWidget.__init__(self, parent)  # Inherit from QWidget
         self.canvas = MplCanvas()  # Create canvas object
-        self.vbl = QtWidgets.QVBoxLayout()  # Set box for plotting
+        self.vbl = QVBoxLayout()  # Set box for plotting
         self.vbl.addWidget(self.canvas)
         self.setLayout(self.vbl)
 
@@ -83,11 +84,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('subject')
     args = parser.parse_args()
-    QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
-    QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
-    QtCore.QCoreApplication.setApplicationName('IBLRIG MicroManipulator')
+    QCoreApplication.setOrganizationName('International Brain Laboratory')
+    QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
+    QCoreApplication.setApplicationName('IBLRIG MicroManipulator')
 
-    app = QtWidgets.QApplication(['', '--no-sandbox'])
+    app = QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
     w = GuiMicroManipulator(subject=args.subject)
     w.show()

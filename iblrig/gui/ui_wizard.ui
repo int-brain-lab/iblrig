@@ -150,7 +150,7 @@
               </property>
               <item>
                <widget class="QLineEdit" name="uiLineEditUser">
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Enter your user name</string>
                 </property>
                 <property name="placeholderText">
@@ -166,7 +166,7 @@
                   <height>0</height>
                  </size>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to log user into Alyx</string>
                 </property>
                 <property name="text">
@@ -213,7 +213,7 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Choose a subject</string>
                 </property>
                </widget>
@@ -238,7 +238,7 @@
                   <height>16777215</height>
                  </size>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Filter subjects by name</string>
                 </property>
                 <property name="layoutDirection">
@@ -355,7 +355,7 @@
              <property name="focusPolicy">
               <enum>Qt::TabFocus</enum>
              </property>
-             <property name="statusTip">
+             <property name="toolTip">
               <string>Select one or several projects</string>
              </property>
              <property name="editTriggers">
@@ -469,7 +469,7 @@
              <property name="focusPolicy">
               <enum>Qt::TabFocus</enum>
              </property>
-             <property name="statusTip">
+             <property name="toolTip">
               <string>Select one or several procedures</string>
              </property>
              <property name="editTriggers">
@@ -488,7 +488,7 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="statusTip">
+             <property name="toolTip">
               <string>Select remote devices</string>
              </property>
              <property name="horizontalScrollBarPolicy">
@@ -516,7 +516,7 @@
                <height>0</height>
               </size>
              </property>
-             <property name="statusTip">
+             <property name="toolTip">
               <string>Select a task for the session</string>
              </property>
             </widget>
@@ -632,7 +632,7 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to flush the Bpod's valve</string>
                 </property>
                 <property name="text">
@@ -649,7 +649,7 @@
               </item>
               <item>
                <widget class="QPushButton" name="uiPushReward">
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to grant a free reward</string>
                 </property>
                 <property name="text">
@@ -663,7 +663,7 @@
               </item>
               <item>
                <widget class="QPushButton" name="uiPushStatusLED">
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to toggle the Bpod's status LED</string>
                 </property>
                 <property name="text">
@@ -695,7 +695,7 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to start the session</string>
                 </property>
                 <property name="styleSheet">
@@ -717,7 +717,7 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="statusTip">
+                <property name="toolTip">
                  <string>Click to pause the session after the current trial</string>
                 </property>
                 <property name="text">

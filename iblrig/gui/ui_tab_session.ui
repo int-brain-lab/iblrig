@@ -74,7 +74,7 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="statusTip">
+           <property name="toolTip">
             <string>enter or select your Alyx username</string>
            </property>
            <property name="editable">
@@ -99,7 +99,7 @@
            <property name="toolTip">
             <string/>
            </property>
-           <property name="statusTip">
+           <property name="toolTip">
             <string>connect to Alyx</string>
            </property>
            <property name="text">
@@ -155,7 +155,7 @@
              <height>0</height>
             </size>
            </property>
-           <property name="statusTip">
+           <property name="toolTip">
             <string>choose a subject</string>
            </property>
           </widget>
@@ -168,7 +168,7 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="statusTip">
+           <property name="toolTip">
             <string>filter displayed subjects by name</string>
            </property>
            <property name="layoutDirection">
@@ -203,7 +203,7 @@
           <height>0</height>
          </size>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>choose a task for the session</string>
         </property>
        </widget>
@@ -299,7 +299,7 @@
         <property name="focusPolicy">
          <enum>Qt::TabFocus</enum>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>select one or several projects for the session (mandatory)</string>
         </property>
         <property name="editTriggers">
@@ -401,7 +401,7 @@
         <property name="focusPolicy">
          <enum>Qt::TabFocus</enum>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>select one or several procedures for the session (mandatory)</string>
         </property>
         <property name="editTriggers">
@@ -462,7 +462,7 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>pause the session after the current trial</string>
         </property>
         <property name="text">
@@ -478,7 +478,7 @@
       </item>
       <item row="2" column="2">
        <widget class="QPushButton" name="uiPushStart">
-        <property name="statusTip">
+        <property name="toolTip">
          <string>start the session</string>
         </property>
         <property name="styleSheet">
@@ -491,7 +491,7 @@
       </item>
       <item row="3" column="2">
        <widget class="QCheckBox" name="uiCheckAppend">
-        <property name="statusTip">
+        <property name="toolTip">
          <string>append to previous session</string>
         </property>
         <property name="text">
@@ -528,7 +528,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>flush the valve</string>
         </property>
         <property name="text">
@@ -551,7 +551,7 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="statusTip">
+        <property name="toolTip">
          <string>open the iblrig documentation in your browser</string>
         </property>
         <property name="text">
@@ -565,7 +565,7 @@
       </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="uiPushStatusLED">
-        <property name="statusTip">
+        <property name="toolTip">
          <string>toggle the Bpod Status LED (always off during sessions)</string>
         </property>
         <property name="text">
