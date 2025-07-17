@@ -88,8 +88,8 @@ class SettingsDialog(QDialog):
             'toggle',
             'Allow changing MAIN_SYNC from GUI',
             False,
-            'Allows toggling the MAIN_SYNC option from the lower left corner of the GUI. Only change this if you are '
-            'using your rig for, both, pure behavior experiments and experiments that involve other computers.',
+            'Allow toggling the MAIN_SYNC option from the lower left corner of the GUI. Only enable this if you intend to '
+            'use your rig for, both, pure behavior experiments and experiments that involve multiple rig computers.',
         )
         self._add_setting(
             'sync',
