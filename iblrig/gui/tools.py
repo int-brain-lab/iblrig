@@ -73,6 +73,8 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle(title)
+        self.setModal(True)
+
         self._main_key = main_key
         self._settings = QSettings()
         self._group_boxes: dict[str, QGroupBox] = {}
@@ -94,7 +96,7 @@ class SettingsDialog(QDialog):
         self._add_setting(
             'sync',
             'warn',
-            'Warn about MAIN_SYNC Sync before starting session',
+            'Warn about MAIN_SYNC setting before starting session',
             False,
             'Display a dialog box with the current MAIN_SYNC setting prior to starting a session.',
         )
