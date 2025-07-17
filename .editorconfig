@@ -3,19 +3,17 @@
 # top-most EditorConfig file
 root = true
 
-# Unix-style newlines with a newline ending every file
+# General settings
 [*]
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-max_line_length = 130
-
-# Set default charset
-[*.{py,rst,md,toml,yaml}]
+max_line_length = 80
 charset = utf-8
 
 # 4 space indentation
 [*.py]
+max_line_length = 130
 indent_style = space
 indent_size = 4
 
