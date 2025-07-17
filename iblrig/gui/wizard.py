@@ -636,7 +636,7 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.uiGroupTaskParameters.findChild(QWidget, '--training_phase').setValue(training_phase)
 
     def _on_gui_settings(self) -> None:
-        accepted = SettingsDialog(main_key='gui_settings', title='GUI Settings', parent=self).open()
+        accepted = SettingsDialog(main_key='gui_settings', title='GUI Settings', parent=self).exec()
         if accepted:
             self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False, bool))
 
