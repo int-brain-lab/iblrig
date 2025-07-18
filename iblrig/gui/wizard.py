@@ -39,6 +39,7 @@ from qtpy.QtWidgets import (
     QDialog,
     QDoubleSpinBox,
     QFileDialog,
+    QHBoxLayout,
     QInputDialog,
     QLabel,
     QLayout,
@@ -379,6 +380,20 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.listViewRemoteDevices.setVisible(False)
             self.labelRemoteDevices.setVisible(False)
 
+        # statusbar: main sync toggle
+        sync_toggle = SlideToggle(self)
+        sync_toggle.setChecked(self.model.hardware_settings.MAIN_SYNC)
+        sync_toggle.toggled.connect(self._on_toggle_main_sync)
+        layout = QHBoxLayout()
+        layout.addWidget(sync_toggle)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel('Main Sync', self.statusbar))
+        self.uiSyncWidget = QWidget(self.statusbar)
+        self.uiSyncWidget.setLayout(layout)
+        self.uiSyncWidget.setHidden(not self.settings.value('gui_settings/sync/toggle', False, bool))
+        self._on_toggle_main_sync(self.model.hardware_settings.MAIN_SYNC)
+        self.statusbar.addPermanentWidget(self.uiSyncWidget, stretch=1)
+
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
         self.uiComboTask.currentTextChanged.connect(self._get_task_parameters)
@@ -426,15 +441,6 @@ class RigWizard(QMainWindow, Ui_wizard):
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
-
-        # # statusbar: main sync toggle
-        self.uiSyncToggle = SlideToggle(self)
-        self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False, bool))
-        self.uiSyncToggle.setChecked(self.model.hardware_settings.MAIN_SYNC)
-        self.uiSyncToggle.toggled.connect(self._on_toggle_main_sync)
-        self._on_toggle_main_sync(self.model.hardware_settings.MAIN_SYNC)
-        self.statusbar.addPermanentWidget(self.uiSyncToggle)
-        self.statusbar.addPermanentWidget(QLabel('Main Sync', self.statusbar), stretch=1)
 
         # statusbar / disk stats
         local_data = self.iblrig_settings['iblrig_local_data_path']
@@ -487,7 +493,7 @@ class RigWizard(QMainWindow, Ui_wizard):
             msg_box.exec()
 
     def _on_toggle_main_sync(self, value: bool):
-        self.uiSyncToggle.setToolTip(f'Bpod is{" " if value else " NOT "}used as Main Sync')
+        self.uiSyncWidget.setToolTip(f'Bpod is{" " if value else " NOT "}used as Main Sync')
         if value == self.model.hardware_settings.MAIN_SYNC:
             return
         self.model.hardware_settings.MAIN_SYNC = value
@@ -638,7 +644,7 @@ class RigWizard(QMainWindow, Ui_wizard):
     def _on_gui_settings(self) -> None:
         accepted = SettingsDialog(main_key='gui_settings', title='GUI Settings', parent=self).exec()
         if accepted:
-            self.uiSyncToggle.setEnabled(self.settings.value('gui_settings/sync/toggle', False, bool))
+            self.uiSyncWidget.setHidden(not self.settings.value('gui_settings/sync/toggle', False, bool))
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -1319,6 +1325,8 @@ class RigWizard(QMainWindow, Ui_wizard):
         self.uiGroupParameters.setEnabled(not is_running)
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)
+        self.uiMenuBar.setEnabled(not is_running)
+        self.uiSyncWidget.setEnabled(not is_running)
         self.repaint()
 
 

@@ -753,7 +753,7 @@ wheels = [
 
 [[package]]
 name = "iblqt"
-version = "0.7.1"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "iblutil" },
@@ -763,9 +763,9 @@ dependencies = [
     { name = "pyqtgraph" },
     { name = "qtpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/46/7f/107424c789eccae0139c3fc05b4f934be615c415ee74b15219a5a58d1e03/iblqt-0.7.1.tar.gz", hash = "sha256:200840e6b3502ff105a439296d9f69167c6e795b822785e1be88a381b187f6f6", size = 34773, upload-time = "2025-07-16T12:52:31.543Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/7c/b1f5717949807f2219235069b5fc45256211b5ae151f2fb9295c1c492723/iblqt-0.8.0.tar.gz", hash = "sha256:c2d0e171915d427e25dd34acb1827985813e25a9858ed58b8cd13c824ae538f6", size = 34096, upload-time = "2025-07-18T10:40:15.875Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/6a/9662651efeb5e5c2643c88beeddb9a7a68cb1acaae0450ac773b3395b78e/iblqt-0.7.1-py3-none-any.whl", hash = "sha256:70141a79ee0ba0da5101106ab8059422d896a20065694f9cc7c1abad884ab54e", size = 22098, upload-time = "2025-07-16T12:52:30.469Z" },
+    { url = "https://files.pythonhosted.org/packages/47/5b/22703081072732e6b8010ce81ea879ad9cedcd9ffc1a2bd07b361c451480/iblqt-0.8.0-py3-none-any.whl", hash = "sha256:df98f29cfda151d2c22ee79847b045f28074e480194f5c16fd003bf297c77e59", size = 21480, upload-time = "2025-07-18T10:40:14.831Z" },
 ]
 
 [[package]]
@@ -869,7 +869,7 @@ requires-dist = [
     { name = "iblatlas", specifier = ">=0.9.0" },
     { name = "ibllib", specifier = ">=3.4.0" },
     { name = "iblpybpod-no-gui", specifier = ">=3.1.1" },
-    { name = "iblqt", specifier = ">=0.7.1" },
+    { name = "iblqt", specifier = ">=0.8.0" },
     { name = "iblutil", specifier = ">=1.20.0" },
     { name = "ipython", specifier = ">=8.37.0" },
     { name = "matplotlib", specifier = ">=3.10.3" },
