@@ -1326,7 +1326,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)
         self.uiMenuBar.setEnabled(not is_running)
-        self.uiSyncWidget.setEnabled(not is_running)
+        self.statusbar.setEnabled(not is_running)
         self.repaint()
 
 
