@@ -84,22 +84,22 @@ class TabData(QWidget):
         data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
         self.table_model = DataFrameTableModel(dataFrame=data)
 
-        # define worker for assembling data
-        self.data_worker = DataWorker(self)
-        self.data_worker.initialized.connect(self.table_model.setDataFrame)
-        self.data_worker.update.connect(self.table_model.setData)
-        self.data_worker.started.connect(lambda: button_update.setEnabled(False))
-        self.data_worker.lazyLoadComplete.connect(lambda: button_update.setEnabled(True))
-
         # create filter proxy & assign it to view
         self.table_proxy = QSortFilterProxyModel()
         self.table_proxy.setSourceModel(self.table_model)
         self.table_proxy.setFilterKeyColumn(1)
 
+        # define worker for assembling data
+        self.data_worker = DataWorker(self, self.table_model)
+        self.data_worker.initialized.connect(self.table_model.setDataFrame)
+        self.data_worker.update.connect(self.table_model.setData)
+        self.data_worker.started.connect(lambda: button_update.setEnabled(False))
+        self.data_worker.lazyLoadComplete.connect(lambda: button_update.setEnabled(True))
+
         # define table view
         self.table_view = QTableView(self)
         self.table_view.setModel(self.table_proxy)
-        self.table_view.doubleClicked.connect(self._openDir)
+        self.table_view.doubleClicked.connect(self._open_dir)
         self.table_view.setToolTip('Double-click a row to open the respective folder')
         self.table_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -120,7 +120,7 @@ class TabData(QWidget):
         horizontal_header = self.table_view.horizontalHeader()
         horizontal_header.setCascadingSectionResizes(True)
         horizontal_header.setHighlightSections(False)
-        horizontal_header.sectionClicked.connect(self._storeSort)
+        horizontal_header.sectionClicked.connect(self._store_sort)
         horizontal_header.setDefaultAlignment(Qt.AlignLeft)
         for idx, column in enumerate(COLUMNS):
             self.table_view.setColumnHidden(idx, column.hidden)
@@ -158,11 +158,12 @@ class TabData(QWidget):
 
     def showEvent(self, a0):
         if self.table_model.rowCount() == 0:
-            self.data_worker.start()
+            self.data_worker.initialize()
 
     @Slot(QModelIndex)
-    def _openDir(self, index: QModelIndex):
-        directory = self.table_model.itemData(index.siblingAtColumn(0))[0]
+    def _open_dir(self, index: QModelIndex):
+        source_index = self.table_proxy.mapToSource(index)
+        directory = self.table_model.itemData(source_index.siblingAtColumn(0))[0]
         if platform.system() == 'Windows':
             startfile(directory)
         elif platform.system() == 'Darwin':
@@ -171,7 +172,7 @@ class TabData(QWidget):
             subprocess.Popen(['xdg-open', directory])
 
     @Slot(int)
-    def _storeSort(self, index: int):
+    def _store_sort(self, index: int):
         self.settings.setValue('sortColumn', self.table_view.horizontalHeader().sortIndicatorSection())
         self.settings.setValue('sortOrder', self.table_view.horizontalHeader().sortIndicatorOrder())
 
@@ -181,13 +182,16 @@ class DataWorker(QThread):
     update = Signal(QModelIndex, object)
     lazyLoadComplete = Signal()
 
-    def __init__(self, parent: TabData):
+    def __init__(self, parent: TabData, model: DataFrameTableModel):
         super().__init__(parent)
         self.local_subjects_path = parent.local_subjects_path
         self.remote_subjects_path = parent.remote_subjects_path
-        self.table_model = parent.table_model
+        self.table_model = model
+        self.col_size = self.table_model.getDataFrame().columns.get_loc('Size')
+        self.col_status = self.table_model.getDataFrame().columns.get_loc('Copy Status')
         self.table_model.modelReset.connect(self.start)
 
+    def initialize(self):
         data = []
         for session_dir in self.local_subjects_path.glob(SESSIONS_GLOB):
             # make sure we're dealing with a directory
@@ -211,16 +215,15 @@ class DataWorker(QThread):
             )
         data = pd.DataFrame(data=data, columns=[c.name for c in COLUMNS])
         self.initialized.emit(data)
+        self.start()
 
     def run(self):
-        col_size = self.table_model.getDataFrame().columns.get_loc('Size')
-        col_status = self.table_model.getDataFrame().columns.get_loc('Copy Status')
         for row, row_data in self.table_model.getDataFrame().iterrows():
-            index = self.table_model.index(row, col_size)
+            index = self.table_model.index(row, self.col_size)
             size = float(dir_size(row_data['Directory']))
             self.update.emit(index, size)
             state = SessionCopier(row_data['Directory'], remote_subjects_folder=self.remote_subjects_path).state
             state = COPY_STATE_STRINGS.get(state, 'N/A')
-            index = self.table_model.index(row, col_status)
+            index = self.table_model.index(row, self.col_status)
             self.update.emit(index, state)
         self.lazyLoadComplete.emit()
