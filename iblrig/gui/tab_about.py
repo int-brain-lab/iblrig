@@ -26,17 +26,17 @@ class TabAbout(QWidget):
         label_copyright.setAlignment(Qt.AlignCenter)
 
         # command link buttons
-        def create_button(icon_name: str, text: str, tooltip: str, url: str) -> QCommandLinkButton:
+        def create_button(text: str, icon: str, tooltip: str, url: str) -> QCommandLinkButton:
             button = QCommandLinkButton(text, self)
-            button.setIcon(QIcon(f':/images/{icon_name}'))
-            button.setToolTip(tooltip)
+            button.setIcon(QIcon(f':/images/{icon}'))
+            button.setToolTip(f'Open the IBLRIG {tooltip}')
             button.clicked.connect(lambda: webbrowser.open(url))
             return button
 
-        button_github = create_button('github', '&GitHub', 'Open the IBLRIG GitHub repository', URL_REPO)
-        button_doc = create_button('help', '&Documentation', 'Open the IBLRIG documentation', URL_DOC)
-        button_discussion = create_button('discussion', 'Discussion &Board', 'Open the IBLRIG discussion board', URL_DISCUSSION)
-        button_issues = create_button('bug', '&Issue Tracker', 'Open the IBLRIG issue tracker', URL_ISSUES)
+        button_doc = create_button('&Documentation', 'help', 'documentation', URL_DOC)
+        button_github = create_button('&GitHub', 'github', 'GitHub repository', URL_REPO)
+        button_discussion = create_button('Discussion &Board', 'discussion', 'discussion board', URL_DISCUSSION)
+        button_issues = create_button('&Issue Tracker', 'bug', 'issue tracker', URL_ISSUES)
 
         # anydesk label
         self.label_anydesk = QLabel('', self)
@@ -60,8 +60,8 @@ class TabAbout(QWidget):
         grid_layout.addWidget(label_copyright, 2, 0, 1, 5)
         grid_layout.setRowStretch(3, 3)
         grid_layout.addItem(horizontal_spacer_3, 4, 0, 4, 1)
-        grid_layout.addWidget(button_github, 4, 1, 1, 3)
-        grid_layout.addWidget(button_doc, 5, 1, 1, 3)
+        grid_layout.addWidget(button_doc, 4, 1, 1, 3)
+        grid_layout.addWidget(button_github, 5, 1, 1, 3)
         grid_layout.addWidget(button_discussion, 6, 1, 1, 3)
         grid_layout.addWidget(button_issues, 7, 1, 1, 3)
         grid_layout.addItem(horizontal_spacer_4, 4, 4, 4, 1)
