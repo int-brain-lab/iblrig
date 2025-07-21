@@ -14,12 +14,6 @@ class TabAbout(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # spacer items
-        horizontal_spacer_1 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        horizontal_spacer_2 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        horizontal_spacer_3 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        horizontal_spacer_4 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
         # logo
         label_logo = QLabel('', self)
         label_logo.setMaximumSize(QSize(90, 90))
@@ -32,22 +26,17 @@ class TabAbout(QWidget):
         label_copyright.setAlignment(Qt.AlignCenter)
 
         # command link buttons
-        button_github = QCommandLinkButton('&GitHub', self)
-        button_github.setIcon(QIcon(':/images/github'))
-        button_github.setToolTip('Open the IBLRIG GitHub repository')
-        button_github.clicked.connect(lambda: webbrowser.open(URL_REPO))
-        button_doc = QCommandLinkButton('&Documentation', self)
-        button_doc.setIcon(QIcon(':/images/help'))
-        button_doc.setToolTip('Open the IBLRIG documentation')
-        button_doc.clicked.connect(lambda: webbrowser.open(URL_DOC))
-        button_discussion = QCommandLinkButton('Discussion &Board', self)
-        button_discussion.setIcon(QIcon(':/images/discussion'))
-        button_discussion.setToolTip('Open the IBLRIG discussion board')
-        button_discussion.clicked.connect(lambda: webbrowser.open(URL_DISCUSSION))
-        button_issues = QCommandLinkButton('&Issue Tracker', self)
-        button_issues.setIcon(QIcon(':/images/bug'))
-        button_issues.setToolTip('Open the IBLRIG issue tracker')
-        button_issues.clicked.connect(lambda: webbrowser.open(URL_ISSUES))
+        def create_button(icon_name: str, text: str, tooltip: str, url: str) -> QCommandLinkButton:
+            button = QCommandLinkButton(text, self)
+            button.setIcon(QIcon(f':/images/{icon_name}'))
+            button.setToolTip(tooltip)
+            button.clicked.connect(lambda: webbrowser.open(url))
+            return button
+
+        button_github = create_button('github', '&GitHub', 'Open the IBLRIG GitHub repository', URL_REPO)
+        button_doc = create_button('help', '&Documentation', 'Open the IBLRIG documentation', URL_DOC)
+        button_discussion = create_button('discussion', 'Discussion &Board', 'Open the IBLRIG discussion board', URL_DISCUSSION)
+        button_issues = create_button('bug', '&Issue Tracker', 'Open the IBLRIG issue tracker', URL_ISSUES)
 
         # anydesk label
         self.label_anydesk = QLabel('', self)
@@ -55,6 +44,12 @@ class TabAbout(QWidget):
         worker = Worker(get_anydesk_id, silent=True)
         worker.signals.result.connect(self._on_get_anydesk_result)
         QThreadPool.globalInstance().tryStart(worker)
+
+        # spacer items
+        horizontal_spacer_1 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        horizontal_spacer_2 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        horizontal_spacer_3 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        horizontal_spacer_4 = QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # grid layout
         grid_layout = QGridLayout(self)
