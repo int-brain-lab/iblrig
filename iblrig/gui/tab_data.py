@@ -30,7 +30,7 @@ from qtpy.QtWidgets import (
 from iblqt.core import DataFrameTableModel
 from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.transfer_experiments import CopyState, SessionCopier
-from iblutil.util import dir_size
+from iblutil.util import dir_size, format_bytes
 
 if platform.system() == 'Windows':
     from os import startfile
@@ -44,14 +44,6 @@ COPY_STATE_STRINGS = {
 }
 
 SESSIONS_GLOB = r'*/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/[0-9][0-9][0-9]/'
-
-
-def sizeof_fmt(num, suffix='B'):
-    for unit in ('', 'K', 'M', 'G', 'T', 'P', 'E', 'Z'):
-        if abs(num) < 1024.0:
-            return f'{num:3.1f} {unit}{suffix}'
-        num /= 1024.0
-    return f'{num:.1f} Y{suffix}'
 
 
 class Column(NamedTuple):
@@ -75,7 +67,8 @@ class DataItemDelegate(QStyledItemDelegate):
         super().initStyleOption(option, index)
         header_text = index.model().headerData(index.column(), Qt.Horizontal, Qt.DisplayRole)
         if 'Size' in header_text:
-            option.text = sizeof_fmt(index.data())
+            data = index.data()
+            option.text = format_bytes(int(data)) if isinstance(data, float) else ''
             option.displayAlignment = Qt.AlignRight | Qt.AlignVCenter
 
 
@@ -91,17 +84,17 @@ class TabData(QWidget):
         data = pd.DataFrame(None, index=[], columns=[c.name for c in COLUMNS])
         self.table_model = DataFrameTableModel(dataFrame=data)
 
-        # create filter proxy & assign it to view
-        self.table_proxy = QSortFilterProxyModel()
-        self.table_proxy.setSourceModel(self.table_model)
-        self.table_proxy.setFilterKeyColumn(1)
-
         # define worker for assembling data
         self.data_worker = DataWorker(self)
         self.data_worker.initialized.connect(self.table_model.setDataFrame)
         self.data_worker.update.connect(self.table_model.setData)
         self.data_worker.started.connect(lambda: button_update.setEnabled(False))
         self.data_worker.lazyLoadComplete.connect(lambda: button_update.setEnabled(True))
+
+        # create filter proxy & assign it to view
+        self.table_proxy = QSortFilterProxyModel()
+        self.table_proxy.setSourceModel(self.table_model)
+        self.table_proxy.setFilterKeyColumn(1)
 
         # define table view
         self.table_view = QTableView(self)
@@ -193,9 +186,8 @@ class DataWorker(QThread):
         self.local_subjects_path = parent.local_subjects_path
         self.remote_subjects_path = parent.remote_subjects_path
         self.table_model = parent.table_model
-        self.table_model.modelReset.connect(self.lazy_load_status)
+        self.table_model.modelReset.connect(self.start)
 
-    def run(self):
         data = []
         for session_dir in self.local_subjects_path.glob(SESSIONS_GLOB):
             # make sure we're dealing with a directory
@@ -214,15 +206,19 @@ class DataWorker(QThread):
                     session_dir.parents[1].name,
                     QDateTime.fromTime_t(int(date.timestamp())),
                     '',  # will be lazy-loaded in a separate step
-                    float(dir_size(session_dir)),
+                    '',  # will be lazy-loaded in a separate step
                 ]
             )
         data = pd.DataFrame(data=data, columns=[c.name for c in COLUMNS])
         self.initialized.emit(data)
 
-    def lazy_load_status(self):
+    def run(self):
+        col_size = self.table_model.getDataFrame().columns.get_loc('Size')
         col_status = self.table_model.getDataFrame().columns.get_loc('Copy Status')
         for row, row_data in self.table_model.getDataFrame().iterrows():
+            index = self.table_model.index(row, col_size)
+            size = float(dir_size(row_data['Directory']))
+            self.update.emit(index, size)
             state = SessionCopier(row_data['Directory'], remote_subjects_folder=self.remote_subjects_path).state
             state = COPY_STATE_STRINGS.get(state, 'N/A')
             index = self.table_model.index(row, col_status)
