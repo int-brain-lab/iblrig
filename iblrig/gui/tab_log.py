@@ -74,7 +74,7 @@ class TabLog(QWidget):
         self.button_clipboard.setIcon(QIcon(':/images/clipboard'))
         self.button_clipboard.setToolTip('Copy log to clipboard')
         self.button_clipboard.setEnabled(False)
-        self.button_clipboard.clicked.connect(self.copyToClipboard)
+        self.button_clipboard.clicked.connect(self._copy_to_clipboard)
 
         # edit field for narrative
         self.plainTextEditNarrative = QPlainTextEdit(group_box_narrative)
@@ -141,7 +141,7 @@ class TabLog(QWidget):
         self.plainTextEditLog.appendPlainText(text)
 
     @Slot()
-    def copyToClipboard(self):
+    def _copy_to_clipboard(self):
         """Copy the log contents to the clipboard as a markdown code-block."""
         text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
         QApplication.clipboard().setText(text)
