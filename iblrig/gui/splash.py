@@ -1,5 +1,5 @@
 from qtpy.QtCore import QEasingCurve, QEvent, QPoint, QPropertyAnimation, QSize, Qt, QThreadPool, QTimer
-from qtpy.QtGui import QFont, QPixmap
+from qtpy.QtGui import QFont, QPalette, QPixmap, QRadialGradient
 from qtpy.QtWidgets import QDialog, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 from typing_extensions import override
 
@@ -20,6 +20,7 @@ class Splash(QDialog):
         self.hardware_settings = load_pydantic_yaml(HardwareSettings)
         self.rig_settings = load_pydantic_yaml(RigSettings)
 
+        # window properties
         self.setWindowModality(Qt.ApplicationModal)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self.setMinimumSize(QSize(350, 400))
@@ -27,10 +28,14 @@ class Splash(QDialog):
         self.setWindowFlags(Qt.SplashScreen | Qt.FramelessWindowHint)
         self.installEventFilter(self)
 
-        # self.setStyleSheet(
-        #     'QWidget#self { background-color: qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, '
-        #     'stop:0 rgba(255, 255, 255, 0), stop:1 rgba(200, 200, 200, 255)) };'
-        # )
+        # background gradient
+        gradient = QRadialGradient(0.5, 0.45, 0.5, 0.5, 0.45)
+        gradient.setColorAt(0.0, QPalette().window().color().lighter(110))
+        gradient.setColorAt(1.0, QPalette().window().color().darker(115))
+        gradient.setCoordinateMode(gradient.ObjectMode)
+        p = QPalette()
+        p.setBrush(QPalette.Window, gradient)
+        self.setPalette(p)
 
         # logo
         horizontal_widget = QWidget(self)
