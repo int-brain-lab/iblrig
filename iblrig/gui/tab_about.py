@@ -7,6 +7,7 @@ from qtpy.QtWidgets import QCommandLinkButton, QGridLayout, QLabel, QSizePolicy,
 from iblqt.core import Worker
 from iblrig import __version__ as iblrig_version
 from iblrig.constants import COPYRIGHT_YEAR, URL_DISCUSSION, URL_DOC, URL_ISSUES, URL_REPO
+from iblrig.gui import resources_rc  # noqa: F401
 from iblrig.tools import get_anydesk_id
 
 
