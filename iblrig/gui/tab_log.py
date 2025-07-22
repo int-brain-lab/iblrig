@@ -143,7 +143,7 @@ class TabLog(QWidget):
     @Slot()
     def _copy_to_clipboard(self):
         """Copy the log contents to the clipboard as a markdown code-block."""
-        text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
+        text = f'```\n{self.plainTextEditLog.toPlainText()}\n```'
         QApplication.clipboard().setText(text)
 
     @Slot(int)
