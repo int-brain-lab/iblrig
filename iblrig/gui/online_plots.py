@@ -173,30 +173,39 @@ class FunctionWidget(PlotWidget):
             self.plotItem.getAxis(axis).setGrid(128)
             self.plotItem.getAxis(axis).setTextPen('k')
         self.plotItem.getAxis('bottom').setLabel('Signed Contrast')
-        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
-        legend.setParentItem(self.plotItem.graphicsItem())
-        legend.setZValue(1)
+        self.legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
+        self.legend.setParentItem(self.plotItem.graphicsItem())
+        self.legend.setZValue(1)
+        self.colors = colors
         self.plotDataItems = dict()
         self.upperCurves = dict()
         self.lowerCurves = dict()
         self.fillItems = dict()
+        self.grouping_label = grouping_label
+        for key in grouping_values:
+            self.add_new_function(key)
+    
+    @property
+    def num_functions(self):
+        return len(self.upperCurves)
+    
+    def add_new_function(self, key):
         null_pen = pg.mkPen((0, 0, 0, 0))
-        for idx, key in enumerate(grouping_values):
-            line_color = colors.getByIndex(idx)
-            fill_color = copy(line_color)
-            fill_color.setAlpha(32)
-            self.upperCurves[key] = self.plotItem.plot(pen=null_pen)
-            self.lowerCurves[key] = self.plotItem.plot(pen=null_pen)
-            self.fillItems[key] = pg.FillBetweenItem(self.upperCurves[key], self.lowerCurves[key], brush=fill_color, pen=null_pen)
-            self.addItem(self.fillItems[key])
-            self.plotDataItems[key] = self.plotItem.plot(connect='all')
-            self.plotDataItems[key].setData(x=[1, np.NAN], y=[np.NAN, 1])
-            self.plotDataItems[key].setPen(pg.mkPen(color=line_color, width=4))
-            self.plotDataItems[key].setSymbol('o')
-            self.plotDataItems[key].setSymbolPen(line_color)
-            self.plotDataItems[key].setSymbolBrush(line_color.lighter(150))
-            self.plotDataItems[key].setSymbolSize(4)
-            legend.addItem(self.plotDataItems[key], f'{grouping_label} = {key:0.1f}')
+        line_color = self.colors.getByIndex(self.num_functions)
+        fill_color = copy(line_color)
+        fill_color.setAlpha(32)
+        self.upperCurves[key] = self.plotItem.plot(pen=null_pen)
+        self.lowerCurves[key] = self.plotItem.plot(pen=null_pen)
+        self.fillItems[key] = pg.FillBetweenItem(self.upperCurves[key], self.lowerCurves[key], brush=fill_color, pen=null_pen)
+        self.addItem(self.fillItems[key])
+        self.plotDataItems[key] = self.plotItem.plot(connect='all')
+        self.plotDataItems[key].setData(x=[1, np.NAN], y=[np.NAN, 1])
+        self.plotDataItems[key].setPen(pg.mkPen(color=line_color, width=4))
+        self.plotDataItems[key].setSymbol('o')
+        self.plotDataItems[key].setSymbolPen(line_color)
+        self.plotDataItems[key].setSymbolBrush(line_color.lighter(150))
+        self.plotDataItems[key].setSymbolSize(4)
+        self.legend.addItem(self.plotDataItems[key], f'{self.grouping_label} = {key:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -1005,11 +1014,15 @@ class OnlinePlotsView(QMainWindow):
             y = data.choice.to_numpy()
             sqrt_n = np.sqrt(data['count'].to_numpy())
             e = data.choice_std.to_numpy() / sqrt_n
+            if group_var not in self.psychometricWidget.upperCurves:
+                self.psychometricWidget.add_new_function(group_var)
             self.psychometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
             self.psychometricWidget.lowerCurves[group_var].setData(x=x, y=y - e)
             self.psychometricWidget.plotDataItems[group_var].setData(x=x, y=y)
             y = data.response_time.to_numpy()
             e = data.response_time_std.to_numpy() / sqrt_n
+            if group_var not in self.chronometricWidget.upperCurves:
+                self.chronometricWidget.add_new_function(group_var)
             self.chronometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
             self.chronometricWidget.lowerCurves[group_var].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
             self.chronometricWidget.plotDataItems[group_var].setData(x=x, y=y)
