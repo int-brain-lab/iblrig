@@ -91,6 +91,7 @@ class EngagedCriterion:
 class DefaultSettings:
     CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
     PROBABILITY_SET = np.array([0.2, 0.5, 0.8])
+    DEFAULT_GROUPING_VARIABLE = 'stim_probability_left' # default to splitting by blocks
 
 
 class PlotWidget(pg.PlotWidget):
@@ -167,7 +168,7 @@ class SingleBarChartWidget(PlotWidget):
 class FunctionWidget(PlotWidget):
     """A widget for psychometric and chronometric functions"""
 
-    def __init__(self, *args, colors: pg.ColorMap, probabilities: Iterable[float], **kwargs):
+    def __init__(self, *args, colors: pg.ColorMap, grouping_values: Iterable[float], grouping_variable: str | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
         for axis in ('left', 'bottom'):
@@ -182,7 +183,7 @@ class FunctionWidget(PlotWidget):
         self.lowerCurves = dict()
         self.fillItems = dict()
         null_pen = pg.mkPen((0, 0, 0, 0))
-        for idx, p in enumerate(probabilities):
+        for idx, p in enumerate(grouping_values):
             line_color = colors.getByIndex(idx)
             fill_color = copy(line_color)
             fill_color.setAlpha(32)
@@ -197,7 +198,9 @@ class FunctionWidget(PlotWidget):
             self.plotDataItems[p].setSymbolPen(line_color)
             self.plotDataItems[p].setSymbolBrush(line_color.lighter(150))
             self.plotDataItems[p].setSymbolSize(4)
-            legend.addItem(self.plotDataItems[p], f'p = {p:0.1f}')
+            if grouping_variable is None:
+                grouping_variable = 'p'
+            legend.addItem(self.plotDataItems[p], f'{grouping_variable} = {p:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -681,11 +684,9 @@ class OnlinePlotsModel(QObject):
             self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
 
         self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
-        self.psychometrics = pd.DataFrame(
-            columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-            index=pd.MultiIndex.from_product([self.probability_set, self.signed_contrasts]),
-        )
-        self.psychometrics['count'] = 0
+        self.plotter_grouping_variable = self.task_settings.get('PLOT_GROUPING_VARIABLE', DefaultSettings.DEFAULT_GROUPING_VARIABLE)
+        self.psychometrics = pd.DataFrame(columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
+                             index=pd.MultiIndex(levels=[[], []], codes=[[], []], names=[self.plotter_grouping_variable, 'signed_contrast']))
         self.reward_amount = 0
         self._t0 = 0
         self._n_trials = 0
@@ -747,10 +748,13 @@ class OnlinePlotsModel(QObject):
             if row.get('response_side') == 0:
                 continue
             choice = row.position > 0 if row.trial_correct else row.position < 0
-            indexer = (row.stim_probability_left, row.signed_contrast)
-            if indexer not in self.psychometrics.index:
-                self.psychometrics.loc[indexer, :] = np.nan
-                self.psychometrics.loc[indexer, 'count'] = 0
+            indexer = (row[self.plotter_grouping_variable], row.signed_contrast) 
+            if indexer not in self.psychometrics.index: # add row for a new trial type if it's not there yet
+                new_trial_type = pd.DataFrame(columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
+                                              index=pd.MultiIndex.from_tuples([indexer], names=[self.plotter_grouping_variable, 'signed_contrast']))
+                new_trial_type['count'] = 0
+                self.psychometrics = pd.concat([self.psychometrics, new_trial_type])
+
             self.psychometrics.loc[indexer, 'count'] += 1
             self.psychometrics.loc[indexer, 'response_time'], self.psychometrics.loc[indexer, 'response_time_std'] = online_std(
                 new_sample=row.response_time,
@@ -903,7 +907,8 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.trials, 1, 0, 2, 1)
 
         # psychometric function
-        self.psychometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        grouping_values = np.unique(self.model.psychometrics.index.get_level_values(self.model.plotter_grouping_variable))
+        self.psychometricWidget = FunctionWidget(parent=self, colors=self.colormap, grouping_values=grouping_values, grouping_variable=self.model.plotter_grouping_variable)
         self.psychometricWidget.plotItem.setTitle('Psychometric Function', color='k')
         self.psychometricWidget.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricWidget.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
@@ -912,7 +917,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.psychometricWidget, 1, 1, 1, 1)
 
         # chronometric function
-        self.chronometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        self.chronometricWidget = FunctionWidget(parent=self, colors=self.colormap, grouping_values=grouping_values, grouping_variable=self.model.plotter_grouping_variable)
         self.chronometricWidget.plotItem.setTitle('Chronometric Function', color='k')
         self.chronometricWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricWidget.plotItem.setLogMode(x=False, y=True)
@@ -990,20 +995,20 @@ class OnlinePlotsView(QMainWindow):
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.table_view.setCurrentIndex(self.model.tableModel.index(trial, 0))
         self.trials.table_view.scrollTo(self.model.tableModel.index(trial, 0))
-        for p in self.model.probability_set:
-            data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
-            x = data.index.to_numpy()
+        for group_var, data in self.model.psychometrics.groupby(self.model.plotter_grouping_variable):
+            data = data.dropna(axis=0).astype(float).sort_index(level='signed_contrast')
+            x = data.index.get_level_values('signed_contrast').to_numpy().astype(float)
             y = data.choice.to_numpy()
             sqrt_n = np.sqrt(data['count'].to_numpy())
             e = data.choice_std.to_numpy() / sqrt_n
-            self.psychometricWidget.upperCurves[p].setData(x=x, y=y + e)
-            self.psychometricWidget.lowerCurves[p].setData(x=x, y=y - e)
-            self.psychometricWidget.plotDataItems[p].setData(x=x, y=y)
+            self.psychometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
+            self.psychometricWidget.lowerCurves[group_var].setData(x=x, y=y - e)
+            self.psychometricWidget.plotDataItems[group_var].setData(x=x, y=y)
             y = data.response_time.to_numpy()
             e = data.response_time_std.to_numpy() / sqrt_n
-            self.chronometricWidget.upperCurves[p].setData(x=x, y=y + e)
-            self.chronometricWidget.lowerCurves[p].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
-            self.chronometricWidget.plotDataItems[p].setData(x=x, y=y)
+            self.chronometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
+            self.chronometricWidget.lowerCurves[group_var].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
+            self.chronometricWidget.plotDataItems[group_var].setData(x=x, y=y)
         self.performanceWidget.setValue(self.model.percentCorrect())
         self.rewardWidget.setValue(self.model.reward_amount)
         self.update()
