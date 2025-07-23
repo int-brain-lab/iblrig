@@ -753,7 +753,7 @@ class OnlinePlotsModel(QObject):
                 new_trial_type = pd.DataFrame(
                     data=[[0] + [float('nan')] * (len(self.psychometrics.columns) - 1)],
                     columns=self.psychometrics.columns,
-                    index=pd.MultiIndex.from_tuples([indexer], names=self.psychometrics.index.names)
+                    index=pd.MultiIndex.from_tuples([indexer], names=self.psychometrics.index.names),
                 )
                 self.psychometrics = pd.concat([self.psychometrics, new_trial_type]).sort_index(level='signed_contrast')
 
