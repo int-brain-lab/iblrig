@@ -751,11 +751,10 @@ class OnlinePlotsModel(QObject):
             indexer = (row[self.grouping_variable], row.signed_contrast)
             if indexer not in self.psychometrics.index:  # add row for a new trial type if it's not there yet
                 new_trial_type = pd.DataFrame(
+                    data=[[0] + [float('nan')] * (len(self.psychometrics.columns) - 1)],
                     columns=self.psychometrics.columns,
-                    index=pd.MultiIndex.from_tuples([indexer], names=self.psychometrics.index.names),
-                    dtype=float,
+                    index=pd.MultiIndex.from_tuples([indexer], names=self.psychometrics.index.names)
                 )
-                new_trial_type['count'] = 0
                 self.psychometrics = pd.concat([self.psychometrics, new_trial_type]).sort_index(level='signed_contrast')
 
             self.psychometrics.loc[indexer, 'count'] += 1
