@@ -1002,7 +1002,6 @@ class OnlinePlotsView(QMainWindow):
         self.trials.table_view.setCurrentIndex(self.model.tableModel.index(trial, 0))
         self.trials.table_view.scrollTo(self.model.tableModel.index(trial, 0))
         for group_var, data in self.model.psychometrics.groupby(self.model.grouping_variable):
-            # data = data.dropna(axis=0).astype(float).sort_index(level='signed_contrast')
             x = data.index.get_level_values('signed_contrast').to_numpy('float')
             y = data.choice.to_numpy()
             sqrt_n = np.sqrt(data['count'].to_numpy())
