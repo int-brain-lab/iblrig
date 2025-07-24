@@ -184,11 +184,11 @@ class FunctionWidget(PlotWidget):
         self.grouping_label = grouping_label
         for key in grouping_values:
             self.add_new_function(key)
-    
+
     @property
     def num_functions(self):
         return len(self.upperCurves)
-    
+
     def add_new_function(self, key):
         null_pen = pg.mkPen((0, 0, 0, 0))
         line_color = self.colors.getByIndex(self.num_functions)
