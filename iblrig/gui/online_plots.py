@@ -169,6 +169,8 @@ class FunctionWidget(PlotWidget):
     def __init__(self, parent: QWidget, colors: pg.ColorMap, grouping_values: Iterable[float], grouping_label: str, **kwargs):
         super().__init__(parent=parent, **kwargs)
         self.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        self._colors = colors
+        self._grouping_label = grouping_label
         for axis in ('left', 'bottom'):
             self.plotItem.getAxis(axis).setGrid(128)
             self.plotItem.getAxis(axis).setTextPen('k')
@@ -176,22 +178,16 @@ class FunctionWidget(PlotWidget):
         self.legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
         self.legend.setParentItem(self.plotItem.graphicsItem())
         self.legend.setZValue(1)
-        self.colors = colors
         self.plotDataItems = dict()
         self.upperCurves = dict()
         self.lowerCurves = dict()
         self.fillItems = dict()
-        self.grouping_label = grouping_label
         for key in grouping_values:
-            self.add_new_function(key)
+            self.addFunction(key)
 
-    @property
-    def num_functions(self):
-        return len(self.upperCurves)
-
-    def add_new_function(self, key):
+    def addFunction(self, key: str):
         null_pen = pg.mkPen((0, 0, 0, 0))
-        line_color = self.colors.getByIndex(self.num_functions)
+        line_color = self._colors.getByIndex(len(self.upperCurves))
         fill_color = copy(line_color)
         fill_color.setAlpha(32)
         self.upperCurves[key] = self.plotItem.plot(pen=null_pen)
@@ -205,7 +201,7 @@ class FunctionWidget(PlotWidget):
         self.plotDataItems[key].setSymbolPen(line_color)
         self.plotDataItems[key].setSymbolBrush(line_color.lighter(150))
         self.plotDataItems[key].setSymbolSize(4)
-        self.legend.addItem(self.plotDataItems[key], f'{self.grouping_label} = {key:0.1f}')
+        self.legend.addItem(self.plotDataItems[key], f'{self._grouping_label} = {key:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -1015,14 +1011,14 @@ class OnlinePlotsView(QMainWindow):
             sqrt_n = np.sqrt(data['count'].to_numpy())
             e = data.choice_std.to_numpy() / sqrt_n
             if group_var not in self.psychometricWidget.upperCurves:
-                self.psychometricWidget.add_new_function(group_var)
+                self.psychometricWidget.addFunction(group_var)
             self.psychometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
             self.psychometricWidget.lowerCurves[group_var].setData(x=x, y=y - e)
             self.psychometricWidget.plotDataItems[group_var].setData(x=x, y=y)
             y = data.response_time.to_numpy()
             e = data.response_time_std.to_numpy() / sqrt_n
             if group_var not in self.chronometricWidget.upperCurves:
-                self.chronometricWidget.add_new_function(group_var)
+                self.chronometricWidget.addFunction(group_var)
             self.chronometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
             self.chronometricWidget.lowerCurves[group_var].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
             self.chronometricWidget.plotDataItems[group_var].setData(x=x, y=y)
