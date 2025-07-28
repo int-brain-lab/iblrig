@@ -247,11 +247,11 @@ def configure_sound_card(
     if len(sounds) != len(indexes):
         raise ValueError('Number of sounds and indices must match')
     if not all([2 <= idx <= 32 for idx in indexes]):
-        raise ValueError(f'One or more indices out of valid range [2, 32]')
+        raise ValueError('One or more indices out of valid range [2, 32]')
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):
-        card.send_sound(sound, index, sample_rate, DataType.INT32)
+        card.send_sound(sound, index, int(sample_rate), DataType.INT32)
 
     if close_card:
         card.close()
