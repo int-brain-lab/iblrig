@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 
-from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
+from pybpod_soundcard_module.module_api import DataType, SoundCardModule
 
 log = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ def make_sound(
         tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade)
 
     ttl = np.ones(len(tone)) * 0.99
-    ttl[round(rate / 100):] = 0  # 10 ms TTL
+    ttl[round(rate / 100) :] = 0  # 10 ms TTL
     null = np.zeros(len(tone))
 
     match chans:
@@ -162,55 +162,90 @@ def make_sound(
     return sound
 
 
-def format_sound(sound, file_path=None, flat=False):
+def format_sound(sound: np.array, file_path: str = None, flat: bool = False):
     """
-    Format sound to send to sound card.
+    Format a stereo sound array into a binary-compatible int32 format.
 
-    Binary files to be sent to the sound card need to be a single contiguous
-    vector of int32 s. 4 Bytes left speaker, 4 Bytes right speaker, ..., etc.
+    This formats the audio data for output to a sound card. The sound is expected
+    to be stereo (2 channels) and in float format [-1.0, 1.0]. The result is an
+    array of int32 values interleaved [L, R, L, R, ...].
 
+    Parameters
+    ----------
+    sound : np.ndarray
+        A 2D NumPy array of shape (n_samples, 2) containing stereo float audio data.
+    file_path : str, optional
+        If provided, the formatted audio will be written to this binary file.
+    flat : bool, optional
+        If True, return a 1D flattened array. Otherwise, return (n_samples, 2) shape.
 
-    :param sound: Stereo sound
-    :type sound: 2d numpy.array os shape (n_samples, 2)
-    :param file_path: full path of file. [default: None]
-    :type file_path: str
+    Returns
+    -------
+    np.ndarray
+        The formatted int32 sound array, either flattened or in original shape.
+
+    Raises
+    ------
+    ValueError
+        If `sound` is not a 2D array with shape (n_samples, 2).
     """
-    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
+    if sound.ndim != 2 or sound.shape[1] != 2:
+        raise ValueError('Sound must be a 2D array with shape (n_samples, 2) for stereo output.')
 
-    if bin_sound.flags.f_contiguous:
-        bin_sound = np.ascontiguousarray(bin_sound)
+    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)  # Scale from float [-1.0, 1.0] to int32 range
+    bin_sound = np.ascontiguousarray(bin_sound)  # Ensure memory layout is contiguous
+    interleaved = bin_sound.reshape(-1)  # Interleave the samples as a 1D array: [L, R, L, R, ...]
 
-    bin_save = bin_sound.reshape(1, np.multiply(*bin_sound.shape))
-    bin_save = np.ascontiguousarray(bin_save)
-
+    # Optionally save to binary file
     if file_path:
         with open(file_path, 'wb') as bf:
-            bf.writelines(bin_save)
-            bf.flush()
+            bf.write(interleaved.tobytes())
 
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
+def configure_sound_card(
+    card: SoundCardModule | None = None,
+    sounds: list[np.ndarray] | None = None,
+    indexes: list[int] | None = None,
+    sample_rate: int = 96000,
+):
+    """
+    Configure a Harp sound card with given sounds at specified indexes and sample rate.
+
+    Parameters
+    ----------
+    card : SoundCardModule, optional
+        An instance of the sound card interface to send sounds to.
+        If None, a new SoundCardModule instance will be created and closed after use.
+        Default is None.
+    sounds : list of np.ndarray, optional
+        A list of stereo sound arrays to be formatted and sent to the card.
+        Each sound array should be 2D (n_samples, 2). Default is None (empty list).
+    indexes : list of int, optional
+        List of channel or buffer indexes corresponding to each sound in `sounds`.
+        Must be the same length as `sounds`. Default is None (empty list).
+    sample_rate : int, optional
+        Sample rate in Hz for playback. Must be 96000 or 192000. Default is 96000.
+
+    Raises
+    ------
+    ValueError
+        If `sample_rate` is not 96000 or 192000.
+        If the lengths of `sounds` and `indexes` do not match.
+    """
     if indexes is None:
         indexes = []
     if sounds is None:
         sounds = []
+    close_card = card is None
     if card is None:
         card = SoundCardModule()
-        close_card = True
 
-    if sample_rate in (192, 192000):
-        sample_rate = SampleRate._192000HZ
-    elif sample_rate in (96, 96000):
-        sample_rate = SampleRate._96000HZ
-    else:
-        log.error(f'Sound sample rate {sample_rate} should be 96 or 192 (KHz)')
-        raise (ValueError)
-
+    if sample_rate not in (96000, 192000):
+        raise ValueError(f'Sound sample rate {sample_rate} should be 96000 or 192000')
     if len(sounds) != len(indexes):
-        log.error('Wrong number of sounds and indexes')
-        raise (ValueError)
+        raise ValueError('Wrong number of sounds and indexes')
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):

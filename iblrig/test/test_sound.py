@@ -1,7 +1,10 @@
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
 
 from iblrig import sound
+from src.pybpod_soundcard_module.module_api import DataType
 
 
 class TestSineWave:
@@ -111,3 +114,83 @@ class TestSineStimulus:
         freqs = np.fft.rfftfreq(len(stim), 1 / fs)
         peak_freq = freqs[np.argmax(np.abs(spectrum))]
         assert np.isclose(peak_freq, f, atol=1.0), f'Peak frequency {peak_freq} not close to {f}'
+
+
+class TestFormatSound:
+    def test_output_dtype_and_shape(self):
+        stereo_wave = np.array([[0.5, -0.5], [1.0, -1.0], [-0.25, 0.25]], dtype=np.float32)
+        result = sound.format_sound(stereo_wave)
+        scale = (2**31) - 1
+        expected = (stereo_wave * scale).astype(np.int32)
+        assert result.shape == (3, 2)
+        assert result.dtype == np.int32
+        np.testing.assert_array_equal(result, expected)
+
+    def test_flat_output(self):
+        stereo_wave = np.array([[0.1, 0.2], [0.3, 0.4]], dtype=np.float32)
+        flat = sound.format_sound(stereo_wave, flat=True)
+        assert flat.ndim == 1
+        assert flat.shape == (4,)
+        assert flat[::2].tolist() == [flat[0], flat[2]]  # L samples
+        assert flat[1::2].tolist() == [flat[1], flat[3]]  # R samples
+
+    def test_file_output(self, tmp_path):
+        stereo_wave = np.ones((10, 2), dtype=np.float32) * 0.5
+        file_path = tmp_path / 'test_sound.bin'
+        _ = sound.format_sound(stereo_wave, file_path=str(file_path))
+        assert file_path.exists()
+        with open(file_path, 'rb') as f:
+            data = f.read()
+            assert len(data) == 10 * 2 * 4  # 10 samples × 2 channels × 4 bytes
+
+    def test_invalid_input_raises(self):
+        mono_wave = np.ones((10,), dtype=np.float32)  # Not stereo
+        with pytest.raises(ValueError, match='Sound must be a 2D array'):
+            sound.format_sound(mono_wave)
+
+
+class DummyCard:
+    def __init__(self):
+        self.send_sound = MagicMock()
+        self.close = MagicMock()
+
+
+class TestConfigureSoundCard:
+    @pytest.fixture
+    def dummy_card(self):
+        return DummyCard()
+
+    @patch('iblrig.sound.format_sound', side_effect=lambda s, flat=True: s)
+    @patch('iblrig.sound.SoundCardModule', autospec=True)
+    def test_configure_sound_card(self, mock_card_class, mock_format_sound, dummy_card):
+        mock_card_class.return_value = dummy_card
+
+        # Test default card creation and close called
+        sounds = [[0.1, 0.2], [0.3, 0.4]]
+        indexes = [0, 1]
+        sound.configure_sound_card(sounds=sounds, indexes=indexes, sample_rate=96000)
+        assert mock_format_sound.call_count == 2
+
+        # send_sound called with formatted sounds, correct indexes and sample rate
+        calls = dummy_card.send_sound.call_args_list
+        assert len(calls) == 2
+        for call, idx in zip(calls, indexes, strict=False):
+            args, kwargs = call
+            assert args[1] == idx
+            assert args[2] == 96000
+            assert args[3].name == 'INT32' or args[3] == DataType.INT32  # Depending on your enum
+
+        # card.close called because card was created inside
+        dummy_card.close.assert_called_once()
+
+        # Test passing in an existing card disables close
+        dummy_card.send_sound.reset_mock()
+        dummy_card.close.reset_mock()
+        sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=indexes, sample_rate=192000)
+        dummy_card.send_sound.assert_called()
+        dummy_card.close.assert_not_called()
+
+        with pytest.raises(ValueError):
+            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=indexes, sample_rate=12345)
+        with pytest.raises(ValueError):
+            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=[0])
