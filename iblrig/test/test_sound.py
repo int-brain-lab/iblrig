@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from src.pybpod_soundcard_module.module_api import DataType
 
 from iblrig import sound
-from src.pybpod_soundcard_module.module_api import DataType
 
 
 class TestSineWave:
