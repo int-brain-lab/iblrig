@@ -243,9 +243,11 @@ def configure_sound_card(
         card = SoundCardModule()
 
     if sample_rate not in (96000, 192000):
-        raise ValueError(f'Sound sample rate {sample_rate} should be 96000 or 192000')
+        raise ValueError(f'Sound sample rate {sample_rate} must be 96000 or 192000')
     if len(sounds) != len(indexes):
-        raise ValueError('Wrong number of sounds and indexes')
+        raise ValueError('Number of sounds and indices must match')
+    if not all([2 <= idx <= 32 for idx in indexes]):
+        raise ValueError(f'One or more indices out of valid range [2, 32]')
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):
