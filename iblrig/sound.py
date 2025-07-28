@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 
-from pybpod_soundcard_module.module_api import DataType, SoundCardModule
+from pybpod_soundcard_module.module_api import DataType, SoundCardModule, SampleRate
 
 log = logging.getLogger(__name__)
 
@@ -242,16 +242,22 @@ def configure_sound_card(
     if card is None:
         card = SoundCardModule()
 
-    if sample_rate not in (96000, 192000):
-        raise ValueError(f'Sound sample rate {sample_rate} must be 96000 or 192000')
     if len(sounds) != len(indexes):
         raise ValueError('Number of sounds and indices must match')
     if not all([2 <= idx <= 32 for idx in indexes]):
         raise ValueError('One or more indices out of valid range [2, 32]')
 
+    # yes, this is painful - send_sound() complains if sample_rate is not type SampleRate
+    if sample_rate == 192000:
+        sample_rate = SampleRate._192000HZ
+    elif sample_rate == 96000:
+        sample_rate = SampleRate._96000HZ
+    else:
+        raise ValueError(f'Sound sample rate {sample_rate} must be 96000 or 192000')
+
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):
-        card.send_sound(sound, index, int(sample_rate), DataType.INT32)
+        card.send_sound(sound, index, sample_rate, DataType.INT32)
 
     if close_card:
         card.close()
