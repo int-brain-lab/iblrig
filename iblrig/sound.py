@@ -223,8 +223,9 @@ def configure_sound_card(
         A list of stereo sound arrays to be formatted and sent to the card.
         Each sound array should be 2D (n_samples, 2). Default is None (empty list).
     indexes : list of int, optional
-        List of channel or buffer indexes corresponding to each sound in `sounds`.
-        Must be the same length as `sounds`. Default is None (empty list).
+        List of indexes corresponding to each sound in `sounds`.
+        Must be the same length as `sounds`. All values must be in range [2, 32].
+        Default is None (empty list).
     sample_rate : int, optional
         Sample rate in Hz for playback. Must be 96000 or 192000. Default is 96000.
 
@@ -233,6 +234,7 @@ def configure_sound_card(
     ValueError
         If `sample_rate` is not 96000 or 192000.
         If the lengths of `sounds` and `indexes` do not match.
+        If one or several indices are outside valid range.
     """
     if indexes is None:
         indexes = []
