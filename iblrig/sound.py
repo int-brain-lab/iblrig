@@ -3,7 +3,7 @@ from typing import Literal
 
 import numpy as np
 
-from pybpod_soundcard_module.module_api import DataType, SoundCardModule, SampleRate
+from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
 log = logging.getLogger(__name__)
 
