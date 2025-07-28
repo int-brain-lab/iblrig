@@ -1192,20 +1192,20 @@ class SoundMixin(BaseSession, HasBpod):
         self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(output=sound_output)
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
-            sampling_rate=self.sound['samplerate'],
-            sound_frequency=self.task_params.GO_TONE_FREQUENCY,
-            sound_duration=self.task_params.GO_TONE_DURATION,
+            rate=self.sound['samplerate'],
+            frequency=self.task_params.GO_TONE_FREQUENCY,
+            duration=self.task_params.GO_TONE_DURATION,
             amplitude=self.task_params.GO_TONE_AMPLITUDE * amp_gain_factor,
-            fade_duration=0.01,
-            channels=self.sound['channels'],
+            fade=0.01,
+            chans=self.sound['channels'],
         )
         self.sound['WHITE_NOISE'] = iblrig.sound.make_sound(
-            sampling_rate=self.sound['samplerate'],
-            sound_frequency=-1,
-            sound_duration=self.task_params.WHITE_NOISE_DURATION,
+            rate=self.sound['samplerate'],
+            frequency=-1,
+            duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE * amp_gain_factor,
-            fade_duration=0.01,
-            channels=self.sound['channels'],
+            fade=0.01,
+            chans=self.sound['channels'],
         )
 
     def start_mixin_sound(self):

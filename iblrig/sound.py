@@ -8,15 +8,15 @@ from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardMo
 log = logging.getLogger(__name__)
 
 
-def sine_wave(d: float | int, f: float | int, fs: int = 44100):
+def sine_wave(d: float, f: float, fs: int = 44100):
     """
     Generate a sine wave signal.
 
     Parameters
     ----------
-    d : float or int
+    d : float
         Duration of the sine wave in seconds. Must be positive.
-    f : float or int
+    f : float
         Frequency of the sine wave in Hertz (Hz). Must be positive.
     fs : int, optional
         Sampling rate in samples per second (Hz). Default is 44100.
@@ -30,7 +30,7 @@ def sine_wave(d: float | int, f: float | int, fs: int = 44100):
     return np.sin(2 * np.pi * f * t)
 
 
-def apply_hanning_envelope(waveform: np.ndarray, d: float | int, fs: int = 44100):
+def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100):
     """
     Apply a Hanning fade-in and fade-out to an audio waveform.
 
@@ -38,7 +38,7 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float | int, fs: int = 44100
     ----------
     waveform : np.ndarray
         The input audio waveform (1D array of samples).
-    d : float or int
+    d : float
         Duration of the fade-in and fade-out sections in seconds.
     fs : int, optional
         Sampling rate in samples per second (Hz). Default is 44100.
@@ -98,29 +98,29 @@ def sine_stimulus(
 
 
 def make_sound(
-    sampling_rate: int = 44100,
-    sound_frequency: float = 5000,
-    sound_duration: float = 0.1,
+    rate: int = 44100,
+    frequency: float = 5000,
+    duration: float = 0.1,
     amplitude: float = 1,
-    fade_duration: float = 0.01,
-    channels: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
+    fade: float = 0.01,
+    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
 ):
     """
     Generate a sound waveform with optional fade and channel configurations.
 
     Parameters
     ----------
-    sampling_rate : int, optional
+    rate : int, optional
         Sampling rate in Hz. Default is 44100.
-    sound_frequency : float, optional
+    frequency : float, optional
         Frequency of the tone in Hz. If -1, generates white noise. Default is 5000.
-    sound_duration : float, optional
+    duration : float, optional
         Duration of the sound in seconds. Default is 0.1.
     amplitude : float, optional
         Amplitude of the tone. Default is 1.
-    fade_duration : float, optional
+    fade : float, optional
         Duration of fade-in and fade-out in seconds. Default is 0.01.
-    channels : str, optional
+    chans : str, optional
         Output channel configuration:
         - 'mono': single channel
         - 'L': tone on left channel only
@@ -135,16 +135,16 @@ def make_sound(
     np.ndarray
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
-    if sound_frequency == -1:
-        tone = amplitude * np.random.rand(int(sampling_rate * sound_duration))
+    if frequency == -1:
+        tone = amplitude * np.random.rand(int(rate * duration))
     else:
-        tone = sine_stimulus(d=sound_duration, f=sound_frequency, fs=sampling_rate, amplitude=amplitude, d_fade=fade_duration)
+        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade)
 
     ttl = np.ones(len(tone)) * 0.99
-    ttl[round(sampling_rate / 100) :] = 0  # 10 ms TTL
+    ttl[round(rate / 100):] = 0  # 10 ms TTL
     null = np.zeros(len(tone))
 
-    match channels:
+    match chans:
         case 'mono':
             sound = tone
         case 'L':
@@ -158,7 +158,7 @@ def make_sound(
         case 'TTL+R':
             sound = np.column_stack((ttl, tone))
         case _:
-            raise ValueError(f'Unsupported channel configuration: {channels}')
+            raise ValueError(f'Unsupported channel configuration: {chans}')
     return sound
 
 
