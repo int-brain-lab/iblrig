@@ -73,7 +73,7 @@ def sine_stimulus(
     d: float | int, f: float | int, fs: int = 44100, amplitude: float = 1.0, gain_db: float = 0.0, d_fade: float = 0.01
 ):
     """
-    Generate a sine wave stimulus.
+    Generate a sine wave stimulus: A sine wave with a Hanning fade-in and fade-out, defined amplitude and gain.
 
     Parameters
     ----------
