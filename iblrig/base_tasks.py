@@ -74,14 +74,14 @@ class BaseSession(ABC):
     # protocol_name: str | None = None
     # """The name of the task protocol (NB: avoid spaces)."""
     base_parameters_file: Path | None = None
-    """Path: A YAML file containing base, default task parameters."""
+    """A YAML file containing base, default task parameters."""
     is_mock: bool = False
     """Wether the session is a mock session."""
     logger: logging.Logger | None = None
     """Logger instance used solely to keep track of log level passed to constructor."""
     experiment_description: dict = {}
     """The experiment description."""
-    extractor_tasks: list | None = None
+    _extractor_tasks: list | None = None
     """An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
@@ -142,7 +142,6 @@ class BaseSession(ABC):
         append : bool, optional
             If True, append to the latest existing session of the same subject for the same day.
         """
-        self.extractor_tasks = getattr(self, 'extractor_tasks', None)
         self._logger = None
         self._setup_loggers(level=log_level)
         if not isinstance(self, EmptySession):
@@ -241,6 +240,14 @@ class BaseSession(ABC):
     @property
     def paused(self) -> bool:
         return self._pause_flag
+
+    @property
+    def extractor_tasks(self) -> list[str] | None:
+        return self._extractor_tasks
+
+    @extractor_tasks.setter
+    def extractor_tasks(self, value: list[str] | None):
+        self._extractor_tasks = value
 
     def _load_settings(
         self,
