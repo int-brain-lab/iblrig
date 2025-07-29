@@ -82,13 +82,13 @@ class Ui_TabAbout(object):
         self.uiLabelCopyright.setText(_translate("TabAbout", "**IBLRIG v8.13.0**\n"
 "\n"
 "© 2024, International Brain Laboratory"))
-        self.commandLinkButtonGitHub.setToolTip(_translate("TabAbout", "Open the IBLRIG GitHub repository"))
+        self.commandLinkButtonGitHub.setStatusTip(_translate("TabAbout", "Click to open the IBLRIG GitHub repository"))
         self.commandLinkButtonGitHub.setText(_translate("TabAbout", "&GitHub"))
-        self.commandLinkButtonDoc.setToolTip(_translate("TabAbout", "Open the IBLRIG documentation"))
+        self.commandLinkButtonDoc.setStatusTip(_translate("TabAbout", "Click to open the IBLRIG documentation"))
         self.commandLinkButtonDoc.setText(_translate("TabAbout", "&Documentation"))
-        self.commandLinkButtonDiscussion.setToolTip(_translate("TabAbout", "Open the IBLRIG discussion board"))
+        self.commandLinkButtonDiscussion.setStatusTip(_translate("TabAbout", "Click to open the IBLRIG discussion board"))
         self.commandLinkButtonDiscussion.setText(_translate("TabAbout", "Discussion &Board"))
-        self.commandLinkButtonIssues.setToolTip(_translate("TabAbout", "Oen the IBLRIG issue tracker"))
+        self.commandLinkButtonIssues.setStatusTip(_translate("TabAbout", "Click to open the IBLRIG issue tracker"))
         self.commandLinkButtonIssues.setText(_translate("TabAbout", "&Issue Tracker"))
 from iblrig.gui import resources_rc
 

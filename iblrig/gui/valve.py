@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pyqtgraph as pg
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QThreadPool
 from pyqtgraph import PlotWidget
-from qtpy.QtCore import QState, QStateMachine, Qt, QThreadPool, QTimer, Signal, Slot
-from qtpy.QtGui import QFont, QFontDatabase, QIcon
-from qtpy.QtWidgets import QDialog, QInputDialog, QLineEdit
 from serial import SerialException
 from typing_extensions import override
 
-from iblqt.core import Worker
+from iblrig.gui.tools import Worker
 from iblrig.gui.ui_valve import Ui_valve
 from iblrig.hardware import Bpod
 from iblrig.path_helper import save_pydantic_yaml
@@ -61,15 +60,15 @@ class CalibrationPlot:
         self.update()
 
 
-class ValveCalibrationDialog(QDialog, Ui_valve):
+class ValveCalibrationDialog(QtWidgets.QDialog, Ui_valve):
     scale: Scale | None = None
-    scale_initialized = Signal(bool)
-    scale_text_changed = Signal(str)
-    scale_stable_changed = Signal(bool)
-    drop_cleared = Signal(int)
-    tared = Signal(bool)
-    calibration_finished = Signal()
-    start_next_calibration = Signal()
+    scale_initialized = QtCore.pyqtSignal(bool)
+    scale_text_changed = QtCore.pyqtSignal(str)
+    scale_stable_changed = QtCore.pyqtSignal(bool)
+    drop_cleared = QtCore.pyqtSignal(int)
+    tared = QtCore.pyqtSignal(bool)
+    calibration_finished = QtCore.pyqtSignal()
+    start_next_calibration = QtCore.pyqtSignal()
     _grams = float('nan')
     _stable = False
     _next_calibration_step = 1
@@ -82,13 +81,13 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         self.setupUi(self)
 
         # state machine for GUI logic
-        self.machine = QStateMachine()
-        self.states: OrderedDict[str, QStateMachine] = OrderedDict({})
+        self.machine = QtCore.QStateMachine()
+        self.states: OrderedDict[str, QtCore.QStateMachine] = OrderedDict({})
 
         # timers
-        self.scale_timer = QTimer()
-        self.clear_timer = QTimer()
-        self.clear_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        self.scale_timer = QtCore.QTimer()
+        self.clear_timer = QtCore.QTimer()
+        self.clear_timer.setTimerType(QtCore.Qt.TimerType.PreciseTimer)
 
         # hardware
         self.hw_settings: HardwareSettings = self.parent().model.hardware_settings
@@ -96,16 +95,20 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         self.valve = Valve(self.hw_settings.device_valve)
 
         # UI related ...
-        self.font_database = QFontDatabase
+        self.font_database = QtGui.QFontDatabase
         self.font_database.addApplicationFont(':/fonts/7-Segment')
-        self.lineEditGrams.setFont(QFont('7-Segment', 30))
-        self.action_grams = self.lineEditGrams.addAction(QIcon(':/images/grams'), QLineEdit.ActionPosition.TrailingPosition)
-        self.action_stable = self.lineEditGrams.addAction(QIcon(':/images/stable'), QLineEdit.ActionPosition.LeadingPosition)
+        self.lineEditGrams.setFont(QtGui.QFont('7-Segment', 30))
+        self.action_grams = self.lineEditGrams.addAction(
+            QtGui.QIcon(':/images/grams'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition
+        )
+        self.action_stable = self.lineEditGrams.addAction(
+            QtGui.QIcon(':/images/stable'), QtWidgets.QLineEdit.ActionPosition.LeadingPosition
+        )
         self.action_grams.setVisible(False)
         self.action_stable.setVisible(False)
-        self.setAttribute(Qt.WA_DeleteOnClose, True)
-        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
-        self.setModal(Qt.WindowModality.ApplicationModal)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setModal(QtCore.Qt.WindowModality.ApplicationModal)
 
         # set up plot widget
         self.uiPlot.addLegend()
@@ -140,10 +143,10 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
 
         self.show()
 
-    @Slot(bool)
+    @QtCore.pyqtSlot(bool)
     def define_and_start_state_machine(self, use_scale: bool = False) -> None:
         for state_name in ['start', 'beaker', 'beaker2', 'flow', 'clear', 'tare', 'calibrate', 'finished', 'save']:
-            self.states[state_name] = QState(self.machine)
+            self.states[state_name] = QtCore.QState(self.machine)
         self.machine.setInitialState(self.states['start'])
 
         # state 'start': welcome the user and explain what's going on --------------------------------------------------
@@ -262,7 +265,7 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
             self.groupBoxScale.setVisible(False)
             return False
         try:
-            self.lineEditGrams.setAlignment(Qt.AlignCenter)
+            self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Starting')
             self.scale = Scale(port)
             return True
@@ -274,14 +277,14 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         if success:
             self.lineEditGrams.setEnabled(True)
             self.pushButtonTareScale.setEnabled(True)
-            self.lineEditGrams.setAlignment(Qt.AlignRight)
+            self.lineEditGrams.setAlignment(QtCore.Qt.AlignRight)
             self.lineEditGrams.setText('')
             self.scale_timer.timeout.connect(self.get_scale_reading)
             self.action_grams.setVisible(True)
             self.get_scale_reading()
             self.scale_timer.start(self._scale_update_ms)
         else:
-            self.lineEditGrams.setAlignment(Qt.AlignCenter)
+            self.lineEditGrams.setAlignment(QtCore.Qt.AlignCenter)
             self.lineEditGrams.setText('Error')
         self.scale_initialized.emit(success)
 
@@ -294,11 +297,11 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         self._grams = grams
         self._stable = stable
 
-    @Slot(str)
+    @QtCore.pyqtSlot(str)
     def display_scale_text(self, value: str):
         self.lineEditGrams.setText(value)
 
-    @Slot(bool)
+    @QtCore.pyqtSlot(bool)
     def display_scale_stable(self, value: bool):
         self.action_stable.setVisible(value)
 
@@ -348,12 +351,12 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         worker.signals.result.connect(self._on_tare_finished)
         QThreadPool.globalInstance().tryStart(worker)
 
-    @Slot(object)
+    @QtCore.pyqtSlot(object)
     def _on_tare_finished(self, success: bool):
         self.scale_timer.start(self._scale_update_ms)
         self.tared.emit(success)
 
-    @Slot()
+    @QtCore.pyqtSlot()
     def calibrate(self):
         n_samples = int(np.ceil(50 * max(self.valve.new_calibration_open_times) / self._next_calibration_time))
         self.labelGuideText.setText(
@@ -363,20 +366,20 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         worker.signals.result.connect(self._on_repeated_pulse_finished)
         QThreadPool.globalInstance().tryStart(worker)
 
-    @Slot(object)
+    @QtCore.pyqtSlot(object)
     def _on_repeated_pulse_finished(self, n_pulses: int):
         if self.scale is None:
             ok = False
             scale_reading = 0
             while not ok or scale_reading <= 0:
-                scale_reading, ok = QInputDialog().getDouble(
+                scale_reading, ok = QtWidgets.QInputDialog().getDouble(
                     self,
                     'Enter Scale Reading',
                     'Enter measured weight in grams:',
                     min=0,
                     max=float('inf'),
                     decimals=2,
-                    flags=(QInputDialog().windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint),
+                    flags=(QtWidgets.QInputDialog().windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint),
                 )
             grams_per_pulse = scale_reading / n_pulses
         else:
@@ -399,7 +402,7 @@ class ValveCalibrationDialog(QDialog, Ui_valve):
         save_pydantic_yaml(self.parent().model.hardware_settings)
         self.labelGuideHead.setText('Settings saved.')
         self.labelGuideText.setText('')
-        QTimer.singleShot(1000, self.close)
+        QtCore.QTimer.singleShot(1000, self.close)
 
     @override
     def closeEvent(self, event):

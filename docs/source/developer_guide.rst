@@ -36,38 +36,23 @@ Both of these fields are automatically inferred (by means of ``git describe``) a
 developer.
 
 
-Package Management and Development Workflows with UV
-----------------------------------------------------
+Package Management and Development Workflows with PDM
+-----------------------------------------------------
 
-This project is utilizing `UV <https://github.com/astral-sh/uv>`_ as its package
-manager for managing dependencies and ensuring consistent and reproducible environments.
-To install UV:
-
-.. tab-set::
-
-   .. tab-item:: Linux and macOS
-
-      .. code-block:: console
-
-         $ curl -LsSf https://astral.sh/uv/install.sh | sh
-
-   .. tab-item:: Windows
-
-      .. code-block:: pwsh-session
-
-         PS> powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-See `UV's documentation <https://docs.astral.sh/uv/>`_ for details.
+We use `PDM <https://pdm-project.org/en/latest/>`_ to manage dependencies of IBLRIG.
+PDM can also be used to run various commands with relevance to the development process without having to activate a virtual
+environment first.
+Please refer to `PDM's documentation <https://pdm-project.org/en/latest/#installation>`_ for help with installing PDM.
 
 
 Installing Developer Dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To install IBLRIG as an editable package including all developer dependencies:
+To install additional dependencies needed for working on IBLRIG's code-base, run:
 
-.. code-block:: pwsh-session
+.. code-block:: console
 
-   PS> uv sync
+   pdm sync -d
 
 
 Running Unit Tests
@@ -77,7 +62,7 @@ To run unit tests locally, run:
 
 .. code-block:: console
 
-   uv run --frozen pytest
+   pdm run pytest
 
 This will also generate a HTML based coverage report which can be found in the ``htmlcov`` directory.
 
@@ -92,7 +77,7 @@ To lint your code, run:
 
 .. code-block:: console
 
-   uv run --frozen ruff check
+   pdm run ruff check
 
 Appending the flag ``--fix`` to the above command will automatically fix issues that are deemed safe to handle.
 
@@ -100,7 +85,7 @@ To reformat your code according to the `Black code style <https://black.readthed
 
 .. code-block:: console
 
-   uv run --frozen uff format
+   pdm run ruff format
 
 Appending the flag ``--check`` to the above command will check your code for formatting issues without applying any changes.
 Refer to `Ruff Formater's documentation <https://docs.astral.sh/ruff/formatter/>`_ for further details.
@@ -131,13 +116,13 @@ To build the documentation, run:
 
 .. code-block:: console
 
-   uv run --frozen sphinx-autobuild ./docs/source ./docs/build
+   pdm run sphinx-autobuild ./docs/source ./docs/build
 
 You can also export the documentation to a PDF file:
 
 .. code-block:: console
 
-   uv run --frozen make -C docs/ simplepdf
+   pdm run make -C docs/ simplepdf
 
 Find the exported PDF file in ``docs/build/simplepdf``.
 

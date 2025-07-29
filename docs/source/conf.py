@@ -26,8 +26,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.viewcode',
-    'sphinx_design',
-    'sphinx_copybutton',
 ]
 autosectionlabel_prefix_document = True
 source_suffix = ['.rst', '.md']

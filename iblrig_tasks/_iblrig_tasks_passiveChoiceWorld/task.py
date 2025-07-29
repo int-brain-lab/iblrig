@@ -123,7 +123,8 @@ class Session(ChoiceWorldSession):
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_show_stim)
                 time.sleep(0.3)  # todo: this is a very inaccurate way of controlling stim duration!
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_hide_stim)
-            if self.stopped:
+            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
+                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
                 break
 
 
