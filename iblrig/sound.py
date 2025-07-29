@@ -8,7 +8,7 @@ from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardMo
 log = logging.getLogger(__name__)
 
 
-def sine_wave(d: float, f: float, fs: int = 44100):
+def sine_wave(d: float, f: float, fs: int = 44100) -> np.ndarray:
     """
     Generate a sine wave signal.
 
@@ -30,7 +30,7 @@ def sine_wave(d: float, f: float, fs: int = 44100):
     return np.sin(2 * np.pi * f * t)
 
 
-def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100):
+def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> np.ndarray:
     """
     Apply a Hanning fade-in and fade-out to an audio waveform.
 
@@ -71,7 +71,7 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100):
 
 def sine_stimulus(
     d: float | int, f: float | int, fs: int = 44100, amplitude: float = 1.0, gain_db: float = 0.0, d_fade: float = 0.01
-):
+) -> np.ndarray:
     """
     Generate a sine wave stimulus: A sine wave with a Hanning fade-in and fade-out, defined amplitude and gain.
 
@@ -104,7 +104,7 @@ def make_sound(
     amplitude: float = 1,
     fade: float = 0.01,
     chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
-):
+) -> np.ndarray:
     """
     Generate a sound waveform with optional fade and channel configurations.
 
@@ -162,7 +162,7 @@ def make_sound(
     return sound
 
 
-def format_sound(sound: np.array, file_path: str = None, flat: bool = False):
+def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> np.ndarray:
     """
     Format a stereo sound array into a binary-compatible int32 format.
 
@@ -209,7 +209,7 @@ def configure_sound_card(
     sounds: list[np.ndarray] | None = None,
     indexes: list[int] | None = None,
     sample_rate: int = 96000,
-):
+) -> None:
     """
     Configure a Harp sound card with given sounds at specified indexes and sample rate.
 
