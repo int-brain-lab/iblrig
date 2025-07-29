@@ -104,6 +104,7 @@ def make_sound(
     amplitude: float = 1,
     fade: float = 0.01,
     chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
+    gain_db: float = 0.0
 ) -> np.ndarray:
     """
     Generate a sound waveform with optional fade and channel configurations.
@@ -129,6 +130,8 @@ def make_sound(
         - 'L+TTL': tone on left, TTL pulse on right
         - 'TTL+R': TTL pulse on left, tone on right
         Default is 'L+TTL'.
+    gain_db: float = 0.0
+        Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
 
     Returns
     -------
@@ -136,9 +139,9 @@ def make_sound(
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
     if frequency == -1:
-        tone = amplitude * np.random.rand(int(rate * duration))
+        tone = amplitude * np.random.rand(int(rate * duration)) * (10 ** (gain_db / 20))
     else:
-        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade)
+        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
 
     ttl = np.ones(len(tone)) * 0.99
     ttl[round(rate / 100) :] = 0  # 10 ms TTL
