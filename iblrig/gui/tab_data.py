@@ -4,8 +4,7 @@ from datetime import datetime
 from typing import NamedTuple
 
 import pandas as pd
-from PyQt5.Qt import pyqtSlot
-from PyQt5.QtCore import (
+from qtpy.QtCore import (
     QDateTime,
     QModelIndex,
     QRegExp,
@@ -13,9 +12,10 @@ from PyQt5.QtCore import (
     QSortFilterProxyModel,
     Qt,
     QThread,
-    pyqtSignal,
+    Signal,
+    Slot,
 )
-from PyQt5.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
+from qtpy.QtWidgets import QHeaderView, QStyledItemDelegate, QWidget
 
 from iblqt.core import DataFrameTableModel
 from iblrig.gui.ui_tab_data import Ui_TabData
@@ -117,7 +117,7 @@ class TabData(QWidget, Ui_TabData):
         self.pushButtonUpdate.clicked.connect(self.dataWorker.start)
         self.lineEditFilter.textChanged.connect(self._filter)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def _filter(self, text: str):
         self.tableProxy.setFilterRegExp(QRegExp(text, Qt.CaseInsensitive))
 
@@ -125,7 +125,7 @@ class TabData(QWidget, Ui_TabData):
         if self.tableModel.rowCount() == 0:
             self.dataWorker.start()
 
-    @pyqtSlot(QModelIndex)
+    @Slot(QModelIndex)
     def _openDir(self, index: QModelIndex):
         directory = self.tableView.model().itemData(index.siblingAtColumn(0))[0]
         if platform.system() == 'Windows':
@@ -135,16 +135,16 @@ class TabData(QWidget, Ui_TabData):
         else:
             subprocess.Popen(['xdg-open', directory])
 
-    @pyqtSlot(int)
+    @Slot(int)
     def _storeSort(self, index: int):
         self.settings.setValue('sortColumn', self.tableView.horizontalHeader().sortIndicatorSection())
         self.settings.setValue('sortOrder', self.tableView.horizontalHeader().sortIndicatorOrder())
 
 
 class DataWorker(QThread):
-    initialized = pyqtSignal(pd.DataFrame)
-    update = pyqtSignal(QModelIndex, object)
-    lazyLoadComplete = pyqtSignal()
+    initialized = Signal(pd.DataFrame)
+    update = Signal(QModelIndex, object)
+    lazyLoadComplete = Signal()
 
     def __init__(self, parent: TabData):
         super().__init__(parent)

@@ -1,9 +1,9 @@
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QThreadPool, pyqtSlot
-from PyQt5.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5 import QtWidgets
+from qtpy.QtCore import Qt, QThreadPool, Signal, Slot
+from qtpy.QtGui import QFont, QIcon, QStandardItem, QStandardItemModel
+from qtpy.QtWidgets import QHeaderView
 
-from iblrig.gui.tools import Worker
+from iblqt.core import Worker
 from iblrig.gui.ui_validation import Ui_validation
 from iblrig.hardware_validation import Result, Status, Validator, get_all_validators
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
@@ -24,7 +24,7 @@ class StatusItem(QStandardItem):
 
     def __init__(self, status: Status):
         super().__init__()
-        self.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignRight)
+        self.setTextAlignment(Qt.AlignmentFlag.AlignRight)
         self.status = status
 
     @property
@@ -78,9 +78,9 @@ class ValidatorItem(QStandardItem):
 class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
     validator_items: list[ValidatorItem] = []
     status_items: list[StatusItem] = []
-    item_started = QtCore.pyqtSignal(int)
-    item_result = QtCore.pyqtSignal(int, Result)
-    item_finished = QtCore.pyqtSignal(int, Status)
+    item_started = Signal(int)
+    item_result = Signal(int, Result)
+    item_finished = Signal(int, Status)
 
     def __init__(self, *args, hardware_settings: HardwareSettings, rig_settings: RigSettings, **kwargs) -> None:
         """
@@ -100,7 +100,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
         """
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
         self.worker = Worker(self.run_subprocess)
         self.worker.setAutoDelete(False)
@@ -162,11 +162,11 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
                 status = Status.PASS
             self.item_finished.emit(idx, status)
 
-    @pyqtSlot(int)
+    @Slot(int)
     def on_item_started(self, idx: int):
         self.status_items[idx].setText('running')
 
-    @pyqtSlot(int, Result)
+    @Slot(int, Result)
     def on_item_result(self, idx: int, result: Result):
         result_item = QStandardItem(result.message)
         result_item.setToolTip(result.message)
@@ -178,7 +178,7 @@ class SystemValidationDialog(QtWidgets.QDialog, Ui_validation):
             self.validator_items[idx].appendRow(solution_item)
         self.update()
 
-    @pyqtSlot(int, Status)
+    @Slot(int, Status)
     def on_item_finished(self, idx: int, status: Status):
         self.validator_items[idx].status = status
         self.status_items[idx].status = status

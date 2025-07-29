@@ -1,13 +1,13 @@
-from PyQt5.QtCore import QSettings, QTimer, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QBrush, QColorConstants, QFont
-from PyQt5.QtWidgets import QApplication, QWidget
+from qtpy.QtCore import QSettings, QTimer, Signal, Slot
+from qtpy.QtGui import QBrush, QColorConstants, QFont
+from qtpy.QtWidgets import QApplication, QWidget
 
 from iblrig.gui.ui_tab_log import Ui_TabLog
 
 
 class TabLog(QWidget, Ui_TabLog):
     _narrative = b''
-    narrativeUpdated = pyqtSignal(bytes)
+    narrativeUpdated = Signal(bytes)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,24 +29,24 @@ class TabLog(QWidget, Ui_TabLog):
         self.narrativeTimer.setSingleShot(True)
         self.narrativeTimer.timeout.connect(self.narrativeTimerTimeout)
 
-    @pyqtSlot()
+    @Slot()
     def narrativeChanged(self):
         self.narrativeTimer.start(5000)
 
-    @pyqtSlot()
+    @Slot()
     def narrativeTimerTimeout(self):
         narrative = str.encode(self.plainTextEditNarrative.toPlainText())
         if narrative != self._narrative:
             self.narrativeUpdated.emit(narrative)
             self._narrative = narrative
 
-    @pyqtSlot()
+    @Slot()
     def clear(self):
         """Clear the log."""
         self.pushButtonClipboard.setEnabled(False)
         self.plainTextEditLog.clear()
 
-    @pyqtSlot(str, str)
+    @Slot(str, str)
     def appendText(self, text: str, color: str = 'White'):
         """
         Append text to the log.
@@ -63,13 +63,13 @@ class TabLog(QWidget, Ui_TabLog):
         self.setLogColor(color)
         self.plainTextEditLog.appendPlainText(text)
 
-    @pyqtSlot()
+    @Slot()
     def copyToClipboard(self):
         """Copy the log contents to the clipboard as a markdown code-block."""
         text = f'"""\n{self.plainTextEditLog.toPlainText()}\n"""'
         QApplication.clipboard().setText(text)
 
-    @pyqtSlot(int)
+    @Slot(int)
     def setFontSize(self, fontSize: int):
         """
         Set the font size of the log-widget's contents.

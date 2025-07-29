@@ -1,9 +1,9 @@
 import logging
 from datetime import date
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QTimer, pyqtProperty, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QWidget
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Property, QTimer, Signal, Slot
+from qtpy.QtWidgets import QWidget
 
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.gui.ui_frame2ttl import Ui_frame2ttl
@@ -68,7 +68,7 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
 
 
 class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
-    colorChanged = pyqtSignal(QtGui.QColor)
+    colorChanged = Signal(QtGui.QColor)
 
     def __init__(
         self,
@@ -130,7 +130,7 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
         self.focusWidget()
         self.setColor(color)
 
-    @pyqtSlot(QtGui.QColor)
+    @Slot(QtGui.QColor)
     def setColor(self, color: QtGui.QColor):
         palette = self.palette()
         palette.setColor(QtGui.QPalette.Window, color)
@@ -142,4 +142,4 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
     def getColor(self) -> QtGui.QColor:
         return self.palette().color(QtGui.QPalette.Window)
 
-    color = pyqtProperty(QtGui.QColor, fget=getColor, fset=setColor)
+    color = Property(QtGui.QColor, fget=getColor, fset=setColor)

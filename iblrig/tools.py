@@ -6,6 +6,8 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
@@ -431,3 +433,28 @@ def get_number(
         except ValueError:
             value = None
     return value
+
+
+class InputThread(threading.Thread):
+    """A thread that reads input from stdin and invokes a callback function for each line read."""
+
+    def __init__(self, callback: Callable[[bytes], None]) -> None:
+        """
+        Initialize the InputThread.
+
+        Parameters
+        ----------
+        callback : Callable
+            A function that will be called with each line of input read from stdin.
+        """
+        super().__init__()
+        self.name = 'InputThread'
+        self.daemon = True
+        self._callback = callback
+        self.start()
+
+    def run(self) -> None:
+        """Continuously reads lines from standard input and passes them to the callback function until thread is terminated."""
+        while True:
+            line = sys.stdin.buffer.raw.readline().rstrip()
+            self._callback(line)

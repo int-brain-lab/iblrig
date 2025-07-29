@@ -1,0 +1,28 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# General settings
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 80
+charset = utf-8
+
+# 4 space indentation
+[*.py]
+max_line_length = 130
+indent_style = space
+indent_size = 4
+
+# Indentation override for rst files
+[*.rst]
+indent_style = space
+indent_size = 3
+
+# Indentation override for rst and yaml files
+[*.{toml,yaml,qrc}]
+indent_style = space
+indent_size = 2

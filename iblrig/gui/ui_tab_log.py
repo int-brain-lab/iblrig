@@ -103,10 +103,10 @@ class Ui_TabLog(object):
         _translate = QtCore.QCoreApplication.translate
         TabLog.setWindowTitle(_translate("TabLog", "Form"))
         self.groupBoxLog.setTitle(_translate("TabLog", "Session Log"))
-        self.labelFontSize.setStatusTip(_translate("TabLog", "Set the log\'s font size"))
+        self.labelFontSize.setToolTip(_translate("TabLog", "Set the log\'s font size"))
         self.labelFontSize.setText(_translate("TabLog", "&Font Size"))
-        self.spinBoxFontSize.setStatusTip(_translate("TabLog", "Set the log\'s font size"))
-        self.pushButtonClipboard.setStatusTip(_translate("TabLog", "Copy log to clipboard"))
+        self.spinBoxFontSize.setToolTip(_translate("TabLog", "Set the log\'s font size"))
+        self.pushButtonClipboard.setToolTip(_translate("TabLog", "Copy log to clipboard"))
         self.pushButtonClipboard.setText(_translate("TabLog", " &Copy"))
         self.groupsBoxNarrative.setTitle(_translate("TabLog", "Session Narrative"))
         self.plainTextEditNarrative.setPlaceholderText(_translate("TabLog", "Enter your obvservations here ..."))

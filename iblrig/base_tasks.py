@@ -16,7 +16,7 @@ import signal
 import sys
 import time
 import traceback
-import types
+import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
@@ -39,7 +39,7 @@ from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEnco
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
-from iblrig.tools import call_bonsai, get_number
+from iblrig.tools import InputThread, call_bonsai, get_number
 from iblrig.transfer_experiments import BehaviorCopier, VideoCopier
 from iblrig.valve import Valve
 from iblutil.io import binary
@@ -85,6 +85,9 @@ class BaseSession(ABC):
     """An optional list of pipeline task class names to instantiate when preprocessing task data."""
 
     TrialDataModel: type[TrialDataModel]
+
+    _stop_flag = False
+    _pause_flag = False
 
     @property
     @abstractmethod
@@ -161,7 +164,10 @@ class BaseSession(ABC):
             file_iblrig_settings=file_iblrig_settings,
             iblrig_settings=iblrig_settings,
         )
+
         self.wizard = wizard
+        if self.wizard:
+            self._input_thread = InputThread(self._stdin_callback)
 
         # Load the tasks settings, from the task folder or override with the input argument
         self.task_params = self.read_task_parameter_files(task_parameter_file)
@@ -195,6 +201,7 @@ class BaseSession(ABC):
             stub,
             extractors=self.extractor_tasks,
         )
+        self.finalize = weakref.finalize(self, self._finalize)
 
     @property
     def extractor_tasks(self) -> list[str] | None:
@@ -208,16 +215,43 @@ class BaseSession(ABC):
         """
         Handle SIGINT (Ctrl+C) signal to gracefully stop the session.
 
-        Parameters
-        ----------
-        signum : int
-            The signal number.
-        frame : signal.FrameType or None
-            The current stack frame.
-        """
-        log.critical('SIGINT received, will exit at the end of the trial')
-        if getattr(self, 'paths', False) and (session_folder := self.paths.get('SESSION_FOLDER', None)):
-            session_folder.joinpath('.stop').touch()
+    def _finalize(self):  # noqa: B027
+        """Clean-up tasks prior to destroying the object"""
+
+    @property
+    def session_path(self) -> Path | None:
+        return getattr(self, 'paths', {}).get('SESSION_FOLDER', None)
+
+    def _stdin_callback(self, message: bytes):
+        match message:
+            case b'stop':
+                self.stop()
+            case b'pause':
+                log.warning('Pausing session at the end of the current trial')
+                self.pause()
+            case b'resume':
+                self.resume()
+
+    def stop(self, *_) -> None:
+        """Gracefully stop the session."""
+        log.warning('Stopping session at the end of the current trial')
+        self._stop_flag = True
+
+    def pause(self) -> None:
+        """Pause the session."""
+        self._pause_flag = True
+
+    def resume(self) -> None:
+        """Resume the session."""
+        self._pause_flag = False
+
+    @property
+    def stopped(self) -> bool:
+        return self._stop_flag
+
+    @property
+    def paused(self) -> bool:
+        return self._pause_flag
 
     def _load_settings(
         self,
@@ -697,10 +731,7 @@ class BaseSession(ABC):
         if self.session_info.SUBJECT_WEIGHT is None and self.interactive and first_protocol:
             self.session_info.SUBJECT_WEIGHT = get_number('Subject weight (g): ', float, lambda x: x > 0)
 
-        # if upon starting there is a flag just remove it, this is to prevent killing a session in the egg
-        self.paths.SESSION_FOLDER.joinpath('.stop').unlink(missing_ok=True)
-
-        signal.signal(signal.SIGINT, self._sigint_handler)
+        signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
 
         # post task instructions
@@ -1569,8 +1600,7 @@ class SpontaneousSession(BaseSession):
             time.sleep(1.5)
             if self.duration_secs is not None and self.time_elapsed.seconds > self.duration_secs:
                 break
-            if self.paths.SESSION_FOLDER.joinpath('.stop').exists():
-                self.paths.SESSION_FOLDER.joinpath('.stop').unlink()
+            if self.stopped:
                 break
 
 

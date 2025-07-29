@@ -1,11 +1,11 @@
 import webbrowser
 
-from PyQt5.QtCore import QThreadPool
-from PyQt5.QtWidgets import QWidget
+from qtpy.QtCore import QThreadPool
+from qtpy.QtWidgets import QWidget
 
+from iblqt.core import Worker
 from iblrig import __version__ as iblrig_version
 from iblrig.constants import COPYRIGHT_YEAR, URL_DISCUSSION, URL_DOC, URL_ISSUES, URL_REPO
-from iblrig.gui.tools import Worker
 from iblrig.gui.ui_tab_about import Ui_TabAbout
 from iblrig.tools import get_anydesk_id
 

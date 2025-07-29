@@ -295,14 +295,12 @@ class ChoiceWorldSession(
             time_last_trial_end = time.time()
 
             # handle pause event
-            flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
-            flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
-            if flag_pause.exists() and trial_number < (self.task_params.NTRIALS - 1):
+            if self.paused and trial_number < (self.task_params.NTRIALS - 1):
                 log.info(f'Pausing session inbetween trials {trial_number} and {trial_number + 1}')
-                while flag_pause.exists() and not flag_stop.exists():
+                while self.paused and not self.stopped:
                     time.sleep(1)
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
-                if not flag_stop.exists():
+                if not self.stopped:
                     log.info('Resuming session')
 
             # save trial and update log
@@ -310,9 +308,8 @@ class ChoiceWorldSession(
             self.show_trial_log()
 
             # handle stop event
-            if flag_stop.exists():
+            if self.stopped:
                 log.info('Stopping session after trial %d', trial_number)
-                flag_stop.unlink()
                 break
 
     def mock(self, file_jsonable_fixture=None):
@@ -605,8 +602,6 @@ class ChoiceWorldSession(
             with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
                 binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
 
-        # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
-        Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
@@ -823,7 +818,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             )
         super()._run()
 
-    def __del__(self):
+    def _finalize(self):
         if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
             log.info('Terminating subprocess: online plots')
             self.plot_subprocess.terminate()

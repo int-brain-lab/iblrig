@@ -158,7 +158,10 @@ def install_pyspin():
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
-        return_code = subprocess.check_call([sys.executable, '-m', 'pip', 'install', file_whl])
+        try:
+            return_code = subprocess.check_call([sys.executable, '-m', 'pip', 'install', file_whl])
+        except subprocess.CalledProcessError:
+            return_code = subprocess.check_call(['uv', 'pip', 'install', file_whl])
         if return_code == 0:
             print('Installation of PySpin was successful.')
         os.unlink(file_whl)
