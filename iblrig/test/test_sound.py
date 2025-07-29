@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-from src.pybpod_soundcard_module.module_api import DataType
 
 from iblrig import sound
+from pybpod_soundcard_module.module_api import DataType
 
 
 class TestSineWave:
@@ -167,7 +167,7 @@ class TestConfigureSoundCard:
 
         # Test default card creation and close called
         sounds = [[0.1, 0.2], [0.3, 0.4]]
-        indexes = [0, 1]
+        indexes = [2, 3]
         sound.configure_sound_card(sounds=sounds, indexes=indexes, sample_rate=96000)
         assert mock_format_sound.call_count == 2
 
@@ -178,7 +178,7 @@ class TestConfigureSoundCard:
             args, kwargs = call
             assert args[1] == idx
             assert args[2] == 96000
-            assert args[3].name == 'INT32' or args[3] == DataType.INT32  # Depending on your enum
+            assert args[3].name == 'INT32' or args[3] == DataType.INT32
 
         # card.close called because card was created inside
         dummy_card.close.assert_called_once()
@@ -193,4 +193,8 @@ class TestConfigureSoundCard:
         with pytest.raises(ValueError):
             sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=indexes, sample_rate=12345)
         with pytest.raises(ValueError):
-            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=[0])
+            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=[4])
+        with pytest.raises(ValueError):
+            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=[0, 1])
+        with pytest.raises(ValueError):
+            sound.configure_sound_card(card=dummy_card, sounds=sounds, indexes=[32, 33])
