@@ -104,7 +104,7 @@ def make_sound(
     amplitude: float = 1,
     fade: float = 0.01,
     chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
-    gain_db: float = 0.0
+    gain_db: float = 0.0,
 ) -> np.ndarray:
     """
     Generate a sound waveform with optional fade and channel configurations.
