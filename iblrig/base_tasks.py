@@ -1205,7 +1205,10 @@ class SoundMixin(BaseSession, HasBpod):
 
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
-        self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(output=sound_output)
+        self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(
+            output=sound_output,
+            channel_config=self.hardware_settings.device_sound.DEFAULT_CHANNELS,
+        )
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
