@@ -16,6 +16,7 @@ import signal
 import sys
 import time
 import traceback
+import warnings
 import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -1182,6 +1183,14 @@ class SoundMixin(BaseSession, HasBpod):
     """Sound interface methods for state machine."""
 
     def init_mixin_sound(self):
+        # deprecation warning for Xonar sound card
+        if self.hardware_settings.device_sound['OUTPUT'] == 'xonar':
+            warnings.warn(
+                'Support for Xonar sound card is deprecated and will be removed in future versions.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         self.sound = Bunch({'GO_TONE': None, 'WHITE_NOISE': None})
         sound_output = self.hardware_settings.device_sound['OUTPUT']
 
