@@ -103,7 +103,7 @@ def make_sound(
     duration: float = 0.1,
     amplitude: float = 1,
     fade: float = 0.01,
-    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
+    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R', 'left', 'right'] = 'L+TTL',
     gain_db: float = 0.0,
 ) -> np.ndarray:
     """
@@ -150,9 +150,9 @@ def make_sound(
     match chans:
         case 'mono':
             sound = tone
-        case 'L':
+        case chans if chans in ['L', 'left']:
             sound = np.column_stack((tone, null))
-        case 'R':
+        case chans if chans in ['RL', 'right']:
             sound = np.column_stack((null, tone))
         case 'stereo':
             sound = np.column_stack((tone, tone))
