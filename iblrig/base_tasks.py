@@ -1082,6 +1082,13 @@ class BpodMixin(BaseSession):
         self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
         return self.bpod.session.current_trial.export()
 
+    def append_ambient_data_to_binary(self):
+        """Get data from ambient module and append to binary file."""
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            self.ambient_sensor_table.iloc[self.trial_num] = (sensor_reading := self.bpod.get_ambient_sensor_reading())
+            with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
+                binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
+
 
 class Frame2TTLMixin(BaseSession):
     """Frame 2 TTL interface for state machine."""
