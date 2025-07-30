@@ -595,7 +595,13 @@ class ChoiceWorldSession(
         self.session_info.NTRIALS += 1
         # SAVE TRIAL DATA
         self.save_trial_data_to_json(bpod_data)
-        self.append_ambient_data_to_binary()
+
+        # save ambient data
+        if self.hardware_settings.device_bpod.USE_AMBIENT_MODULE:
+            self.ambient_sensor_table.iloc[self.trial_num] = (sensor_reading := self.bpod.get_ambient_sensor_reading())
+            with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
+                binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
+
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
