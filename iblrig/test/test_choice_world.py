@@ -256,7 +256,7 @@ class TestITI(unittest.TestCase):
         iti_delay_sma = sma.add_state.call_args_list[-1].kwargs['state_timer']
 
         # the last state of the state machine needs to contain a BNC1 high of a certain duration - for extraction
-        self.assertGreater(iti_delay_sma, 0.2, 'Part of the ITI should be handled by the state machine.')
+        self.assertGreaterEqual(iti_delay_sma, 0.5, 'Part of the ITI should be handled by the state machine.')
         self.assertIn(('BNC1', 255), sma.add_state.call_args_list[-1].kwargs['output_actions'], 'Expecting BNC1 high.')
 
         # the assumed fraction of the ITI defined by processing delays
