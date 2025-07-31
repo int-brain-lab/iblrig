@@ -6,20 +6,24 @@ import json
 import shutil
 import tempfile
 import unittest
+from itertools import count
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
+import yaml
 
 import iblrig.choiceworld
 from iblrig import session_creator
+from iblrig.base_choice_world import ChoiceWorldSession
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblutil.util import Bunch
 
 
 class TestGetPreviousSession(BaseTestCases.CommonTestTask):
@@ -225,3 +229,36 @@ class TestTrainingPhases(unittest.TestCase):
             self.assertEqual(iblrig.choiceworld.training_phase_from_contrast_set(contrasts3), phase)
         with self.assertRaises(ValueError):
             iblrig.choiceworld.training_phase_from_contrast_set([0.666])
+
+
+class TestITI(unittest.TestCase):
+    def test_iti(self):
+        with ChoiceWorldSession.base_parameters_file.open() as f:
+            params = Bunch(yaml.safe_load(f))
+        params['NTRIALS'] = 2
+
+        sma = MagicMock()
+        session = MagicMock().return_value
+        session.task_params = params
+        session._run = ChoiceWorldSession._run.__get__(session, ChoiceWorldSession)
+        session.get_state_machine_trial = ChoiceWorldSession.get_state_machine_trial.__get__(session, ChoiceWorldSession)
+        session._instantiate_state_machine.return_value = sma
+        session.paused = False
+        session.stopped = False
+
+        with patch('iblrig.base_choice_world.time.sleep'):
+            session._run()
+
+        last_state_timer = sma.add_state.call_args_list[-1].kwargs['state_timer']
+        inter_sma_delay = 0.05  # the delay inbetween two state machines
+
+        counter = count(0, last_state_timer + inter_sma_delay)
+        with (
+            patch('iblrig.base_choice_world.time.time', side_effect=lambda: next(counter)) as mock_time,
+            patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
+        ):
+            session._run()
+        self.assertEqual(mock_time.call_count, 4, 'expecting time.time() to have been called 4 times.')
+        self.assertEqual(mock_sleep.call_count, 1, 'expecting time.sleep() to have been called once.')
+        sleep_time = mock_sleep.call_args[0][0]
+        self.assertAlmostEqual(last_state_timer + inter_sma_delay + sleep_time, 1.0, msg='Total ITI should be 1 second')
