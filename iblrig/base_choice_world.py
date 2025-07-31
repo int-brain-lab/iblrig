@@ -250,10 +250,15 @@ class ChoiceWorldSession(
             # obtain state machine definition
             self.next_trial()
             sma = self.get_state_machine_trial(trial_number)
+            last_state_duration = sma.state_timers[sma.total_states_added - 1]
 
             # Waiting for camera / initial delay will be handled just prior to the first trial
             # This is done here to allow for backward compatibility with unadapted tasks
             if trial_number == 0:
+                # warn if the duration of the last state is not sufficiently long
+                if last_state_duration < 0.5:
+                    log.warning(f'The last state has a duration of only {last_state_duration} s. It should be 0.5 s or longer.')
+
                 # warn if state machine uses deprecated way of waiting for camera / initial delay
                 if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
                     log.warning('')
@@ -290,7 +295,6 @@ class ChoiceWorldSession(
             # run state machine
             log.info('-----------------------')
             log.info(f'Starting Trial #{trial_number}')
-            log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
 

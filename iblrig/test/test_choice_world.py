@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from itertools import count
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import numpy as np
 import pandas as pd
@@ -239,6 +239,10 @@ class TestITI(unittest.TestCase):
             params = Bunch(yaml.safe_load(f))
         params['NTRIALS'] = n_trials
         sma = MagicMock()
+        type(sma).total_states_added = PropertyMock(side_effect=lambda: sma.add_state.call_count)
+        type(sma).state_timers = PropertyMock(
+            side_effect=lambda: [float(x.kwargs['state_timer']) for x in sma.add_state.call_args_list]
+        )
         session = MagicMock().return_value
         session.task_params = params
         session._run = ChoiceWorldSession._run.__get__(session, ChoiceWorldSession)
