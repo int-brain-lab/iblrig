@@ -232,11 +232,12 @@ class TestTrainingPhases(unittest.TestCase):
 
 
 class TestITI(unittest.TestCase):
-    def test_iti(self):
+    @staticmethod
+    def get_mock_session(n_trials: int) -> tuple[MagicMock, MagicMock]:
+        """Mock ChoiceWorldSession and StateMachine"""
         with ChoiceWorldSession.base_parameters_file.open() as f:
             params = Bunch(yaml.safe_load(f))
-        params['NTRIALS'] = 2
-
+        params['NTRIALS'] = n_trials
         sma = MagicMock()
         session = MagicMock().return_value
         session.task_params = params
@@ -245,20 +246,32 @@ class TestITI(unittest.TestCase):
         session._instantiate_state_machine.return_value = sma
         session.paused = False
         session.stopped = False
+        return session, sma
 
+    def test_iti(self):
+        # the fraction of the ITI handled by the state machine's last state
+        session, sma = self.get_mock_session(1)
         with patch('iblrig.base_choice_world.time.sleep'):
             session._run()
+        iti_delay_sma = sma.add_state.call_args_list[-1].kwargs['state_timer']
 
-        last_state_timer = sma.add_state.call_args_list[-1].kwargs['state_timer']
-        inter_sma_delay = 0.05  # the delay inbetween two state machines
+        # the last state of the state machine needs to contain a BNC1 high of a certain duration - for extraction
+        self.assertGreater(iti_delay_sma, 0.2, 'Part of the ITI should be handled by the state machine.')
+        self.assertIn(('BNC1', 255), sma.add_state.call_args_list[-1].kwargs['output_actions'], 'Expecting BNC1 high.')
 
-        counter = count(0, last_state_timer + inter_sma_delay)
+        # the assumed fraction of the ITI defined by processing delays
+        iti_delay_processing = 0.031231234234234
+
+        # the fraction of the ITI handled by time.sleep() making up for processing delays
+        session, sma = self.get_mock_session(2)
+        counter = count(0, iti_delay_sma + iti_delay_processing)
         with (
-            patch('iblrig.base_choice_world.time.time', side_effect=lambda: next(counter)) as mock_time,
+            patch('iblrig.base_choice_world.time.time', side_effect=lambda: next(counter)),
             patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
         ):
             session._run()
-        self.assertEqual(mock_time.call_count, 4, 'expecting time.time() to have been called 4 times.')
-        self.assertEqual(mock_sleep.call_count, 1, 'expecting time.sleep() to have been called once.')
-        sleep_time = mock_sleep.call_args[0][0]
-        self.assertAlmostEqual(last_state_timer + inter_sma_delay + sleep_time, 1.0, msg='Total ITI should be 1 second')
+        self.assertEqual(session.bpod.run_state_machine.call_count, 2, 'expecting run_state_machine() to have been called twice.')
+        iti_delay_sleep = mock_sleep.call_args[0][0] if mock_sleep.call_args else 0.0
+
+        # the total ITI should be 1 second
+        self.assertAlmostEqual(iti_delay_sma + iti_delay_processing + iti_delay_sleep, 1.0, msg='Total ITI should be 1 second')
