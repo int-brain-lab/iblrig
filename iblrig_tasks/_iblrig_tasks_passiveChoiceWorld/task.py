@@ -125,6 +125,8 @@ class Session(ChoiceWorldSession):
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_hide_stim)
             if self.stopped:
                 break
+        # Create the transfer flag when the task finishes.
+        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
 
 if __name__ == '__main__':  # pragma: no cover

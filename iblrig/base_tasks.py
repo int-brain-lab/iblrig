@@ -1591,6 +1591,8 @@ class SpontaneousSession(BaseSession):
                 break
             if self.stopped:
                 break
+        # Create the transfer flag file when the session finishes.
+        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
 
 class SpontaneousBpodSession(SpontaneousSession, BpodMixin):
