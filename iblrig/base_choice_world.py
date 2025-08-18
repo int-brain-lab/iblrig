@@ -494,7 +494,11 @@ class ChoiceWorldSession(
         sma.add_state(
             state_name='freeze_error',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_freeze_stim],
+            output_actions=[
+                self.bpod.actions.bonsai_freeze_stim
+                if not self.task_params['REWARD_REVERSE']
+                else self.bpod.actions.bonsai_freeze_center
+            ],
             state_change_conditions={'Tup': 'error'},
         )
         sma.add_state(
@@ -504,12 +508,16 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'hide_stim'},
         )
 
-        # Reward: open the valve for a defined duration (and set BNC1 to high), freeze stimulus in center of screen.
+        # Reward: open the valve for a defined duration (and set BNC1 to high), freeze stimulus.
         # Continue to hide_stim/exit_state once FEEDBACK_CORRECT_DELAY_SECS have passed.
         sma.add_state(
             state_name='freeze_reward',
             state_timer=0,
-            output_actions=[self.bpod.actions.bonsai_freeze_center],
+            output_actions=[
+                self.bpod.actions.bonsai_freeze_center
+                if not self.task_params['REWARD_REVERSE']
+                else self.bpod.actions.bonsai_freeze_stim
+            ],
             state_change_conditions={'Tup': 'reward'},
         )
         sma.add_state(
@@ -714,7 +722,7 @@ class ChoiceWorldSession(
     @property
     def event_reward(self):
         stim_reverse = 1 if self.task_params.STIM_REVERSE else -1
-        reward_reverse = 1 if self.task_params.REWARD_REVERSE else -1
+        reward_reverse = -1 if self.task_params.REWARD_REVERSE else 1
         return self.device_rotary_encoder.THRESHOLD_EVENTS[stim_reverse * reward_reverse * self.position]
 
 

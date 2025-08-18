@@ -974,6 +974,9 @@ class RigWizard(QMainWindow, Ui_wizard):
                 case 'stim_reverse':
                     label = 'Reverse Stimulus'
 
+                case 'reward_reverse':
+                    label = 'Reverse Reward'
+
                 case 'duration_spontaneous':
                     label = 'Spontaneous Activity, s'
                     widget.setMinimum(0)
