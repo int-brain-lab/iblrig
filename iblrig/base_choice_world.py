@@ -86,6 +86,7 @@ class ChoiceWorldTrialData(TrialDataModel):
     quiescent_period: NonNegativeFloat
     reward_amount: NonNegativeFloat
     reward_valve_time: NonNegativeFloat
+    reward_reverse: bool
     stim_angle: Annotated[float, Interval(ge=-180.0, le=180.0)]
     stim_freq: NonNegativeFloat
     stim_gain: float
@@ -575,6 +576,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
         self.trials_table.at[self.trial_num, 'position'] = position
         self.trials_table.at[self.trial_num, 'reward_amount'] = self.default_reward_amount
+        self.trials_table.at[self.trial_num, 'reward_reverse'] = self.task_params.REWARD_REVERSE
         self.trials_table.at[self.trial_num, 'stim_probability_left'] = pleft
 
         # use the kwargs dict to override computed values
@@ -705,11 +707,15 @@ class ChoiceWorldSession(
 
     @property
     def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[(-1 if self.task_params.STIM_REVERSE else 1) * self.position]
+        stim_reverse = -1 if self.task_params.STIM_REVERSE else 1
+        reward_reverse = -1 if self.task_params.REWARD_REVERSE else 1
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[stim_reverse * reward_reverse * self.position]
 
     @property
     def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
+        stim_reverse = 1 if self.task_params.STIM_REVERSE else -1
+        reward_reverse = 1 if self.task_params.REWARD_REVERSE else -1
+        return self.device_rotary_encoder.THRESHOLD_EVENTS[stim_reverse * reward_reverse * self.position]
 
 
 class HabituationChoiceWorldTrialData(ChoiceWorldTrialData):

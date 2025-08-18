@@ -23,6 +23,7 @@
 'RESPONSE_WINDOW': 60
 'REWARD_AMOUNT_UL': 1.5
 'REWARD_TYPE': Water 10% Sucrose
+'REWARD_REVERSE': False  # whether to reverse the reward side (reward when the stimulus is moved AWAY from the center)
 'STIM_ANGLE': 0.0
 'STIM_FREQ': 0.1
 'STIM_GAIN': 4.0  # wheel to stimulus relationship (degrees visual angle per mm of wheel displacement)
