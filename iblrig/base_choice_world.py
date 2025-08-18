@@ -893,6 +893,9 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             raise e
 
         # record the trial's outcome in the trials_table
+        # NOTE: response_side corresponds to the direction of the wheel turn, i.e.
+        #       - +1 for wheel movement to the right / CW
+        #       - -1 for wheel movement to the left / CCW
         self.trials_table.at[self.trial_num, 'trial_correct'] = 'correct' in outcome
         if 'correct' in outcome:
             self.session_info.NTRIALS_CORRECT += 1
@@ -1094,7 +1097,31 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
         contrast = np.abs(signed_contrast)
 
-        # debiasing: if the previous trial was incorrect, not a no-go and easy
+        # DEBIASING
+        #
+        # Appendix 2 - IBL protocol for mice training:
+        #
+        #     Repeat trials occur if the response was incorrect and the Gabor patch contrast was easy (>= 50%). On repeat trials
+        #     the previous contrast is repeated and the side on which the Gabor patch is presented is not randomly selected, but
+        #     rather drawn from a normal distribution with a standard deviation of 0.5 and mean of the fraction of the previous 10
+        #     responses that were 'rightward' (that is, when the wheel was turned clockwise from the point of view of the mouse).
+        #
+        #     For example, if the last 10 trials were:
+        #         L-R-R-L-R-L-L-R-R-L, where R means 'rightward' responses, the fraction(R) = 5/10 = 0.5
+        #
+        #     If the sampled value is strictly less than 0.5, the Gabor patch is presented on the left, otherwise on the right.
+        #     This is a form of soft counter biasing where the more the mouse turns in one direction, the more likely it is that
+        #     this will be incorrect on the next trial, meaning the correct movement would be to the opposite side (again, on
+        #     repeat trials only).
+        #
+        #
+        # A trial qualifies for debiasing if:
+        # 1. the debiasing flag is set in the task parameters,
+        # 2. the trial number is greater than or equal to 1 (i.e. not the first trial),
+        # 3. the training phase is less than 5 (i.e. not the last training phase),
+        # 4. the previous trial was incorrect,
+        # 5. the previous trial was not a no-go trial, and
+        # 6. the previous trial was easy (i.e. contrast >= 0.5).
         if self.task_params.DEBIAS and self.trial_num >= 1 and self.training_phase < 5:
             last_contrast = self.trials_table.loc[self.trial_num - 1, 'contrast']
             do_debias_trial = (
@@ -1103,19 +1130,27 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
                 and last_contrast >= 0.5
             )
             self.trials_table.at[self.trial_num, 'debias_trial'] = do_debias_trial
+
             if do_debias_trial:
-                # indices of trials that had a response
+                # Identify indices of trials with valid responses, excluding no-go trials
                 iresponse = np.logical_and(self.trials_table['response_side'].notna(), self.trials_table['response_side'] != 0)
                 iresponse = iresponse.index[iresponse]
 
-                # takes the average of right responses over last 10 response trials
-                average_right = (self.trials_table['response_side'][iresponse[-np.minimum(10, iresponse.size) :]] == 1).mean()
+                # Calculate the mean movement direction across the last 10 response trials:
+                # - a value of 0.5 indicates equal proportions of leftward and rightward wheel movements,
+                # - a value larger than 0.5 indicates a bias towards rightward / CW wheel movements,
+                # - a value smaller than 0.5 indicates a bias towards leftward / CCW wheel movements.
+                mean_direction = (self.trials_table['response_side'][iresponse[-np.minimum(10, iresponse.size) :]] == 1).mean()
 
-                # the probability of the next stimulus being on the left is a draw from a normal distribution centered
-                # on the average right with sigma 0.5 - if it is less than 0.5 the next stimulus will be on the left.
-                position = self.task_params.STIM_POSITIONS[int(np.random.normal(average_right, 0.5) >= 0.5)]
+                # The position of the next stimulus (and hence the required movement direction) is determined by drawing from a
+                # normal distribution centered on the mean response direction (see above) with a standard deviation of 0.5:
+                # - if the drawn value is LESS THAN 0.5, the next stimulus will be displayed on the LEFT SIDE of the screen,
+                #   requiring a RIGHTWARD / CW MOVEMENT to center the stimulus (countering a LEFTWARD MOVEMENT BIAS).
+                # - if the drawn value is GREATER THAN OR EQUAL TO 0.5, the stimulus will be displayed on the RIGHT SIDE of the
+                #   screen, requiring a LEFTWARD / CCW MOVEMENT to center the stimulus (countering a RIGHTWARD MOVEMENT BIAS).
+                position = self.task_params.STIM_POSITIONS[int(np.random.normal(mean_direction, 0.5) >= 0.5)]
 
-                # contrast is the last contrast
+                # The contrast of the debiasing trial is identical to the contrast of the previous trial.
                 contrast = last_contrast
         else:
             self.trials_table.at[self.trial_num, 'debias_trial'] = False
