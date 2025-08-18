@@ -252,6 +252,13 @@ class TestITI(unittest.TestCase):
         session.stopped = False
         return session, sma
 
+    def test_iti_warning(self):
+        # test that the ITI warning is raised when the last state does not handle the ITI
+        session, sma = self.get_mock_session(1)
+        type(sma).state_timers = [0.0] * 100
+        with patch('iblrig.base_choice_world.time.sleep'), self.assertLogs('iblrig', level='WARNING'):
+            session._run()
+
     def test_iti(self):
         # the fraction of the ITI handled by the state machine's last state
         session, sma = self.get_mock_session(1)
