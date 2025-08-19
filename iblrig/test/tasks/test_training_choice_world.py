@@ -272,7 +272,7 @@ class TestDebiasing:
 
     def test_debiasing_logic(self, mock_normal, mock_session):
         """Debiasing should take into account the previous 10 trials with valid responses, excluding no-go trials."""
-        mock_session.trials_table.position[0] = mock_session.task_params['STIM_POSITIONS'][0]
+        mock_session.trials_table.loc[0, 'position'] = mock_session.task_params['STIM_POSITIONS'][0]
         mock_session.trials_table.response_side = pd.NA
         mock_session.trials_table.trial_correct = pd.NA
         mock_session.draw_next_trial_info = MagicMock(
@@ -283,8 +283,8 @@ class TestDebiasing:
             prev_stimulus_pos = mock_session.trials_table.position[trial_num - 1]
             prev_response_side = np.random.choice([-1, 0, 1], p=[0.2, 0.1, 0.7])  # biased towards rightward responses
             prev_correct = prev_response_side == -1 * np.sign(prev_stimulus_pos)
-            mock_session.trials_table.response_side[trial_num - 1] = prev_response_side
-            mock_session.trials_table.trial_correct[trial_num - 1] = prev_correct
+            mock_session.trials_table.loc[trial_num - 1, 'response_side'] = prev_response_side
+            mock_session.trials_table.loc[trial_num - 1, 'trial_correct'] = prev_correct
 
             # get the next trial
             mock_normal.reset_mock()
