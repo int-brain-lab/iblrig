@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-from line_profiler import profile
 
 from iblrig import choiceworld
 from iblrig.test.base import BaseTestCases
@@ -271,7 +270,6 @@ class TestDebiasing:
         with patch('iblrig.base_choice_world.np.random.normal', side_effect=side_effect) as normal:
             yield normal
 
-    @profile
     def test_debiasing_logic(self, mock_normal, mock_session):
         """Debiasing should take into account the previous 10 trials with valid responses, excluding no-go trials."""
         mock_session.trials_table.position[0] = mock_session.task_params['STIM_POSITIONS'][0]
