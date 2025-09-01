@@ -623,6 +623,7 @@ class OnlinePlotsModel(QObject):
     sessionStringAvailable = Signal(str)
     tableModel = TrialsTableModel()
     sessionString = ''
+    raw_data_folder: Path | None = None
     _trial_data = pd.DataFrame()
     _bpod_data: list[pd.DataFrame] = list()
     _jsonable_offset = 0
@@ -1052,6 +1053,14 @@ class OnlinePlotsView(QMainWindow):
         if hasattr(self, 'settings'):
             self.settings.setValue('size', self.size())
         super().resizeEvent(event)
+
+    def closeEvent(self, event):
+        if self.raw_data_folder is not None:
+            self.model.setCurrentTrial(self.model.nTrials() - 1)
+            img = self.grab(self.rect())
+            filename = self.model.raw_data_folder / f'online_plots.png'
+            img.save(filename)
+        event.accept()
 
 
 def online_plots_cli(*args):
