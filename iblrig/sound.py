@@ -1,4 +1,5 @@
 import logging
+from os import PathLike
 from typing import Literal
 
 import numpy as np
@@ -209,7 +210,7 @@ def make_sound(
     return sound
 
 
-def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> np.ndarray:
+def format_sound(sound: np.ndarray, file_path: PathLike | str | None = None, flat: bool = False) -> np.ndarray:
     """
     Format a stereo sound array into a binary-compatible int32 format.
 
@@ -221,7 +222,7 @@ def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> 
     ----------
     sound : np.ndarray
         A 2D NumPy array of shape (n_samples, 2) containing stereo float audio data.
-    file_path : str, optional
+    file_path : os.PathLike or str, optional
         If provided, the formatted audio will be written to this binary file.
     flat : bool, optional
         If True, return a 1D flattened array. Otherwise, return (n_samples, 2) shape.

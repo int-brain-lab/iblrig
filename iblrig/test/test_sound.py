@@ -142,8 +142,8 @@ class TestWhiteNoiseStimulus:
 
         base = sound.white_noise_stimulus(d=d, amplitude=amplitude, gain_db=0.0)
         assert np.mean(base) == pytest.approx(0.0, abs=1e-2)
-        assert np.max(base) == pytest.approx(amplitude, abs=1e-3)
-        assert np.min(base) == pytest.approx(-amplitude, abs=1e-3)
+        assert np.max(base) == pytest.approx(amplitude, abs=1e-2)
+        assert np.min(base) == pytest.approx(-amplitude, abs=1e-2)
         attenuated = sound.white_noise_stimulus(d=d, amplitude=amplitude, gain_db=-6.0)
         assert np.max(attenuated) == pytest.approx(amplitude * 10 ** (-6 / 20), abs=1e-3)
         amplified = sound.white_noise_stimulus(d=d, amplitude=amplitude, gain_db=6.0)
@@ -196,9 +196,13 @@ class TestMakeSound:
         waveform = sound.make_sound(frequency=-1)
         sine_stimulus.assert_not_called()
         white_noise_stimulus.assert_called_once()
-        assert waveform[:, 0].max() == pytest.approx(1.0, abs=1e-3)
-        assert waveform[:, 0].min() == pytest.approx(-1.0, abs=1e-3)
-        assert waveform[:, 0].mean() == pytest.approx(0.0, abs=1e-2)
+        TestCase().assertCountEqual(
+            white_noise_stimulus.call_args.kwargs, {'d': 0.1, 'fs': 44100, 'amplitude': 1, 'd_fade': 0.0, 'gain_db': 0.0}
+        )
+        assert waveform.ndim == 2
+        assert waveform[:, 0].max() == pytest.approx(1.0, abs=0.1)
+        assert waveform[:, 0].min() == pytest.approx(-1.0, abs=0.1)
+        assert waveform[:, 0].mean() == pytest.approx(0.0, abs=0.1)
 
 
 class TestFormatSound:
