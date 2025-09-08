@@ -88,9 +88,53 @@ def sine_stimulus(
     gain_db: float = 0.0
         Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
     d_fade : float or int
-        Duration of the fade-in and fade-out sections in seconds.
+        Duration of the fade-in and fade-out sections in seconds. Default is 0.01.
+
+    Returns
+    -------
+    nd.array
+        Numpy array containing the sine stimulus.
     """
     stimulus = sine_wave(d=d, f=f, fs=fs)
+    stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
+    stimulus *= amplitude
+    stimulus *= 10 ** (gain_db / 20)
+    return stimulus
+
+
+def white_noise_stimulus(
+    d: float | int,
+    fs: int = 44100,
+    amplitude: float = 1.0,
+    gain_db: float = 0.0,
+    d_fade: float = 0.0,
+    seed: int | None = None,
+) -> np.ndarray:
+    """
+    Generate white noise stimulus: Uniformly distributed random samples.
+
+    Parameters
+    ----------
+    d : float or int
+        Duration of the white noise in seconds. Must be positive.
+    fs: int, optional
+        Sampling rate in samples per second (Hz). Default is 44100.
+    amplitude : float, optional
+        Base amplitude of the stimulus before gain adjustment. Default is 1.0.
+    gain_db: float = 0.0
+        Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
+    d_fade : float or int
+        Duration of the fade-in and fade-out sections in seconds. Default is 0.0.
+    seed : int, optional
+        The seed for the random number generator.
+
+    Returns
+    -------
+    nd.array
+        Numpy array containing the white noise stimulus.
+    """
+    rng = np.random.default_rng(seed=seed)
+    stimulus = rng.uniform(low=-1.0, high=1.0, size=round(d * fs))
     stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
     stimulus *= amplitude
     stimulus *= 10 ** (gain_db / 20)
@@ -139,7 +183,7 @@ def make_sound(
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
     if frequency < 0:
-        tone = amplitude * np.random.rand(int(rate * duration)) * (10 ** (gain_db / 20))
+        tone = white_noise_stimulus(d=duration, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
     else:
         tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
 

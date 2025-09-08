@@ -1223,7 +1223,7 @@ class SoundMixin(BaseSession, HasBpod):
             frequency=-1,
             duration=self.task_params.WHITE_NOISE_DURATION,
             amplitude=self.task_params.WHITE_NOISE_AMPLITUDE * amp_gain_factor,
-            fade=0.01,
+            fade=0.0,
             chans=self.sound['channels'],
         )
 
