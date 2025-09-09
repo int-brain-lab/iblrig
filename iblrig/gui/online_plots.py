@@ -1057,10 +1057,14 @@ class OnlinePlotsView(QMainWindow):
     def closeEvent(self, event):
         if self.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
-            img = self.grab(self.rect())
-            filename = self.model.raw_data_folder / f'online_plots.png'
-            img.save(filename)
+            self.save_as_png(self.model.raw_data_folder / 'online_plots.png')
         event.accept()
+
+    def save_as_png(self, filename: os.PathLike | str) -> None:
+        """Save plot as a PNG file."""
+        filename = Path(filename).with_suffix('.png')
+        img = self.grab(self.rect())
+        img.save(filename)
 
 
 def online_plots_cli(*args):
