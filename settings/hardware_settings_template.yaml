@@ -37,6 +37,12 @@ device_valve:
   FREE_REWARD_VOLUME_UL: 1.5
 device_scale:
   COM_SCALE: null
+device_neurophotometrics:
+  BONSAI_EXECUTABLE: C:\Users\Experiment\AppData\Local\Bonsai\Bonsai.exe
+  BONSAI_WORKFLOW: devices/neurophotometrics/FP3002_digital_inputs.bonsai
+  BONSAI_WORKFLOW_DAQ: devices/neurophotometrics/FP3002_daqami.bonsai
+  COM_NEUROPHOTOMETRY: null
+  FRAMECLOCK_CHANNEL: null
 device_cameras:  # set to null if no camera is used on the rig
   default:
     BONSAI_WORKFLOW:

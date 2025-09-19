@@ -171,6 +171,7 @@ class HardwareSettingsNeurophotometrics(BunchModel):
     BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
     BONSAI_WORKFLOW_DAQ: Path = Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai')
     COM_NEUROPHOTOMETRY: str | None = None
+    FRAMECLOCK_CHANNEL: str | None = None
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):
