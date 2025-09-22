@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import ctypes
 import datetime
 import json
 import os
+import signal
 import sys
 import time
-from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
 import numpy as np
 import pandas as pd
@@ -28,6 +30,7 @@ from qtpy.QtCore import (
     QSize,
     Qt,
     QThreadPool,
+    QTimer,
     Signal,
     Slot,
 )
@@ -48,6 +51,10 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+if TYPE_CHECKING:
+    import multiprocessing
+    from collections.abc import Iterable
 
 from iblqt.core import DataFrameTableModel, Worker
 from iblrig import __version__ as iblrig_version
@@ -1055,29 +1062,37 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event):
-        if self.raw_data_folder is not None:
+        if self.model.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
-            self.save_as_png(self.model.raw_data_folder / 'online_plots.png')
+            filename = self.model.raw_data_folder / 'online_plots.png'
+            if not filename.exists():
+                self.save_as_png(self.model.raw_data_folder / 'online_plots.png')
         event.accept()
 
     def save_as_png(self, filename: os.PathLike | str) -> None:
         """Save plot as a PNG file."""
         filename = Path(filename).with_suffix('.png')
         img = self.grab(self.rect())
-        img.save(filename)
+        img.save(str(filename), 'PNG')
 
 
-def online_plots_cli(*args):
+def online_plots_cli(*args: Any, shutdown_event: multiprocessing.Event | None = None) -> None:
     sys.argv.extend([str(arg) for arg in args])
 
     class CLISettings(
-        BaseSettings, cli_parse_args=True, cli_enforce_required=False, cli_avoid_json=True, cli_hide_none_type=True
+        BaseSettings,
+        cli_parse_args=True,
+        cli_enforce_required=False,
+        cli_avoid_json=True,
+        cli_hide_none_type=True,
     ):
         """Display a Session's Online Plot."""
 
         session: CliPositionalArg[FilePath | DirectoryPath | UUID4] = Field(description="a session's Task Data File or eID")
         group: str | None = Field(
-            description='override the data column to group data by', validation_alias=AliasChoices('g', 'group'), default=None
+            description='override the data column to group data by',
+            validation_alias=AliasChoices('g', 'group'),
+            default=None,
         )
 
     # set app information
@@ -1090,6 +1105,8 @@ def online_plots_cli(*args):
 
     app = QApplication([])
 
+    settings = CLISettings()
+
     if len(sys.argv) < 2:
         local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
         session, _ = QFileDialog.getOpenFileName(
@@ -1098,9 +1115,27 @@ def online_plots_cli(*args):
         if len(session) == 0:
             return
     else:
-        session = CLISettings().session
-    window = OnlinePlotsView(session, CLISettings().group)
+        session = settings.session
+
+    window = OnlinePlotsView(session, settings.group)
     window.show()
+
+    # Handle shutdown_event
+    if shutdown_event is not None:
+
+        def check_shutdown_flag() -> None:
+            if shutdown_event.is_set():
+                app.quit()
+
+        timer = QTimer()
+        timer.timeout.connect(check_shutdown_flag)
+        timer.start(500)
+
+    # Handle Ctrl+C (SIGINT)
+    def handle_sigint(signum: int, frame: Any) -> None:
+        app.quit()
+
+    signal.signal(signal.SIGINT, handle_sigint)
 
     sys.exit(app.exec())
 
