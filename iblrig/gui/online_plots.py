@@ -1,5 +1,6 @@
 import datetime
 import json
+import multiprocessing
 import os
 import sys
 import time
@@ -27,6 +28,7 @@ from qtpy.QtCore import (
     QSize,
     Qt,
     QThreadPool,
+    QTimer,
     Signal,
     Slot,
 )
@@ -1087,7 +1089,11 @@ def online_plots_cli(*args):
     online_plots_app(session, group)
 
 
-def online_plots_app(session: FilePath | DirectoryPath | UUID4 | None = None, group: str | None = None) -> None:
+def online_plots_app(
+    session: FilePath | DirectoryPath | UUID4 | None = None,
+    group: str | None = None,
+    stop_event: multiprocessing.Event | None = None,
+) -> None:
     """
     Launch the IBL Online Plots GUI.
 
@@ -1097,13 +1103,15 @@ def online_plots_app(session: FilePath | DirectoryPath | UUID4 | None = None, gr
 
     Parameters
     ----------
-    session : FilePath | DirectoryPath | UUID4 | None, optional
+    session : FilePath | DirectoryPath | UUID4, optional
         The session data to load. Can be a file path, directory path, UUID, or
         ``None``. If ``None``, a file dialog will prompt the user to choose a
         Task Data file.
     group : str | None, optional
         Name of the data column to group by. If ``None``, the default grouping
         will be used.
+    stop_event : multiprocessing.Event, optional
+        Event to signal graceful shutdown.
     """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
@@ -1126,6 +1134,11 @@ def online_plots_app(session: FilePath | DirectoryPath | UUID4 | None = None, gr
 
     window = OnlinePlotsView(session, group)
     window.show()
+
+    if stop_event is not None:
+        timer = QTimer()
+        timer.timeout.connect(lambda: app.quit() if stop_event.is_set() else None)
+        timer.start(500)
 
     sys.exit(app.exec())
 

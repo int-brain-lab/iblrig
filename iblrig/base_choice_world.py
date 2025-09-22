@@ -4,8 +4,8 @@ import abc
 import enum
 import logging
 import math
+import multiprocessing
 import random
-import subprocess
 import time
 from pathlib import Path
 from re import split as re_split
@@ -19,6 +19,7 @@ from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
 from iblrig import choiceworld, misc
+from iblrig.gui.online_plots import online_plots_app
 from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
 from iblrig.pydantic_definitions import TrialDataModel
 from iblutil.io import binary, jsonable
@@ -801,7 +802,8 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
-    plot_subprocess: subprocess.Popen | None = None
+    stop_event: multiprocessing.Event() | None = None
+    plot_process: multiprocessing.Process | None = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -811,22 +813,27 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         # starts online plotting
         if self.interactive:
             log.info('Starting subprocess: online plots')
-            self.plot_subprocess = subprocess.Popen(
-                ['view_session', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.STDOUT,
+            self.plot_process = multiprocessing.Process(
+                target=online_plots_app,
+                name='online_plots_app',
+                kwargs={
+                    'session': self.paths['SESSION_RAW_DATA_FOLDER'],
+                    'stop_event': self.stop_event,
+                },
             )
+            self.plot_process.start()
         super()._run()
 
     def _finalize(self):
-        if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
-            log.info('Terminating subprocess: online plots')
-            self.plot_subprocess.terminate()
-            try:
-                self.plot_subprocess.wait(timeout=5)
-            except subprocess.TimeoutExpired:
+        if isinstance(self.plot_process, multiprocessing.Process):
+            log.info('Signaling online plots process to exit')
+            self.stop_event.set()
+            self.plot_process.join(timeout=5)
+            if self.plot_process.is_alive():
                 log.warning('Process did not terminate within 5 seconds - killing it.')
-                self.plot_subprocess.kill()
+                self.plot_process.kill()
+            self.plot_process = None
+            self.stop_event = None
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict
