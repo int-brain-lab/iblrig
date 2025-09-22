@@ -1,4 +1,3 @@
-import ctypes
 import datetime
 import json
 import os
@@ -1055,6 +1054,19 @@ class OnlinePlotsView(QMainWindow):
 
 
 def online_plots_cli(*args):
+    """
+    Command-line entry point for launching the IBL Online Plots application.
+
+    This function extends ``sys.argv`` with the provided arguments, parses
+    them via a Pydantic CLI settings class, and then invokes
+    :func:`online_plots_app`.
+
+    Parameters
+    ----------
+    *args : Any
+        Additional arguments to simulate command-line input. These will be
+        converted to strings and appended to ``sys.argv``.
+    """
     sys.argv.extend([str(arg) for arg in args])
 
     class CLISettings(
@@ -1067,26 +1079,52 @@ def online_plots_cli(*args):
             description='override the data column to group data by', validation_alias=AliasChoices('g', 'group'), default=None
         )
 
-    # set app information
+    if len(sys.argv) < 2:
+        session, group = None, None
+    else:
+        cli = CLISettings()
+        session, group = cli.session, cli.group
+    online_plots_app(session, group)
+
+
+def online_plots_app(session: FilePath | DirectoryPath | UUID4 | None = None, group: str | None = None) -> None:
+    """
+    Launch the IBL Online Plots GUI.
+
+    This function initializes a Qt application, loads the selected session
+    (or prompts the user to select one if none is provided), and displays the
+    OnlinePlotsView window.
+
+    Parameters
+    ----------
+    session : FilePath | DirectoryPath | UUID4 | None, optional
+        The session data to load. Can be a file path, directory path, UUID, or
+        ``None``. If ``None``, a file dialog will prompt the user to choose a
+        Task Data file.
+    group : str | None, optional
+        Name of the data column to group by. If ``None``, the default grouping
+        will be used.
+    """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QCoreApplication.setApplicationName('IBLRIG Online Plots')
     if os.name == 'nt':
+        import ctypes
+
         app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QApplication([])
 
-    if len(sys.argv) < 2:
+    if session is None:
         local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
         session, _ = QFileDialog.getOpenFileName(
             caption='Select Task Data File', filter='Task Data (*.raw.jsonable)', directory=local_subjects_folder
         )
         if len(session) == 0:
             return
-    else:
-        session = CLISettings().session
-    window = OnlinePlotsView(session, CLISettings().group)
+
+    window = OnlinePlotsView(session, group)
     window.show()
 
     sys.exit(app.exec())
