@@ -802,7 +802,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
-    stop_event: multiprocessing.Event() | None = None
+    stop_event: multiprocessing.Event | None = None
     plot_process: multiprocessing.Process | None = None
 
     def __init__(self, **kwargs):
