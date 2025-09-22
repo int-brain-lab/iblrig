@@ -1,6 +1,5 @@
 import datetime
 import json
-import multiprocessing
 import os
 import sys
 import time
@@ -1092,7 +1091,7 @@ def online_plots_cli(*args):
 def online_plots_app(
     session: FilePath | DirectoryPath | UUID4 | None = None,
     group: str | None = None,
-    stop_event: multiprocessing.Event | None = None,
+    stop_event=None,
 ) -> None:
     """
     Launch the IBL Online Plots GUI.

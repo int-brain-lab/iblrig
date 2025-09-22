@@ -802,7 +802,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
-    stop_event: multiprocessing.Event | None = None
+    stop_event = multiprocessing.Event()
     plot_process: multiprocessing.Process | None = None
 
     def __init__(self, **kwargs):
@@ -833,7 +833,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 log.warning('Process did not terminate within 5 seconds - killing it.')
                 self.plot_process.kill()
             self.plot_process = None
-            self.stop_event = None
+            self.stop_event.clear()
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict
