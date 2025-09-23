@@ -35,6 +35,10 @@ class TestOnlinePlots:
         with qtbot.waitSignal(model.jsonableWatcher.fileChanged, timeout=5), open(task_file, 'a') as f:
             f.writelines([line])
         assert model._n_trials == n_trials + 1
+        path_online_plots = task_file.parent / 'online_plots.png'
+        assert not path_online_plots.exists()
+        view.close()
+        assert path_online_plots.exists()
         model.jsonableWatcher.removePath(str(task_file))
 
     def test_from_existing_file(self, task_file, qtbot):
