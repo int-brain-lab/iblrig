@@ -631,10 +631,14 @@ class OnlinePlotsModel(QObject):
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(
-        self, session: FilePath | DirectoryPath | UUID4, grouping_variable: str | None = None, parent: QObject | None = None
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        grouping_variable: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
     ):
         super().__init__(parent=parent)
-        is_live = False
+        self.is_live = live
 
         # If session is a UUID ...
         if not isinstance(session, Path):
@@ -667,7 +671,6 @@ class OnlinePlotsModel(QObject):
                 print('Waiting for data ...')
                 while not self.jsonable_file.exists():
                     time.sleep(0.2)
-            is_live = True
 
         # If session is a file ...
         elif session.is_file():
@@ -704,7 +707,7 @@ class OnlinePlotsModel(QObject):
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
-        if is_live:
+        if self.is_live:
             self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
             self.jsonableWatcher.fileChanged.connect(self.readJsonable)
 
@@ -857,10 +860,16 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, session: FilePath | DirectoryPath | UUID4, group_by: str | None = None, parent: QObject | None = None):
+    def __init__(
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        group_by: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
+    ):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self)
+        self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self, live=live)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -1052,7 +1061,7 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event):
-        if self.model.raw_data_folder is not None:
+        if self.model.is_live and self.model.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
             filename = self.model.raw_data_folder / 'online_plots.png'
             if not filename.exists():
@@ -1103,13 +1112,14 @@ def online_plots_cli(*args):
     else:
         cli = CLISettings()
         session, group = cli.session, cli.group
-    online_plots_app(session, group)
+    online_plots_app(session=session, group=group)
 
 
 def online_plots_app(
     session: FilePath | DirectoryPath | UUID4 | None = None,
     group: str | None = None,
     stop_event: mpEvent | None = None,
+    live: bool = False,
 ) -> None:
     """
     Launch the IBL Online Plots GUI.
@@ -1129,6 +1139,9 @@ def online_plots_app(
         will be used.
     stop_event : multiprocessing.synchronize.Event, optional
         Event to signal graceful shutdown.
+    live : bool, optional
+        Whether to use live plotting. If ``True``, the GUI will update on
+        changes. Default is ``False``.
     """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
@@ -1149,7 +1162,7 @@ def online_plots_app(
         if len(session) == 0:
             return
 
-    window = OnlinePlotsView(session, group)
+    window = OnlinePlotsView(session=session, group_by=group, live=live)
     window.show()
 
     if stop_event is not None:
