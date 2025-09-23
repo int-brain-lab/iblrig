@@ -93,7 +93,7 @@ class TestRegisterSession(BaseTestCases.CommonTestTask):
         ):
             self.assertIsNone(chained.register_to_alyx())
             self.assertIn('AssertionError', log.output[0])
-            self.assertIn('Could not register session to Alyx', log.output[1])
+            self.assertIn('Could not register session to Alyx', log.output[])
 
         # An empty session record should cause an error when attempting to register weight
         with (
