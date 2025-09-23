@@ -24,6 +24,7 @@ from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
 from iblrig.pydantic_definitions import TrialDataModel
 from iblutil.io import binary, jsonable
 from iblutil.util import Bunch
+from one.api import OneAlyx
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
 
@@ -791,12 +792,12 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
     by turning the wheel. It has the following characteristics
 
-    -   it is trial based
-    -   it is decision based
-    -   left and right simulus are equiprobable: there is no biased block
-    -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response
-    -   it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
-        habituation protocols.
+    - it is trial based
+    - it is decision based
+    - left and right simulus are equiprobable: there is no biased block
+    - a trial can either be correct / error / no_go depending on the side of the stimulus and the response
+    - it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
+      habituation protocols.
 
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
@@ -810,7 +811,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float64)
 
     def _run(self):
-        # starts online plotting
+        # start online plotting
         if self.interactive:
             log.info('Starting subprocess: online plots')
             self.plot_process = multiprocessing.Process(
@@ -822,9 +823,11 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 },
             )
             self.plot_process.start()
+
+        # run super method
         super()._run()
 
-    def _finalize(self):
+        # stop online plotting
         if isinstance(self.plot_process, multiprocessing.Process):
             log.info('Signaling online plots process to exit')
             self.stop_event.set()
@@ -834,6 +837,24 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 self.plot_process.kill()
             self.plot_process = None
             self.stop_event.clear()
+
+    def register_to_alyx(self) -> dict | None:
+        session = super().register_to_alyx()
+
+        # set online plot as note
+        path_plot = self.paths['SESSION_RAW_DATA_FOLDER'] / '_iblrig_onlinePlots.png'
+        if session is not None and path_plot.exists() and isinstance(self.one, OneAlyx):
+            client = self.one.alyx
+            note = {
+                'user': self.iblrig_settings.ALYX_USER,
+                'content_type': 'session',
+                'object_id': session['id'],
+                'text': 'Snapshot of Online Plot',
+            }
+            with path_plot.open('rb') as img_file:
+                client.rest('notes', 'create', data=note, files={'image': img_file})
+
+        return session
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict
