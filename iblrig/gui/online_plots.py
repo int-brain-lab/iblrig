@@ -1057,9 +1057,9 @@ class OnlinePlotsView(QMainWindow):
     def closeEvent(self, event):
         if self.model.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
-            filename = self.model.raw_data_folder / 'online_plots.png'
+            filename = self.model.raw_data_folder / '_iblrig_online_plots.png'
             if not filename.exists():
-                self.save_as_png(self.model.raw_data_folder / 'online_plots.png')
+                self.save_as_png(filename)
         event.accept()
 
     def save_as_png(self, filename: os.PathLike | str) -> None:
