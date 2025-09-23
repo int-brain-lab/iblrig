@@ -1071,7 +1071,7 @@ class OnlinePlotsView(QMainWindow):
     def save_as_png(self, filename: os.PathLike | str) -> None:
         """Save plot as a PNG file."""
         filename = Path(filename).with_suffix('.png')
-        img = self.grab(self.rect())
+        img = self.centralWidget().grab()
         img.save(str(filename), 'PNG')
 
 
