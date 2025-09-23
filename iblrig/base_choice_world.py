@@ -857,9 +857,12 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         session = super().register_to_alyx()
 
         # register online plot as session note
-        if register_snapshot and session is not None and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
-            snapshot = Snapshot(object_id=session['id'], content_type='session', one=self.one)
-            snapshot.register_image(image_file=path_plot, text=f'Snapshot of Online Plots #{suffix}', width='orig')
+        try:
+            if register_snapshot and session is not None and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
+                snapshot = Snapshot(object_id=session['id'], content_type='session', one=self.one)
+                snapshot.register_image(image_file=path_plot, text=f'Snapshot of Online Plots #{suffix}', width='orig')
+        except Exception as e:
+            log.error('Failed to register online plots as session note', exc_info=e)
 
         return session
 
