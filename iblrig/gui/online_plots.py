@@ -681,9 +681,6 @@ class OnlinePlotsModel(QObject):
         if self.settings_file.exists():
             with self.settings_file.open('r') as f:
                 self.task_settings = json.load(f)
-
-        else:
-            self.grouping_variable = grouping_variable or GROUPING_VARIABLE
         self.grouping_variable = grouping_variable or getattr(self, 'task_settings', {}).get(
             'PLOT_GROUPING_VARIABLE', GROUPING_VARIABLE
         )
