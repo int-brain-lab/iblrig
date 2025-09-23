@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 import sys
 import time
@@ -59,6 +60,8 @@ from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframe, load_task_jsonable
 from one.alf.spec import is_session_path
 from one.api import ONE
+
+log = logging.getLogger(__name__)
 
 
 def is_alf_path(value: Path) -> Path:
@@ -668,6 +671,7 @@ class OnlinePlotsModel(QObject):
                 while not self.jsonable_file.exists():
                     time.sleep(0.2)
             is_live = True
+            log.info(f'Starting online plots for session {self.raw_data_folder}')
 
         # If session is a file ...
         elif session.is_file():
@@ -1055,6 +1059,7 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event):
+        log.info('Closing online plots')
         if self.model.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
             filename = self.model.raw_data_folder / 'online_plots.png'
@@ -1086,13 +1091,19 @@ def online_plots_cli(*args):
     sys.argv.extend([str(arg) for arg in args])
 
     class CLISettings(
-        BaseSettings, cli_parse_args=True, cli_enforce_required=False, cli_avoid_json=True, cli_hide_none_type=True
+        BaseSettings,
+        cli_parse_args=True,
+        cli_enforce_required=False,
+        cli_avoid_json=True,
+        cli_hide_none_type=True,
     ):
         """Display a Session's Online Plot."""
 
         session: CliPositionalArg[FilePath | DirectoryPath | UUID4] = Field(description="a session's Task Data File or eID")
         group: str | None = Field(
-            description='override the data column to group data by', validation_alias=AliasChoices('g', 'group'), default=None
+            description='override the data column to group data by',
+            validation_alias=AliasChoices('g', 'group'),
+            default=None,
         )
 
     if len(sys.argv) < 2:
@@ -1103,7 +1114,6 @@ def online_plots_cli(*args):
     online_plots_app(session, group)
 
 
-@validate_call
 def online_plots_app(
     session: FilePath | DirectoryPath | UUID4 | None = None,
     group: str | None = None,
