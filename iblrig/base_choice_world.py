@@ -822,6 +822,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 kwargs={
                     'session': self.paths['SESSION_RAW_DATA_FOLDER'],
                     'stop_event': self.stop_event,
+                    'live': True,
                 },
             )
             self.plot_process.start()
@@ -830,7 +831,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
         super()._run()
 
         # stop online plotting
-        if isinstance(self.plot_process, multiprocessing.Process):
+        if self.interactive:
             log.info('Signaling online plots process to exit')
             self.stop_event.set()
             self.plot_process.join(timeout=5)
@@ -851,7 +852,6 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
                 register_snapshot = True
                 shutil.move(path_plot, new_path)
                 path_plot = new_path
-                log.info(f'Moved snapshot of online plots to {path_plot}')
 
         # call register_to_alyx of super class
         session = super().register_to_alyx()
