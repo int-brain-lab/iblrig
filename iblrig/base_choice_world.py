@@ -6,6 +6,7 @@ import logging
 import math
 import multiprocessing
 import random
+import shutil
 import time
 from pathlib import Path
 from re import split as re_split
@@ -840,14 +841,25 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             self.stop_event.clear()
 
     def register_to_alyx(self) -> dict | None:
+        # move online plots to session folder
+        register_snapshot = False
+        path_plot: Path = self.paths['SESSION_RAW_DATA_FOLDER'] / 'online_plots.png'
+        suffix = self.paths['SESSION_RAW_DATA_FOLDER'].name[-2:]
+        if path_plot.exists():
+            new_path = self.paths['SESSION_FOLDER'] / f'online_plots_{suffix}.png'
+            if not new_path.exists():
+                register_snapshot = True
+                shutil.move(path_plot, new_path)
+                path_plot = new_path
+                log.info(f'Moved snapshot of online plots to {path_plot}')
+
+        # call register_to_alyx of super class
         session = super().register_to_alyx()
 
         # register online plot as session note
-        path_plot = self.paths['SESSION_RAW_DATA_FOLDER'] / '_iblrig_onlinePlots.png'
-        if session is not None and path_plot.exists() and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
+        if register_snapshot and session is not None and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
             snapshot = Snapshot(object_id=session['id'], content_type='session', one=self.one)
-            snapshot.register_image(image_file=path_plot, text='Snapshot of Online Plot', width='orig')
-            log.info('Registering snapshot of online plot as session note')
+            snapshot.register_image(image_file=path_plot, text=f'Snapshot of Online Plots #{suffix}', width='orig')
 
         return session
 
