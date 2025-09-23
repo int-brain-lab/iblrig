@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 import os
 import sys
 import time
@@ -60,8 +59,6 @@ from iblrig.path_helper import get_local_and_remote_paths
 from iblrig.raw_data_loaders import bpod_trial_data_to_dataframe, load_task_jsonable
 from one.alf.spec import is_session_path
 from one.api import ONE
-
-log = logging.getLogger(__name__)
 
 
 def is_alf_path(value: Path) -> Path:
@@ -671,7 +668,6 @@ class OnlinePlotsModel(QObject):
                 while not self.jsonable_file.exists():
                     time.sleep(0.2)
             is_live = True
-            log.info(f'Starting online plots for session {self.raw_data_folder}')
 
         # If session is a file ...
         elif session.is_file():
@@ -1059,7 +1055,6 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event):
-        log.info('Closing online plots')
         if self.model.raw_data_folder is not None:
             self.model.setCurrentTrial(self.model.nTrials() - 1)
             filename = self.model.raw_data_folder / 'online_plots.png'
@@ -1162,7 +1157,7 @@ def online_plots_app(
 
     if stop_event is not None:
         timer = QTimer()
-        timer.timeout.connect(lambda: app.quit() if stop_event.is_set() else None)
+        timer.timeout.connect(lambda: window.close() if stop_event.is_set() else None)
         timer.start(500)
 
     sys.exit(app.exec())
