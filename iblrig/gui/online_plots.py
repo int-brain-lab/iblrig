@@ -6,6 +6,7 @@ import time
 from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
+from multiprocessing.synchronize import Event as mpEvent
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -1053,6 +1054,20 @@ class OnlinePlotsView(QMainWindow):
             self.settings.setValue('size', self.size())
         super().resizeEvent(event)
 
+    def closeEvent(self, event):
+        if self.model.raw_data_folder is not None:
+            self.model.setCurrentTrial(self.model.nTrials() - 1)
+            filename = self.model.raw_data_folder / 'online_plots.png'
+            if not filename.exists():
+                self.save_as_png(self.model.raw_data_folder / 'online_plots.png')
+        event.accept()
+
+    def save_as_png(self, filename: os.PathLike | str) -> None:
+        """Save plot as a PNG file."""
+        filename = Path(filename).with_suffix('.png')
+        img = self.grab(self.rect())
+        img.save(str(filename), 'PNG')
+
 
 def online_plots_cli(*args):
     """
@@ -1088,10 +1103,11 @@ def online_plots_cli(*args):
     online_plots_app(session, group)
 
 
+@validate_call
 def online_plots_app(
     session: FilePath | DirectoryPath | UUID4 | None = None,
     group: str | None = None,
-    stop_event=None,
+    stop_event: mpEvent | None = None,
 ) -> None:
     """
     Launch the IBL Online Plots GUI.
@@ -1109,7 +1125,7 @@ def online_plots_app(
     group : str | None, optional
         Name of the data column to group by. If ``None``, the default grouping
         will be used.
-    stop_event : multiprocessing.Event, optional
+    stop_event : multiprocessing.synchronize.Event, optional
         Event to signal graceful shutdown.
     """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
