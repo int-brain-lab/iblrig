@@ -18,6 +18,7 @@ from annotated_types import Interval, IsNan
 from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
+from ibllib.plots.snapshot import Snapshot
 from iblrig import choiceworld, misc
 from iblrig.gui.online_plots import online_plots_app
 from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
@@ -841,18 +842,12 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     def register_to_alyx(self) -> dict | None:
         session = super().register_to_alyx()
 
-        # set online plot as note
+        # register online plot as session note
         path_plot = self.paths['SESSION_RAW_DATA_FOLDER'] / '_iblrig_onlinePlots.png'
-        if session is not None and path_plot.exists() and isinstance(self.one, OneAlyx):
-            client = self.one.alyx
-            note = {
-                'user': self.iblrig_settings.ALYX_USER,
-                'content_type': 'session',
-                'object_id': session['id'],
-                'text': 'Snapshot of Online Plot',
-            }
-            with path_plot.open('rb') as img_file:
-                client.rest('notes', 'create', data=note, files={'image': img_file})
+        if session is not None and path_plot.exists() and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
+            snapshot = Snapshot(object_id=session['id'], content_type='session', one=self.one)
+            snapshot.register_image(image_file=path_plot, text='Snapshot of Online Plot', width='orig')
+            log.info('Registering snapshot of online plot as session note')
 
         return session
 
