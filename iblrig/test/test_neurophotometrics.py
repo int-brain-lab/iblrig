@@ -1,12 +1,12 @@
 import datetime
 import unittest
-from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryFile
+from unittest.mock import patch
 
+from iblrig.constants import BASE_PATH
 from iblrig.neurophotometrics import neurophotometrics_description
 from iblrig.path_helper import _load_settings_yaml
-from iblrig.constants import BASE_PATH
 
 
 class TestExperimentDescription(unittest.TestCase):
