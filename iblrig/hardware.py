@@ -18,6 +18,7 @@ import serial
 import sounddevice as sd
 from annotated_types import Ge, Le
 from pydantic import PositiveFloat, PositiveInt, validate_call
+from serial import Serial
 from serial.serialutil import SerialException
 from serial.tools import list_ports
 
@@ -334,6 +335,293 @@ class Bpod(BpodIO):
         """
         self.softcodes = softcode_dict
         self.softcode_handler_function = lambda code: softcode_dict[code]()
+
+
+class RotaryEncoder:
+    _name: str = 'Rotary Encoder Module'
+    _is_logging: bool = False
+    _wrap_point: float = 180.0
+    _wrap_mode: Literal['bipolar', 'unipolar'] = 'bipolar'
+    _thresholds: list[float] = []
+    _max_thresholds: int = 8
+
+    def __init__(self, com_port: str):
+        # probe device to identify hardware version
+        try:
+            query = b'CI\xfa'
+            with serial.Serial(com_port, timeout=0.1) as s:
+                s.reset_input_buffer()
+                s.write(query)
+                read_value = s.read(2)
+            if len(read_value) == 0:
+                raise TimeoutError(f'Device on {com_port} did not respond to query {query} within {s.timeout} seconds.')
+            match read_value:
+                case b'\xd9\x01':
+                    self._hardware_version = 1
+                    self._half_point = 512
+                case b'\xd9\x00':
+                    self._hardware_version = 2
+                    self._half_point = 2048
+                case _:
+                    raise NotImplementedError(f'Unexpected response from device on {com_port}: {read_value}')
+        except SerialException as e:
+            if 'could not open port' in str(e):
+                raise SerialException(f'Could not connect to {self._name} on {com_port}. Is the device connected?') from e
+            else:
+                raise
+        except (TimeoutError, NotImplementedError) as e:
+            raise ValueError(f'Device on {com_port} does not appear to be a Rotary Encoder Module.') from e
+
+        # initialize parent class and define port
+        self._serial = Serial()
+        self._serial.port = com_port
+        self.open()
+
+        # reset to default settings
+        self.reset()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def __del__(self):
+        self.close()
+
+    def _degrees_to_ticks(self, degrees: float) -> int:
+        """Convert degrees to ticks."""
+        return round(degrees / 180.0 * self._half_point)
+
+    def _ticks_to_degrees(self, ticks: int) -> float:
+        """Convert ticks to degrees."""
+        return ticks / self._half_point * 180.0
+
+    def reset(self):
+        """Reset Rotary Encoder Module to default settings."""
+        self.wrap_point = 180.0
+        self.thresholds = [-40.0, 40.0]
+        # obj.wrapMode = 'bipolar';
+        # obj.sendThresholdEvents = 'off';
+        # obj.moduleOutputStream = 'off';
+        if self._hardware_version == 1:
+            self.set_stream_prefix('M')
+
+    @property
+    def hardware_version(self) -> int:
+        """Hardware version of the connected Rotary Encoder Module."""
+        return self._hardware_version
+
+    @property
+    def port(self) -> str:
+        """Port name of the connected Rotary Encoder Module."""
+        return self._serial.port
+
+    def open(self) -> None:
+        """Open serial connection to the Rotary Encoder Module."""
+        if not self._serial.is_open:
+            log.debug('Opening serial connection to %s v%d on %s', self._name, self._hardware_version, self.port)
+            self._serial.open()
+
+    def close(self) -> None:
+        """Close serial connection to the Rotary Encoder Module."""
+        self.logging = False
+        if self._serial.is_open:
+            log.debug('Closing serial connection to %s v%d on %s', self._name, self._hardware_version, self.port)
+            self._serial.close()
+
+    @property
+    def _ticks(self) -> int:
+        self._serial.write(b'Q')
+        buffer = self._serial.read(4)
+        ticks = struct.unpack('<i', buffer)[0]
+        return ticks
+
+    @_ticks.setter
+    def _ticks(self, value: int) -> None:
+        buffer = struct.pack('<ci', b'P', value)
+        self._serial.write(buffer)
+
+    @property
+    def wrap_point(self) -> float:
+        """Get or set the wrap point in degrees."""
+        return self._wrap_point
+
+    @wrap_point.setter
+    def wrap_point(self, degrees: float) -> bool:
+        ticks = self._degrees_to_ticks(abs(degrees))
+        buffer = struct.pack('<cI', b'W', ticks)
+        self._serial.write(buffer)
+        self._wrap_point = self._ticks_to_degrees(ticks)
+        if self._serial.read(1) == b'\x01':
+            log.debug('Setting wrap point to %0.1f degrees', self._wrap_point)
+        else:
+            log.error('Failed to set wrap point')
+
+    @property
+    def thresholds(self) -> list[float]:
+        """Get or set the thresholds in degrees."""
+        return self._thresholds
+
+    @thresholds.setter
+    def thresholds(self, degrees: list[float]) -> None:
+        if any(abs(threshold) > self._wrap_point for threshold in degrees):
+            raise ValueError(f'Threshold values cannot exceed the current wrap point of {self._wrap_point} degrees.')
+        if (n_thresholds := len(degrees)) > 8:
+            raise ValueError(f'A maximum of {self._max_thresholds} thresholds can be set.')
+        ticks = [self._degrees_to_ticks(thresh) for thresh in degrees]
+        degrees = [self._ticks_to_degrees(tick) for tick in ticks]
+        buffer = struct.pack(f'<cB{n_thresholds}h', b'T', n_thresholds, *ticks)
+        self._serial.write(buffer)
+        if self._serial.read(1) == b'\x01':
+            self._thresholds = degrees
+            log.debug('Setting thresholds to [%s] degrees', ', '.join([f'{x:0.1f}' for x in degrees]))
+        else:
+            log.error('Failed to set thresholds')
+
+    @property
+    def logging(self) -> bool:
+        return self._is_logging
+
+    @logging.setter
+    def logging(self, enable_logging: bool) -> None:
+        if enable_logging == self._is_logging:
+            return
+        if self.hardware_version != 1:
+            raise RuntimeError(f'SD card logging is not supported on {self._name} v{self.hardware_version}')
+        if enable_logging:
+            self._serial.write(b'L')
+            log.debug('Logging enabled')
+        else:
+            self._serial.write(b'F')
+            log.debug('Logging disabled')
+        self._is_logging = bool(enable_logging)
+
+    def current_position(self) -> float:
+        """
+        Get current rotary encoder position in degrees.
+
+        Returns
+        -------
+        float
+            Current position in degrees.
+        """
+        return self._ticks_to_degrees(self._ticks)
+
+    def set_current_position(self, degrees: float):
+        """
+        Set current position in degrees.
+
+        Parameters
+        ----------
+        degrees : float
+            Position in degrees to set the rotary encoder to.
+        """
+        self._ticks = self._degrees_to_ticks(degrees)
+
+    def set_zero_position(self) -> None:
+        """Set current rotary encoder position to zero."""
+        self._serial.write(b'Z')
+
+    def enable_logging(self):
+        """
+        Enables logging to the SD Card.
+
+        Only supported for hardware version 1.
+
+        Raises
+        ------
+        RuntimeError
+            If the hardware version is not 1.
+        """
+        self.logging = True
+
+    def disable_logging(self):
+        """Disables the logging to the SD Card."""
+        self.logging = False
+
+    def get_logged_data(self) -> np.ndarray:
+        """Retrieve logged data from the SD card.
+
+        Returns
+        -------
+        np.ndarray
+            Array of logged data
+        """
+        if self.hardware_version != 1:
+            raise RuntimeError(f'SD card logging is not supported on {self._name} v{self.hardware_version}')
+
+        self.logging = False  # stop logging before retrieving data
+
+        self._serial.write(b'R')
+        buffer = self._serial.read(4)
+        n_positions = struct.unpack('<I', buffer)[0]
+        buffer = self._serial.read(n_positions * 8)
+
+        dtype = np.dtype([('int_val', np.int32), ('uint_val', np.uint32)])
+        array = np.frombuffer(buffer, dtype=dtype)
+
+        return array
+
+    def reset_data_streams(self):
+        """Reset data streams."""
+        self._serial.write(b'X')
+        self._is_logging = False
+        log.debug('All data streams reset')
+
+    def set_stream_prefix(self, prefix: str | bytes = b'M') -> bool:
+        """
+        Set the stream prefix.
+
+        Parameters
+        ----------
+        prefix : str or bytes, optional
+            A single character or byte to be used as the stream prefix.
+
+        Returns
+        -------
+        bool : True if the prefix was set successfully, False otherwise.
+
+        Raises
+        ------
+        ValueError
+            If the prefix is not a single character or byte.
+        """
+        # return False if not version 1
+        if self.hardware_version != 1:
+            log.error('Setting of stream prefix is only supported for %s v1', self._name)
+            return False
+
+        # validate prefix and convert to bytes if necessary
+        match prefix:
+            case str():
+                prefix = prefix.encode()
+            case bytes():
+                pass
+            case _:
+                raise ValueError('Stream prefix must be of type str or bytes.')
+        if len(prefix) > 1:
+            raise ValueError('Stream prefix must have a length of 1.')
+
+        # send command and read response
+        self._serial.write(b'I' + prefix)
+        success = self._serial.read(1) == b'\x01'
+        log.debug('Setting stream prefix to %s', prefix)
+
+        return success
+
+    def enable_thresholds(self, enabled_thresholds):
+        pass
+
+    def enable_evt_transmission(self):
+        pass
+
+
+class RotaryEncoderModule2(RotaryEncoder):
+    @validate_call
+    def __init__(self, settings: HardwareSettingsRotaryEncoder, thresholds_deg: list[float], gain: float):
+        self._settings = settings
+        super().__init__(self._settings.COM_ROTARY_ENCODER)
 
 
 class RotaryEncoderModule(PybpodRotaryEncoderModule):
