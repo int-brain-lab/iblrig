@@ -1,7 +1,7 @@
 import datetime
 import unittest
 from pathlib import Path
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 from unittest.mock import patch
 
 from iblrig.constants import BASE_PATH
@@ -33,9 +33,9 @@ class TestExperimentDescription(unittest.TestCase):
 
         # for daqami sync
         settings_dict = _load_settings_yaml(BASE_PATH / 'settings' / 'hardware_settings_template.yaml')
-        with patch('iblrig.path_helper._load_settings_yaml', return_value=settings_dict), TemporaryFile() as fp:
+        with patch('iblrig.path_helper._load_settings_yaml', return_value=settings_dict), NamedTemporaryFile() as fp:
             settings_dict['device_neurophotometrics'] = {
-                'BONSAI_EXECUTABLE': Path(fp),
+                'BONSAI_EXECUTABLE': Path(fp.name),
                 'BONSAI_WORKFLOW': Path('devices', 'neurophotometrics', 'FP3002.bonsai'),
                 'BONSAI_WORKFLOW_DAQ': Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai'),
                 'COM_NEUROPHOTOMETRY': None,
