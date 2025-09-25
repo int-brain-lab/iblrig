@@ -22,7 +22,7 @@ from serial.serialutil import SerialException
 from serial.tools import list_ports
 
 from iblrig.pydantic_definitions import HardwareSettingsRotaryEncoder
-from iblrig.rotary_encoder import RotaryEncoder
+from iblrig.rotary_encoder import RotaryEncoderModule
 from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder as PybpodRotaryEncoder
 from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule as PybpodRotaryEncoderModule
@@ -337,7 +337,7 @@ class Bpod(BpodIO):
         self.softcode_handler_function = lambda code: softcode_dict[code]()
 
 
-class RotaryEncoderModule2(RotaryEncoder):
+class RotaryEncoderModule2(RotaryEncoderModule):
     @validate_call
     def __init__(self, settings: HardwareSettingsRotaryEncoder, thresholds_deg: list[float], gain: float):
         self._settings = settings

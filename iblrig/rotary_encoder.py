@@ -1,6 +1,6 @@
 import logging
 import struct
-from typing import Literal
+from typing import Literal, overload
 
 import numpy as np
 import serial
@@ -10,7 +10,7 @@ from serial import Serial, SerialException
 log = logging.getLogger(__name__)
 
 
-class RotaryEncoder:
+class RotaryEncoderModule:
     _name: str = 'Rotary Encoder Module'
     _is_logging: bool = False
     _wrap_point: float = 180.0
@@ -36,8 +36,16 @@ class RotaryEncoder:
         # reset to default settings
         self.reset()
 
+    @overload
     @staticmethod
-    def probe(port: str) -> int:
+    def probe(port: str, raise_exceptions: Literal[True] = True) -> int: ...
+
+    @overload
+    @staticmethod
+    def probe(port: str, raise_exceptions: Literal[False]) -> int | None: ...
+
+    @staticmethod
+    def probe(port: str, raise_exceptions: bool = True):
         """
         Probe for a Rotary Encoder Module on the specified port.
 
@@ -45,18 +53,21 @@ class RotaryEncoder:
         ----------
         port : str
             The port to probe.
+        raise_exceptions : bool, optional
+            Whether to raise a ValueError when device does not appear to be a rotary encoder. Defaults to True.
 
         Returns
         -------
-        int
+        int or None
             The hardware version of the Rotary Encoder Module.
+            Will return None if the device does not appear to be a Rotary Encoder Module and `raise_exceptions` is False.
 
         Raises
         ------
         SerialException
             If the port cannot be opened.
         ValueError
-            If the device does not appear to be a Rotary Encoder Module.
+            If the device does not appear to be a Rotary Encoder Module and `raise_exceptions` is True.
         """
         try:
             query = b'CI\xfa'
@@ -79,7 +90,9 @@ class RotaryEncoder:
             else:
                 raise
         except (TimeoutError, NotImplementedError) as e:
-            raise ValueError(f'Device on {port} does not appear to be a Rotary Encoder Module.') from e
+            if raise_exceptions:
+                raise ValueError(f'Device on {port} does not appear to be a Rotary Encoder Module.') from e
+            hardware_version = None
         return hardware_version
 
     def __enter__(self):
@@ -98,6 +111,11 @@ class RotaryEncoder:
     def _ticks_to_degrees(self, ticks: int) -> float:
         """Convert ticks to degrees."""
         return ticks * self._factor_tick_to_deg
+
+    def _reset_data_streams(self):
+        self._serial.write(b'X')
+        self._is_logging = False
+        log.debug('All data streams reset')
 
     def reset(self):
         """Reset Rotary Encoder Module to default settings."""
@@ -158,11 +176,11 @@ class RotaryEncoder:
         if self._serial.read(1) == b'\x01':
             log.debug('Setting wrap point to %0.1f degrees', self._wrap_point)
         else:
-            log.error('Failed to set wrap point')
+            raise RuntimeError('Failed to set wrap point')
 
     @property
     def thresholds(self) -> list[float]:
-        """Get or set the thresholds in degrees."""
+        """List of thresholds in degrees."""
         return self._thresholds
 
     @thresholds.setter
@@ -179,7 +197,7 @@ class RotaryEncoder:
             self._thresholds = degrees
             log.debug('Setting thresholds to [%s] degrees', ', '.join([f'{x:0.1f}' for x in degrees]))
         else:
-            log.error('Failed to set thresholds')
+            raise RuntimeError('Failed to set thresholds')
 
     @property
     def sd_logging(self) -> bool:
@@ -261,12 +279,6 @@ class RotaryEncoder:
         out['degrees'] = raw['ticks'] * self._factor_tick_to_deg
 
         return out
-
-    def reset_data_streams(self):
-        """Reset data streams."""
-        self._serial.write(b'X')
-        self._is_logging = False
-        log.debug('All data streams reset')
 
     def set_stream_prefix(self, prefix: str | bytes = b'M') -> bool:
         """
