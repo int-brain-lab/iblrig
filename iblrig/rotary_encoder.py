@@ -36,12 +36,12 @@ class RotaryEncoderModule:
         # reset to default settings
         self.reset()
 
-    @overload
     @staticmethod
+    @overload
     def probe(port: str, raise_exceptions: Literal[True] = True) -> int: ...
 
-    @overload
     @staticmethod
+    @overload
     def probe(port: str, raise_exceptions: Literal[False]) -> int | None: ...
 
     @staticmethod
