@@ -15,12 +15,12 @@ import ibllib.pipes.misc
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
 from ibllib.pipes.misc import sleepless
-from iblphotometry import fpio
 from iblrig import path_helper
 from iblrig.constants import BASE_PATH
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.io import hashfile
 from iblutil.util import ensure_list
+import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -637,8 +637,8 @@ class NeurophotometricsCopier(SessionCopier):
             case 'bpod':
                 # copy the digital inputs file
                 csv_digital_inputs = neurophotometrics_session_path.joinpath('digital_inputs.csv')
-                digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
+                digital_inputs_df = pd.read_csv(csv_digital_inputs)
+                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt'))
             case 'daqami':
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
@@ -680,15 +680,8 @@ class NeurophotometricsCopier(SessionCopier):
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
                 shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
-            # digital outputs file
-            # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
-            # digital_outputs_df = fpio.read_digital_outputs_csv(csv_digital_outputs, validate=True)
-            # digital_outputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalOutputs.pqt')
-
-        # explicitly with the data from the experiment description file
-        raw_photometry_df = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
-        cols = neurophotometrics_description['fibers'].keys()
-        raw_photometry_df = fpio.validate_neurophotometrics_df(raw_photometry_df, data_columns=cols)
+        # read neurophotometrics file
+        raw_photometry_df = pd.read_csv(csv_raw_photometry)
         raw_photometry_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
 
         # TODO why are we explicitly copying this file?
