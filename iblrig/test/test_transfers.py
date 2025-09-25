@@ -157,7 +157,7 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         # check that the correct data was copied
         remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
         data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
         data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
