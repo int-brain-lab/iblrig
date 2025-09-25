@@ -11,6 +11,8 @@ from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
 
+import pandas as pd
+
 import ibllib.pipes.misc
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
@@ -20,7 +22,6 @@ from iblrig.constants import BASE_PATH
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblutil.io import hashfile
 from iblutil.util import ensure_list
-import pandas as pd
 
 log = logging.getLogger(__name__)
 
