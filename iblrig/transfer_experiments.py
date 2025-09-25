@@ -12,7 +12,7 @@ from os.path import samestat
 from pathlib import Path
 
 import ibllib.pipes.misc
-import iblphotometry.io as fpio
+import iblphotometry.fpio as fpio
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
 from ibllib.pipes.misc import sleepless

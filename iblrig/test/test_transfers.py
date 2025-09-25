@@ -18,7 +18,6 @@ import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
-from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
@@ -105,7 +104,6 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
         digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
 
         cols_dtypes = dict(
@@ -123,7 +121,6 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
         (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
         raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
 
