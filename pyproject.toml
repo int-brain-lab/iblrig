@@ -47,6 +47,7 @@ dependencies = [
     "PyQt5-Qt5>=5.15.2",
     "PyQtWebEngine>=5.15.6",
     "PyQtWebEngine-Qt5>=5.15.2",
+    "bpod-core>=0.1.0a5",
 ]
 [project.optional-dependencies]
 project-extraction = [

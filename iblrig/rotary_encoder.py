@@ -3,9 +3,9 @@ import struct
 from typing import Literal, overload
 
 import numpy as np
-import serial
+from bpod_core.com import ExtendedSerial
 from numpy.typing import NDArray
-from serial import Serial, SerialException
+from serial import SerialException
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class RotaryEncoderModule:
 
         # initialize serial object and set port
         # implemented that awkwardly to get logging from self.open()
-        self._serial = Serial()
+        self._serial = ExtendedSerial()
         self._serial.port = port
         self.open()
 
@@ -69,21 +69,20 @@ class RotaryEncoderModule:
         ValueError
             If the device does not appear to be a Rotary Encoder Module and `raise_exceptions` is True.
         """
+        hardware_version = None
         try:
-            query = b'CI\xfa'
-            with serial.Serial(port, timeout=0.1) as s:
+            with ExtendedSerial(port, timeout=0.1) as s:
                 s.reset_input_buffer()
-                s.write(query)
-                read_value = s.read(2)
-            if len(read_value) == 0:
-                raise TimeoutError(f'Device on {port} did not respond to query {query!r} within {s.timeout} seconds.')
-            match read_value:
+                reply = s.query(b'CI\xfa', 2)
+            if len(reply) == 0:
+                raise TimeoutError(f'Device on {port} did not respond to query within {s.timeout} seconds.')
+            match reply:
                 case b'\xd9\x01':
                     hardware_version = 1
                 case b'\xd9\x00':
                     hardware_version = 2
                 case _:
-                    raise NotImplementedError(f'Unexpected response from device on {port}: {read_value!r}')
+                    raise NotImplementedError(f'Unexpected response from device on {port}: {reply!r}')
         except SerialException as e:
             if 'could not open port' in str(e):
                 raise SerialException(f'Could not connect to device on {port}. Is the device connected?') from e
@@ -92,7 +91,6 @@ class RotaryEncoderModule:
         except (TimeoutError, NotImplementedError) as e:
             if raise_exceptions:
                 raise ValueError(f'Device on {port} does not appear to be a Rotary Encoder Module.') from e
-            hardware_version = None
         return hardware_version
 
     def __enter__(self):
@@ -146,21 +144,17 @@ class RotaryEncoderModule:
     def close(self) -> None:
         """Close serial connection to the Rotary Encoder Module."""
         self.sd_logging = False
-        if self._serial.is_open:
+        if hasattr(self, '_serial') and self._serial.is_open:
             log.debug('Closing serial connection to %s v%d on %s', self._name, self._hardware_version, self.port)
             self._serial.close()
 
     @property
     def _ticks(self) -> int:
-        self._serial.write(b'Q')
-        buffer = self._serial.read(4)
-        ticks = struct.unpack('<i', buffer)[0]
-        return ticks
+        return self._serial.query_struct(b'Q', '<i')[0]
 
     @_ticks.setter
     def _ticks(self, value: int) -> None:
-        buffer = struct.pack('<ci', b'P', value)
-        self._serial.write(buffer)
+        self._serial.write_struct('<ci', b'P', value)
 
     @property
     def wrap_point(self) -> float:
@@ -170,10 +164,9 @@ class RotaryEncoderModule:
     @wrap_point.setter
     def wrap_point(self, degrees: float) -> None:
         ticks = self._degrees_to_ticks(abs(degrees))
-        buffer = struct.pack('<cI', b'W', ticks)
-        self._serial.write(buffer)
-        self._wrap_point = self._ticks_to_degrees(ticks)
-        if self._serial.read(1) == b'\x01':
+        query = struct.pack('<cI', b'W', ticks)
+        if self._serial.verify(query):
+            self._wrap_point = self._ticks_to_degrees(ticks)
             log.debug('Setting wrap point to %0.1f degrees', self._wrap_point)
         else:
             raise RuntimeError('Failed to set wrap point')
@@ -191,9 +184,8 @@ class RotaryEncoderModule:
             raise ValueError(f'A maximum of {self._max_thresholds} thresholds can be set.')
         ticks = [self._degrees_to_ticks(thresh) for thresh in degrees]
         degrees = [self._ticks_to_degrees(tick) for tick in ticks]
-        buffer = struct.pack(f'<cB{n_thresholds}h', b'T', n_thresholds, *ticks)
-        self._serial.write(buffer)
-        if self._serial.read(1) == b'\x01':
+        query = struct.pack(f'<cB{n_thresholds}h', b'T', n_thresholds, *ticks)
+        if self._serial.verify(query):
             self._thresholds = degrees
             log.debug('Setting thresholds to [%s] degrees', ', '.join([f'{x:0.1f}' for x in degrees]))
         else:
@@ -265,9 +257,7 @@ class RotaryEncoderModule:
 
         self.sd_logging = False  # stop logging before retrieving data
 
-        self._serial.write(b'R')
-        buffer = self._serial.read(4)
-        n_values = struct.unpack('<I', buffer)[0]
+        n_values = self._serial.query_struct(b'R', '<I')[0]
         buffer = self._serial.read(n_values * 8)
 
         dtype = np.dtype([('time', np.uint32), ('ticks', np.int32)])
@@ -280,7 +270,7 @@ class RotaryEncoderModule:
 
         return out
 
-    def set_stream_prefix(self, prefix: str | bytes = b'M') -> bool:
+    def set_stream_prefix(self, prefix: str | bytes = b'M') -> None:
         """
         Set the stream prefix.
 
@@ -289,19 +279,16 @@ class RotaryEncoderModule:
         prefix : str or bytes, optional
             A single character or byte to be used as the stream prefix.
 
-        Returns
-        -------
-        bool : True if the prefix was set successfully, False otherwise.
-
         Raises
         ------
         ValueError
             If the prefix is not a single character or byte.
+        RuntimeError
+            If the hardware version is not 1 or if setting the prefix fails.
         """
-        # return False if not version 1
+        # Raise exception if not version 1
         if self.hardware_version != 1:
-            log.error('Setting of stream prefix is only supported for %s v1', self._name)
-            return False
+            raise RuntimeError('Setting of stream prefix is only supported for %s v1', self._name)
 
         # validate prefix and convert to bytes if necessary
         match prefix:
@@ -315,11 +302,10 @@ class RotaryEncoderModule:
             raise ValueError('Stream prefix must have a length of 1.')
 
         # send command and read response
-        self._serial.write(b'I' + prefix)
-        success = self._serial.read(1) == b'\x01'
-        log.debug('Setting stream prefix to %s', prefix)
-
-        return success
+        if self._serial.verify(b'I' + prefix):
+            log.debug('Setting stream prefix to %s', prefix)
+        else:
+            raise RuntimeError('Failed to set stream prefix')
 
     def enable_thresholds(self, enabled_thresholds):
         pass
