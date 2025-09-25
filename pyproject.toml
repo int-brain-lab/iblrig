@@ -16,13 +16,13 @@ dependencies = [
     #
     # IBL packages
     "iblatlas>=0.9.0",
-    "ibllib>=3.4.0",
+    "ibllib>=3.4.1",
     "iblpybpod-no-gui>=3.1.1",
     "iblutil>=1.20.0",
-    "iblqt>=0.8.0",
+    "iblqt>=0.8.2",
     "ONE-api>=3.3.0",
     "tycmd-wrapper>=0.2.1",
-    "ibl-photometry>=0.1.1",
+    "ibl-photometry>=0.1.2",
     #
     # Everything else
     "annotated-types>=0.7.0",
