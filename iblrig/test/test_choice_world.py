@@ -13,10 +13,12 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import numpy as np
 import pandas as pd
 import yaml
+from pybpodapi.state_machine import StateMachine
+from pybpodapi.state_machine.state_machine_base import StateMachineBase
 
 import iblrig.choiceworld
 from iblrig import session_creator
-from iblrig.base_choice_world import ChoiceWorldSession
+from iblrig.base_choice_world import ChoiceWorldSession, HabituationChoiceWorldSession
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
@@ -233,20 +235,19 @@ class TestTrainingPhases(unittest.TestCase):
 
 class TestITI(unittest.TestCase):
     @staticmethod
-    def get_mock_session(n_trials: int) -> tuple[MagicMock, MagicMock]:
+    def get_mock_session(session_class: ChoiceWorldSession, n_trials: int) -> tuple[MagicMock, MagicMock]:
         """Mock ChoiceWorldSession and StateMachine"""
-        with ChoiceWorldSession.base_parameters_file.open() as f:
-            params = Bunch(yaml.safe_load(f))
+        params = session_class.read_task_parameter_files()
         params['NTRIALS'] = n_trials
         sma = MagicMock()
         type(sma).total_states_added = PropertyMock(side_effect=lambda: sma.add_state.call_count)
         type(sma).state_timers = PropertyMock(
             side_effect=lambda: [float(x.kwargs['state_timer']) for x in sma.add_state.call_args_list]
         )
-        session = MagicMock().return_value
+        session = MagicMock(spec=session_class).return_value
         session.task_params = params
-        session._run = ChoiceWorldSession._run.__get__(session, ChoiceWorldSession)
-        session.get_state_machine_trial = ChoiceWorldSession.get_state_machine_trial.__get__(session, ChoiceWorldSession)
+        session._run = session_class._run.__get__(session, session_class)
+        session.get_state_machine_trial = session_class.get_state_machine_trial.__get__(session, session_class)
         session._instantiate_state_machine.return_value = sma
         session.paused = False
         session.stopped = False
@@ -254,35 +255,42 @@ class TestITI(unittest.TestCase):
 
     def test_iti_warning(self):
         # test that the ITI warning is raised when the last state does not handle the ITI
-        session, sma = self.get_mock_session(1)
-        type(sma).state_timers = [0.0] * 100
-        with patch('iblrig.base_choice_world.time.sleep'), self.assertLogs('iblrig', level='WARNING'):
-            session._run()
+        for session_class in [ChoiceWorldSession, HabituationChoiceWorldSession]:
+            session, sma = self.get_mock_session(session_class, 1)
+            type(sma).state_timers = [0.0] * 100
+            with (
+                patch('iblrig.base_choice_world.time.sleep'),
+                patch('iblrig.base_choice_world.StateMachine', return_value=sma),
+                self.assertLogs('iblrig', level='WARNING'),
+            ):
+                session._run()
 
     def test_iti(self):
-        # the fraction of the ITI handled by the state machine's last state
-        session, sma = self.get_mock_session(1)
-        with patch('iblrig.base_choice_world.time.sleep'):
-            session._run()
-        iti_delay_sma = sma.add_state.call_args_list[-1].kwargs['state_timer']
+        for session_class in [ChoiceWorldSession, HabituationChoiceWorldSession]:
+            # the fraction of the ITI handled by the state machine's last state
+            session, sma = self.get_mock_session(session_class, 1)
+            with patch('iblrig.base_choice_world.StateMachine', return_value=sma):
+                session._run()
+            iti_delay_sma = sma.add_state.call_args_list[-1].kwargs['state_timer']
 
-        # the last state of the state machine needs to contain a BNC1 high of a certain duration - for extraction
-        self.assertGreaterEqual(iti_delay_sma, 0.5, 'Part of the ITI should be handled by the state machine.')
-        self.assertIn(('BNC1', 255), sma.add_state.call_args_list[-1].kwargs['output_actions'], 'Expecting BNC1 high.')
+            # the last state of the state machine needs to contain a BNC1 high of a certain duration - for extraction
+            self.assertGreaterEqual(iti_delay_sma, 0.5, 'Part of the ITI should be handled by the state machine.')
+            self.assertIn(('BNC1', 255), sma.add_state.call_args_list[-1].kwargs['output_actions'], 'Expecting BNC1 high.')
 
-        # the assumed fraction of the ITI defined by processing delays
-        iti_delay_processing = 0.031231234234234
+            # the assumed fraction of the ITI defined by processing delays
+            iti_delay_processing = 0.031231234234234
 
-        # the fraction of the ITI handled by time.sleep() making up for processing delays
-        session, sma = self.get_mock_session(2)
-        counter = count(0, iti_delay_processing)
-        with (
-            patch('iblrig.base_choice_world.time.perf_counter', side_effect=lambda: next(counter)),
-            patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
-        ):
-            session._run()
-        self.assertEqual(session.bpod.run_state_machine.call_count, 2, 'expecting run_state_machine() to have been called twice.')
-        iti_delay_sleep = mock_sleep.call_args[0][0] if mock_sleep.call_args else 0.0
+            # the fraction of the ITI handled by time.sleep() making up for processing delays
+            session, sma = self.get_mock_session(session_class, 2)
+            counter = count(0, iti_delay_processing)
+            with (
+                patch('iblrig.base_choice_world.time.perf_counter', side_effect=lambda c=counter: next(c)),
+                patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
+                patch('iblrig.base_choice_world.StateMachine', return_value=sma),
+            ):
+                session._run()
+            self.assertEqual(session.bpod.run_state_machine.call_count, 2)
+            iti_delay_sleep = mock_sleep.call_args[0][0] if mock_sleep.call_args else 0.0
 
-        # the total ITI should be 1 second
-        self.assertAlmostEqual(iti_delay_sma + iti_delay_processing + iti_delay_sleep, 1.0, msg='Total ITI should be 1 second')
+            # the total ITI should be 1 second
+            self.assertAlmostEqual(iti_delay_sma + iti_delay_processing + iti_delay_sleep, 1.0, msg='Total ITI should be 1 s')
