@@ -258,16 +258,16 @@ class RotaryEncoderModule:
 
         self.sd_logging = False  # stop logging before retrieving data
 
-        # retrieve data from rotary encoder module and parse into structured array
+        # prepare output array
         n_records = self._serial.query_struct(b'R', '<I')[0]
+        out = np.empty(n_records, dtype=DTYPE_LOGGING)
         if n_records == 0:
-            return np.empty(0, dtype=DTYPE_LOGGING)
+            return out
+
+        # retrieve data from rotary encoder module and parse into structured array
         buffer = self._serial.read(n_records * 8)
         dtype = np.dtype([('ticks', np.int32), ('time', np.uint32)])
         raw_data = np.frombuffer(buffer, dtype=dtype)
-
-        # Prepare output structured array
-        out = np.empty(n_records, dtype=DTYPE_LOGGING)
         out['time'] = raw_data['time'].astype('timedelta64[us]')
         np.multiply(raw_data['ticks'], self._factor_tick_to_deg, out=out['degrees'])
 
