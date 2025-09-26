@@ -254,21 +254,13 @@ class _PauseChoiceWorldSession(ChoiceWorldSession):
     def start_hardware(self):
         pass
 
-    def _delete_pause_flag(self):
-        if self.trial_num == self.pause_trial and self.pause_flag.exists():
-            self.pause_flag.unlink()
-
-    @property
-    def pause_flag(self):
-        return self.paths.SESSION_FOLDER.joinpath('.pause')
-
     def run_state_machine(self, _):
         # simulate pause button press by user
         if self.pause_trial is not None and self.pause_trial == self.trial_num:
-            self.pause_flag.touch()
-            Timer(0.1, self._delete_pause_flag).start()
+            self.pause()
+            Timer(0.1, self.resume).start()
         if self.stop_trial is not None and self.stop_trial == self.trial_num:
-            self.pause_flag.with_name('.stop').touch()
+            self.stop()
 
     def mock(self, **kwargs):
         super().mock(**kwargs)
@@ -306,8 +298,6 @@ class TestBaseChoiceWorld(BaseTestCases.CommonTestTask):
 
         # Check we stopped after the expected trial
         self.assertEqual(self.task.session_info.NTRIALS, self.task.stop_trial + 1, 'failed to stop early')
-        stop_flag = self.task.paths.SESSION_FOLDER.joinpath('.stop')
-        self.assertFalse(stop_flag.exists(), 'failed to remove stop flag')
         # Check trials updated with pause duration
         (idx,) = np.where(self.task.trials_table['pause_duration'][: self.task.task_params.NTRIALS] > 0)
         self.assertCountEqual(idx, [self.task.pause_trial], 'failed to correctly update pause_duration field')

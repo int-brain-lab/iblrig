@@ -250,10 +250,15 @@ class ChoiceWorldSession(
             # obtain state machine definition
             self.next_trial()
             sma = self.get_state_machine_trial(trial_number)
+            last_state_duration = sma.state_timers[sma.total_states_added - 1]
 
             # Waiting for camera / initial delay will be handled just prior to the first trial
             # This is done here to allow for backward compatibility with unadapted tasks
             if trial_number == 0:
+                # warn if the duration of the last state is not sufficiently long
+                if last_state_duration < 0.5:
+                    log.warning(f'The last state has a duration of only {last_state_duration} s. It should be 0.5 s or longer.')
+
                 # warn if state machine uses deprecated way of waiting for camera / initial delay
                 if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
                     log.warning('')
@@ -290,19 +295,16 @@ class ChoiceWorldSession(
             # run state machine
             log.info('-----------------------')
             log.info(f'Starting Trial #{trial_number}')
-            log.debug('running state machine')
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
 
             # handle pause event
-            flag_pause = self.paths.SESSION_FOLDER.joinpath('.pause')
-            flag_stop = self.paths.SESSION_FOLDER.joinpath('.stop')
-            if flag_pause.exists() and trial_number < (self.task_params.NTRIALS - 1):
+            if self.paused and trial_number < (self.task_params.NTRIALS - 1):
                 log.info(f'Pausing session inbetween trials {trial_number} and {trial_number + 1}')
-                while flag_pause.exists() and not flag_stop.exists():
+                while self.paused and not self.stopped:
                     time.sleep(1)
                 self.trials_table.at[self.trial_num, 'pause_duration'] = time.time() - time_last_trial_end
-                if not flag_stop.exists():
+                if not self.stopped:
                     log.info('Resuming session')
 
             # save trial and update log
@@ -310,9 +312,8 @@ class ChoiceWorldSession(
             self.show_trial_log()
 
             # handle stop event
-            if flag_stop.exists():
+            if self.stopped:
                 log.info('Stopping session after trial %d', trial_number)
-                flag_stop.unlink()
                 break
 
     def mock(self, file_jsonable_fixture=None):
@@ -605,8 +606,6 @@ class ChoiceWorldSession(
             with self.paths['AMBIENT_FILE_PATH'].open('ab') as f:
                 binary.write_array(f, [self.trial_num, *sensor_reading], DTYPE_AMBIENT_SENSOR_BIN)
 
-        # this is a flag for the online plots. If online plots were in pyqt5, there is a file watcher functionality
-        Path(self.paths['DATA_FILE_PATH']).parent.joinpath('new_trial.flag').touch()
         self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
         self.check_sync_pulses(bpod_data=bpod_data)
 
@@ -840,7 +839,7 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
             )
         super()._run()
 
-    def __del__(self):
+    def _finalize(self):
         if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
             log.info('Terminating subprocess: online plots')
             self.plot_subprocess.terminate()

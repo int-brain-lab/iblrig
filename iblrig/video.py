@@ -3,6 +3,7 @@ import asyncio
 import contextlib
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -158,7 +159,10 @@ def install_pyspin():
         print('Installing PySpin ...')
         with zipfile.ZipFile(file_zip, 'r') as f:
             file_whl = f.extract(file_zip.stem + '.whl', file_zip.parent)
-        return_code = subprocess.check_call([sys.executable, '-m', 'pip', 'install', file_whl])
+        try:
+            return_code = subprocess.check_call([sys.executable, '-m', 'pip', 'install', file_whl])
+        except subprocess.CalledProcessError:
+            return_code = subprocess.check_call(['uv', 'pip', 'install', file_whl])
         if return_code == 0:
             print('Installation of PySpin was successful.')
         os.unlink(file_whl)
@@ -398,7 +402,7 @@ class CameraSession(EmptySession):
                 new_file = self.paths['SESSION_RAW_DATA_FOLDER'].joinpath('_ibl_log.info-acquisition.log')
                 new_file.parent.mkdir(parents=True, exist_ok=True)
                 self.logger.debug('Moving log file: %s -> %s', file_handler.baseFilename, new_file)
-                Path(file_handler.baseFilename).replace(new_file)
+                shutil.move(file_handler.baseFilename, new_file)
 
     @property
     def cameras(self):

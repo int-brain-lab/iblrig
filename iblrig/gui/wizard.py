@@ -17,9 +17,40 @@ from pathlib import Path
 import psutil
 import pyqtgraph as pg
 from pydantic import ValidationError
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThreadPool, pyqtSlot
-from PyQt5.QtWidgets import QStyle
+from qtpy.QtCore import (
+    QCoreApplication,
+    QEvent,
+    QItemSelectionModel,
+    QPoint,
+    QProcess,
+    QSettings,
+    QSize,
+    QStringListModel,
+    Qt,
+    QThreadPool,
+    Signal,
+    Slot,
+)
+from qtpy.QtGui import QIcon
+from qtpy.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QInputDialog,
+    QLabel,
+    QLayout,
+    QLineEdit,
+    QListView,
+    QMainWindow,
+    QMessageBox,
+    QSpinBox,
+    QStyle,
+    QWidget,
+)
 from requests import HTTPError
 from serial import Serial, SerialException
 from typing_extensions import override
@@ -28,16 +59,17 @@ import iblrig.hardware_validation
 import iblrig.path_helper
 import iblrig_tasks
 from ibllib.io.raw_data_loaders import load_settings
+from iblqt.core import Worker
+from iblqt.widgets import DiskSpaceIndicator, RestrictedWebView, SlideToggle
 from iblrig.base_tasks import BaseSession, EmptySession
 from iblrig.choiceworld import compute_adaptive_reward_volume, get_subject_training_info, training_phase_from_contrast_set
-from iblrig.constants import BASE_DIR
+from iblrig.constants import BASE_DIR, URL_DOC
 from iblrig.gui.frame2ttl import Frame2TTLCalibrationDialog
 from iblrig.gui.splash import Splash
 from iblrig.gui.tab_about import TabAbout
 from iblrig.gui.tab_data import TabData
-from iblrig.gui.tab_docs import TabDocs
 from iblrig.gui.tab_log import TabLog
-from iblrig.gui.tools import DiskSpaceIndicator, RemoteDevicesItemModel, Worker
+from iblrig.gui.tools import RemoteDevicesItemModel, SettingsDialog
 from iblrig.gui.ui_login import Ui_login
 from iblrig.gui.ui_update import Ui_update
 from iblrig.gui.ui_wizard import Ui_wizard
@@ -46,7 +78,7 @@ from iblrig.gui.valve import ValveCalibrationDialog
 from iblrig.hardware import Bpod
 from iblrig.hardware_validation import Status
 from iblrig.misc import get_task_argument_parser
-from iblrig.path_helper import load_pydantic_yaml
+from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.tools import alyx_reachable, get_lab_location_dict, internet_available
@@ -89,13 +121,13 @@ REGEX_STDOUT = re.compile(
 )
 
 
-def _set_list_view_from_string_list(ui_list: QtWidgets.QListView, string_list: list):
+def _set_list_view_from_string_list(ui_list: QListView, string_list: list):
     """Small boiler plate util to set the selection of a list view from a list of strings."""
     if string_list is None or len(string_list) == 0:
         return
     for i, s in enumerate(ui_list.model().stringList()):
         if s in string_list:
-            ui_list.selectionModel().select(ui_list.model().createIndex(i, 0), QtCore.QItemSelectionModel.Select)
+            ui_list.selectionModel().select(ui_list.model().createIndex(i, 0), QItemSelectionModel.Select)
 
 
 @dataclass
@@ -252,7 +284,7 @@ class RigWizardModel:
                     f'Please check the RIG_NAME key in hardware_settings.yaml and make sure it is created in Alyx here: '
                     f'{self.iblrig_settings.ALYX_URL}/admin/misc/lablocation/'
                 )
-            QtWidgets.QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
+            QMessageBox().critical(None, 'Error', f'{message}\n\n{solution}')
 
         # get subjects from Alyx: this is the set of subjects that are alive and in the lab defined in settings
         # stock subjects are excluded, unless the user is stock manager
@@ -290,11 +322,11 @@ class RigWizardModel:
             return
 
 
-class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
+class RigWizard(QMainWindow, Ui_wizard):
     training_info: dict = {}
     session_info: dict = {}
     task_parameters: dict | None = None
-    new_subject_details = QtCore.pyqtSignal()
+    new_subject_details = Signal()
     append_session: bool = False
     previous_subject: str | None = None
 
@@ -305,16 +337,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # load tabs
         self.tabLog = TabLog(parent=self.tabWidget)
         self.tabData = TabData(parent=self.tabWidget)
-        self.tabDocs = TabDocs(parent=self.tabWidget)
+        self.tabDocs = RestrictedWebView(url=URL_DOC, parent=self.tabWidget)
         self.tabAbout = TabAbout(parent=self.tabWidget)
-        self.tabWidget.addTab(self.tabLog, QtGui.QIcon(':/images/log'), 'Log')
-        self.tabWidget.addTab(self.tabData, QtGui.QIcon(':/images/sessions'), 'Data')
-        self.tabWidget.addTab(self.tabDocs, QtGui.QIcon(':/images/help'), 'Docs')
-        self.tabWidget.addTab(self.tabAbout, QtGui.QIcon(':/images/about'), 'About')
+        self.tabWidget.addTab(self.tabLog, QIcon(':/images/log'), 'Log')
+        self.tabWidget.addTab(self.tabData, QIcon(':/images/sessions'), 'Data')
+        self.tabWidget.addTab(self.tabDocs, QIcon(':/images/help'), 'Docs')
+        self.tabWidget.addTab(self.tabAbout, QIcon(':/images/about'), 'About')
         self.tabWidget.setCurrentIndex(0)
 
         self.debug = debug
-        self.settings = QtCore.QSettings()
+        self.settings = QSettings()
 
         try:
             self.model = RigWizardModel()
@@ -348,6 +380,20 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             self.listViewRemoteDevices.setVisible(False)
             self.labelRemoteDevices.setVisible(False)
 
+        # statusbar: main sync toggle
+        sync_toggle = SlideToggle(self)
+        sync_toggle.setChecked(self.model.hardware_settings.MAIN_SYNC)
+        sync_toggle.toggled.connect(self._on_toggle_main_sync)
+        layout = QHBoxLayout()
+        layout.addWidget(sync_toggle)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel('Main Sync', self.statusbar))
+        self.uiSyncWidget = QWidget(self.statusbar)
+        self.uiSyncWidget.setLayout(layout)
+        self.uiSyncWidget.setHidden(not self.settings.value('gui_settings/sync/toggle', False, bool))
+        self._on_toggle_main_sync(self.model.hardware_settings.MAIN_SYNC)
+        self.statusbar.addPermanentWidget(self.uiSyncWidget, stretch=1)
+
         # task parameters and subject details
         self.uiComboTask.currentTextChanged.connect(self._controls_for_task_arguments)
         self.uiComboTask.currentTextChanged.connect(self._get_task_parameters)
@@ -360,6 +406,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiActionCalibrateFrame2ttl.triggered.connect(self._on_calibrate_frame2ttl)
         self.uiActionCalibrateValve.triggered.connect(self._on_calibrate_valve)
         self.uiActionTrainingLevelV7.triggered.connect(self._on_menu_training_level_v7)
+        self.uiActionGuiSettings.triggered.connect(self._on_gui_settings)
 
         self.uiPushStart.clicked.connect(self.start_stop)
         self.uiPushPause.clicked.connect(self.pause)
@@ -390,9 +437,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # tools
         self.uiPushFlush.clicked.connect(self.flush)
         self.uiPushReward.clicked.connect(self.model.free_reward)
-        self.uiPushReward.setStatusTip(
-            f'Click to grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)'
-        )
+        self.uiPushReward.setToolTip(f'Grant a free reward ({self.hardware_settings.device_valve.FREE_REWARD_VOLUME_UL:.1f} μL)')
         self.uiPushStatusLED.setChecked(self.settings.value('bpod_status_led', True, bool))
         self.uiPushStatusLED.toggled.connect(self.toggle_status_led)
         self.toggle_status_led(self.uiPushStatusLED.isChecked())
@@ -402,8 +447,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         local_data = Path(local_data) if local_data else Path.home().joinpath('iblrig_data')
         self.uiDiskSpaceIndicator = DiskSpaceIndicator(parent=self.statusbar, directory=local_data)
         self.uiDiskSpaceIndicator.setMaximumWidth(70)
+        self.uiDiskSpaceIndicator.setMaximumHeight(20)
+        self.statusbar.addPermanentWidget(QLabel('Disk Usage', self.statusbar))
         self.statusbar.addPermanentWidget(self.uiDiskSpaceIndicator)
-        self.statusbar.setContentsMargins(0, 0, 6, 0)
+        self.statusbar.setContentsMargins(4, 0, 6, 3)
 
         # disable control of LED if Bpod does not have the respective capability
         try:
@@ -423,17 +470,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         QThreadPool.globalInstance().start(update_worker)
 
         # show GUI
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowFullscreenButtonHint)
-        self.move(self.settings.value('pos', self.pos(), QtCore.QPoint))
-        self.resize(self.settings.value('size', self.size(), QtCore.QSize))
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowFullscreenButtonHint)
+        self.move(self.settings.value('pos', self.pos(), QPoint))
+        self.resize(self.settings.value('size', self.size(), QSize))
         self.show()
 
         # show validation errors / warnings:
         if any(results := [r for r in self.validation_results if r.status in (Status.FAIL, Status.WARN)]):
-            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box = QMessageBox(parent=self)
             msg_box.setWindowTitle('IBLRIG System Validation')
-            msg_box.setIcon(QtWidgets.QMessageBox().Warning)
-            msg_box.setTextFormat(QtCore.Qt.TextFormat.RichText)
+            msg_box.setIcon(QMessageBox().Warning)
+            msg_box.setTextFormat(Qt.TextFormat.RichText)
             text = f'The following issue{"s were" if len(results) > 1 else " was"} detected:'
             for result in results:
                 text = (
@@ -444,6 +491,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             text = text + '<br><br>\nPlease refer to the System Validation tool for more details.'
             msg_box.setText(text)
             msg_box.exec()
+
+    def _on_toggle_main_sync(self, value: bool):
+        self.uiSyncWidget.setToolTip(f'Bpod is{" " if value else " NOT "}used as Main Sync')
+        if value == self.model.hardware_settings.MAIN_SYNC:
+            return
+        self.model.hardware_settings.MAIN_SYNC = value
+        save_pydantic_yaml(self.model.hardware_settings)
 
     @property
     def iblrig_settings(self) -> RigSettings:
@@ -507,11 +561,11 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         build_list(issues, 'Possible issue')
         build_list(suggestions, 'Suggested action')
         build_list(leads, 'Possible lead')
-        QtWidgets.QMessageBox.critical(self, title, text)
+        QMessageBox.critical(self, title, text)
 
     def _on_switch_tab(self, index):
         # if self.tabWidget.tabText(index) == 'Session':
-        # QtCore.QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
+        # QTimer.singleShot(1, lambda: self.resize(self.minimumSizeHint()))
         # self.adjustSize()
         pass
 
@@ -533,26 +587,24 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # get session path
         if not (local_path := Path(r'C:\iblrig_data\Subjects')).exists():
             local_path = self.iblrig_settings.iblrig_local_data_path
-        session_path = QtWidgets.QFileDialog.getExistingDirectory(
-            self, 'Select Session Path', str(local_path), QtWidgets.QFileDialog.ShowDirsOnly
-        )
+        session_path = QFileDialog.getExistingDirectory(self, 'Select Session Path', str(local_path), QFileDialog.ShowDirsOnly)
         if session_path is None or session_path == '':
             return
 
         # get trials table
         file_jsonable = next(Path(session_path).glob('raw_behavior_data/_iblrig_taskData.raw.jsonable'), None)
         if file_jsonable is None:
-            QtWidgets.QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
+            QMessageBox().critical(self, 'Error', f'No jsonable found in {session_path}')
             return
         trials_table, _ = load_task_jsonable(file_jsonable)
         if trials_table.empty:
-            QtWidgets.QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
+            QMessageBox().critical(self, 'Error', f'No trials found in {session_path}')
             return
 
         # get task settings
         task_settings = load_settings(session_path, task_collection='raw_behavior_data')
         if task_settings is None:
-            QtWidgets.QMessageBox().critical(self, 'Error', f'No task settings found in {session_path}')
+            QMessageBox().critical(self, 'Error', f'No task settings found in {session_path}')
             return
 
         # compute values
@@ -572,22 +624,27 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         stim_gain = trials_table['stim_gain'].values[-1]
 
         # display results
-        box = QtWidgets.QMessageBox(parent=self)
-        box.setIcon(QtWidgets.QMessageBox.Information)
+        box = QMessageBox(parent=self)
+        box.setIcon(QMessageBox.Information)
         box.setModal(False)
         box.setWindowTitle('Training Level')
         box.setText(
             f'{session_path}\n\ntraining phase:\t{training_phase}\nreward:\t{reward_amount:.2f} uL\nstimulus gain:\t{stim_gain}'
         )
         if self.uiComboTask.currentText() == '_iblrig_tasks_trainingChoiceWorld':
-            box.setStandardButtons(QtWidgets.QMessageBox.Apply | QtWidgets.QMessageBox.Close)
+            box.setStandardButtons(QMessageBox.Apply | QMessageBox.Close)
         else:
-            box.setStandardButtons(QtWidgets.QMessageBox.Close)
+            box.setStandardButtons(QMessageBox.Close)
         box.exec()
-        if box.clickedButton() == box.button(QtWidgets.QMessageBox.Apply):
-            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_gain').setValue(stim_gain)
-            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--adaptive_reward').setValue(reward_amount)
-            self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, '--training_phase').setValue(training_phase)
+        if box.clickedButton() == box.button(QMessageBox.Apply):
+            self.uiGroupTaskParameters.findChild(QWidget, '--adaptive_gain').setValue(stim_gain)
+            self.uiGroupTaskParameters.findChild(QWidget, '--adaptive_reward').setValue(reward_amount)
+            self.uiGroupTaskParameters.findChild(QWidget, '--training_phase').setValue(training_phase)
+
+    def _on_gui_settings(self) -> None:
+        accepted = SettingsDialog(main_key='gui_settings', title='GUI Settings', parent=self).exec()
+        if accepted:
+            self.uiSyncWidget.setHidden(not self.settings.value('gui_settings/sync/toggle', False, bool))
 
     def _on_check_update_result(self, result: tuple[bool, str]) -> None:
         """
@@ -662,7 +719,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
         # 3) Finally, if the login was successful, we need to apply some changes to the GUI
         if logged_in:
-            self.uiLineEditUser.addAction(QtGui.QIcon(':/images/check'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition)
+            self.uiLineEditUser.addAction(QIcon(':/images/check'), QLineEdit.ActionPosition.TrailingPosition)
             self.uiLineEditUser.setText(username)
             self.uiLineEditUser.setReadOnly(True)
             self.uiLineEditUser.setStyleSheet('background-color: rgb(246, 245, 244);')
@@ -672,12 +729,12 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
     @override
     def eventFilter(self, obj, event):
-        if obj == self.uiPushStart and event.type() in [QtCore.QEvent.HoverEnter, QtCore.QEvent.HoverLeave]:
+        if obj == self.uiPushStart and event.type() in [QEvent.HoverEnter, QEvent.HoverLeave]:
             for widget in [self.uiListProcedures, self.uiListProjects]:
                 if len(widget.selectedIndexes()) > 0:
                     continue
                 match event.type():
-                    case QtCore.QEvent.HoverEnter:
+                    case QEvent.HoverEnter:
                         widget.setStyleSheet('QListView { background-color: pink; border: 1px solid red; }')
                     case _:
                         widget.setStyleSheet('')
@@ -698,15 +755,15 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         if self.running_task_process is None:
             accept()
         else:
-            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box = QMessageBox(parent=self)
             msg_box.setWindowTitle('Hold on')
             msg_box.setText('A task is running - do you really want to quit?')
-            msg_box.setStandardButtons(QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Yes)
-            msg_box.setIcon(QtWidgets.QMessageBox().Question)
+            msg_box.setStandardButtons(QMessageBox.No | QMessageBox.Yes)
+            msg_box.setIcon(QMessageBox().Question)
             match msg_box.exec_():
-                case QtWidgets.QMessageBox.No:
+                case QMessageBox.No:
                     event.ignore()
-                case QtWidgets.QMessageBox.Yes:
+                case QMessageBox.Yes:
                     self.setEnabled(False)
                     self.repaint()
                     self.start_stop()
@@ -716,10 +773,10 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         # stores the current values in the model
         self.controller2model()
         # set the default values
-        self.uiComboTask.setModel(QtCore.QStringListModel(list(self.model.all_tasks.keys())))
-        self.uiComboSubject.setModel(QtCore.QStringListModel(self.model.all_subjects))
-        self.uiListProcedures.setModel(QtCore.QStringListModel(self.model.all_procedures))
-        self.uiListProjects.setModel(QtCore.QStringListModel(self.model.all_projects))
+        self.uiComboTask.setModel(QStringListModel(list(self.model.all_tasks.keys())))
+        self.uiComboSubject.setModel(QStringListModel(self.model.all_subjects))
+        self.uiListProcedures.setModel(QStringListModel(self.model.all_procedures))
+        self.uiListProjects.setModel(QStringListModel(self.model.all_projects))
         # set the selections
         self.uiComboTask.setCurrentText(self.model.task_name)
         self.uiComboSubject.setCurrentText(self.model.subject)
@@ -776,7 +833,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for bool arguments
             if isinstance(arg, argparse._StoreTrueAction | argparse._StoreFalseAction):
-                widget = QtWidgets.QCheckBox()
+                widget = QCheckBox()
                 widget.setTristate(False)
                 if arg.default:
                     widget.setCheckState(arg.default * 2)
@@ -787,7 +844,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
             elif arg.type in (str, None):
                 # string options (-> combo-box)
                 if isinstance(arg.choices, list):
-                    widget = QtWidgets.QComboBox()
+                    widget = QComboBox()
                     widget.addItems(arg.choices)
                     if arg.default:
                         widget.setCurrentIndex([widget.itemText(x) for x in range(widget.count())].index(arg.default))
@@ -796,7 +853,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 # list of strings (-> line-edit)
                 elif arg.nargs == '+':
-                    widget = QtWidgets.QLineEdit()
+                    widget = QLineEdit()
                     if arg.default:
                         widget.setText(', '.join(arg.default))
                     widget.editingFinished.connect(
@@ -806,7 +863,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
                 # single string (-> line-edit)
                 else:
-                    widget = QtWidgets.QLineEdit()
+                    widget = QLineEdit()
                     if arg.default:
                         widget.setText(arg.default)
                     widget.editingFinished.connect(lambda p=param, w=widget: self._set_task_arg(p, w.text()))
@@ -814,7 +871,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for list of floats
             elif arg.type is float and arg.nargs == '+':
-                widget = QtWidgets.QLineEdit()
+                widget = QLineEdit()
                 if arg.default:
                     widget.setText(str(arg.default)[1:-1])
                 widget.editingFinished.connect(
@@ -824,16 +881,16 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # create widget for adaptive gain
             elif arg.dest == 'adaptive_gain':
-                widget = QtWidgets.QDoubleSpinBox()
+                widget = QDoubleSpinBox()
                 widget.setDecimals(1)
 
             # create widget for numerical arguments
             elif arg.type in [float, int]:
                 if arg.type is float:
-                    widget = QtWidgets.QDoubleSpinBox()
+                    widget = QDoubleSpinBox()
                     widget.setDecimals(1)
                 else:
-                    widget = QtWidgets.QSpinBox()
+                    widget = QSpinBox()
                 if arg.default:
                     widget.setValue(arg.default)
                 widget.valueChanged.connect(lambda val, p=param: self._set_task_arg(p, str(val)))
@@ -850,7 +907,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
 
             # display help strings as status tip
             if arg.help:
-                widget.setStatusTip(arg.help)
+                widget.setToolTip(arg.help)
 
             # some customizations
             match widget.property('parameter_dest'):
@@ -934,7 +991,7 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
     def _set_automatic_values(self):
         def _helper(name: str, destination: str, str_format: str):
             value = self.training_info.get(name)
-            if (widget := self.uiGroupTaskParameters.findChild(QtWidgets.QWidget, destination)) is not None:
+            if (widget := self.uiGroupTaskParameters.findChild(QWidget, destination)) is not None:
                 if value is None:
                     default = ' (default)' if self.session_info is None else ''
                     widget.setSpecialValueText(f'automatic{default}')
@@ -954,68 +1011,75 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         result = [s for s in self.model.all_subjects if filter_str in s.lower()]
         if len(result) == 0:
             result = [self.model.test_subject_name]
-        self.uiComboSubject.setModel(QtCore.QStringListModel(result))
+        self.uiComboSubject.setModel(QStringListModel(result))
 
     def pause(self):
+        if self.running_task_process is None:
+            return
         self.uiPushPause.setStyleSheet('QPushButton {background-color: yellow;}' if self.uiPushPause.isChecked() else '')
         match self.uiPushPause.isChecked():
             case True:
                 print('Pausing after current trial ...')
-                if self.model.session_folder.exists():
-                    self.model.session_folder.joinpath('.pause').touch()
+                self._message_task_process(b'pause')
             case False:
                 print('Resuming ...')
-                if self.model.session_folder.joinpath('.pause').exists():
-                    self.model.session_folder.joinpath('.pause').unlink()
+                self._message_task_process(b'resume')
 
     def start_stop(self):
         match self.uiPushStart.text():
             case 'Start':
-                self.uiPushStart.setText('Stop')
-                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
-                self._enable_ui_elements()
-
-                self.tabLog.plainTextEditNarrative.clear()
-                self.tabLog.narrativeUpdated.connect(self._on_updated_narrative)
+                # Check Main Sync setting
+                if self.settings.value('gui_settings/sync/warn', False, bool):
+                    response = QMessageBox.warning(
+                        self,
+                        'Main Sync',
+                        f'Bpod is{" " if self.model.hardware_settings.MAIN_SYNC else " NOT "}set as Main Sync.\n'
+                        f'Do you want to continue?',
+                        QMessageBox.No | QMessageBox.Yes,
+                    )
+                    if response != QMessageBox.Yes:
+                        return
 
                 # Manage appended session
                 self.append_session = False
                 if self.previous_subject == self.model.subject and not self.model.hardware_settings.MAIN_SYNC:
-                    self.append_session = (
-                        QtWidgets.QMessageBox.question(
-                            self,
-                            'Appended Session',
-                            'Would you like to append to the previous session?',
-                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                            QtWidgets.QMessageBox.No,
-                        )
-                        == QtWidgets.QMessageBox.Yes
+                    response = QMessageBox.question(
+                        self,
+                        'Append Session?',
+                        'Would you like to append to the previous session?',
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No,
                     )
+                    if response == QMessageBox.Cancel:
+                        return
+                    self.append_session = response == QMessageBox.Yes
 
                 # Manage subject weight
-                dlg = QtWidgets.QInputDialog()
-                weight, ok = dlg.getDouble(
+                weight, ok = QInputDialog().getDouble(
                     self,
                     'Subject Weight',
                     'Subject Weight (g):',
                     value=0,
                     min=0,
                     decimals=2,
-                    flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
+                    flags=QInputDialog().windowFlags() & ~Qt.WindowContextHelpButtonHint,
                 )
                 if not ok or weight == 0:
-                    self.uiPushStart.setText('Start')
-                    self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-                    self._enable_ui_elements()
+                    return
+                if weight > 100 and QMessageBox.question(self, 'Really?', 'That heavy?!') != QMessageBox.Yes:
                     return
 
+                self.uiPushStart.setText('Stop')
+                self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
+                self._enable_ui_elements()
+                self.tabLog.plainTextEditNarrative.clear()
+                self.tabLog.narrativeUpdated.connect(self._on_updated_narrative)
                 self.controller2model()
 
                 logging.disable(logging.INFO)
                 task = EmptySession(subject=self.model.subject, append=self.append_session, interactive=False)
                 logging.disable(logging.NOTSET)
                 self.model.session_folder = task.paths['SESSION_FOLDER']
-                self.model.session_folder.joinpath('.stop').unlink(missing_ok=True)
                 self.model.raw_data_folder = task.paths['SESSION_RAW_DATA_FOLDER']
 
                 # disable Bpod status LED
@@ -1059,14 +1123,14 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                     self.tabLog.appendText(f'Starting subprocess: {self.model.task_name} ...\n', 'White')
                     log.info('Starting subprocess')
                     log.info(subprocess.list2cmdline(cmd))
-                    self.running_task_process = QtCore.QProcess()
+                    self.running_task_process = QProcess()
                     self.running_task_process.setWorkingDirectory(BASE_DIR)
-                    self.running_task_process.setProcessChannelMode(QtCore.QProcess.SeparateChannels)
+                    self.running_task_process.setProcessChannelMode(QProcess.SeparateChannels)
                     self.running_task_process.finished.connect(self._on_task_finished)
                     self.running_task_process.readyReadStandardOutput.connect(self._on_read_standard_output)
                     self.running_task_process.readyReadStandardError.connect(self._on_read_standard_error)
                     self.running_task_process.start(shutil.which('python'), cmd)
-                self.uiPushStart.setStatusTip('stop the session after the current trial')
+                self.uiPushStart.setToolTip('Stop the session after the current trial')
                 self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaStop))
                 self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tabLog))
             case 'Stop':
@@ -1076,10 +1140,13 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 self.tabLog.narrativeUpdated.disconnect()
                 self.tabLog.plainTextEditNarrative.setEnabled(False)
 
-                if self.model.session_folder and self.model.session_folder.exists():
-                    self.model.session_folder.joinpath('.stop').touch()
+                self._message_task_process(b'stop')
 
-    @pyqtSlot(bytes)
+    def _message_task_process(self, message: bytes):
+        if self.running_task_process is not None:
+            self.running_task_process.write(b'\n' + message + b'\n')
+
+    @Slot(bytes)
     def _on_updated_narrative(self, narrative: bytes):
         """Update narrative.txt if text-field has been modified."""
         self.model.session_folder.mkdir(parents=True, exist_ok=True)
@@ -1121,17 +1188,17 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.tabLog.appendText('\nSubprocess finished.', 'White')
         if exit_code:
             self._cleanup_failed_session()
-            msg_box = QtWidgets.QMessageBox(parent=self)
+            msg_box = QMessageBox(parent=self)
             msg_box.setWindowTitle('Oh no!')
             msg_box.setText('The task was terminated with an error.\nPlease check the log for details.')
-            msg_box.setIcon(QtWidgets.QMessageBox().Critical)
+            msg_box.setIcon(QMessageBox().Critical)
             msg_box.exec_()
 
         self.running_task_process = None
 
         # re-enable UI elements
         self.uiPushStart.setText('Start')
-        self.uiPushStart.setStatusTip('start the session')
+        self.uiPushStart.setToolTip('Start the session')
         self.uiPushStart.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self._enable_ui_elements()
 
@@ -1149,28 +1216,28 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
                 and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
                 and not self.append_session
             ):
-                answer = QtWidgets.QMessageBox.question(
+                answer = QMessageBox.question(
                     self,
                     'Is this a dud?',
                     f'The session consisted of only {ntrials:d} trial'
                     f'{"s" if ntrials > 1 else ""} and appears to be a dud.\n\n'
                     f'Should it be deleted?',
                 )
-                if answer == QtWidgets.QMessageBox.Yes:
+                if answer == QMessageBox.Yes:
                     shutil.rmtree(self.model.session_folder)
                     self.previous_subject = None
                     return
             self.previous_subject = self.model.subject
 
             # manage poop count
-            dlg = QtWidgets.QInputDialog()
+            dlg = QInputDialog()
             droppings, ok = dlg.getInt(
                 self,
                 'Droppings',
                 'Number of droppings:',
                 value=0,
                 min=0,
-                flags=dlg.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint,
+                flags=dlg.windowFlags() & ~Qt.WindowContextHelpButtonHint,
             )
             session_data['POOP_COUNT'] = droppings
             with open(task_settings_file, 'w') as fid:
@@ -1260,23 +1327,23 @@ class RigWizard(QtWidgets.QMainWindow, Ui_wizard):
         self.uiGroupParameters.setEnabled(not is_running)
         self.uiGroupTaskParameters.setEnabled(not is_running)
         self.uiGroupTools.setEnabled(not is_running)
+        self.uiMenuBar.setEnabled(not is_running)
+        self.statusbar.setEnabled(not is_running)
         self.repaint()
 
 
-class LoginWindow(QtWidgets.QDialog, Ui_login):
+class LoginWindow(QDialog, Ui_login):
     def __init__(self, parent: RigWizard, username: str = '', password: str = '', remember: bool = False):
         super().__init__(parent)
         self.setupUi(self)
-        self.layout().setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.layout().setSizeConstraint(QLayout.SetFixedSize)
         self.labelServer.setText(str(parent.iblrig_settings['ALYX_URL']))
         self.lineEditUsername.setText(username)
         self.lineEditPassword.setText(password)
         self.checkBoxRememberMe.setChecked(remember)
         self.lineEditUsername.textChanged.connect(self._on_text_changed)
         self.lineEditPassword.textChanged.connect(self._on_text_changed)
-        self.toggle_password = self.lineEditPassword.addAction(
-            QtGui.QIcon(':/images/hide'), QtWidgets.QLineEdit.ActionPosition.TrailingPosition
-        )
+        self.toggle_password = self.lineEditPassword.addAction(QIcon(':/images/hide'), QLineEdit.ActionPosition.TrailingPosition)
         self.toggle_password.triggered.connect(self._toggle_password_visibility)
         self.toggle_password.setCheckable(True)
         if len(username) > 0:
@@ -1290,14 +1357,14 @@ class LoginWindow(QtWidgets.QDialog, Ui_login):
 
     def _toggle_password_visibility(self):
         if self.toggle_password.isChecked():
-            self.toggle_password.setIcon(QtGui.QIcon(':/images/show'))
-            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
+            self.toggle_password.setIcon(QIcon(':/images/show'))
+            self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
-            self.toggle_password.setIcon(QtGui.QIcon(':/images/hide'))
-            self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+            self.toggle_password.setIcon(QIcon(':/images/hide'))
+            self.lineEditPassword.setEchoMode(QLineEdit.EchoMode.Password)
 
 
-class UpdateNotice(QtWidgets.QDialog, Ui_update):
+class UpdateNotice(QDialog, Ui_update):
     """
     A dialog for displaying update notices.
 
@@ -1306,7 +1373,7 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
 
     Parameters
     ----------
-    parent : QtWidgets.QWidget
+    parent : QWidget
         The parent widget associated with this dialog.
 
     update_available : bool
@@ -1316,13 +1383,13 @@ class UpdateNotice(QtWidgets.QDialog, Ui_update):
         The version of the available update.
     """
 
-    def __init__(self, parent: QtWidgets.QWidget, version: str) -> None:
+    def __init__(self, parent: QWidget, version: str) -> None:
         super().__init__(parent)
         self.setupUi(self)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.uiLabelHeader.setText(f'Update to iblrig {version} is available.')
         self.uiTextBrowserChanges.setMarkdown(get_changelog())
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.exec()
 
 
@@ -1342,15 +1409,15 @@ def main():
         setup_logger(name='iblrig', level='INFO')
 
     # set app information
-    QtCore.QCoreApplication.setOrganizationName('International Brain Laboratory')
-    QtCore.QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
-    QtCore.QCoreApplication.setApplicationName('IBLRIG Wizard')
+    QCoreApplication.setOrganizationName('International Brain Laboratory')
+    QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
+    QCoreApplication.setApplicationName('IBLRIG Wizard')
     if os.name == 'nt':
         app_id = f'IBL.iblrig.wizard.{iblrig.__version__}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     # instantiate app
-    app = QtWidgets.QApplication(['', '--no-sandbox'])
+    app = QApplication(['', '--no-sandbox'])
     app.setStyle('Fusion')
     w = RigWizard(debug=args.debug, remote_devices=args.remote_devices)
     w.show()

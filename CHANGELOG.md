@@ -1,6 +1,20 @@
 Changelog
 =========
 
+8.29.0
+------
+* added: GUI settings for changing MAIN_SYNC
+* fixed: Stop/Pause button not always working for UDP sessions
+* changed: use UV for packaging
+
+8.28.2
+------
+* fixed: ensure that reward amount shown in online plots stays visible at all times
+
+8.28.1
+------
+* fixed: online plots showed incorrect reward amount
+
 8.28.0
 ------
 * added: `_iblrig_tasks_spontaneousBpod` - a spontaneous task that includes Bpod spacers
@@ -18,7 +32,7 @@ Changelog
 * fixed: online plots included timeout trials
 * fixed: online plots showed wrong reward amount for adaptive rewards
 * fixed: online plots did not take into account initial delay
-* fixed: data tab did not show correct session copy status 
+* fixed: data tab did not show correct session copy status
 
 -------------------------------
 
@@ -28,7 +42,7 @@ Changelog
 
 8.27.6
 ------
-* fixed: detection of LED control ability broken for Bpods with old firmware  
+* fixed: detection of LED control ability broken for Bpods with old firmware
 
 8.27.5
 ------
@@ -44,7 +58,7 @@ Changelog
 * changed: reset camera(s) prior to starting task when inconsistencies have been detected
 * changed: include stock subjects if user is stock manager
 * changed: skip validation of Ambient Module if device_bpod.USE_AMBIENT_MODULE is false
-* added: `remove_bonsai_layouts` command for troubleshooting BONSAI GUIs not appearing 
+* added: `remove_bonsai_layouts` command for troubleshooting BONSAI GUIs not appearing
 
 8.27.2
 ------
@@ -76,7 +90,7 @@ Changelog
 8.25.0
 ------
 * feature: fiber photometry loader
-* feature: dataframe converter for Bpod session data 
+* feature: dataframe converter for Bpod session data
 * removed: remaining tkinter dialogs
 
 -------------------------------
@@ -120,7 +134,7 @@ Changelog
 * feature: validate values in `trials_table` using Pydantic
 * feature: add auto-generated API reference to documentation
 * changed: `show_trial_log()` now accepts a dict for including additional log items
-* fix: `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used 
+* fix: `_ephysChoiceWorld` - values from the pre-generated sessions were not actually used
 * fix: `_ephysChoiceWorld` - trial fixtures contained inverted values for `probability_left`
 * fix: GUI - Subjects and Projects are not being cached
 * add script for validating audio output of Bpod HiFi Module (in `scripts/` folder)
@@ -263,7 +277,7 @@ Changelog
 
 8.15.4
 ------
-* hotfix: disable prompt for deleting "duds" for appended sessions 
+* hotfix: disable prompt for deleting "duds" for appended sessions
 
 8.15.3
 ------

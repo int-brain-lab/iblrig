@@ -11,15 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          cache: true
-          python-version-file: pyproject.toml
-      - name: Install requirements
-        run: pdm sync -dG doc
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install dependencies
+        run: uv sync --no-default-groups --group doc
+      - name: Sphinx build
+        run: uv run --frozen sphinx-build docs/source docs/build/html
       - name: Build PDF
-        run: pdm run make -C docs/ simplepdf
+        run: uv run --frozen make -C docs/ simplepdf
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

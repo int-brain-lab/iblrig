@@ -1,4 +1,3 @@
-import os
 import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,10 +9,6 @@ import iblrig.gui.online_plots as op
 zip_jsonable = Path(__file__).parent.joinpath('fixtures', 'online_plots_biased_iblrigv7.zip')
 
 
-@pytest.mark.skipif(
-    os.getenv('GITHUB_ACTIONS') == 'true' and os.name == 'posix' and os.uname().sysname == 'Linux',
-    reason='Skipping test on GitHub Actions Ubuntu runners',
-)
 class TestOnlinePlots:
     @pytest.fixture
     def task_file(self):
@@ -79,11 +74,11 @@ class TestOnlinePlots:
         model._n_trials_engaged = 401
         model.compute_end_session_criteria()
         with qtbot.assertNotEmitted(model.titleColorChanged):
-            model._trial_data['response_time'][-20:] = 5
+            model._trial_data.loc[model._trial_data.index[-20:], 'response_time'] = 5
             model.compute_end_session_criteria()
             assert model.titleColor == op.Colors.TRANSPARENT
         with qtbot.waitSignal(model.titleColorChanged, timeout=5):
-            model._trial_data['response_time'][-20:] = 5.1
+            model._trial_data.loc[model._trial_data.index[-20:], 'response_time'] = 6
             model.compute_end_session_criteria()
             assert model.titleColor == op.Colors.YELLOW
 
