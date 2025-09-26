@@ -278,7 +278,7 @@ class TestITI:
         session._run()
         assert 'It should be exactly 0.5 s.' in caplog.text
 
-    def test_iti_components(self, session_and_sma, mock_sleep, mock_perf_counter, caplog, mocker):
+    def test_iti_components(self, session_and_sma, mock_sleep, mock_perf_counter, caplog):
         """Test if ITI components are computed correctly."""
         session, sma = session_and_sma(n_trials=2)
         iti_delay_processing = 0.4321
@@ -290,8 +290,8 @@ class TestITI:
         assert mock_sleep.called, 'Sleep should be called'
         assert pytest.approx(iti_delay_sma + iti_delay_processing + iti_delay_sleep, rel=1e-6) == 1.0, 'Total ITI should be 1.0 s'
 
-    def test_warning_when_iti_too_high(self, session_and_sma, mock_sleep, mock_perf_counter, caplog, mocker):
-        """Too high processing delay should log warning."""
+    def test_warning_when_iti_too_high(self, session_and_sma, mock_sleep, mock_perf_counter, caplog):
+        """Test if larger than intended ITI is logged with a warning."""
         session, sma = session_and_sma(n_trials=2)
         mock_perf_counter(period=0.6)
         session._run()
