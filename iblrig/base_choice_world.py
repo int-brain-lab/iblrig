@@ -246,19 +246,15 @@ class ChoiceWorldSession(
         This method orchestrates the execution of the task by running a state machine for a specified number of trials.
         """
         time_last_trial_end = time.time()
+        iti_last_trial = np.nan
         for trial_number in range(self.task_params.NTRIALS):  # Main loop
             # obtain state machine definition
             self.next_trial()
             sma = self.get_state_machine_trial(trial_number)
-            last_state_duration = sma.state_timers[sma.total_states_added - 1]
 
             # Waiting for camera / initial delay will be handled just prior to the first trial
             # This is done here to allow for backward compatibility with unadapted tasks
             if trial_number == 0:
-                # warn if the duration of the last state is not sufficiently long
-                if last_state_duration < 0.5:
-                    log.warning(f'The last state has a duration of only {last_state_duration} s. It should be 0.5 s or longer.')
-
                 # warn if state machine uses deprecated way of waiting for camera / initial delay
                 if (5, SOFTCODE.TRIGGER_CAMERA) in sma.output_matrix[0] and sma.state_names[1] == 'delay_initiation':
                     log.warning('')
@@ -271,32 +267,38 @@ class ChoiceWorldSession(
                     log.warning("'Deprecation Notes' in IBLRIG's documentation.")
                     log.warning('**********************************************')
                     log.warning('')
-                    log.info('Waiting for 10s so you actually read this message ;-)')
+                    log.warning('Waiting for 10s so you actually read this message ;-)')
                     time.sleep(10)
                 else:
                     self._wait_for_camera_and_initial_delay()
 
             # send state machine description to Bpod device
-            log.debug('Sending state machine to bpod')
             self.bpod.send_state_machine(sma)
 
             # handle ITI durations
             if trial_number > 0:
-                # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
-                # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
-                dead_time = self.task_params.get('DEAD_TIME', 0.5)
-                dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
+                # ITI_DELAY_SECS defines the period between hiding the stimulus and start of the next trial's quiescent
+                # period. The state machine handles 0.5 seconds of this period (in order to deliver a BNC1High event
+                # required for extraction of the task data). The remaining time is handled here by `time.sleep` to make
+                # up for processing delays inbetween state-machine runs.
+                dt = self.task_params.ITI_DELAY_SECS - iti_last_trial - (time.time() - time_last_trial_end)
 
                 # wait to achieve the desired ITI duration
                 if dt > 0:
-                    log.debug(f'Waiting {dt} s to achieve an ITI duration of {self.task_params.ITI_DELAY_SECS} s')
+                    log.debug('Waiting %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
                     time.sleep(dt)
 
             # run state machine
             log.info('-----------------------')
-            log.info(f'Starting Trial #{trial_number}')
+            log.info('Starting Trial #%d', trial_number)
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.time()
+
+            # The ITI duration is partially handled by Bpod within the last state of the state machine.
+            # This state should have a duration of 0.5 seconds (see explanation below).
+            iti_last_trial = sma.state_timers[sma.total_states_added - 1]
+            if iti_last_trial != 0.5:
+                log.warning('ATTENTION: The last state had a duration of %0.1f s. It should be exactly 0.5 s.', iti_last_trial)
 
             # handle pause event
             if self.paused and trial_number < (self.task_params.NTRIALS - 1):
@@ -541,7 +543,7 @@ class ChoiceWorldSession(
         # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
-            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_timer=min(0.5, self.task_params.ITI_DELAY_SECS),
             output_actions=[('BNC1', 255)],
             state_change_conditions={'Tup': 'exit'},
         )
