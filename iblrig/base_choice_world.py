@@ -281,12 +281,18 @@ class ChoiceWorldSession(
                 # period. The state machine handles 0.5 seconds of this period (in order to deliver a BNC1High event
                 # required for extraction of the task data). The remaining time is handled here by `time.sleep` to make
                 # up for processing delays inbetween state-machine runs.
-                dt = self.task_params.ITI_DELAY_SECS - iti_last_trial - (time.time() - time_last_trial_end)
+                processing_delays = time.time() - time_last_trial_end
+                dt = self.task_params.ITI_DELAY_SECS - iti_last_trial - processing_delays
 
                 # wait to achieve the desired ITI duration
                 if dt > 0:
                     log.debug('Waiting %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
                     time.sleep(dt)
+                elif dt < 0:
+                    iti_actual = self.task_params.ITI_DELAY_SECS - dt
+                    log.warning('Inter-trial processing delays of ~%0.3f s could not be corrected for.', processing_delays)
+                    log.warning('Targeted ITI: %0.1f s', self.task_params.ITI_DELAY_SECS)
+                    log.warning('Actual ITI: %0.3f s', iti_actual)
 
             # run state machine
             log.info('-----------------------')

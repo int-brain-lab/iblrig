@@ -275,7 +275,7 @@ class TestITI(unittest.TestCase):
 
         # the fraction of the ITI handled by time.sleep() making up for processing delays
         session, sma = self.get_mock_session(2)
-        counter = count(0, iti_delay_sma + iti_delay_processing)
+        counter = count(0, iti_delay_processing)
         with (
             patch('iblrig.base_choice_world.time.time', side_effect=lambda: next(counter)),
             patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
