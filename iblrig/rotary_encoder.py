@@ -257,16 +257,25 @@ class RotaryEncoderModule:
 
         self.sd_logging = False  # stop logging before retrieving data
 
-        n_values = self._serial.query_struct(b'R', '<I')[0]
-        buffer = self._serial.read(n_values * 8)
+        # retrieve data from rotary encoder module and parse into structured array
+        n_records = self._serial.query_struct(b'R', '<I')[0]
+        buffer = self._serial.read(n_records * 8)
+        dtype = np.dtype([('ticks', np.int32), ('time', np.uint32)])
+        raw_data = np.frombuffer(buffer, dtype=dtype)
 
-        dtype = np.dtype([('time', np.uint32), ('ticks', np.int32)])
-        raw = np.frombuffer(buffer, dtype=dtype)
+        # Prepare output structured array
+        out_dtype = np.dtype([('time', 'timedelta64[us]'), ('degrees', 'f8')])
+        out = np.empty(n_records, dtype=out_dtype)
+        out['time'] = raw_data['time'].astype('timedelta64[us]')
+        np.multiply(raw_data['ticks'], self._factor_tick_to_deg, out=out['degrees'])
 
-        out_dtype = np.dtype([('time', 'timedelta64[us]'), ('degrees', 'f4')])
-        out = np.empty(raw.shape[0], dtype=out_dtype)
-        out['time'] = raw['time'].astype('timedelta64[us]')
-        out['degrees'] = raw['ticks'] * self._factor_tick_to_deg
+        # Correct rollover in 32-bit microsecond timer
+        rollover_indices = np.where(np.diff(raw_data['time']) < 0)[0] + 1
+        if rollover_indices.size:
+            for i, start in enumerate(rollover_indices):
+                end = rollover_indices[i + 1] if i + 1 < len(rollover_indices) else n_records
+                delta = np.timedelta64((i + 1) * 2**32, 'us')
+                out['time'][start:end] += delta
 
         return out
 
