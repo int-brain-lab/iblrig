@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.30.0
+------
+* disentangle order of states in `HabituationChoiceWorldSession`
+
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC

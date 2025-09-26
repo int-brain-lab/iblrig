@@ -738,22 +738,22 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
 
-        # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
-        # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
-        # the offset of this state is trial start!
-        sma.add_state(
-            state_name='iti',
-            state_timer=1,  # Stim off for 1 sec
-            state_change_conditions={'Tup': 'stim_on'},
-            output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
-        )
-
-        # This stim_on state is considered the actual trial start
+        # Show the visual stimulus.
+        # Move to next state if Frame2TTL event is detected.
+        # Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='stim_on',
+            state_timer=0.1,
+            state_change_conditions={'Tup': 'stim_center', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
+            output_actions=[self.bpod.actions.bonsai_show_stim, ('BNC1', 255)],
+        )
+
+        # Play tone and wait for `delay_to_stim_center`.
+        sma.add_state(
+            state_name='play_tone',
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
+            output_actions=[self.bpod.actions.play_tone],
             state_change_conditions={'Tup': 'stim_center'},
-            output_actions=[self.bpod.actions.bonsai_show_stim, self.bpod.actions.play_tone],
         )
 
         sma.add_state(
@@ -769,15 +769,32 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_change_conditions={'Tup': 'post_reward'},
             output_actions=[('Valve1', 255), ('BNC1', 255)],
         )
-        # This state defines the period after reward where Bpod TTL is LOW.
-        # NB: The stimulus is on throughout this period. The stim off trigger occurs upon exit.
-        # The stimulus thus remains in the screen centre for 0.5 + ITI_DELAY_SECS seconds.
+
         sma.add_state(
             state_name='post_reward',
-            state_timer=self.task_params.ITI_DELAY_SECS - self.reward_time,
-            state_change_conditions={'Tup': 'exit'},
+            state_timer=0.5 - self.reward_time,
+            state_change_conditions={'Tup': 'hide_stim'},
             output_actions=[],
         )
+
+        # Hide the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
+        sma.add_state(
+            state_name='hide_stim',
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_hide_stim],
+            state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
+        )
+
+        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
+        sma.add_state(
+            state_name='exit_state',
+            state_timer=self.task_params.ITI_DELAY_SECS,
+            output_actions=[('BNC1', 255)],
+            state_change_conditions={'Tup': 'exit'},
+        )
+
         return sma
 
 
