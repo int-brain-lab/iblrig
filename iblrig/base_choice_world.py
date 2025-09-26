@@ -289,10 +289,8 @@ class ChoiceWorldSession(
                     log.debug('Waiting %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
                     time.sleep(dt)
                 elif dt < 0:
-                    iti_actual = self.task_params.ITI_DELAY_SECS - dt
-                    log.warning('Inter-trial processing delays of ~%0.3f s could not be corrected for.', processing_delays)
                     log.warning('Targeted ITI: %0.1f s', self.task_params.ITI_DELAY_SECS)
-                    log.warning('Actual ITI: %0.3f s', iti_actual)
+                    log.warning('Actual ITI: %0.3f s', self.task_params.ITI_DELAY_SECS - dt)
 
             # run state machine
             log.info('-----------------------')
