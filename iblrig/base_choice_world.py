@@ -544,7 +544,7 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
-        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
+        # Wait for 0.5 s before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
             state_timer=min(0.5, self.task_params.ITI_DELAY_SECS),
@@ -793,10 +793,10 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
-        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
+        # Wait for 0.5 s before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
-            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_timer=min(0.5, self.task_params.ITI_DELAY_SECS),
             output_actions=[('BNC1', 255)],
             state_change_conditions={'Tup': 'exit'},
         )
