@@ -245,7 +245,7 @@ class ChoiceWorldSession(
 
         This method orchestrates the execution of the task by running a state machine for a specified number of trials.
         """
-        time_last_trial_end = time.time()
+        time_last_trial_end = np.nan
         iti_last_trial = np.nan
         for trial_number in range(self.task_params.NTRIALS):  # Main loop
             # obtain state machine definition
@@ -281,12 +281,12 @@ class ChoiceWorldSession(
                 # period. The state machine handles 0.5 seconds of this period (in order to deliver a BNC1High event
                 # required for extraction of the task data). The remaining time is handled here by `time.sleep` to make
                 # up for processing delays inbetween state-machine runs.
-                processing_delays = time.time() - time_last_trial_end
+                processing_delays = time.perf_counter() - time_last_trial_end
                 dt = self.task_params.ITI_DELAY_SECS - iti_last_trial - processing_delays
 
                 # wait to achieve the desired ITI duration
                 if dt > 0:
-                    log.debug('Waiting %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
+                    log.debug('Sleeping %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
                     time.sleep(dt)
                 elif dt < 0:
                     log.warning('Targeted ITI: %0.1f s', self.task_params.ITI_DELAY_SECS)
@@ -296,7 +296,7 @@ class ChoiceWorldSession(
             log.info('-----------------------')
             log.info('Starting Trial #%d', trial_number)
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
-            time_last_trial_end = time.time()
+            time_last_trial_end = time.perf_counter()
 
             # The ITI duration is partially handled by Bpod within the last state of the state machine.
             # This state should have a duration of 0.5 seconds (see explanation below).

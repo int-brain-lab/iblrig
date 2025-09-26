@@ -277,7 +277,7 @@ class TestITI(unittest.TestCase):
         session, sma = self.get_mock_session(2)
         counter = count(0, iti_delay_processing)
         with (
-            patch('iblrig.base_choice_world.time.time', side_effect=lambda: next(counter)),
+            patch('iblrig.base_choice_world.time.perf_counter', side_effect=lambda: next(counter)),
             patch('iblrig.base_choice_world.time.sleep', return_value=None) as mock_sleep,
         ):
             session._run()
