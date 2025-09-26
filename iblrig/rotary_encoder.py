@@ -250,7 +250,7 @@ class RotaryEncoderModule:
             Each element has the following fields:
 
             - ``time`` :class:`numpy.timedelta64` with unit ``us``
-            - ``degrees`` :class:`numpy.float32`
+            - ``degrees`` :class:`numpy.float64`
         """
         if self.hardware_version != 1:
             raise RuntimeError(f'SD card logging is not supported on {self._name} v{self.hardware_version}')
