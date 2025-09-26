@@ -12,9 +12,6 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import numpy as np
 import pandas as pd
-import yaml
-from pybpodapi.state_machine import StateMachine
-from pybpodapi.state_machine.state_machine_base import StateMachineBase
 
 import iblrig.choiceworld
 from iblrig import session_creator
@@ -25,7 +22,6 @@ from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
-from iblutil.util import Bunch
 
 
 class TestGetPreviousSession(BaseTestCases.CommonTestTask):
