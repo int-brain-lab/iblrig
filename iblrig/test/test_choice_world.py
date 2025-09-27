@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from itertools import count
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,12 @@ import pytest
 
 import iblrig.choiceworld
 from iblrig import session_creator
-from iblrig.base_choice_world import ChoiceWorldSession, HabituationChoiceWorldSession
+from iblrig.base_choice_world import (
+    ActiveChoiceWorldSession,
+    BiasedChoiceWorldSession,
+    ChoiceWorldSession,
+    HabituationChoiceWorldSession,
+)
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
@@ -231,24 +236,50 @@ class TestTrainingPhases(unittest.TestCase):
 
 
 class TestITI:
-    @pytest.fixture(params=[ChoiceWorldSession, HabituationChoiceWorldSession])
+    @pytest.fixture(
+        params=[
+            ChoiceWorldSession,
+            HabituationChoiceWorldSession,
+            ActiveChoiceWorldSession,
+            BiasedChoiceWorldSession,
+            TrainingChoiceWorldSession,
+        ]
+    )
     def session_and_sma(self, request, mocker):
         def _factory(n_trials: int):
             session_class = request.param
-            sma = MagicMock()
-            type(sma).total_states_added = PropertyMock(side_effect=lambda: sma.add_state.call_count)
-            type(sma).state_timers = PropertyMock(
+
+            # Mocked StateMachine
+            sma = mocker.MagicMock()
+            type(sma).total_states_added = mocker.PropertyMock(side_effect=lambda: sma.add_state.call_count)
+            type(sma).state_timers = mocker.PropertyMock(
                 side_effect=lambda: [float(x.kwargs['state_timer']) for x in sma.add_state.call_args_list]
             )
-            session = MagicMock(spec=session_class).return_value
-            session.task_params = session_class.read_task_parameter_files()
-            session.task_params['NTRIALS'] = n_trials
+
+            # Create autospec instance
+            session = mocker.create_autospec(session_class, instance=True)
+            session.bpod = mocker.MagicMock()
+            session.trials_table = mocker.MagicMock()
+            session.trial_num = mocker.MagicMock()
+            session.movement_left = mocker.MagicMock()
+            session.movement_right = mocker.MagicMock()
+            session.interactive = mocker.MagicMock()
+            session.paths = mocker.MagicMock()
+
+            # Restore real methods
             session._run = session_class._run.__get__(session, session_class)
             session.get_state_machine_trial = session_class.get_state_machine_trial.__get__(session, session_class)
+
+            # Patch returned StateMachine
             session._instantiate_state_machine.return_value = sma
+            mocker.patch('iblrig.base_choice_world.StateMachine', return_value=sma)
+
+            # Minimal task parameters
+            session.task_params = session_class.read_task_parameter_files()
+            session.task_params['NTRIALS'] = n_trials
             session.paused = False
             session.stopped = False
-            mocker.patch('iblrig.base_choice_world.StateMachine', return_value=sma)
+
             return session, sma
 
         return _factory
