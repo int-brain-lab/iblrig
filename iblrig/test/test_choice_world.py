@@ -6,14 +6,22 @@ import json
 import shutil
 import tempfile
 import unittest
+from itertools import count
 from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import pytest
 
 import iblrig.choiceworld
 from iblrig import session_creator
+from iblrig.base_choice_world import (
+    ActiveChoiceWorldSession,
+    BiasedChoiceWorldSession,
+    ChoiceWorldSession,
+    HabituationChoiceWorldSession,
+)
 from iblrig.path_helper import iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
@@ -225,3 +233,98 @@ class TestTrainingPhases(unittest.TestCase):
             self.assertEqual(iblrig.choiceworld.training_phase_from_contrast_set(contrasts3), phase)
         with self.assertRaises(ValueError):
             iblrig.choiceworld.training_phase_from_contrast_set([0.666])
+
+
+class TestITI:
+    @pytest.fixture(
+        params=[
+            ChoiceWorldSession,
+            HabituationChoiceWorldSession,
+            ActiveChoiceWorldSession,
+            BiasedChoiceWorldSession,
+            TrainingChoiceWorldSession,
+        ]
+    )
+    def session_and_sma(self, request, mocker):
+        def _factory(n_trials: int):
+            session_class = request.param
+
+            # Mocked StateMachine
+            sma = mocker.MagicMock()
+            type(sma).total_states_added = mocker.PropertyMock(side_effect=lambda: sma.add_state.call_count)
+            type(sma).state_timers = mocker.PropertyMock(
+                side_effect=lambda: [float(x.kwargs['state_timer']) for x in sma.add_state.call_args_list]
+            )
+
+            # Create autospec instance
+            session = mocker.create_autospec(session_class, instance=True)
+            session.bpod = mocker.MagicMock()
+            session.trials_table = mocker.MagicMock()
+            session.trial_num = mocker.MagicMock()
+            session.movement_left = mocker.MagicMock()
+            session.movement_right = mocker.MagicMock()
+            session.interactive = mocker.MagicMock()
+            session.paths = mocker.MagicMock()
+
+            # Restore real methods
+            session._run = session_class._run.__get__(session, session_class)
+            session.get_state_machine_trial = session_class.get_state_machine_trial.__get__(session, session_class)
+
+            # Patch returned StateMachine
+            session._instantiate_state_machine.return_value = sma
+            mocker.patch('iblrig.base_choice_world.StateMachine', return_value=sma)
+
+            # Minimal task parameters
+            session.task_params = session_class.read_task_parameter_files()
+            session.task_params['NTRIALS'] = n_trials
+            session.paused = False
+            session.stopped = False
+
+            return session, sma
+
+        return _factory
+
+    @pytest.fixture
+    def mock_sleep(self, mocker):
+        return mocker.patch('iblrig.base_choice_world.time.sleep')
+
+    @pytest.fixture
+    def mock_perf_counter(self, mocker):
+        def _factory(period: float):
+            return mocker.patch('iblrig.base_choice_world.time.perf_counter', side_effect=count(0, period))
+
+        return _factory
+
+    def test_last_state_duration(self, session_and_sma, mock_sleep, caplog):
+        """The last state should be 0.5 s in duration."""
+        session, sma = session_and_sma(n_trials=1)
+        session._run()
+        last_state_duration = sma.add_state.call_args_list[-1].kwargs['state_timer']
+        assert last_state_duration == 0.5, 'Last state should be 0.5 s in length'
+
+    def test_last_state_duration_warning(self, session_and_sma, mock_sleep, caplog):
+        """If the last state is not 0.5 s in duration, a warning should be logged."""
+        session, sma = session_and_sma(n_trials=1)
+        type(sma).state_timers = [0.0] * 100
+        session._run()
+        assert 'It should be exactly 0.5 s.' in caplog.text
+
+    def test_iti_components(self, session_and_sma, mock_sleep, mock_perf_counter, caplog):
+        """Test if ITI components are computed correctly."""
+        session, sma = session_and_sma(n_trials=2)
+        iti_delay_processing = 0.4321
+        mock_perf_counter(period=iti_delay_processing)
+        session._run()
+        iti_delay_sma = sma.add_state.call_args_list[-1].kwargs['state_timer']
+        iti_delay_sleep = mock_sleep.call_args[0][0] if mock_sleep.call_args else 0.0
+        assert ('BNC1', 255) in sma.add_state.call_args_list[-1].kwargs['output_actions'], 'Last state should raise BNC1'
+        assert mock_sleep.called, 'Sleep should be called'
+        assert pytest.approx(iti_delay_sma + iti_delay_processing + iti_delay_sleep, rel=1e-6) == 1.0, 'Total ITI should be 1.0 s'
+
+    def test_warning_when_iti_too_high(self, session_and_sma, mock_sleep, mock_perf_counter, caplog):
+        """Test if larger than intended ITI is logged with a warning."""
+        session, sma = session_and_sma(n_trials=2)
+        mock_perf_counter(period=0.6)
+        session._run()
+        assert 'Actual ITI: 1.1' in caplog.text
+        assert not mock_sleep.called, 'Sleep should not be called'

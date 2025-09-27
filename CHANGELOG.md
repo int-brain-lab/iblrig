@@ -1,6 +1,11 @@
 Changelog
 =========
 
+8.30.0
+------
+* disentangle order of states in `HabituationChoiceWorldSession`
+* fix ITI durations in `ChoiceWorldSession` and `HabituationChoiceWorldSession`
+
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC

@@ -47,6 +47,7 @@ dependencies = [
     "PyQt5-Qt5>=5.15.2",
     "PyQtWebEngine>=5.15.6",
     "PyQtWebEngine-Qt5>=5.15.2",
+    "pandas-stubs==2.3.0.250703",
 ]
 [project.optional-dependencies]
 project-extraction = [
@@ -92,6 +93,7 @@ dev = [
 test = [
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
+    "pytest-mock>=3.15.1",
     "pytest-qt>=4.4.0",
     "pytest-xvfb>=3.1.1",
     "ruff==0.12.0",

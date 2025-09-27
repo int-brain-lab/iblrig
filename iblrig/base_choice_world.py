@@ -245,7 +245,8 @@ class ChoiceWorldSession(
 
         This method orchestrates the execution of the task by running a state machine for a specified number of trials.
         """
-        time_last_trial_end = time.time()
+        time_last_trial_end = np.nan
+        iti_last_trial = np.nan
         for trial_number in range(self.task_params.NTRIALS):  # Main loop
             # obtain state machine definition
             self.next_trial()
@@ -266,33 +267,42 @@ class ChoiceWorldSession(
                     log.warning("'Deprecation Notes' in IBLRIG's documentation.")
                     log.warning('**********************************************')
                     log.warning('')
-                    log.info('Waiting for 10s so you actually read this message ;-)')
+                    log.warning('Waiting for 10s so you actually read this message ;-)')
                     time.sleep(10)
                 else:
                     self._wait_for_camera_and_initial_delay()
 
             # send state machine description to Bpod device
-            log.debug('Sending state machine to bpod')
             self.bpod.send_state_machine(sma)
 
             # handle ITI durations
             if trial_number > 0:
-                # The ITI_DELAY_SECS defines the grey screen period within the state machine, where the
-                # Bpod TTL is HIGH. The DEAD_TIME param defines the time between last trial and the next
-                dead_time = self.task_params.get('DEAD_TIME', 0.5)
-                dt = self.task_params.ITI_DELAY_SECS - dead_time - (time.time() - time_last_trial_end)
+                # ITI_DELAY_SECS defines the period between hiding the stimulus and start of the next trial's quiescent
+                # period. The state machine handles 0.5 seconds of this period (in order to deliver a BNC1High event
+                # required for extraction of the task data). The remaining time is handled here by `time.sleep` to make
+                # up for processing delays inbetween state-machine runs.
+                processing_delays = time.perf_counter() - time_last_trial_end
+                dt = self.task_params.ITI_DELAY_SECS - iti_last_trial - processing_delays
 
                 # wait to achieve the desired ITI duration
                 if dt > 0:
-                    log.debug(f'Waiting {dt} s to achieve an ITI duration of {self.task_params.ITI_DELAY_SECS} s')
+                    log.debug('Sleeping %0.3f s to achieve an ITI duration of %0.1f s', dt, self.task_params.ITI_DELAY_SECS)
                     time.sleep(dt)
+                elif dt < 0:
+                    log.warning('Targeted ITI: %0.1f s', self.task_params.ITI_DELAY_SECS)
+                    log.warning('Actual ITI: %0.3f s', self.task_params.ITI_DELAY_SECS - dt)
 
             # run state machine
             log.info('-----------------------')
-            log.info(f'Starting Trial #{trial_number}')
-            log.debug('running state machine')
+            log.info('Starting Trial #%d', trial_number)
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
-            time_last_trial_end = time.time()
+            time_last_trial_end = time.perf_counter()
+
+            # The ITI duration is partially handled by Bpod within the last state of the state machine.
+            # This state should have a duration of 0.5 seconds (see explanation below).
+            iti_last_trial = sma.state_timers[sma.total_states_added - 1]
+            if iti_last_trial != 0.5:
+                log.warning('ATTENTION: The last state had a duration of %0.1f s. It should be exactly 0.5 s.', iti_last_trial)
 
             # handle pause event
             if self.paused and trial_number < (self.task_params.NTRIALS - 1):
@@ -534,10 +544,10 @@ class ChoiceWorldSession(
             state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
         )
 
-        # Wait for ITI_DELAY_SECS before ending the trial. Raise BNC1 to mark this event.
+        # Wait for 0.5 s before ending the trial. Raise BNC1 to mark this event.
         sma.add_state(
             state_name='exit_state',
-            state_timer=self.task_params.ITI_DELAY_SECS,
+            state_timer=min(0.5, self.task_params.ITI_DELAY_SECS),
             output_actions=[('BNC1', 255)],
             state_change_conditions={'Tup': 'exit'},
         )
@@ -734,22 +744,22 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
     def get_state_machine_trial(self, i):
         sma = StateMachine(self.bpod)
 
-        # NB: This state actually the inter-trial interval, i.e. the period of grey screen between stim off and stim on.
-        # During this period the Bpod TTL is HIGH and there are no stimuli. The onset of this state is trial end;
-        # the offset of this state is trial start!
-        sma.add_state(
-            state_name='iti',
-            state_timer=1,  # Stim off for 1 sec
-            state_change_conditions={'Tup': 'stim_on'},
-            output_actions=[self.bpod.actions.bonsai_hide_stim, ('BNC1', 255)],
-        )
-
-        # This stim_on state is considered the actual trial start
+        # Show the visual stimulus.
+        # Move to next state if Frame2TTL event is detected.
+        # Use the state-timer as a backup to prevent a stall.
         sma.add_state(
             state_name='stim_on',
+            state_timer=0.1,
+            state_change_conditions={'Tup': 'stim_center', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
+            output_actions=[self.bpod.actions.bonsai_show_stim, ('BNC1', 255)],
+        )
+
+        # Play tone and wait for `delay_to_stim_center`.
+        sma.add_state(
+            state_name='play_tone',
             state_timer=self.trials_table.at[self.trial_num, 'delay_to_stim_center'],
+            output_actions=[self.bpod.actions.play_tone],
             state_change_conditions={'Tup': 'stim_center'},
-            output_actions=[self.bpod.actions.bonsai_show_stim, self.bpod.actions.play_tone],
         )
 
         sma.add_state(
@@ -765,15 +775,32 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
             state_change_conditions={'Tup': 'post_reward'},
             output_actions=[('Valve1', 255), ('BNC1', 255)],
         )
-        # This state defines the period after reward where Bpod TTL is LOW.
-        # NB: The stimulus is on throughout this period. The stim off trigger occurs upon exit.
-        # The stimulus thus remains in the screen centre for 0.5 + ITI_DELAY_SECS seconds.
+
         sma.add_state(
             state_name='post_reward',
-            state_timer=self.task_params.ITI_DELAY_SECS - self.reward_time,
-            state_change_conditions={'Tup': 'exit'},
+            state_timer=0.5 - self.reward_time,
+            state_change_conditions={'Tup': 'hide_stim'},
             output_actions=[],
         )
+
+        # Hide the visual stimulus. This is achieved by sending a time-stamped byte-message to Bonsai via the Rotary
+        # Encoder Module's ongoing USB-stream. Move to the next state once the Frame2TTL has been triggered, i.e.,
+        # when the stimulus has been rendered on screen. Use the state-timer as a backup to prevent a stall.
+        sma.add_state(
+            state_name='hide_stim',
+            state_timer=0.1,
+            output_actions=[self.bpod.actions.bonsai_hide_stim],
+            state_change_conditions={'Tup': 'exit_state', 'BNC1High': 'exit_state', 'BNC1Low': 'exit_state'},
+        )
+
+        # Wait for 0.5 s before ending the trial. Raise BNC1 to mark this event.
+        sma.add_state(
+            state_name='exit_state',
+            state_timer=min(0.5, self.task_params.ITI_DELAY_SECS),
+            output_actions=[('BNC1', 255)],
+            state_change_conditions={'Tup': 'exit'},
+        )
+
         return sma
 
 
