@@ -157,7 +157,7 @@ class RotaryEncoderModule:
         self.wrap_point = 180.0
         self.thresholds = [-40.0, 40.0]
         self.wrap_mode = 'bipolar'
-        # obj.sendThresholdEvents = 'off';
+        self.event_transmission = False
         # obj.moduleOutputStream = 'off';
         if self._hardware_version == 1:
             self.set_stream_prefix('M')
