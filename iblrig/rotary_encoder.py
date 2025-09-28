@@ -15,18 +15,40 @@ class RotaryEncoderModule:
     _name: str = 'Rotary Encoder Module'
     _is_logging: bool = False
     _wrap_point: float = 180.0
+    _encoder_resolution: int = 1024
+    _clock_multiplier: int
+    _factor_tick_to_deg: float
+    _factor_deg_to_tick: float
     _wrap_mode: Literal['bipolar', 'unipolar'] = 'bipolar'
     _thresholds: list[float] = []
     _max_thresholds: int = 8
 
-    def __init__(self, port: str):
+    def __init__(self, port: str, encoder_resolution: int = 1024):
+        """Create a RotaryEncoderModule instance and open the connection.
+
+        Parameters
+        ----------
+        port : str
+            Serial port name (e.g., ``'/dev/ttyACM0'`` or ``'COM5'``).
+        encoder_resolution : int, optional
+            The incremental encoder's resolution in pulses per revolution. Defaults to 1024.
+
+        Raises
+        ------
+        SerialException
+            If the port cannot be opened during the probe step.
+        ValueError
+            If the device on the given port does not appear to be a Rotary
+            Encoder Module.
+        """
         # handshake / identify hardware version
         self._hardware_version = self.probe(port)
 
-        # set half-point according to the hardware version
-        self._half_point = 512 if self._hardware_version == 1 else 2048
-        self._factor_tick_to_deg = 180.0 / self._half_point
-        self._factor_deg_to_tick = self._half_point / 180.0
+        # rotary encoder module v1 uses X1 encoding, v2 uses X4 encoding
+        self._clock_multiplier = 1 if self._hardware_version == 1 else 4
+
+        # set encoder resolution
+        self.encoder_resolution = encoder_resolution
 
         # initialize serial object and set port
         # implemented that awkwardly to get logging from self.open()
@@ -128,12 +150,30 @@ class RotaryEncoderModule:
 
     @property
     def hardware_version(self) -> int:
-        """Hardware version of the connected Rotary Encoder Module."""
+        """Hardware version of the Rotary Encoder Module."""
         return self._hardware_version
 
     @property
+    def clock_multiplier(self) -> int:
+        """Clock multiplier of the Rotary Encoder Module."""
+        return self._clock_multiplier
+
+    @property
+    def encoder_resolution(self) -> int:
+        """Resolution of the Incremental Encoder in pulses per revolution."""
+        return self._encoder_resolution
+
+    @encoder_resolution.setter
+    def encoder_resolution(self, value: int) -> None:
+        if value <= 0:
+            raise ValueError('Encoder resolution must be a positive integer.')
+        self._encoder_resolution = int(value)
+        self._factor_tick_to_deg = 360.0 / (self._encoder_resolution * self._clock_multiplier)
+        self._factor_deg_to_tick = (self._encoder_resolution * self._clock_multiplier) / 360.0
+
+    @property
     def port(self) -> str | None:
-        """Port name of the connected Rotary Encoder Module."""
+        """Port name of the Rotary Encoder Module."""
         return self._serial.port
 
     def open(self) -> None:
