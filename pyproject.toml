@@ -15,6 +15,7 @@ dependencies = [
     # Please refer to https://pdm-project.org/en/latest/usage/dependency/ for details.
     #
     # IBL packages
+    "bpod-core>=0.1.0a5",
     "iblatlas>=0.9.0",
     "ibllib>=3.4.0",
     "iblpybpod-no-gui>=3.1.1",
@@ -47,7 +48,6 @@ dependencies = [
     "PyQt5-Qt5>=5.15.2",
     "PyQtWebEngine>=5.15.6",
     "PyQtWebEngine-Qt5>=5.15.2",
-    "bpod-core>=0.1.0a5",
 ]
 [project.optional-dependencies]
 project-extraction = [
