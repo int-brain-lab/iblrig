@@ -11,19 +11,22 @@ log = logging.getLogger(__name__)
 
 DTYPE_LOGGING = np.dtype([('time', 'timedelta64[us]'), ('degrees', 'f8')])
 
+
 class RotaryEncoderModule:
     _name: str = 'Rotary Encoder Module'
-    _is_logging: bool = False
+    _is_sd_logging: bool = False
     _wrap_point: float = 180.0
     _encoder_resolution: int = 1024
     _clock_multiplier: int
     _factor_tick_to_deg: float
     _factor_deg_to_tick: float
     _wrap_mode: Literal['bipolar', 'unipolar'] = 'bipolar'
+    _wrap_point_ticks: int
     _thresholds: list[float] = []
     _max_thresholds: int = 8
+    _event_transmission: bool = False
 
-    def __init__(self, port: str, encoder_resolution: int = 1024):
+    def __init__(self, port: str, encoder_resolution: int = 1024, reset_to_defaults: bool = True):
         """Create a RotaryEncoderModule instance and open the connection.
 
         Parameters
@@ -32,6 +35,8 @@ class RotaryEncoderModule:
             Serial port name (e.g., ``'/dev/ttyACM0'`` or ``'COM5'``).
         encoder_resolution : int, optional
             The incremental encoder's resolution in pulses per revolution. Defaults to 1024.
+        reset_to_defaults : bool, optional
+            Whether to reset the Rotary Encoder Module to default settings. Defaults to True.
 
         Raises
         ------
@@ -57,7 +62,17 @@ class RotaryEncoderModule:
         self.open()
 
         # reset to default settings
-        self.reset()
+        if reset_to_defaults:
+            self.reset()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def __del__(self):
+        self.close()
 
     @staticmethod
     @overload
@@ -116,15 +131,6 @@ class RotaryEncoderModule:
                 raise ValueError(f'Device on {port} does not appear to be a Rotary Encoder Module.') from e
         return hardware_version
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-
-    def __del__(self):
-        self.close()
-
     def _degrees_to_ticks(self, degrees: float) -> int:
         """Convert degrees to ticks."""
         return round(degrees * self._factor_deg_to_tick)
@@ -133,16 +139,24 @@ class RotaryEncoderModule:
         """Convert ticks to degrees."""
         return ticks * self._factor_tick_to_deg
 
+    @property
+    def _ticks(self) -> int:
+        return self._serial.query_struct(b'Q', '<i')[0]
+
+    @_ticks.setter
+    def _ticks(self, value: int) -> None:
+        self._serial.write_struct('<ci', b'P', value)
+
     def _reset_data_streams(self):
         self._serial.write(b'X')
-        self._is_logging = False
+        self._is_sd_logging = False
         log.debug('All data streams reset')
 
     def reset(self):
         """Reset Rotary Encoder Module to default settings."""
         self.wrap_point = 180.0
         self.thresholds = [-40.0, 40.0]
-        # obj.wrapMode = 'bipolar';
+        self.wrap_mode = 'bipolar'
         # obj.sendThresholdEvents = 'off';
         # obj.moduleOutputStream = 'off';
         if self._hardware_version == 1:
@@ -190,14 +204,6 @@ class RotaryEncoderModule:
             self._serial.close()
 
     @property
-    def _ticks(self) -> int:
-        return self._serial.query_struct(b'Q', '<i')[0]
-
-    @_ticks.setter
-    def _ticks(self, value: int) -> None:
-        self._serial.write_struct('<ci', b'P', value)
-
-    @property
     def wrap_point(self) -> float:
         """Get or set the wrap point in degrees."""
         return self._wrap_point
@@ -235,11 +241,11 @@ class RotaryEncoderModule:
     @property
     def sd_logging(self) -> bool:
         """The state of SD card logging."""
-        return self._is_logging
+        return self._is_sd_logging
 
     @sd_logging.setter
     def sd_logging(self, enable_logging: bool) -> None:
-        if enable_logging == self._is_logging:
+        if enable_logging == self._is_sd_logging:
             return
         if self.hardware_version != 1:
             raise RuntimeError(f'SD card logging is not supported on {self._name} v{self.hardware_version}')
@@ -249,22 +255,22 @@ class RotaryEncoderModule:
         else:
             self._serial.write(b'F')
             log.debug('Logging disabled')
-        self._is_logging = bool(enable_logging)
+        self._is_sd_logging = bool(enable_logging)
 
     @property
-    def current_position(self) -> float:
+    def degrees(self) -> float:
         """Current encoder position in degrees."""
         return self._ticks_to_degrees(self._ticks)
 
-    @current_position.setter
-    def current_position(self, degrees: float):
+    @degrees.setter
+    def degrees(self, degrees: float):
         self._ticks = self._degrees_to_ticks(degrees)
 
-    def set_zero_position(self) -> None:
+    def zero(self) -> None:
         """Reset current encoder position to zero."""
         self._serial.write(b'Z')
 
-    def enable_logging(self):
+    def enable_sd_logging(self):
         """
         Enables logging to the SD Card.
 
@@ -277,8 +283,17 @@ class RotaryEncoderModule:
         """
         self.sd_logging = True
 
-    def disable_logging(self):
-        """Disables the logging to the SD Card."""
+    def disable_sd_logging(self):
+        """
+        Disables logging to the SD Card.
+
+        Only supported for hardware version 1.
+
+        Raises
+        ------
+        RuntimeError
+            If the hardware version is not 1.
+        """
         self.sd_logging = False
 
     def get_logged_data(self) -> NDArray[np.void]:
@@ -357,6 +372,26 @@ class RotaryEncoderModule:
             log.debug('Setting stream prefix to %s', prefix)
         else:
             raise RuntimeError('Failed to set stream prefix')
+
+    @property
+    def wrap_mode(self) -> Literal['bipolar', 'unipolar']:
+        return self._wrap_mode
+
+    @wrap_mode.setter
+    def wrap_mode(self, mode: Literal['bipolar', 'unipolar']):
+        if mode not in ['bipolar', 'unipolar']:
+            raise ValueError('Invalid wrap mode. Must be either "bipolar" or "unipolar".')
+        self._serial.write_struct('<cB', b'M', 0 if mode == 'bipolar' else 1)
+
+    @property
+    def event_transmission(self) -> bool:
+        return self._event_transmission
+
+    @event_transmission.setter
+    def event_transmission(self, value: bool):
+        self._serial.write_struct('<c?', b'V', bool(value))
+        if not self._serial.verify(b''):
+            raise RuntimeError(f"Failed to {'en' if value else 'dis'}able event transmission")
 
     def enable_thresholds(self, enabled_thresholds):
         pass
