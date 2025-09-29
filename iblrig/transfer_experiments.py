@@ -638,7 +638,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # copy the digital inputs file
                 csv_digital_inputs = neurophotometrics_session_path.joinpath('digital_inputs.csv')
                 digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
+                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt'))
             case 'daqami':
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
