@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.30.0
+------
+* added: Online Plots are stored as PNG and added to Alyx as a Session Note
+
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC
