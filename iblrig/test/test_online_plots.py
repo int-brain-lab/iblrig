@@ -25,7 +25,7 @@ class TestOnlinePlots:
         temp_dir.cleanup()
 
     def test_during_task(self, task_file, qtbot):
-        view = op.OnlinePlotsView(task_file.parent)
+        view = op.OnlinePlotsView(task_file.parent, live=True)
         model = view.model
         assert hasattr(model, 'jsonableWatcher')
         assert Path(model.jsonableWatcher.files()[0]) == task_file
@@ -35,6 +35,10 @@ class TestOnlinePlots:
         with qtbot.waitSignal(model.jsonableWatcher.fileChanged, timeout=5), open(task_file, 'a') as f:
             f.writelines([line])
         assert model._n_trials == n_trials + 1
+        path_online_plots = task_file.parent / 'online_plots.png'
+        assert not path_online_plots.exists()
+        view.close()
+        assert path_online_plots.exists()
         model.jsonableWatcher.removePath(str(task_file))
 
     def test_from_existing_file(self, task_file, qtbot):
@@ -42,7 +46,7 @@ class TestOnlinePlots:
         assert view.model._n_trials > 0
 
     def test_colors(self, task_file, qtbot):
-        view = op.OnlinePlotsView(task_file.parent)
+        view = op.OnlinePlotsView(task_file.parent, live=True)
         model = view.model
         model._trial_data['response_time'] = 1
         model._seconds_elapsed = 0

@@ -93,7 +93,7 @@ class TestRegisterSession(BaseTestCases.CommonTestTask):
         ):
             self.assertIsNone(chained.register_to_alyx())
             self.assertIn('AssertionError', log.output[0])
-            self.assertIn('Could not register session to Alyx', log.output[1])
+            self.assertIn('Could not register session to Alyx', log.output[0])
 
         # An empty session record should cause an error when attempting to register weight
         with (
@@ -101,7 +101,7 @@ class TestRegisterSession(BaseTestCases.CommonTestTask):
             self.assertLogs('iblrig.base_tasks', 'ERROR') as log,
         ):
             self.assertIsNone(chained.register_to_alyx())
-            self.assertIn('Could not register water administration to Alyx', log.output[1])
+            self.assertIn('Could not register water administration to Alyx', log.output[0])
 
         # ONE in offline mode should simply return
         self.one.mode = 'local'

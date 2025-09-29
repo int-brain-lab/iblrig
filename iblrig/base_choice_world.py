@@ -4,8 +4,9 @@ import abc
 import enum
 import logging
 import math
+import multiprocessing
 import random
-import subprocess
+import shutil
 import time
 from pathlib import Path
 from re import split as re_split
@@ -18,11 +19,14 @@ from annotated_types import Interval, IsNan
 from pydantic import NonNegativeFloat, NonNegativeInt
 
 import iblrig.base_tasks
+from ibllib.plots.snapshot import Snapshot
 from iblrig import choiceworld, misc
+from iblrig.gui.online_plots import online_plots_app
 from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE
 from iblrig.pydantic_definitions import TrialDataModel
 from iblutil.io import binary, jsonable
 from iblutil.util import Bunch
+from one.api import OneAlyx
 from pybpodapi.com.messaging.trial import Trial
 from pybpodapi.protocol import StateMachine
 
@@ -790,43 +794,77 @@ class ActiveChoiceWorldSession(ChoiceWorldSession):
     The ActiveChoiceWorldSession is a base class for protocols where the mouse is actively making decisions
     by turning the wheel. It has the following characteristics
 
-    -   it is trial based
-    -   it is decision based
-    -   left and right simulus are equiprobable: there is no biased block
-    -   a trial can either be correct / error / no_go depending on the side of the stimulus and the response
-    -   it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
-        habituation protocols.
+    - it is trial based
+    - it is decision based
+    - left and right simulus are equiprobable: there is no biased block
+    - a trial can either be correct / error / no_go depending on the side of the stimulus and the response
+    - it has a quantifiable performance by computing the proportion of correct trials of passive stimulations protocols or
+      habituation protocols.
 
     The TrainingChoiceWorld, BiasedChoiceWorld are all subclasses of this class
     """
 
     TrialDataModel = ActiveChoiceWorldTrialData
-    plot_subprocess: subprocess.Popen | None = None
+    stop_event = multiprocessing.Event()
+    plot_process: multiprocessing.Process | None = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.trials_table['stim_probability_left'] = np.zeros(NTRIALS_INIT, dtype=np.float64)
 
     def _run(self):
-        # starts online plotting
+        # start online plotting
         if self.interactive:
             log.info('Starting subprocess: online plots')
-            self.plot_subprocess = subprocess.Popen(
-                ['view_session', str(self.paths['SESSION_RAW_DATA_FOLDER'])],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.STDOUT,
+            self.plot_process = multiprocessing.Process(
+                target=online_plots_app,
+                name='online_plots_app',
+                kwargs={
+                    'session': self.paths['SESSION_RAW_DATA_FOLDER'],
+                    'stop_event': self.stop_event,
+                    'live': True,
+                },
             )
+            self.plot_process.start()
+
+        # run super method
         super()._run()
 
-    def _finalize(self):
-        if isinstance(self.plot_subprocess, subprocess.Popen) and self.plot_subprocess.poll() is None:
-            log.info('Terminating subprocess: online plots')
-            self.plot_subprocess.terminate()
-            try:
-                self.plot_subprocess.wait(timeout=5)
-            except subprocess.TimeoutExpired:
+        # stop online plotting
+        if self.interactive:
+            log.info('Signaling online plots process to exit')
+            self.stop_event.set()
+            self.plot_process.join(timeout=5)
+            if self.plot_process.is_alive():
                 log.warning('Process did not terminate within 5 seconds - killing it.')
-                self.plot_subprocess.kill()
+                self.plot_process.kill()
+            self.plot_process = None
+            self.stop_event.clear()
+
+    def register_to_alyx(self) -> dict | None:
+        # move online plots to session folder
+        register_snapshot = False
+        path_plot: Path = self.paths['SESSION_RAW_DATA_FOLDER'] / 'online_plots.png'
+        suffix = self.paths['SESSION_RAW_DATA_FOLDER'].name[-2:]
+        if path_plot.exists():
+            new_path = self.paths['SESSION_FOLDER'] / f'online_plots_{suffix}.png'
+            if not new_path.exists():
+                register_snapshot = True
+                shutil.move(path_plot, new_path)
+                path_plot = new_path
+
+        # call register_to_alyx of super class
+        session = super().register_to_alyx()
+
+        # register online plot as session note
+        try:
+            if register_snapshot and session is not None and isinstance(self.one, OneAlyx) and self.one.alyx.is_logged_in:
+                snapshot = Snapshot(object_id=session['id'], content_type='session', one=self.one)
+                snapshot.register_image(image_file=path_plot, text=f'Snapshot of Online Plots #{suffix}', width='orig')
+        except Exception as e:
+            log.error('Failed to register online plots as session note', exc_info=e)
+
+        return session
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict

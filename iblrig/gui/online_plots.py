@@ -1,4 +1,3 @@
-import ctypes
 import datetime
 import json
 import os
@@ -7,6 +6,7 @@ import time
 from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
+from multiprocessing.synchronize import Event as mpEvent
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -28,6 +28,7 @@ from qtpy.QtCore import (
     QSize,
     Qt,
     QThreadPool,
+    QTimer,
     Signal,
     Slot,
 )
@@ -630,10 +631,14 @@ class OnlinePlotsModel(QObject):
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
     def __init__(
-        self, session: FilePath | DirectoryPath | UUID4, grouping_variable: str | None = None, parent: QObject | None = None
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        grouping_variable: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
     ):
         super().__init__(parent=parent)
-        is_live = False
+        self.is_live = live
 
         # If session is a UUID ...
         if not isinstance(session, Path):
@@ -666,7 +671,6 @@ class OnlinePlotsModel(QObject):
                 print('Waiting for data ...')
                 while not self.jsonable_file.exists():
                     time.sleep(0.2)
-            is_live = True
 
         # If session is a file ...
         elif session.is_file():
@@ -680,9 +684,6 @@ class OnlinePlotsModel(QObject):
         if self.settings_file.exists():
             with self.settings_file.open('r') as f:
                 self.task_settings = json.load(f)
-
-        else:
-            self.grouping_variable = grouping_variable or GROUPING_VARIABLE
         self.grouping_variable = grouping_variable or getattr(self, 'task_settings', {}).get(
             'PLOT_GROUPING_VARIABLE', GROUPING_VARIABLE
         )
@@ -706,7 +707,7 @@ class OnlinePlotsModel(QObject):
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
-        if is_live:
+        if self.is_live:
             self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
             self.jsonableWatcher.fileChanged.connect(self.readJsonable)
 
@@ -859,10 +860,16 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, session: FilePath | DirectoryPath | UUID4, group_by: str | None = None, parent: QObject | None = None):
+    def __init__(
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        group_by: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
+    ):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self)
+        self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self, live=live)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -1053,41 +1060,115 @@ class OnlinePlotsView(QMainWindow):
             self.settings.setValue('size', self.size())
         super().resizeEvent(event)
 
+    def closeEvent(self, event):
+        if self.model.is_live and self.model.raw_data_folder is not None:
+            self.model.setCurrentTrial(self.model.nTrials() - 1)
+            filename = self.model.raw_data_folder / 'online_plots.png'
+            if not filename.exists():
+                self.save_as_png(filename)
+        event.accept()
+
+    def save_as_png(self, filename: os.PathLike | str) -> None:
+        """Save plot as a PNG file."""
+        filename = Path(filename).with_suffix('.png')
+        img = self.centralWidget().grab()
+        img.save(str(filename), 'PNG')
+
 
 def online_plots_cli(*args):
+    """
+    Command-line entry point for launching the IBL Online Plots application.
+
+    This function extends ``sys.argv`` with the provided arguments, parses
+    them via a Pydantic CLI settings class, and then invokes
+    :func:`online_plots_app`.
+
+    Parameters
+    ----------
+    *args : Any
+        Additional arguments to simulate command-line input. These will be
+        converted to strings and appended to ``sys.argv``.
+    """
     sys.argv.extend([str(arg) for arg in args])
 
     class CLISettings(
-        BaseSettings, cli_parse_args=True, cli_enforce_required=False, cli_avoid_json=True, cli_hide_none_type=True
+        BaseSettings,
+        cli_parse_args=True,
+        cli_enforce_required=False,
+        cli_avoid_json=True,
+        cli_hide_none_type=True,
     ):
         """Display a Session's Online Plot."""
 
         session: CliPositionalArg[FilePath | DirectoryPath | UUID4] = Field(description="a session's Task Data File or eID")
         group: str | None = Field(
-            description='override the data column to group data by', validation_alias=AliasChoices('g', 'group'), default=None
+            description='override the data column to group data by',
+            validation_alias=AliasChoices('g', 'group'),
+            default=None,
         )
 
-    # set app information
+    if len(sys.argv) < 2:
+        session, group = None, None
+    else:
+        cli = CLISettings()
+        session, group = cli.session, cli.group
+    online_plots_app(session=session, group=group)
+
+
+def online_plots_app(
+    session: FilePath | DirectoryPath | UUID4 | None = None,
+    group: str | None = None,
+    stop_event: mpEvent | None = None,
+    live: bool = False,
+) -> None:
+    """
+    Launch the IBL Online Plots GUI.
+
+    This function initializes a Qt application, loads the selected session
+    (or prompts the user to select one if none is provided), and displays the
+    OnlinePlotsView window.
+
+    Parameters
+    ----------
+    session : FilePath | DirectoryPath | UUID4, optional
+        The session data to load. Can be a file path, directory path, UUID, or
+        ``None``. If ``None``, a file dialog will prompt the user to choose a
+        Task Data file.
+    group : str | None, optional
+        Name of the data column to group by. If ``None``, the default grouping
+        will be used.
+    stop_event : multiprocessing.synchronize.Event, optional
+        Event to signal graceful shutdown.
+    live : bool, optional
+        Whether to use live plotting. If ``True``, the GUI will update on
+        changes. Default is ``False``.
+    """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QCoreApplication.setApplicationName('IBLRIG Online Plots')
     if os.name == 'nt':
+        import ctypes
+
         app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QApplication([])
 
-    if len(sys.argv) < 2:
+    if session is None:
         local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
         session, _ = QFileDialog.getOpenFileName(
             caption='Select Task Data File', filter='Task Data (*.raw.jsonable)', directory=local_subjects_folder
         )
         if len(session) == 0:
             return
-    else:
-        session = CLISettings().session
-    window = OnlinePlotsView(session, CLISettings().group)
+
+    window = OnlinePlotsView(session=session, group_by=group, live=live)
     window.show()
+
+    if stop_event is not None:
+        timer = QTimer()
+        timer.timeout.connect(lambda: window.close() if stop_event.is_set() else None)
+        timer.start(500)
 
     sys.exit(app.exec())
 
