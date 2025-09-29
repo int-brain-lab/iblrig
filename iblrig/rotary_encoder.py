@@ -15,13 +15,12 @@ DTYPE_LOGGING = np.dtype([('time', 'timedelta64[us]'), ('degrees', 'f8')])
 class RotaryEncoderModule:
     _name: str = 'Rotary Encoder Module'
     _is_sd_logging: bool = False
-    _wrap_point: float = 180.0
     _encoder_resolution: int = 1024
     _clock_multiplier: int
     _factor_tick_to_deg: float
     _factor_deg_to_tick: float
     _wrap_mode: Literal['bipolar', 'unipolar'] = 'bipolar'
-    _wrap_point_ticks: int
+    _wrap_point_tics: int
     _thresholds: list[float] = []
     _max_thresholds: int = 8
     _event_transmission: bool = False
@@ -131,21 +130,23 @@ class RotaryEncoderModule:
                 raise ValueError(f'Device on {port} does not appear to be a Rotary Encoder Module.') from e
         return hardware_version
 
-    def _degrees_to_ticks(self, degrees: float) -> int:
-        """Convert degrees to ticks."""
+    def _degrees_to_tics(self, degrees: float) -> int:
+        """Convert degrees to tics."""
         return round(degrees * self._factor_deg_to_tick)
 
-    def _ticks_to_degrees(self, ticks: int) -> float:
-        """Convert ticks to degrees."""
-        return ticks * self._factor_tick_to_deg
+    def _tics_to_degrees(self, tics: int) -> float:
+        """Convert tics to degrees."""
+        return tics * self._factor_tick_to_deg
 
     @property
-    def _ticks(self) -> int:
-        return self._serial.query_struct(b'Q', '<i')[0]
+    def _tics(self) -> int:
+        return self._serial.query_struct(b'Q', '<h')[0]
 
-    @_ticks.setter
-    def _ticks(self, value: int) -> None:
-        self._serial.write_struct('<ci', b'P', value)
+    @_tics.setter
+    def _tics(self, value: int) -> None:
+        self._serial.write_struct('<ch', b'P', value)
+        if not self._serial.verify(b''):
+            raise RuntimeError(f'Failed to set position to {value} tics')
 
     def _reset_data_streams(self):
         self._serial.write(b'X')
@@ -206,15 +207,15 @@ class RotaryEncoderModule:
     @property
     def wrap_point(self) -> float:
         """Get or set the wrap point in degrees."""
-        return self._wrap_point
+        return self._tics_to_degrees(self._wrap_point_tics)
 
     @wrap_point.setter
     def wrap_point(self, degrees: float) -> None:
-        ticks = self._degrees_to_ticks(abs(degrees))
-        query = struct.pack('<cI', b'W', ticks)
+        tics = self._degrees_to_tics(abs(degrees))
+        query = struct.pack('<cI', b'W', tics)
         if self._serial.verify(query):
-            self._wrap_point = self._ticks_to_degrees(ticks)
-            log.debug('Setting wrap point to %0.1f degrees', self._wrap_point)
+            self._wrap_point_tics = tics
+            log.debug('Setting wrap point to %0.1f°', self.wrap_point)
         else:
             raise RuntimeError('Failed to set wrap point')
 
@@ -225,16 +226,16 @@ class RotaryEncoderModule:
 
     @thresholds.setter
     def thresholds(self, degrees: list[float]) -> None:
-        if any(abs(threshold) > self._wrap_point for threshold in degrees):
-            raise ValueError(f'Threshold values cannot exceed the current wrap point of {self._wrap_point} degrees.')
+        if any(abs(threshold) > self.wrap_point for threshold in degrees):
+            raise ValueError(f'Threshold values cannot exceed the current wrap point of {self.wrap_point}°.')
         if (n_thresholds := len(degrees)) > 8:
             raise ValueError(f'A maximum of {self._max_thresholds} thresholds can be set.')
-        ticks = [self._degrees_to_ticks(thresh) for thresh in degrees]
-        degrees = [self._ticks_to_degrees(tick) for tick in ticks]
-        query = struct.pack(f'<cB{n_thresholds}h', b'T', n_thresholds, *ticks)
+        tics = [self._degrees_to_tics(thresh) for thresh in degrees]
+        degrees = [self._tics_to_degrees(tick) for tick in tics]
+        query = struct.pack(f'<cB{n_thresholds}h', b'T', n_thresholds, *tics)
         if self._serial.verify(query):
             self._thresholds = degrees
-            log.debug('Setting thresholds to [%s] degrees', ', '.join([f'{x:0.1f}' for x in degrees]))
+            log.debug('Setting thresholds to %s', ', '.join([f'{x:0.1f}°' for x in degrees]))
         else:
             raise RuntimeError('Failed to set thresholds')
 
@@ -260,14 +261,19 @@ class RotaryEncoderModule:
     @property
     def degrees(self) -> float:
         """Current encoder position in degrees."""
-        return self._ticks_to_degrees(self._ticks)
+        return self._tics_to_degrees(self._tics)
 
     @degrees.setter
     def degrees(self, degrees: float):
-        self._ticks = self._degrees_to_ticks(degrees)
+        try:
+            self._tics = self._degrees_to_tics(degrees)
+            log.debug('Setting encoder position to %0.1f°', self.degrees)
+        except RuntimeError as e:
+            raise RuntimeError(f'Failed to set encoder position to {degrees:0.1f}') from e
 
     def zero(self) -> None:
         """Reset current encoder position to zero."""
+        log.debug('Resetting encoder position to 0°.')
         self._serial.write(b'Z')
 
     def enable_sd_logging(self):
@@ -321,10 +327,10 @@ class RotaryEncoderModule:
 
         # retrieve data from rotary encoder module and parse into structured array
         buffer = self._serial.read(n_records * 8)
-        dtype = np.dtype([('ticks', np.int32), ('time', np.uint32)])
+        dtype = np.dtype([('tics', np.int32), ('time', np.uint32)])
         raw_data = np.frombuffer(buffer, dtype=dtype)
         out['time'] = raw_data['time'].astype('timedelta64[us]')
-        np.multiply(raw_data['ticks'], self._factor_tick_to_deg, out=out['degrees'])
+        np.multiply(raw_data['tics'], self._factor_tick_to_deg, out=out['degrees'])
 
         # Correct rollover in 32-bit microsecond timer
         rollover_indices = np.where(np.diff(raw_data['time']) < 0)[0] + 1
@@ -382,6 +388,10 @@ class RotaryEncoderModule:
         if mode not in ['bipolar', 'unipolar']:
             raise ValueError('Invalid wrap mode. Must be either "bipolar" or "unipolar".')
         self._serial.write_struct('<cB', b'M', 0 if mode == 'bipolar' else 1)
+        if self._serial.verify(b''):
+            log.debug('Setting wrap mode to %s', mode)
+        else:
+            raise RuntimeError(f'Failed to set wrap mode to {mode}')
 
     @property
     def event_transmission(self) -> bool:
@@ -390,8 +400,10 @@ class RotaryEncoderModule:
     @event_transmission.setter
     def event_transmission(self, value: bool):
         self._serial.write_struct('<c?', b'V', bool(value))
-        if not self._serial.verify(b''):
-            raise RuntimeError(f"Failed to {'en' if value else 'dis'}able event transmission")
+        if self._serial.verify(b''):
+            log.debug('%sabling event transmission', 'En' if value else 'Dis')
+        else:
+            raise RuntimeError(f'Failed to {"en" if value else "dis"}able event transmission')
 
     def enable_thresholds(self, enabled_thresholds):
         pass
