@@ -1,4 +1,3 @@
-import ctypes
 import datetime
 import json
 import os
@@ -8,13 +7,15 @@ from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from pydantic import UUID4, AfterValidator, AliasChoices, DirectoryPath, Field, FilePath, PlainSerializer, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
+from pyqtgraph import PlotDataItem, FillBetweenItem
+from pyqtgraph.GraphicsScene.mouseEvents import HoverEvent
 from qtpy.QtCore import (
     QCoreApplication,
     QFileSystemWatcher,
@@ -178,14 +179,14 @@ class FunctionWidget(PlotWidget):
         self.legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
         self.legend.setParentItem(self.plotItem.graphicsItem())
         self.legend.setZValue(1)
-        self.plotDataItems = dict()
-        self.upperCurves = dict()
-        self.lowerCurves = dict()
-        self.fillItems = dict()
+        self.plotDataItems: dict[float, PlotDataItem] = dict()
+        self.upperCurves: dict[float, PlotDataItem] = dict()
+        self.lowerCurves: dict[float, PlotDataItem] = dict()
+        self.fillItems: dict[float, FillBetweenItem] = dict()
         for key in grouping_values:
             self.addFunction(key)
 
-    def addFunction(self, key: str):
+    def addFunction(self, key: float):
         null_pen = pg.mkPen((0, 0, 0, 0))
         line_color = self._colors.getByIndex(len(self.upperCurves))
         fill_color = copy(line_color)
@@ -237,7 +238,7 @@ class TrialsTableView(QTableView):
     color_major = QColor(199, 199, 199)
     grid_col = 5
 
-    def __init__(self, parent: QObject):
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setMouseTracking(True)
         # self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -283,7 +284,7 @@ class TrialsTableView(QTableView):
 class TrialsWidget(QWidget):
     trialSelected = Signal(int)
 
-    def __init__(self, parent: QObject, model: TrialsTableModel):
+    def __init__(self, parent: QWidget | None, model: TrialsTableModel):
         super().__init__(parent)
         self.model = model
 
@@ -405,7 +406,7 @@ class StateMeshItem(pg.PColorMeshItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def hoverEvent(self, ev: QGraphicsSceneHoverEvent):
+    def hoverEvent(self, ev: HoverEvent):
         """
         Handle hover events over the mesh item.
 
@@ -648,7 +649,7 @@ class OnlinePlotsModel(QObject):
             datasets = one.list_datasets(session, filename=f'*{FILENAME_DATA}')
             if len(datasets) == 0:
                 raise ValueError(f'Could not find Task Data File for session {session}')
-            session = one.load_dataset(session, datasets[0], download_only=True)
+            session = cast(Path, one.load_dataset(session, datasets[0], download_only=True))
 
             # load Task Settings File
             datasets = one.list_datasets(session, filename=f'*{FILENAME_SETTINGS}')
@@ -859,7 +860,7 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, session: FilePath | DirectoryPath | UUID4, group_by: str | None = None, parent: QObject | None = None):
+    def __init__(self, session: FilePath | DirectoryPath | UUID4, group_by: str | None = None, parent: QWidget | None = None):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
         self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self)
@@ -1054,7 +1055,7 @@ class OnlinePlotsView(QMainWindow):
         super().resizeEvent(event)
 
 
-def online_plots_cli(*args):
+def online_plots_cli(*args: Any):
     sys.argv.extend([str(arg) for arg in args])
 
     class CLISettings(
@@ -1071,9 +1072,11 @@ def online_plots_cli(*args):
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QCoreApplication.setApplicationName('IBLRIG Online Plots')
-    if os.name == 'nt':
+    if sys.platform == "win32":
+        from ctypes import windll
+
         app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+        windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QApplication([])
 
@@ -1085,8 +1088,8 @@ def online_plots_cli(*args):
         if len(session) == 0:
             return
     else:
-        session = CLISettings().session
-    window = OnlinePlotsView(session, CLISettings().group)
+        session = CLISettings().session  # type: ignore[call-arg, assignment]
+    window = OnlinePlotsView(session, CLISettings().group)  # type: ignore[call-arg, arg-type]
     window.show()
 
     sys.exit(app.exec())
