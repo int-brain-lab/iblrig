@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.10.*"
 resolution-markers = [
     "sys_platform == 'darwin'",
@@ -141,7 +141,7 @@ wheels = [
 
 [[package]]
 name = "bpod-core"
-version = "0.1.0a5"
+version = "0.1.0a6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "appdirs" },
@@ -149,16 +149,27 @@ dependencies = [
     { name = "msgspec" },
     { name = "numpy" },
     { name = "packaging" },
-    { name = "pandas" },
     { name = "pydantic" },
     { name = "pyserial" },
     { name = "pyyaml" },
     { name = "pyzmq" },
     { name = "zeroconf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/ac/7ba82bd369d006330463cc7a7ed85871581c781728251e67d6df6bcdb293/bpod_core-0.1.0a5.tar.gz", hash = "sha256:72e3c6bbe28154d6e20446a666616f8597eeab0355de938a632a1c1222966d06", size = 64014, upload-time = "2025-09-03T19:50:38.703Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/53/51420ea3b4f8449b0fbffbcb0157ce64c7c9bc0a5443d277cbc25160f03c/bpod_core-0.1.0a6.tar.gz", hash = "sha256:a1fbe37a85ff51a5dc76087046feda6c9f0988027de204035cfc7dbdf44544e2", size = 64022, upload-time = "2025-10-29T16:24:38.72Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/d6/3b7ee5554f75c0e87b74a1e76b4496f3d32f13db519bed1745a8a828824c/bpod_core-0.1.0a5-py3-none-any.whl", hash = "sha256:8167851799ec00b7956ae1fc8655a1b28a97c0687e8b7b048f34bc0b8166f6ee", size = 35839, upload-time = "2025-09-03T19:50:37.551Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/00/6e0dc4a4d4efd3324d5cf71ca9d9bd05833141bd0dd7e4b6da906eb0cc69/bpod_core-0.1.0a6-py3-none-any.whl", hash = "sha256:76c827eef380821291ed17cd15d7ff986c068d2fe3b6e3bdfa2f68b4c16af33f", size = 35732, upload-time = "2025-10-29T16:24:37.52Z" },
+]
+
+[[package]]
+name = "bpod-modules-ibl"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "bpod-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a2/14/3afb7850ee82b8608ff85f219532e31ebf7d3ee4014c6d246fb270c1d2a4/bpod_modules_ibl-0.1.0.tar.gz", hash = "sha256:c838dd158c7ee63d0e9fd71fe0b562187065722282e84f0bd8f0779c77468717", size = 15408, upload-time = "2025-10-30T14:27:50.468Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/eb/df9f2954cf7a96b71770bd36e8b0ce9b6fc3b498ca92a29120abf2ab5dcd/bpod_modules_ibl-0.1.0-py3-none-any.whl", hash = "sha256:048fddf896d0964343e050a4bf7b93dadd48b24100bd4791f1081f8d4844ce9e", size = 7486, upload-time = "2025-10-30T14:27:48.466Z" },
 ]
 
 [[package]]
@@ -805,6 +816,7 @@ source = { editable = "." }
 dependencies = [
     { name = "annotated-types" },
     { name = "bpod-core" },
+    { name = "bpod-modules-ibl" },
     { name = "graphviz" },
     { name = "ibl-photometry" },
     { name = "iblatlas" },
@@ -897,6 +909,7 @@ typing = [
 requires-dist = [
     { name = "annotated-types", specifier = ">=0.7.0" },
     { name = "bpod-core", specifier = ">=0.1.0a5" },
+    { name = "bpod-modules-ibl", specifier = ">=0.1.0" },
     { name = "graphviz", specifier = ">=0.20.3" },
     { name = "ibl-photometry", specifier = ">=0.1.1" },
     { name = "iblatlas", specifier = ">=0.9.0" },

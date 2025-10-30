@@ -36,7 +36,8 @@ from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
-from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, RotaryEncoderModule, sound_device_factory
+from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, sound_device_factory
+from iblrig.hardware import RotaryEncoderModule as RotaryEncoderModuleOld
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
@@ -1109,7 +1110,7 @@ class Frame2TTLMixin(BaseSession):
 class RotaryEncoderMixin(BaseSession, HasBpod):
     """Rotary encoder interface for state machine."""
 
-    device_rotary_encoder: RotaryEncoderModule
+    device_rotary_encoder: RotaryEncoderModuleOld
 
     @property
     def stimulus_gain(self) -> float:
@@ -1117,7 +1118,7 @@ class RotaryEncoderMixin(BaseSession, HasBpod):
 
     def init_mixin_rotary_encoder(self):
         thresholds_deg = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
-        self.device_rotary_encoder = RotaryEncoderModule(
+        self.device_rotary_encoder = RotaryEncoderModuleOld(
             self.hardware_settings.device_rotary_encoder, thresholds_deg, self.stimulus_gain
         )
 
