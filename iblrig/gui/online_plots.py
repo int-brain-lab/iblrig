@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 import sys
 import time
 from collections.abc import Iterable
@@ -14,7 +13,7 @@ import pandas as pd
 import pyqtgraph as pg
 from pydantic import UUID4, AfterValidator, AliasChoices, DirectoryPath, Field, FilePath, PlainSerializer, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
-from pyqtgraph import PlotDataItem, FillBetweenItem
+from pyqtgraph import FillBetweenItem, PlotDataItem
 from pyqtgraph.GraphicsScene.mouseEvents import HoverEvent
 from qtpy.QtCore import (
     QCoreApplication,
@@ -38,7 +37,6 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QFrame,
     QGraphicsRectItem,
-    QGraphicsSceneHoverEvent,
     QGridLayout,
     QHeaderView,
     QLabel,
@@ -649,7 +647,7 @@ class OnlinePlotsModel(QObject):
             datasets = one.list_datasets(session, filename=f'*{FILENAME_DATA}')
             if len(datasets) == 0:
                 raise ValueError(f'Could not find Task Data File for session {session}')
-            session = cast(Path, one.load_dataset(session, datasets[0], download_only=True))
+            session = cast('Path', one.load_dataset(session, datasets[0], download_only=True))
 
             # load Task Settings File
             datasets = one.list_datasets(session, filename=f'*{FILENAME_SETTINGS}')
@@ -1072,7 +1070,7 @@ def online_plots_cli(*args: Any):
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QCoreApplication.setApplicationName('IBLRIG Online Plots')
-    if sys.platform == "win32":
+    if sys.platform == 'win32':
         from ctypes import windll
 
         app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
