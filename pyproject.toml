@@ -204,7 +204,7 @@ quote-style = "single"
 convention = "numpy"
 
 [tool.ruff.lint.isort]
-known-first-party = [ "ibl*", "bpod-core", "*-ibl", "one*", "pybpod*", "tycmd" ]
+known-first-party = [ "ibl*", "bpod_core", "*_ibl", "one*", "pybpod*", "tycmd" ]
 
 [tool.deadcode]
 exclude = [ "docs", "venv", ".venv" ]

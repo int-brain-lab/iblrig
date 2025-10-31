@@ -18,14 +18,10 @@ import serial
 import sounddevice as sd
 from annotated_types import Ge, Le
 from pydantic import PositiveFloat, PositiveInt, validate_call
-from serial.serialutil import SerialException
 from serial.tools import list_ports
 
-from iblrig.pydantic_definitions import HardwareSettingsRotaryEncoder
-from iblrig.rotary_encoder import RotaryEncoderModule
 from iblutil.util import Bunch
 from pybpod_rotaryencoder_module.module import RotaryEncoder as PybpodRotaryEncoder
-from pybpod_rotaryencoder_module.module_api import RotaryEncoderModule as PybpodRotaryEncoderModule
 from pybpodapi.bpod.bpod_io import BpodIO
 from pybpodapi.bpod_modules.bpod_module import BpodModule
 from pybpodapi.state_machine import StateMachine
@@ -335,69 +331,6 @@ class Bpod(BpodIO):
         """
         self.softcodes = softcode_dict
         self.softcode_handler_function = lambda code: softcode_dict[code]()
-
-
-class RotaryEncoderModule2(RotaryEncoderModule):
-    @validate_call
-    def __init__(self, settings: HardwareSettingsRotaryEncoder, thresholds_deg: list[float], gain: float):
-        self._settings = settings
-        super().__init__(self._settings.COM_ROTARY_ENCODER)
-
-
-class RotaryEncoderModule(PybpodRotaryEncoderModule):
-    _name = 'Rotary Encoder Module'
-
-    ENCODER_EVENTS = list()
-    THRESHOLD_EVENTS = dict()
-
-    def __init__(self, settings: HardwareSettingsRotaryEncoder, thresholds_deg: list[float], gain: float):
-        super().__init__()
-        self.settings = settings
-
-        self._wheel_degree_per_mm = 360.0 / (self.settings.WHEEL_DIAMETER_MM * np.pi)
-        self.thresholds_deg = thresholds_deg
-        self.gain = gain
-        self.ENCODER_EVENTS = [f'RotaryEncoder1_{x + 1}' for x in range(len(thresholds_deg))]
-        self.THRESHOLD_EVENTS = dict(zip(thresholds_deg, self.ENCODER_EVENTS, strict=False))
-
-    def open(self, _=None):
-        if self.settings.COM_ROTARY_ENCODER is None:
-            raise ValueError(
-                'The value for device_rotary_encoder:COM_ROTARY_ENCODER in settings/hardware_settings.yaml is null. '
-                'Please provide a valid port name.'
-            )
-        try:
-            super().open(self.settings.COM_ROTARY_ENCODER)
-        except SerialException as e:
-            raise SerialException(
-                f'The {self._name} on port {self.settings.COM_ROTARY_ENCODER} is already in use. This is '
-                f'usually due to a Bonsai process running on the computer. Make sure all Bonsai windows are closed '
-                f'prior to running the task.'
-            ) from e
-        except Exception as e:
-            raise Exception(f'The {self._name} on port {self.settings.COM_ROTARY_ENCODER} did not return the handshake.') from e
-        log.debug(f'Successfully opened serial connection to {self._name} on port {self.settings.COM_ROTARY_ENCODER}')
-
-    def write_parameters(self):
-        scaled_thresholds_deg = [x / self.gain * self._wheel_degree_per_mm for x in self.thresholds_deg]
-        enabled_thresholds = [(x < len(scaled_thresholds_deg)) for x in range(8)]
-
-        log.info(
-            f'Thresholds for {self._name} scaled to {", ".join([f"{x:0.2f}" for x in scaled_thresholds_deg])} '
-            f'using gain of {self.gain:0.1f} deg/mm and wheel diameter of {self.settings.WHEEL_DIAMETER_MM:0.1f} mm.'
-        )
-        self.set_zero_position()
-        self.set_thresholds(scaled_thresholds_deg)
-        self.enable_thresholds(enabled_thresholds)
-        self.enable_evt_transmission()
-
-    def close(self):
-        if getattr(self, 'arcom') is not None:  # noqa: B009
-            log.debug(f'Closing serial connection to {self._name} on port {self.settings.COM_ROTARY_ENCODER}')
-            super().close()
-
-    def __del__(self):
-        self.close()
 
 
 def sound_device_factory(

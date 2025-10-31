@@ -125,8 +125,8 @@ class ChoiceWorldSession(
         self.task_params['SESSION_DELAY_START'] = delay_mins * 60.0
 
         # init behaviour data
-        self.movement_left = self.device_rotary_encoder.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[0]]
-        self.movement_right = self.device_rotary_encoder.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[1]]
+        self.movement_left = self.device_rotary_encoder_old.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[0]]
+        self.movement_right = self.device_rotary_encoder_old.THRESHOLD_EVENTS[self.task_params.QUIESCENCE_THRESHOLDS[1]]
 
         # init counter variables
         self.trial_num = -1
@@ -569,7 +569,7 @@ class ChoiceWorldSession(
         self.trials_table.at[self.trial_num, 'stim_phase'] = random.uniform(0, 2 * math.pi)
         self.trials_table.at[self.trial_num, 'stim_sigma'] = self.task_params.STIM_SIGMA
         self.trials_table.at[self.trial_num, 'stim_angle'] = self.task_params.STIM_ANGLE
-        self.trials_table.at[self.trial_num, 'stim_gain'] = self.stimulus_gain
+        self.trials_table.at[self.trial_num, 'stim_gain'] = self.task_params.STIM_GAIN
         self.trials_table.at[self.trial_num, 'stim_freq'] = self.task_params.STIM_FREQ
         self.trials_table.at[self.trial_num, 'stim_reverse'] = self.task_params.STIM_REVERSE
         self.trials_table.at[self.trial_num, 'trial_num'] = self.trial_num
@@ -705,11 +705,11 @@ class ChoiceWorldSession(
 
     @property
     def event_error(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[(-1 if self.task_params.STIM_REVERSE else 1) * self.position]
+        return self.device_rotary_encoder_old.THRESHOLD_EVENTS[(-1 if self.task_params.STIM_REVERSE else 1) * self.position]
 
     @property
     def event_reward(self):
-        return self.device_rotary_encoder.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
+        return self.device_rotary_encoder_old.THRESHOLD_EVENTS[(1 if self.task_params.STIM_REVERSE else -1) * self.position]
 
 
 class HabituationChoiceWorldTrialData(ChoiceWorldTrialData):

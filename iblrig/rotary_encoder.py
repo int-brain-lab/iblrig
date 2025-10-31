@@ -3,9 +3,10 @@ import struct
 from typing import Literal, overload
 
 import numpy as np
-from bpod_core.com import ExtendedSerial
 from numpy.typing import NDArray
 from serial import SerialException
+
+from bpod_core.com import ExtendedSerial
 
 log = logging.getLogger(__name__)
 

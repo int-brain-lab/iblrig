@@ -32,12 +32,12 @@ from pythonosc import udp_client
 import ibllib.io.session_params as ses_params
 import iblrig.path_helper
 import pybpodapi
+from bpod_modules_ibl import RotaryEncoderModule
 from ibllib.oneibl.registration import IBLRegistrationClient
 from iblrig import net, path_helper, sound
 from iblrig.constants import BASE_PATH, BONSAI_EXE, PYSPIN_AVAILABLE
 from iblrig.frame2ttl import Frame2TTL
 from iblrig.hardware import DTYPE_AMBIENT_SENSOR_BIN, SOFTCODE, Bpod, sound_device_factory
-from iblrig.hardware import RotaryEncoderModule as RotaryEncoderModuleOld
 from iblrig.hifi import HiFi
 from iblrig.path_helper import load_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings, TrialDataModel
@@ -1110,24 +1110,36 @@ class Frame2TTLMixin(BaseSession):
 class RotaryEncoderMixin(BaseSession, HasBpod):
     """Rotary encoder interface for state machine."""
 
-    device_rotary_encoder: RotaryEncoderModuleOld
-
     @property
     def stimulus_gain(self) -> float:
         return self.task_params.STIM_GAIN
 
     def init_mixin_rotary_encoder(self):
-        thresholds_deg = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
-        self.device_rotary_encoder = RotaryEncoderModuleOld(
-            self.hardware_settings.device_rotary_encoder, thresholds_deg, self.stimulus_gain
-        )
+        pass
 
     def start_mixin_rotary_encoder(self):
-        self.device_rotary_encoder.gain = self.stimulus_gain
-        self.device_rotary_encoder.open()
-        self.device_rotary_encoder.write_parameters()
-        self.device_rotary_encoder.close()
-        log.info('Rotary Encoder Module loaded: OK')
+        # check hardware settings / port configuration
+        settings = self.hardware_settings.device_rotary_encoder
+        if settings.COM_ROTARY_ENCODER is None:
+            raise ValueError(
+                'The value for device_rotary_encoder:COM_ROTARY_ENCODER in settings/hardware_settings.yaml is null. '
+                'Please provide a valid port name.'
+            )
+
+        # define thresholds
+        wheel_circumference_mm = settings.WHEEL_DIAMETER_MM * np.pi
+        wheel_degree_per_mm = 360.0 / wheel_circumference_mm
+        gain_degree_per_mm = self.task_params.STIM_GAIN
+        gain_factor = gain_degree_per_mm / wheel_degree_per_mm
+        thresholds_degrees = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
+        thresholds_scaled = [x * gain_factor for x in thresholds_degrees]
+
+        # set parameters
+        with RotaryEncoderModule(port=settings.COM_ROTARY_ENCODER) as re:
+            re.zero()
+            re.set_thresholds(thresholds_scaled)
+            re.enable_thresholds([x for x in range(len(thresholds_scaled))])
+            re.set_event_transmission(True)
 
 
 class ValveMixin(BaseSession, HasBpod):

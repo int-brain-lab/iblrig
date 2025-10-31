@@ -141,13 +141,13 @@ class TestOtherMixins(BaseTestHardwareMixins):
         """
         RotaryEncoderSession = type('RotaryEncoderSession', (EmptyHardwareSession, RotaryEncoderMixin), {})  # noqa: N806
         session = RotaryEncoderSession(task_parameter_file=ChoiceWorldSession.base_parameters_file, **TASK_KWARGS)
-        assert session.device_rotary_encoder.ENCODER_EVENTS == [
+        assert session.device_rotary_encoder_old.ENCODER_EVENTS == [
             'RotaryEncoder1_1',
             'RotaryEncoder1_2',
             'RotaryEncoder1_3',
             'RotaryEncoder1_4',
         ]
-        assert session.device_rotary_encoder.THRESHOLD_EVENTS == {
+        assert session.device_rotary_encoder_old.THRESHOLD_EVENTS == {
             -35: 'RotaryEncoder1_1',
             35: 'RotaryEncoder1_2',
             -2: 'RotaryEncoder1_3',
