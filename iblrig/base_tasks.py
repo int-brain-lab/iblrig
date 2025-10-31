@@ -1116,7 +1116,8 @@ class RotaryEncoderMixin(BaseSession, HasBpod):
     thresholds_wheel_angles: list[float] = []
 
     @cached_property
-    def wheel_circumference_mm(self) -> float:
+    def wheel_perimeter_mm(self) -> float:
+        """The wheel perimeter in mm."""
         self.hardware_settings.device_rotary_encoder.WHEEL_DIAMETER_MM * np.pi
 
     @property
@@ -1126,7 +1127,7 @@ class RotaryEncoderMixin(BaseSession, HasBpod):
 
     def init_mixin_rotary_encoder(self):
         """Initialize the rotary encoder mixin."""
-        stimulus_gain_factor = self.stimulus_gain * self.wheel_circumference_mm / 360.0
+        stimulus_gain_factor = self.stimulus_gain * self.wheel_perimeter_mm / 360.0
         self.thresholds_screen_degrees = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
         self.thresholds_wheel_degrees = [x * stimulus_gain_factor for x in self.thresholds_screen_degrees]
 
