@@ -21,6 +21,7 @@ import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Callable
+from functools import cached_property
 from pathlib import Path
 from typing import Protocol, final
 
@@ -1110,14 +1111,27 @@ class Frame2TTLMixin(BaseSession):
 class RotaryEncoderMixin(BaseSession, HasBpod):
     """Rotary encoder interface for state machine."""
 
+    thresholds_screen_degrees: list[float] = []
+    thresholds_wheel_degrees: list[float] = []
+    thresholds_wheel_angles: list[float] = []
+
+    @cached_property
+    def wheel_circumference_mm(self) -> float:
+        self.hardware_settings.device_rotary_encoder.WHEEL_DIAMETER_MM * np.pi
+
     @property
     def stimulus_gain(self) -> float:
+        """The wheel gain in degrees of visual angle per mm."""
         return self.task_params.STIM_GAIN
 
     def init_mixin_rotary_encoder(self):
-        pass
+        """Initialize the rotary encoder mixin."""
+        stimulus_gain_factor = self.stimulus_gain * self.wheel_circumference_mm / 360.0
+        self.thresholds_screen_degrees = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
+        self.thresholds_wheel_degrees = [x * stimulus_gain_factor for x in self.thresholds_screen_degrees]
 
     def start_mixin_rotary_encoder(self):
+        """Start the rotary encoder mixin."""
         # check hardware settings / port configuration
         settings = self.hardware_settings.device_rotary_encoder
         if settings.COM_ROTARY_ENCODER is None:
@@ -1126,19 +1140,11 @@ class RotaryEncoderMixin(BaseSession, HasBpod):
                 'Please provide a valid port name.'
             )
 
-        # define thresholds
-        wheel_circumference_mm = settings.WHEEL_DIAMETER_MM * np.pi
-        wheel_degree_per_mm = 360.0 / wheel_circumference_mm
-        gain_degree_per_mm = self.task_params.STIM_GAIN
-        gain_factor = gain_degree_per_mm / wheel_degree_per_mm
-        thresholds_degrees = self.task_params.STIM_POSITIONS + self.task_params.QUIESCENCE_THRESHOLDS
-        thresholds_scaled = [x * gain_factor for x in thresholds_degrees]
-
         # set parameters
         with RotaryEncoderModule(port=settings.COM_ROTARY_ENCODER) as re:
             re.zero()
-            re.set_thresholds(thresholds_scaled)
-            re.enable_thresholds([x for x in range(len(thresholds_scaled))])
+            re.set_thresholds(self.thresholds_wheel_degrees)
+            re.enable_thresholds([x for x in range(len(self.thresholds_wheel_degrees))])
             re.set_event_transmission(True)
 
 
