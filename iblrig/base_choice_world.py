@@ -750,7 +750,7 @@ class HabituationChoiceWorldSession(ChoiceWorldSession):
         sma.add_state(
             state_name='stim_on',
             state_timer=0.1,
-            state_change_conditions={'Tup': 'stim_center', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
+            state_change_conditions={'Tup': 'play_tone', 'BNC1High': 'play_tone', 'BNC1Low': 'play_tone'},
             output_actions=[self.bpod.actions.bonsai_show_stim, ('BNC1', 255)],
         )
 
