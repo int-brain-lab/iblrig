@@ -37,7 +37,7 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
     copier.initialize_experiment(nprobes=nprobes)
 
 
-def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 200, 400, 600)):
+def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 200, 400, 600), pivot_shank='a'):
     """
     Provide the micro-manipulator coordinates of the first shank.
 
@@ -52,9 +52,20 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     """
     # this only works if the roll is 0, ie. the probe is facing upwards
     assert ref_shank['roll'] == 0
+    assert ref_shank['roll'] == 0, 'roll should be 0 for autoassignment of shank coordinates'
+    if pivot_shank == 'd':
+        shank_letters = 'dcba'
+        spacing_factor = -1
+    elif pivot_shank == 'a':
+        shank_letters = 'abcd'
+        spacing_factor = 1
+    else:
+        ValueError("reference_shank parameter should be either 'a' or 'd'")
+
     ba = atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
     for i, d in enumerate(shank_spacings_um):
+        d *= spacing_factor  # flip the direction if reference_shank is 'd'
         x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * d
         y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * d
         shank = {
@@ -72,5 +83,7 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
             xyz_ref = xyz_entry
         shank['z'] = xyz_entry[2] * 1e6
         shank['depth'] = ref_shank['depth'] + (xyz_entry[2] - xyz_ref[2]) * 1e6
-        trajectories[f'{pname}{string.ascii_lowercase[i]}'] = shank
+        trajectories[f'{pname}{shank_letters[i]}'] = shank
     return trajectories
+
+
