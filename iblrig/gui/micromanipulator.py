@@ -1,9 +1,11 @@
 # convert_uis *micro*
 import argparse
 
+import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from qtpy.QtCore import QCoreApplication
 from qtpy.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget
 
@@ -50,13 +52,26 @@ class GuiMicroManipulator(QMainWindow, Ui_MainWindow):
         self.model.trajectories = neuropixel24_micromanipulator_coordinates(
             self.model.trajectory, self.model.pname, ba=self.atlas
         )
+        self.on_push_show()
 
     def on_push_show(self):
+        for ax in self.uiMpl.canvas.ax:
+            [h.remove() for h in ax.lines]
+            [h.remove() for h in ax.texts]
         self.uiMpl.canvas.ax[1].clear()
+
         self.uiMpl.canvas.ax[0].plot(self.model.trajectory['x'], self.model.trajectory['y'], '>', color='k')
         for shank, traj in self.model.trajectories.items():
             self.uiMpl.canvas.ax[0].plot(traj['x'], traj['y'], 'xr', label=shank)
             self.uiMpl.canvas.ax[0].text(traj['x'], traj['y'], shank[-1], color='w', fontweight=800)
+
+        self.atlas.plot_sslice(ml_coordinate=traj['x'] / 1e6, ax=self.uiMpl.canvas.ax[1], volume='annotation')
+        self.uiMpl.canvas.ax[1].plot(self.model.trajectory['y'], self.model.trajectory['z'], '>', color='k')
+        for shank, traj in self.model.trajectories.items():
+            self.uiMpl.canvas.ax[1].plot(traj['y'], traj['z'], 'xr', label=shank)
+            self.uiMpl.canvas.ax[1].text(traj['y'], traj['z'], shank[-1], color='w', fontweight=800)
+        self.uiMpl.canvas.ax[1].set(ylim=np.sort(self.atlas.bc.zlim * 1e6))
+        self.uiMpl.canvas.ax[1].set(xlim=self.atlas.bc.ylim * 1e6)
         self.uiMpl.canvas.fig.tight_layout()
         self.uiMpl.canvas.draw()
 
@@ -75,14 +90,16 @@ class MplWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)  # Inherit from QWidget
         self.canvas = MplCanvas()  # Create canvas object
+        self.toolbar = NavigationToolbar(self.canvas, self)
         self.vbl = QVBoxLayout()  # Set box for plotting
+        self.vbl.addWidget(self.toolbar)
         self.vbl.addWidget(self.canvas)
         self.setLayout(self.vbl)
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('subject')
+    parser.add_argument('--subject', default='anonymous', help='Subject name')
     args = parser.parse_args()
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
