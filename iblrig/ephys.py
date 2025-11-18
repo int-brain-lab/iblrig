@@ -1,12 +1,13 @@
 import argparse
-import string
 
 import numpy as np
 
 from iblatlas import atlas
+from ibllib.ephys.spikes import create_insertion
 from iblrig.base_tasks import EmptySession
 from iblrig.transfer_experiments import EphysCopier
 from iblutil.util import setup_logger
+from one.webclient import no_cache as no_cache_context
 
 
 def prepare_ephys_session_cmd():
@@ -55,19 +56,19 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     assert ref_shank['roll'] == 0, 'roll should be 0 for autoassignment of shank coordinates'
     if pivot_shank == 'd':
         shank_letters = 'dcba'
-        spacing_factor = -1
+        spacing_sign = -1
     elif pivot_shank == 'a':
         shank_letters = 'abcd'
-        spacing_factor = 1
+        spacing_sign = 1
     else:
-        ValueError("reference_shank parameter should be either 'a' or 'd'")
+        raise ValueError("reference_shank parameter should be either 'a' or 'd'")
 
     ba = atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
     for i, d in enumerate(shank_spacings_um):
-        d *= spacing_factor  # flip the direction if reference_shank is 'd'
-        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * d
-        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * d
+        spacing_multiplier = d *  spacing_sign  # flip the direction if reference_shank is 'd'
+        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
+        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
         shank = {
             'x': x,
             'y': y,
@@ -87,3 +88,26 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     return trajectories
 
 
+def register_micromanipulator_coordinates(one=None, trajectories=None, eid=None):
+    assert one is not None, 'An ONE instance is required to register/create micromanipulator coordinates'
+    assert eid is not None, 'An session ID is required to register/create micromanipulator coordinates'
+    # if we do not have access to the fileName or any of the metadata, it will be patched later
+    metadata = {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1}
+    rest_trajectories = {}
+    rest_insertions = {}
+    with no_cache_context(one.alyx):
+        traj_extra = {}
+        for pname, traj in trajectories.items():
+            _, rest_insertions[pname] = create_insertion(one, metadata, pname, eid=eid)
+            pid = rest_insertions[pname]['id']
+            traj_extra['probe_insertion'] = pid
+            traj_extra['chronic_insertion'] = None
+            traj_extra['provenance'] = 'Micro-manipulator'
+            traj_extra['coordinate_system'] = 'Needles-Allen'
+            rest_trajectory = one.alyx.rest('trajectories', 'list', probe_insertion=pid, provenance='Micro-manipulator')
+            if len(rest_trajectory) == 0:
+                rest_trajectories[pname] = one.alyx.rest('trajectories', 'create', data=traj | traj_extra)
+            else:
+                rest_trajectories[pname] = one.alyx.rest('trajectories', 'update', id=rest_trajectory[0]['id'],
+                                                              data=traj | traj_extra)
+    return rest_insertions, rest_trajectories
