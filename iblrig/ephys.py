@@ -51,9 +51,7 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     :param shank_spacings_um: list of shank spacings in micrometers
     :return:
     """
-    # this only works if the roll is 0, ie. the probe is facing upwards
-    assert ref_shank['roll'] == 0
-    assert ref_shank['roll'] == 0, 'roll should be 0 for autoassignment of shank coordinates'
+    ref_shank['roll'] = 0  # this is a constant and has no nmeaning for 4 shanks probes
     if pivot_shank == 'd':
         shank_letters = 'dcba'
         spacing_sign = -1
@@ -88,26 +86,26 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     return trajectories
 
 
-def register_micromanipulator_coordinates(one=None, trajectories=None, eid=None):
-    assert one is not None, 'An ONE instance is required to register/create micromanipulator coordinates'
+def register_micromanipulator_coordinates(alyx=None, trajectories=None, eid=None, metadata=None):
+    assert alyx is not None, 'An alyx client is required to register/create micromanipulator coordinates'
     assert eid is not None, 'An session ID is required to register/create micromanipulator coordinates'
     # if we do not have access to the fileName or any of the metadata, it will be patched later
-    metadata = {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1}
+    metadata = {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1} if metadata is None else metadata
     rest_trajectories = {}
     rest_insertions = {}
-    with no_cache_context(one.alyx):
+    with no_cache_context(alyx):
         traj_extra = {}
         for pname, traj in trajectories.items():
-            _, rest_insertions[pname] = create_insertion(one, metadata, pname, eid=eid)
+            _, rest_insertions[pname] = create_insertion(alyx, metadata, pname, eid=eid)
             pid = rest_insertions[pname]['id']
             traj_extra['probe_insertion'] = pid
             traj_extra['chronic_insertion'] = None
             traj_extra['provenance'] = 'Micro-manipulator'
             traj_extra['coordinate_system'] = 'Needles-Allen'
-            rest_trajectory = one.alyx.rest('trajectories', 'list', probe_insertion=pid, provenance='Micro-manipulator')
+            rest_trajectory = alyx.rest('trajectories', 'list', probe_insertion=pid, provenance='Micro-manipulator')
             if len(rest_trajectory) == 0:
-                rest_trajectories[pname] = one.alyx.rest('trajectories', 'create', data=traj | traj_extra)
+                rest_trajectories[pname] = alyx.rest('trajectories', 'create', data=traj | traj_extra)
             else:
-                rest_trajectories[pname] = one.alyx.rest('trajectories', 'update', id=rest_trajectory[0]['id'],
-                                                              data=traj | traj_extra)
+                rest_trajectories[pname] = alyx.rest('trajectories', 'update', id=rest_trajectory[0]['id'],
+                                                     data=traj | traj_extra)
     return rest_insertions, rest_trajectories
