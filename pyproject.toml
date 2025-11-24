@@ -72,6 +72,7 @@ start_photometry_task   = 'iblrig.neurophotometrics:initialize_subject_cli'
 convert_uis             = "iblrig.gui.tools:convert_uis"
 validate_iblrig         = "iblrig.hardware_validation:run_all_validators_cli"
 validate_video          = "iblrig.video:validate_video_cmd"
+neuropixel_coordinates  = "iblrig.gui.ui_micromanipulator:main"
 
 
 [tool.pdm.version]

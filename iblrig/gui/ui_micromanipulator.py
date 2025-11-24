@@ -303,9 +303,9 @@ class MainWindow(QtWidgets.QMainWindow):
               f"Serial={serial}, Version={version}")
 
         try:
-            assert subject is not '', "Subject cannot be empty"
-            assert number is not '', "Number cannot be empty"
-            assert date is not '', "Date cannot be empty"
+            assert subject != '', "Subject cannot be empty"
+            assert number != '', "Number cannot be empty"
+            assert date != '', "Date cannot be empty"
             self.model.alyx.rest('subjects', 'list', nickname=subject, no_cache=True)
             if not self.model.alyx.is_logged_in:
                 dlg = LoginWindow(parent=self, username='self.iblrig_settings.ALYX_USER', password='', remember=True)
@@ -338,8 +338,12 @@ class MainWindow(QtWidgets.QMainWindow):
             error_dialog.exec_()
             print(full_error_message)
 
-if __name__ == "__main__":
+def main():
     app = QtWidgets.QApplication(sys.argv)
     main_win = MainWindow()
     main_win.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
