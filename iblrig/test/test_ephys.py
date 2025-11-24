@@ -11,7 +11,6 @@ from one.api import ONE
 
 
 class TestMicromanipulatorCompute(unittest.TestCase):
-
     def setUp(self):
         self.actual = {
             'probe01a': {'x': 2594.2, 'y': -3123.7, 'z': -231.33599999999996, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0},
@@ -46,38 +45,45 @@ class TestMicromanipulatorCompute(unittest.TestCase):
         self.actual = pd.DataFrame(self.actual)
 
     def test_neuropixel24_micromanipulator(self):
-        probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711,
-                      'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
+        probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01')
         np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
     def test_neuropixel24_micromanipulator_reversed(self):
-        probe_dict = {'x': 2749.4914270615122, 'y': -3703.255495773441,
-                      'z': -350.336, 'phi': 15, 'theta': 15, 'depth': 1131.4, 'roll': 0}
+        probe_dict = {
+            'x': 2749.4914270615122,
+            'y': -3703.255495773441,
+            'z': -350.336,
+            'phi': 15,
+            'theta': 15,
+            'depth': 1131.4,
+            'roll': 0,
+        }
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01', pivot_shank='d')
         np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
 
 class TestMicromanipulatorRegister2Alyx(unittest.TestCase):
-
     def setUp(self):
         self.one = ONE(**TEST_DB)
         ses_dict = {
             'subject': 'algernon',
             'start_time': ibllib.time.date2isostr(datetime.datetime.now()),
             'number': 1,
-            'users': ['test_user']}
+            'users': ['test_user'],
+        }
         self.rest_session = self.one.alyx.rest('sessions', 'create', data=ses_dict)
 
     def tearDown(self):
         self.one.alyx.rest('sessions', 'delete', id=self.rest_session['id'])
 
     def test_probe_and_trajectories_creation(self):
-        probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15,
-                      'theta': 15, 'depth': 1250.4, 'roll': 0}
+        probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01')
         iblrig.ephys.register_micromanipulator_coordinates(
-            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id'])
+            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
+        )
         # do it twice to make sure both the get and create cases work
         iblrig.ephys.register_micromanipulator_coordinates(
-            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id'])
+            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
+        )

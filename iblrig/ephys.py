@@ -64,7 +64,7 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     ba = atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
     for i, d in enumerate(shank_spacings_um):
-        spacing_multiplier = d *  spacing_sign  # flip the direction if reference_shank is 'd'
+        spacing_multiplier = d * spacing_sign  # flip the direction if reference_shank is 'd'
         x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
         y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
         shank = {
@@ -106,6 +106,7 @@ def register_micromanipulator_coordinates(alyx=None, trajectories=None, eid=None
             if len(rest_trajectory) == 0:
                 rest_trajectories[pname] = alyx.rest('trajectories', 'create', data=traj | traj_extra)
             else:
-                rest_trajectories[pname] = alyx.rest('trajectories', 'update', id=rest_trajectory[0]['id'],
-                                                     data=traj | traj_extra)
+                rest_trajectories[pname] = alyx.rest(
+                    'trajectories', 'update', id=rest_trajectory[0]['id'], data=traj | traj_extra
+                )
     return rest_insertions, rest_trajectories
