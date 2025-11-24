@@ -6,7 +6,7 @@ from pathlib import Path
 import traceback
 
 import numpy as np
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  # Fixme qt5
 from matplotlib.figure import Figure
@@ -17,6 +17,8 @@ import spikeglx
 from iblatlas.atlas import NeedlesAtlas
 from iblrig.ephys import neuropixel24_micromanipulator_coordinates
 from iblrig.gui.wizard import RigWizardModel, LoginWindow
+from iblrig.gui import resources_rc  # noqa: F401
+
 
 default_trajectory = {'x': -1200.1, 'y': -4131.3, 'z': 901.1, 'phi': 270, 'theta': 15, 'depth': 3300.7, 'roll': 0, 'shanks': 4}
 
@@ -55,6 +57,8 @@ class MplCanvas(FigureCanvas):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+
+
         self.settings = QtCore.QSettings("IBL", "MicroManipulatorGUI")
         self.model = RigWizardModel()
 
@@ -67,6 +71,10 @@ class MainWindow(QtWidgets.QMainWindow):
         main_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(main_widget)
         layout = QtWidgets.QVBoxLayout(main_widget)
+
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/iblrig_logo"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(icon)
 
         # --- Create Form on top ---
         self.line_edits = {}
