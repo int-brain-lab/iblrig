@@ -81,9 +81,9 @@ class TestMicromanipulatorRegister2Alyx(unittest.TestCase):
         probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01')
         iblrig.ephys.register_micromanipulator_coordinates(
-            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
+            alyx=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
         )
         # do it twice to make sure both the get and create cases work
         iblrig.ephys.register_micromanipulator_coordinates(
-            one=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
+            alyx=self.one.alyx, trajectories=trajectories, eid=self.rest_session['id']
         )
