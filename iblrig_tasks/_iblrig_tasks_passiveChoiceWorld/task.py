@@ -109,7 +109,15 @@ class Session(ChoiceWorldSession):
             self.trial_num = trial_num
             log.info(f'Delay: {trial.stim_delay}; ID: {trial.stim_type}; Count: {self.trial_num}/300')
             sys.stdout.flush()
+
+            if trial.stim_type == 'G':
+                # This will send the current trial info to the Bonsai workflow.
+                # We do this before the sleep timeout to avoid race conditions.
+                # We need to make sure Bonsai is in a state to display stimuli.
+                self.send_trial_info_to_bonsai()
+
             time.sleep(trial.stim_delay)
+
             if trial.stim_type == 'V':
                 self.valve_open(self.reward_time)
             elif trial.stim_type == 'T':
@@ -117,9 +125,6 @@ class Session(ChoiceWorldSession):
             elif trial.stim_type == 'N':
                 self.sound_play_noise(state_timer=0.510)
             elif trial.stim_type == 'G':
-                # this will send the current trial info to the visual stim
-                # we need to make sure Bonsai is in a state to display stimuli
-                self.send_trial_info_to_bonsai()
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_show_stim)
                 time.sleep(0.3)  # todo: this is a very inaccurate way of controlling stim duration!
                 self.bonsai_visual_udp_client.send_message(r'/re', byte_hide_stim)
