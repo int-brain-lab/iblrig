@@ -184,11 +184,16 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             # Validate the data using the Pydantic model
             trajectory = ProbeInsertion(**raw_trajectory)
-            print("All fields are valid. Adding to table.")
             trajectory = trajectory.model_dump()
-            shanks_trajectories = neuropixel24_micromanipulator_coordinates(
-                trajectory, pname=trajectory['pname'], ba=self.atlas
-            )
+
+            if int(raw_trajectory['shanks']) == 1:
+                _traj = {k:trajectory[k] for k in ['x', 'y', 'z', 'depth', 'theta', 'phi']}
+                _traj['roll'] = 0
+                shanks_trajectories = {trajectory['pname']:_traj}
+            else:
+                shanks_trajectories = neuropixel24_micromanipulator_coordinates(
+                    trajectory, pname=trajectory['pname'], ba=self.atlas)
+
             for k in shanks_trajectories.keys():
                 shank_data = shanks_trajectories[k]
                 shank_data['pname'] = k
@@ -205,10 +210,11 @@ class MainWindow(QtWidgets.QMainWindow):
             xlabels = (x - np.mean(x)) * 2.5 + 400 * np.cos(angle) + np.mean(x)
             ylabels = (y - np.mean(y)) * 2.5 + 400 * np.sin(angle) + np.mean(y)
             i = 0
+            self.canvas.axes1.plot(x, y, 'x', label=trajectory['pname'])
             for shank, traj in shanks_trajectories.items():
-                self.canvas.axes1.plot(traj['x'], traj['y'], 'xr', label=shank)
                 self.canvas.axes1.text(xlabels[i], ylabels[i], shank[-1], color='k', fontweight=800)
                 i += 1
+            self.canvas.axes1.legend()
             self.canvas.draw()
 
             # self.add_row_to_table(validated_data.model_dump())
