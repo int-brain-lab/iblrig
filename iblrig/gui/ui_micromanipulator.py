@@ -6,6 +6,7 @@ from pathlib import Path
 import traceback
 
 import numpy as np
+import pandas as pd
 from qtpy import QtWidgets, QtCore, QtGui
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas  # Fixme qt5
@@ -200,24 +201,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 shank_data['shanks'] = 1
                 self.add_row_to_table(shank_data)
 
-            # we compute the text labels coordinates so they are legible on the overall plot
-            x = np.array([s['x'] for s in shanks_trajectories.values()])
-            y = np.array([s['y'] for s in shanks_trajectories.values()])
-
-            # this is the angle of the labels from the x-axis positive direction, mathematical direction
-            angle = np.arctan((y[-1] - y[0]) / (x[-1] - x[0]) ) - np.pi / 2
-            # we dilate the labels by 2.5 and move them orthogonal to the shank alignment
-            xlabels = (x - np.mean(x)) * 2.5 + 400 * np.cos(angle) + np.mean(x)
-            ylabels = (y - np.mean(y)) * 2.5 + 400 * np.sin(angle) + np.mean(y)
-            i = 0
-            self.canvas.axes1.plot(x, y, 'x', label=trajectory['pname'])
-            for shank, traj in shanks_trajectories.items():
-                self.canvas.axes1.text(xlabels[i], ylabels[i], shank[-1], color='k', fontweight=800)
-                i += 1
-            self.canvas.axes1.legend()
-            self.canvas.draw()
-
-            # self.add_row_to_table(validated_data.model_dump())
+            self.update_plots()
         except ValidationError as e:
             # Display validation errors to the user
             error_messages = []
@@ -233,22 +217,68 @@ class MainWindow(QtWidgets.QMainWindow):
             error_dialog.exec_()
             print("\n".join(error_messages))
 
+
+
     def add_row_to_table(self, data):
-        """Adds a new row to the table with the given data."""
+        """Adds a new row to the table with the given data, removing any existing rows with the same probe name."""
+        # Get the probe name from the data
+        probe_name = data.get('pname', '')
+
+        # Find and remove existing rows with the same probe name
+        if probe_name:
+            # Get the column index for 'pname'
+            pname_col_idx = self.column_keys.index('pname')
+
+            # Iterate through rows in reverse to safely remove items
+            for row in range(self.table.rowCount() - 1, -1, -1):
+                item = self.table.item(row, pname_col_idx)
+                if item and item.text() == probe_name:
+                    self.table.removeRow(row)
+
+        # Add the new row
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
         for i, key in enumerate(self.column_keys):
             item = QtWidgets.QTableWidgetItem(str(data.get(key, '')))
             self.table.setItem(row_position, i, item)
 
-    def clear_table(self):
-        """Clears all rows from the table and resets the plot."""
-        self.table.setRowCount(0)
+    def update_plots(self):
+        self.clear_plots()
+        df = pd.DataFrame(self.read_table())
+        df['shank'] = df['pname'].apply(lambda x: x[-1])
+        df['pname'] = df['pname'].apply(lambda x: x[:-1])
+        for pname, shanks_trajectories in df.groupby('pname'):
+            # we compute the text labels coordinates so they are legible on the overall plot
+            x = shanks_trajectories['x'].values
+            y = shanks_trajectories['y'].values
+
+            # this is the angle of the labels from the x-axis positive direction, mathematical direction
+            angle = np.arctan((y[-1] - y[0]) / (x[-1] - x[0]) ) - np.pi / 2
+            # we dilate the labels by 2.5 and move them orthogonal to the shank alignment
+            xlabels = (x - np.mean(x)) * 2.5 + 400 * np.cos(angle) + np.mean(x)
+            ylabels = (y - np.mean(y)) * 2.5 + 400 * np.sin(angle) + np.mean(y)
+            i = 0
+            self.canvas.axes1.plot(x, y, 'x', label=pname)
+            for _, rec in shanks_trajectories.iterrows():
+                self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color='k', fontweight=800)
+                i += 1
+            self.canvas.axes1.legend()
+            self.canvas.draw()
+
+
+    def clear_plots(self):
         # Clear the lines and labels on the plot
         for ax in [self.canvas.axes1]:
             [h.remove() for h in ax.lines]
             [h.remove() for h in ax.texts]
+            if ax.get_legend() is not None:
+                ax.get_legend().remove()
         self.canvas.draw()
+
+    def clear_table(self):
+        """Clears all rows from the table and resets the plot."""
+        self.table.setRowCount(0)
+        self.clear_plots()
 
     def init_images(self):
         # Plot images
