@@ -95,13 +95,22 @@ class MainWindow(QtWidgets.QMainWindow):
             form_layout.addWidget(label, 0, i)
             form_layout.addWidget(line_edit, 1, i)
 
+        # Add pivot combobox
+        pivot_label = QtWidgets.QLabel("Pivot")
+        self.pivot_combo = QtWidgets.QComboBox()
+        self.pivot_combo.addItems(['a', 'd'])
+        form_layout.addWidget(pivot_label, 0, len(self.column_keys))
+        form_layout.addWidget(self.pivot_combo, 1, len(self.column_keys))
+
+        # compute button
         compute_button = QtWidgets.QPushButton("Compute")
         compute_button.clicked.connect(self.compute)
-        form_layout.addWidget(compute_button, 1, len(self.column_keys))
+        form_layout.addWidget(compute_button, 1, len(self.column_keys) + 1)
 
+        # clear button
         clear_button = QtWidgets.QPushButton("Clear")
         clear_button.clicked.connect(self.clear_table)
-        form_layout.addWidget(clear_button, 1, len(self.column_keys) + 1)
+        form_layout.addWidget(clear_button, 1, len(self.column_keys) + 2)
 
         # --- Create Table ---
         self.table = QtWidgets.QTableWidget(0, len(self.column_keys))  # 0 rows initially
@@ -193,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 shanks_trajectories = {trajectory['pname']:_traj}
             else:
                 shanks_trajectories = neuropixel24_micromanipulator_coordinates(
-                    trajectory, pname=trajectory['pname'], ba=self.atlas)
+                    trajectory, pname=trajectory['pname'], ba=self.atlas, pivot_shank=self.pivot_combo.currentText())
 
             for k in shanks_trajectories.keys():
                 shank_data = shanks_trajectories[k]
@@ -258,9 +267,11 @@ class MainWindow(QtWidgets.QMainWindow):
             xlabels = (x - np.mean(x)) * 2.5 + 400 * np.cos(angle) + np.mean(x)
             ylabels = (y - np.mean(y)) * 2.5 + 400 * np.sin(angle) + np.mean(y)
             i = 0
-            self.canvas.axes1.plot(x, y, 'x', label=pname)
+            line = self.canvas.axes1.plot(x, y, 'x', label=pname)[0]
+            line_color = line.get_color()
+
             for _, rec in shanks_trajectories.iterrows():
-                self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color='k', fontweight=800)
+                self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color=line_color, fontweight=800)
                 i += 1
             self.canvas.axes1.legend()
             self.canvas.draw()
