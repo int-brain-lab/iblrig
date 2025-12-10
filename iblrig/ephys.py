@@ -38,7 +38,7 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
     copier.initialize_experiment(nprobes=nprobes)
 
 
-def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 200, 400, 600), pivot_shank='a'):
+def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 250, 500, 750), pivot_shank='a'):
     """
     Provide the micro-manipulator coordinates of the first shank.
 
