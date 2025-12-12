@@ -266,16 +266,21 @@ class MainWindow(QtWidgets.QMainWindow):
             # we dilate the labels by 2.5 and move them orthogonal to the shank alignment
             xlabels = (x - np.mean(x)) * 2.5 + 400 * np.cos(angle) + np.mean(x)
             ylabels = (y - np.mean(y)) * 2.5 + 400 * np.sin(angle) + np.mean(y)
-            i = 0
+            # the pivot shank is shown in black
             line = self.canvas.axes1.plot(x, y, 'x', label=pname)[0]
             line_color = line.get_color()
-
+            if x.size > 1:
+                self.canvas.axes1.plot(x[0], y[0], 'xk')
+            i = 0
             for _, rec in shanks_trajectories.iterrows():
-                self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color=line_color, fontweight=800)
+                # set the pivot shank in black bold if multishank
+                if (i == 0) and (x.size > 1):
+                    self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color='k', fontweight=1000)
+                else:
+                    self.canvas.axes1.text(xlabels[i], ylabels[i], rec.shank, color=line_color, fontweight=800)
                 i += 1
             self.canvas.axes1.legend()
             self.canvas.draw()
-
 
     def clear_plots(self):
         # Clear the lines and labels on the plot
