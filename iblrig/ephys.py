@@ -43,7 +43,7 @@ def neuropixel24_micromanipulator_coordinates(
     pname: str,
     ba: atlas.BrainAtlas | None = None,
     shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
-    shank_order: str = 'abcd'
+    shank_order: str = 'abcd',
 ) -> dict[str, dict]:
     """
     Calculate micro-manipulator coordinates for all shanks of a Neuropixel 2.4 probe based on a reference shank.
@@ -126,10 +126,7 @@ def neuropixel24_micromanipulator_coordinates(
 
 
 def register_micromanipulator_coordinates(
-    alyx,
-    eid: str,
-    trajectories: dict[str, dict] | None = None,
-    metadata: dict | None = None
+    alyx, eid: str, trajectories: dict[str, dict] | None = None, metadata: dict | None = None
 ) -> tuple[dict[str, dict], dict[str, dict]]:
     """
     Register micro-manipulator coordinates for probe trajectories in the Alyx database.

@@ -49,16 +49,18 @@ class TestMicromanipulatorCompute(unittest.TestCase):
     def test_neuropixel24_micromanipulator(self):
         probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(
-            probe_dict, 'probe01', shank_spacings_um=self.shanks_spacings_um)
+            probe_dict, 'probe01', shank_spacings_um=self.shanks_spacings_um
+        )
         np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
     def test_neuropixel24_micromanipulator_reversed(self):
-        probe_dict = {
-            'x': 2594.2, 'y': -3123.7, 'z': -231.33599999999996, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0
-        }
+        probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -231.33599999999996, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(
-            probe_dict, 'probe01', shank_order='dcba', shank_spacings_um=self.shanks_spacings_um)
-        np.testing.assert_array_almost_equal(np.fliplr(self.actual.to_numpy()), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
+            probe_dict, 'probe01', shank_order='dcba', shank_spacings_um=self.shanks_spacings_um
+        )
+        np.testing.assert_array_almost_equal(
+            np.fliplr(self.actual.to_numpy()), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy()
+        )
 
 
 class TestMicromanipulatorRegister2Alyx(unittest.TestCase):
