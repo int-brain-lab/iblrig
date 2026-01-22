@@ -38,18 +38,65 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
     copier.initialize_experiment(nprobes=nprobes)
 
 
-def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 250, 500, 750), pivot_shank='a'):
+def neuropixel24_micromanipulator_coordinates(
+    ref_shank: dict,
+    pname: str,
+    ba: atlas.BrainAtlas | None = None,
+    shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
+    pivot_shank: str = 'a'
+) -> dict[str, dict]:
     """
-    Provide the micro-manipulator coordinates of the first shank.
+    Calculate micro-manipulator coordinates for all shanks of a Neuropixel 2.4 probe based on a reference shank.
 
-    This function returns the relative coordinates of all shanks, labeled as probe01a, probe01b, etc.
+    This function computes the spatial coordinates for each shank of a multi-shank Neuropixel 2.4 probe
+    relative to a reference shank. It accounts for the physical spacing between shanks and calculates
+    the brain entry points and depths for each shank using a brain atlas. The shanks are labeled with
+    letters (a, b, c, d) appended to the probe name.
 
-    :param ref_shank: dictionary with keys x, y, z, phi, theta, depth, roll
-    example: {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
-    :param pname: str
-    :param ba: brain atlas object
-    :param shank_spacings_um: list of shank spacings in micrometers
-    :return:
+    Parameters
+    ----------
+    ref_shank : dict
+        Dictionary containing the reference shank coordinates with the following keys:
+        - 'x' : float
+            Lateral position in micrometers
+        - 'y' : float
+            Anterior-posterior position in micrometers
+        - 'z' : float
+            Dorsal-ventral position in micrometers
+        - 'phi' : float
+            Azimuth angle in degrees (rotation around z-axis)
+        - 'theta' : float
+            Polar angle in degrees (tilt from vertical)
+        - 'depth' : float
+            Insertion depth in micrometers
+        - 'roll' : float
+            Roll angle in degrees
+        Example: {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
+    pname : str
+        Base name for the probe (e.g., 'probe01'). Shank letters will be appended to this name in multi-shanks situations
+    ba : atlas.BrainAtlas, optional
+        Brain atlas object used for coordinate transformations and brain entry calculations.
+        If None, a iblatlas.atlas.BrainAtlas instance will be created. Default is None.
+    shank_spacings_um : tuple of float, optional
+        Spacing distances in micrometers for each shank relative to the reference shank.
+        Default is (0, 250, 500, 750) for a 4-shank probe.
+    pivot_shank : str, optional
+        Specifies which shank is the reference ('a' or 'd'). If 'a', shanks are ordered a→b→c→d
+        with increasing spacing. If 'd', shanks are ordered d→c→b→a with decreasing spacing.
+        Default is 'a'.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping shank names to their coordinate dictionaries. Each key is a string
+        combining the probe name with a shank letter (e.g., 'probe01a', 'probe01b'). Each value
+        is a dictionary containing the calculated coordinates with keys: 'x', 'y', 'z', 'phi',
+        'theta', 'depth', and 'roll'.
+
+    Raises
+    ------
+    ValueError
+        If pivot_shank is not 'a' or 'd'.
     """
     ref_shank['roll'] = 0  # this is a constant and has no nmeaning for 4 shanks probes
     if pivot_shank == 'd':
@@ -86,9 +133,45 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
     return trajectories
 
 
-def register_micromanipulator_coordinates(alyx=None, trajectories=None, eid=None, metadata=None):
-    assert alyx is not None, 'An alyx client is required to register/create micromanipulator coordinates'
-    assert eid is not None, 'An session ID is required to register/create micromanipulator coordinates'
+def register_micromanipulator_coordinates(
+    alyx,
+    eid: str,
+    trajectories: dict[str, dict] | None = None,
+    metadata: dict | None = None
+) -> tuple[dict[str, dict], dict[str, dict]]:
+    """
+    Register micro-manipulator coordinates for probe trajectories in the Alyx database.
+
+    This function creates or updates probe insertion and trajectory records in Alyx based on
+    micro-manipulator coordinates. For each probe trajectory, it creates a probe insertion
+    record and associates it with a trajectory record containing the spatial coordinates.
+    If a trajectory already exists for a given probe insertion, it updates the existing record;
+    otherwise, it creates a new one.
+
+    Parameters
+    ----------
+    alyx : one.webclient.AlyxClient
+        An authenticated Alyx client instance used to communicate with the Alyx REST API.
+    eid : str
+        Experiment ID (session UUID) to which the probe insertions belong.
+    trajectories : dict of str to dict, optional
+        Dictionary mapping probe names to their trajectory coordinate dictionaries.
+        Each trajectory dictionary should contain keys such as 'x', 'y', 'z', 'phi',
+        'theta', 'depth', and 'roll'. If None, an empty dictionary is used. Default is None.
+    metadata : dict, optional
+        Metadata dictionary for the probe insertion containing information such as
+        'neuropixelVersion', 'fileName', and 'serial'. If None, defaults to
+        {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1}. Default is None.
+
+    Returns
+    -------
+    tuple of (dict, dict)
+        A tuple containing two dictionaries:
+        - rest_insertions : dict
+            Dictionary mapping probe names to their created probe insertion records from Alyx.
+        - rest_trajectories : dict
+            Dictionary mapping probe names to their created or updated trajectory records from Alyx.
+    """
     # if we do not have access to the fileName or any of the metadata, it will be patched later
     metadata = {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1} if metadata is None else metadata
     rest_trajectories = {}

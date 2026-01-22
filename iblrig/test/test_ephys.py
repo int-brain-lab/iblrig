@@ -43,10 +43,13 @@ class TestMicromanipulatorCompute(unittest.TestCase):
             },
         }
         self.actual = pd.DataFrame(self.actual)
+        # the test use custom spacings, those are (0, 250, 500, 750) by default for NP2.4 probes
+        self.shanks_spacings_um = (0, 200, 400, 600)
 
     def test_neuropixel24_micromanipulator(self):
         probe_dict = {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
-        trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01')
+        trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(
+            probe_dict, 'probe01', shank_spacings_um=self.shanks_spacings_um)
         np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
     def test_neuropixel24_micromanipulator_reversed(self):
@@ -59,7 +62,8 @@ class TestMicromanipulatorCompute(unittest.TestCase):
             'depth': 1131.4,
             'roll': 0,
         }
-        trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(probe_dict, 'probe01', pivot_shank='d')
+        trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(
+            probe_dict, 'probe01', pivot_shank='d', shank_spacings_um=self.shanks_spacings_um)
         np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
 
