@@ -96,9 +96,9 @@ class MainWindow(QtWidgets.QMainWindow):
             form_layout.addWidget(line_edit, 1, i)
 
         # Add pivot combobox
-        pivot_label = QtWidgets.QLabel("Pivot")
+        pivot_label = QtWidgets.QLabel("Shank Order")
         self.pivot_combo = QtWidgets.QComboBox()
-        self.pivot_combo.addItems(['a', 'd'])
+        self.pivot_combo.addItems(['abcd', 'dcba'])
         form_layout.addWidget(pivot_label, 0, len(self.column_keys))
         form_layout.addWidget(self.pivot_combo, 1, len(self.column_keys))
 
@@ -202,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 shanks_trajectories = {trajectory['pname']:_traj}
             else:
                 shanks_trajectories = neuropixel24_micromanipulator_coordinates(
-                    trajectory, pname=trajectory['pname'], ba=self.atlas, pivot_shank=self.pivot_combo.currentText())
+                    trajectory, pname=trajectory['pname'], ba=self.atlas, shank_order=self.pivot_combo.currentText())
 
             for k in shanks_trajectories.keys():
                 shank_data = shanks_trajectories[k]

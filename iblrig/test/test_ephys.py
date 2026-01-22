@@ -54,17 +54,11 @@ class TestMicromanipulatorCompute(unittest.TestCase):
 
     def test_neuropixel24_micromanipulator_reversed(self):
         probe_dict = {
-            'x': 2749.4914270615122,
-            'y': -3703.255495773441,
-            'z': -350.336,
-            'phi': 15,
-            'theta': 15,
-            'depth': 1131.4,
-            'roll': 0,
+            'x': 2594.2, 'y': -3123.7, 'z': -231.33599999999996, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0
         }
         trajectories = iblrig.ephys.neuropixel24_micromanipulator_coordinates(
-            probe_dict, 'probe01', pivot_shank='d', shank_spacings_um=self.shanks_spacings_um)
-        np.testing.assert_array_almost_equal(self.actual.to_numpy(), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
+            probe_dict, 'probe01', shank_order='dcba', shank_spacings_um=self.shanks_spacings_um)
+        np.testing.assert_array_almost_equal(np.fliplr(self.actual.to_numpy()), pd.DataFrame(trajectories).sort_index(axis=1).to_numpy())
 
 
 class TestMicromanipulatorRegister2Alyx(unittest.TestCase):

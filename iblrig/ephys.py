@@ -43,7 +43,7 @@ def neuropixel24_micromanipulator_coordinates(
     pname: str,
     ba: atlas.BrainAtlas | None = None,
     shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
-    pivot_shank: str = 'a'
+    shank_order: str = 'abcd'
 ) -> dict[str, dict]:
     """
     Calculate micro-manipulator coordinates for all shanks of a Neuropixel 2.4 probe based on a reference shank.
@@ -98,22 +98,14 @@ def neuropixel24_micromanipulator_coordinates(
     ValueError
         If pivot_shank is not 'a' or 'd'.
     """
-    ref_shank['roll'] = 0  # this is a constant and has no nmeaning for 4 shanks probes
-    if pivot_shank == 'd':
-        shank_letters = 'dcba'
-        spacing_sign = -1
-    elif pivot_shank == 'a':
-        shank_letters = 'abcd'
-        spacing_sign = 1
-    else:
-        raise ValueError("reference_shank parameter should be either 'a' or 'd'")
+    ref_shank['roll'] = 0
+    assert shank_order in ('abcd', 'dcba'), "reference_shank parameter should be either 'abcd' or 'dcba'"
 
     ba = atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
     for i, d in enumerate(shank_spacings_um):
-        spacing_multiplier = d * spacing_sign  # flip the direction if reference_shank is 'd'
-        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
-        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * spacing_multiplier
+        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * d
+        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * d
         shank = {
             'x': x,
             'y': y,
@@ -129,7 +121,7 @@ def neuropixel24_micromanipulator_coordinates(
             xyz_ref = xyz_entry
         shank['z'] = xyz_entry[2] * 1e6
         shank['depth'] = ref_shank['depth'] + (xyz_entry[2] - xyz_ref[2]) * 1e6
-        trajectories[f'{pname}{shank_letters[i]}'] = shank
+        trajectories[f'{pname}{shank_order[i]}'] = shank
     return trajectories
 
 
