@@ -43,7 +43,6 @@ def neuropixel24_micromanipulator_coordinates(
     pname: str,
     ba: atlas.BrainAtlas | None = None,
     shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
-    shank_order: str = 'abcd',
 ) -> dict[str, dict]:
     """
     Calculate micro-manipulator coordinates for all shanks of a Neuropixel 2.4 probe based on a reference shank.
@@ -80,10 +79,6 @@ def neuropixel24_micromanipulator_coordinates(
     shank_spacings_um : tuple of float, optional
         Spacing distances in micrometers for each shank relative to the reference shank.
         Default is (0, 250, 500, 750) for a 4-shank probe.
-    pivot_shank : str, optional
-        Specifies which shank is the reference ('a' or 'd'). If 'a', shanks are ordered a→b→c→d
-        with increasing spacing. If 'd', shanks are ordered d→c→b→a with decreasing spacing.
-        Default is 'a'.
 
     Returns
     -------
@@ -98,28 +93,38 @@ def neuropixel24_micromanipulator_coordinates(
     ValueError
         If pivot_shank is not 'a' or 'd'.
     """
-    ref_shank['roll'] = 0
-    assert shank_order in ('abcd', 'dcba'), "reference_shank parameter should be either 'abcd' or 'dcba'"
+    shank_order = 'abcd'
 
     ba = atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
+    import iblatlas.atlas
+
     for i, d in enumerate(shank_spacings_um):
-        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * d
-        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * d
+        dx = np.sin((ref_shank['phi']) / 180 * np.pi) * d
+        dy = -np.cos((ref_shank['phi']) / 180 * np.pi) * d
+        # apply the roll transforatiom
+        dx, dy, dz = iblatlas.atlas.rodrigues_rotation(
+            v=np.array([dx, dy, 0]),  # vector to rotate
+            k=np.array(iblatlas.atlas.sph2cart(1, ref_shank['theta'], ref_shank['phi'])),  # rotation axis
+            theta=ref_shank['roll'] * np.pi / 180,
+        )
         shank = {
-            'x': x,
-            'y': y,
-            'z': np.nan,
+            'x': ref_shank['x'] + dx,
+            'y': ref_shank['y'] + dy,
+            'z': ref_shank['z'] + dz,
             'phi': ref_shank['phi'],
             'theta': ref_shank['theta'],
             'depth': ref_shank['depth'],
-            'roll': 0,
+            'roll': ref_shank['roll'],
         }
         insertion = atlas.Insertion.from_dict(shank, brain_atlas=ba)
         xyz_entry = atlas.Insertion.get_brain_entry(insertion.trajectory, ba)
         if i == 0:
             xyz_ref = xyz_entry
         shank['z'] = xyz_entry[2] * 1e6
+        # right now we keep the original x, y coordinates
+        # shank['x'] = xyz_entry[0] * 1e6
+        # shank['y'] = xyz_entry[1] * 1e6
         shank['depth'] = ref_shank['depth'] + (xyz_entry[2] - xyz_ref[2]) * 1e6
         trajectories[f'{pname}{shank_order[i]}'] = shank
     return trajectories

@@ -34,6 +34,7 @@ class ProbeInsertion(BaseModel):
     depth: float = Field(..., title='Depth (um)')
     theta: float = Field(..., ge=-90, le=90, title='Theta-Elevation (deg)')
     phi: float = Field(..., ge=-180, le=360, title='Phi-Azimuth (deg)')
+    roll: float = Field(..., ge=-180, le=360, title='Roll (deg)')
     shanks: int = Field(..., ge=1, le=4, title='# Shanks')
 
     @field_validator('pname')
@@ -94,13 +95,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.line_edits[key] = line_edit
             form_layout.addWidget(label, 0, i)
             form_layout.addWidget(line_edit, 1, i)
-
-        # Add pivot combobox
-        pivot_label = QtWidgets.QLabel("Shank Order")
-        self.pivot_combo = QtWidgets.QComboBox()
-        self.pivot_combo.addItems(['abcd', 'dcba'])
-        form_layout.addWidget(pivot_label, 0, len(self.column_keys))
-        form_layout.addWidget(self.pivot_combo, 1, len(self.column_keys))
 
         # compute button
         compute_button = QtWidgets.QPushButton("Compute")
@@ -197,12 +191,11 @@ class MainWindow(QtWidgets.QMainWindow):
             trajectory = trajectory.model_dump()
 
             if int(raw_trajectory['shanks']) == 1:
-                _traj = {k:trajectory[k] for k in ['x', 'y', 'z', 'depth', 'theta', 'phi']}
-                _traj['roll'] = 0
+                _traj = {k:trajectory[k] for k in ['x', 'y', 'z', 'depth', 'theta', 'phi', 'roll']}
                 shanks_trajectories = {trajectory['pname']:_traj}
             else:
                 shanks_trajectories = neuropixel24_micromanipulator_coordinates(
-                    trajectory, pname=trajectory['pname'], ba=self.atlas, shank_order=self.pivot_combo.currentText())
+                    trajectory, pname=trajectory['pname'], ba=self.atlas)
 
             for k in shanks_trajectories.keys():
                 shank_data = shanks_trajectories[k]
