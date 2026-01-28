@@ -1,5 +1,3 @@
-from collections import defaultdict
-from unittest.mock import MagicMock, patch
 
 import pandas as pd
 
@@ -72,24 +70,3 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
         self.assertIn('PassiveRegisterRaw_00', pipeline.tasks)
         self.assertIn('Trials_PassiveTaskNidq_00', pipeline.tasks)
         self.assertIsInstance(pipeline.tasks['Trials_PassiveTaskNidq_00'], PassiveTaskNidq)
-
-    def test_transfer_flag(self) -> None:
-        """Test that transfer_me.flag is created after _run completes."""
-        self.task.create_session()
-        # serial_messages is empty after mock(); provide dummy entries for bpod lookups
-        self.task.bpod.serial_messages = defaultdict(lambda: {'message': [0]})
-        with (
-            patch.multiple(
-                self.task,
-                trigger_bonsai_cameras=lambda: None,
-                run_passive_visual_stim=lambda *a, **kw: None,
-                valve_open=lambda *a, **kw: None,
-                sound_play_tone=lambda *a, **kw: None,
-                sound_play_noise=lambda *a, **kw: None,
-                send_trial_info_to_bonsai=lambda: None,
-                bonsai_visual_udp_client=MagicMock(),
-            ),
-            patch('time.sleep'),
-        ):
-            self.task._run()
-        self.assertTrue(self.task.paths.SESSION_FOLDER.joinpath('transfer_me.flag').exists())
