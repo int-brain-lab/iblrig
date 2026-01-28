@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 import numpy as np
 
@@ -7,118 +8,257 @@ from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardMo
 log = logging.getLogger(__name__)
 
 
-def make_sound(rate=44100, frequency=5000, duration=0.1, amplitude=1, fade=0.01, chans='L+TTL'):
+def sine_wave(d: float, f: float, fs: int = 44100) -> np.ndarray:
     """
-    Build sounds and save bin file for upload to soundcard or play via
-    sounddevice lib.
+    Generate a sine wave signal.
 
-    :param rate: sample rate of the soundcard use 96000 for Bpod,
-                    defaults to 44100 for soundcard
-    :type rate: int, optional
-    :param frequency: (Hz) of the tone, if -1 will create uniform random white
-                    noise, defaults to 10000
-    :type frequency: int, optional
-    :param duration: (s) of sound, defaults to 0.1
-    :type duration: float, optional
-    :param amplitude: E[0, 1] of the sound 1=max 0=min, defaults to 1
-    :type amplitude: intor float, optional
-    :param fade: (s) time of fading window rise and decay, defaults to 0.01
-    :type fade: float, optional
-    :param chans: ['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] number of
-                   sound channels and type of output, defaults to 'L+TTL'
-    :type chans: str, optional
-    :return: streo sound from mono definitions
-    :rtype: np.ndarray with shape (Nsamples, 2)
+    Parameters
+    ----------
+    d : float
+        Duration of the sine wave in seconds. Must be positive.
+    f : float
+        Frequency of the sine wave in Hertz (Hz). Must be positive.
+    fs : int, optional
+        Sampling rate in samples per second (Hz). Default is 44100.
+
+    Returns
+    -------
+    np.ndarray
+        Array containing the sine wave samples.
     """
-    sample_rate = rate  # Sound card dependent,
-    tone_duration = duration  # sec
-    fade_duration = fade  # sec
-    chans = chans if isinstance(chans, str) else chans[0]
-    tvec = np.linspace(0, tone_duration, int(tone_duration * sample_rate))
-    tone = amplitude * np.sin(2 * np.pi * frequency * tvec)  # tone vec
+    t = np.arange(d * fs) / fs
+    return np.sin(2 * np.pi * f * t)
 
-    len_fade = int(fade_duration * sample_rate)
-    fade_io = np.hanning(len_fade * 2)
-    fadein = fade_io[:len_fade]
-    fadeout = fade_io[len_fade:]
-    win = np.ones(len(tvec))
-    win[:len_fade] = fadein
-    win[-len_fade:] = fadeout
 
-    tone = tone * win
+def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> np.ndarray:
+    """
+    Apply a Hanning fade-in and fade-out to an audio waveform.
+
+    Parameters
+    ----------
+    waveform : np.ndarray
+        The input audio waveform (1D array of samples).
+    d : float
+        Duration of the fade-in and fade-out sections in seconds.
+    fs : int, optional
+        Sampling rate in samples per second (Hz). Default is 44100.
+
+    Returns
+    -------
+    np.ndarray
+        The waveform with the Hanning amplitude envelope applied.
+
+    Raises
+    ------
+    ValueError
+        If the fade duration is too long.
+    """
+    n_samples_waveform = len(waveform)
+    n_samples_fade = int(d * fs)
+    if 2 * n_samples_fade > n_samples_waveform:
+        raise ValueError('Fade duration is too long for the waveform length.')
+
+    # generate Hanning window and split into fade-in and fade-out
+    window = np.hanning(2 * n_samples_fade)
+    fade_in = window[:n_samples_fade]
+    fade_out = window[n_samples_fade:]
+
+    # apply envelope to waveform
+    sustain = np.ones(n_samples_waveform - 2 * n_samples_fade)
+    envelope = np.concatenate([fade_in, sustain, fade_out])
+    return waveform * envelope
+
+
+def sine_stimulus(
+    d: float | int, f: float | int, fs: int = 44100, amplitude: float = 1.0, gain_db: float = 0.0, d_fade: float = 0.01
+) -> np.ndarray:
+    """
+    Generate a sine wave stimulus: A sine wave with a Hanning fade-in and fade-out, defined amplitude and gain.
+
+    Parameters
+    ----------
+    d : float or int
+        Duration of the sine wave in seconds. Must be positive.
+    f : float or int
+        Frequency of the sine wave in Hertz (Hz). Must be positive.
+    fs : int, optional
+        Sampling rate in samples per second (Hz). Default is 44100.
+    amplitude : float, optional
+        Base amplitude of the tone before gain adjustment. Default is 1.0.
+    gain_db: float = 0.0
+        Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
+    d_fade : float or int
+        Duration of the fade-in and fade-out sections in seconds.
+    """
+    stimulus = sine_wave(d=d, f=f, fs=fs)
+    stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
+    stimulus *= amplitude
+    stimulus *= 10 ** (gain_db / 20)
+    return stimulus
+
+
+def make_sound(
+    rate: int = 44100,
+    frequency: float = 5000,
+    duration: float = 0.1,
+    amplitude: float = 1,
+    fade: float = 0.01,
+    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R', 'left', 'right'] = 'L+TTL',
+    gain_db: float = 0.0,
+) -> np.ndarray:
+    """
+    Generate a sound waveform with optional fade and channel configurations.
+
+    Parameters
+    ----------
+    rate : int, optional
+        Sampling rate in Hz. Default is 44100.
+    frequency : float, optional
+        Frequency of the tone in Hz. Negative values will result in white noise. Default is 5000.
+    duration : float, optional
+        Duration of the sound in seconds. Default is 0.1.
+    amplitude : float, optional
+        Amplitude of the tone. Default is 1.
+    fade : float, optional
+        Duration of fade-in and fade-out in seconds. Default is 0.01.
+    chans : str, optional
+        Output channel configuration:
+        - 'mono': single channel
+        - 'L': tone on left channel only
+        - 'R': tone on right channel only
+        - 'stereo': tone on both channels
+        - 'L+TTL': tone on left, TTL pulse on right
+        - 'TTL+R': TTL pulse on left, tone on right
+        Default is 'L+TTL'.
+    gain_db: float = 0.0
+        Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
+
+    Returns
+    -------
+    np.ndarray
+        The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
+    """
+    if frequency < 0:
+        tone = amplitude * np.random.rand(int(rate * duration)) * (10 ** (gain_db / 20))
+    else:
+        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
+
     ttl = np.ones(len(tone)) * 0.99
-    one_ms = round(sample_rate / 1000) * 10
-    ttl[one_ms:] = 0
+    ttl[round(rate / 100) :] = 0  # 10 ms TTL
     null = np.zeros(len(tone))
 
-    if frequency == -1:
-        tone = amplitude * np.random.rand(tone.size)
-
-    if chans == 'mono':
-        sound = np.array(tone)
-    elif chans == 'L':
-        sound = np.array([tone, null]).T
-    elif chans == 'R':
-        sound = np.array([null, tone]).T
-    elif chans == 'stereo':
-        sound = np.array([tone, tone]).T
-    elif chans == 'L+TTL':
-        sound = np.array([tone, ttl]).T
-    elif chans == 'TTL+R':
-        sound = np.array([ttl, tone]).T
-
+    match chans:
+        case 'mono':
+            sound = tone
+        case chans if chans in ['L', 'left']:
+            sound = np.column_stack((tone, null))
+        case chans if chans in ['RL', 'right']:
+            sound = np.column_stack((null, tone))
+        case 'stereo':
+            sound = np.column_stack((tone, tone))
+        case 'L+TTL':
+            sound = np.column_stack((tone, ttl))
+        case 'TTL+R':
+            sound = np.column_stack((ttl, tone))
+        case _:
+            raise ValueError(f'Unsupported channel configuration: {chans}')
     return sound
 
 
-def format_sound(sound, file_path=None, flat=False):
+def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> np.ndarray:
     """
-    Format sound to send to sound card.
+    Format a stereo sound array into a binary-compatible int32 format.
 
-    Binary files to be sent to the sound card need to be a single contiguous
-    vector of int32 s. 4 Bytes left speaker, 4 Bytes right speaker, ..., etc.
+    This formats the audio data for output to a sound card. The sound is expected
+    to be stereo (2 channels) and in float format [-1.0, 1.0]. The result is an
+    array of int32 values interleaved [L, R, L, R, ...].
 
+    Parameters
+    ----------
+    sound : np.ndarray
+        A 2D NumPy array of shape (n_samples, 2) containing stereo float audio data.
+    file_path : str, optional
+        If provided, the formatted audio will be written to this binary file.
+    flat : bool, optional
+        If True, return a 1D flattened array. Otherwise, return (n_samples, 2) shape.
 
-    :param sound: Stereo sound
-    :type sound: 2d numpy.array os shape (n_samples, 2)
-    :param file_path: full path of file. [default: None]
-    :type file_path: str
+    Returns
+    -------
+    np.ndarray
+        The formatted int32 sound array, either flattened or in original shape.
+
+    Raises
+    ------
+    ValueError
+        If `sound` is not a 2D array with shape (n_samples, 2).
     """
-    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)
+    if sound.ndim != 2 or sound.shape[1] != 2:
+        raise ValueError('Sound must be a 2D array with shape (n_samples, 2) for stereo output.')
 
-    if bin_sound.flags.f_contiguous:
-        bin_sound = np.ascontiguousarray(bin_sound)
+    bin_sound = (sound * ((2**31) - 1)).astype(np.int32)  # Scale from float [-1.0, 1.0] to int32 range
+    bin_sound = np.ascontiguousarray(bin_sound)  # Ensure memory layout is contiguous
+    interleaved = bin_sound.reshape(-1)  # Interleave the samples as a 1D array: [L, R, L, R, ...]
 
-    bin_save = bin_sound.reshape(1, np.multiply(*bin_sound.shape))
-    bin_save = np.ascontiguousarray(bin_save)
-
+    # Optionally save to binary file
     if file_path:
         with open(file_path, 'wb') as bf:
-            bf.writelines(bin_save)
-            bf.flush()
+            bf.write(interleaved.tobytes())
 
     return bin_sound.flatten() if flat else bin_sound
 
 
-def configure_sound_card(card=None, sounds=None, indexes=None, sample_rate=96):
+def configure_sound_card(
+    card: SoundCardModule | None = None,
+    sounds: list[np.ndarray] | None = None,
+    indexes: list[int] | None = None,
+    sample_rate: int = 96000,
+) -> None:
+    """
+    Configure a Harp sound card with given sounds at specified indexes and sample rate.
+
+    Parameters
+    ----------
+    card : SoundCardModule, optional
+        An instance of the sound card interface to send sounds to.
+        If None, a new SoundCardModule instance will be created and closed after use.
+        Default is None.
+    sounds : list of np.ndarray, optional
+        A list of stereo sound arrays to be formatted and sent to the card.
+        Each sound array should be 2D (n_samples, 2). Default is None (empty list).
+    indexes : list of int, optional
+        List of indexes corresponding to each sound in `sounds`.
+        Must be the same length as `sounds`. All values must be in range [2, 32].
+        Default is None (empty list).
+    sample_rate : int, optional
+        Sample rate in Hz for playback. Must be 96000 or 192000. Default is 96000.
+
+    Raises
+    ------
+    ValueError
+        If `sample_rate` is not 96000 or 192000.
+        If the lengths of `sounds` and `indexes` do not match.
+        If one or several indices are outside valid range.
+    """
     if indexes is None:
         indexes = []
     if sounds is None:
         sounds = []
+    close_card = card is None
     if card is None:
         card = SoundCardModule()
-        close_card = True
-
-    if sample_rate in (192, 192000):
-        sample_rate = SampleRate._192000HZ
-    elif sample_rate in (96, 96000):
-        sample_rate = SampleRate._96000HZ
-    else:
-        log.error(f'Sound sample rate {sample_rate} should be 96 or 192 (KHz)')
-        raise (ValueError)
 
     if len(sounds) != len(indexes):
-        log.error('Wrong number of sounds and indexes')
-        raise (ValueError)
+        raise ValueError('Number of sounds and indices must match')
+    if not all([2 <= idx <= 32 for idx in indexes]):
+        raise ValueError('One or more indices out of valid range [2, 32]')
+
+    # yes, this is painful - send_sound() complains if sample_rate is not type SampleRate
+    if sample_rate == 192000:
+        sample_rate = SampleRate._192000HZ
+    elif sample_rate == 96000:
+        sample_rate = SampleRate._96000HZ
+    else:
+        raise ValueError(f'Sound sample rate {sample_rate} must be 96000 or 192000')
 
     sounds = [format_sound(s, flat=True) for s in sounds]
     for sound, index in zip(sounds, indexes, strict=False):

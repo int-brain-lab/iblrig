@@ -1,4 +1,3 @@
-import ctypes
 import datetime
 import json
 import os
@@ -7,13 +6,14 @@ import time
 from collections.abc import Iterable
 from copy import copy
 from dataclasses import dataclass
+from multiprocessing.synchronize import Event as mpEvent
 from pathlib import Path
 from typing import Annotated, Any
 
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pydantic import UUID4, AfterValidator, DirectoryPath, Field, FilePath, PlainSerializer, validate_call
+from pydantic import UUID4, AfterValidator, AliasChoices, DirectoryPath, Field, FilePath, PlainSerializer, validate_call
 from pydantic_settings import BaseSettings, CliPositionalArg
 from qtpy.QtCore import (
     QCoreApplication,
@@ -28,6 +28,7 @@ from qtpy.QtCore import (
     QSize,
     Qt,
     QThreadPool,
+    QTimer,
     Signal,
     Slot,
 )
@@ -87,10 +88,9 @@ class EngagedCriterion:
     TRIAL_COUNT = 400
 
 
-@dataclass
-class DefaultSettings:
-    CONTRAST_SET = np.array([0, 1 / 16, 1 / 8, 1 / 4, 1 / 2, 1])
-    PROBABILITY_SET = np.array([0.2, 0.5, 0.8])
+GROUPING_VARIABLE = 'stim_probability_left'  # default to splitting by blocks
+FILENAME_SETTINGS = Path('_iblrig_taskSettings.raw.json')
+FILENAME_DATA = Path('_iblrig_taskData.raw.jsonable')
 
 
 class PlotWidget(pg.PlotWidget):
@@ -167,37 +167,42 @@ class SingleBarChartWidget(PlotWidget):
 class FunctionWidget(PlotWidget):
     """A widget for psychometric and chronometric functions"""
 
-    def __init__(self, *args, colors: pg.ColorMap, probabilities: Iterable[float], **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent: QWidget, colors: pg.ColorMap, grouping_values: Iterable[float], grouping_label: str, **kwargs):
+        super().__init__(parent=parent, **kwargs)
         self.plotItem.addItem(pg.InfiniteLine(0, 90, 'black'))
+        self._colors = colors
+        self._grouping_label = grouping_label
         for axis in ('left', 'bottom'):
             self.plotItem.getAxis(axis).setGrid(128)
             self.plotItem.getAxis(axis).setTextPen('k')
         self.plotItem.getAxis('bottom').setLabel('Signed Contrast')
-        legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
-        legend.setParentItem(self.plotItem.graphicsItem())
-        legend.setZValue(1)
+        self.legend = pg.LegendItem(pen='lightgray', brush='w', offset=(45, 35), verSpacing=-5, labelTextColor='k')
+        self.legend.setParentItem(self.plotItem.graphicsItem())
+        self.legend.setZValue(1)
         self.plotDataItems = dict()
         self.upperCurves = dict()
         self.lowerCurves = dict()
         self.fillItems = dict()
+        for key in grouping_values:
+            self.addFunction(key)
+
+    def addFunction(self, key: str):
         null_pen = pg.mkPen((0, 0, 0, 0))
-        for idx, p in enumerate(probabilities):
-            line_color = colors.getByIndex(idx)
-            fill_color = copy(line_color)
-            fill_color.setAlpha(32)
-            self.upperCurves[p] = self.plotItem.plot(pen=null_pen)
-            self.lowerCurves[p] = self.plotItem.plot(pen=null_pen)
-            self.fillItems[p] = pg.FillBetweenItem(self.upperCurves[p], self.lowerCurves[p], brush=fill_color, pen=null_pen)
-            self.addItem(self.fillItems[p])
-            self.plotDataItems[p] = self.plotItem.plot(connect='all')
-            self.plotDataItems[p].setData(x=[1, np.NAN], y=[np.NAN, 1])
-            self.plotDataItems[p].setPen(pg.mkPen(color=line_color, width=4))
-            self.plotDataItems[p].setSymbol('o')
-            self.plotDataItems[p].setSymbolPen(line_color)
-            self.plotDataItems[p].setSymbolBrush(line_color.lighter(150))
-            self.plotDataItems[p].setSymbolSize(4)
-            legend.addItem(self.plotDataItems[p], f'p = {p:0.1f}')
+        line_color = self._colors.getByIndex(len(self.upperCurves))
+        fill_color = copy(line_color)
+        fill_color.setAlpha(32)
+        self.upperCurves[key] = self.plotItem.plot(pen=null_pen)
+        self.lowerCurves[key] = self.plotItem.plot(pen=null_pen)
+        self.fillItems[key] = pg.FillBetweenItem(self.upperCurves[key], self.lowerCurves[key], brush=fill_color, pen=null_pen)
+        self.addItem(self.fillItems[key])
+        self.plotDataItems[key] = self.plotItem.plot(connect='all')
+        self.plotDataItems[key].setData(x=[1, np.NAN], y=[np.NAN, 1])
+        self.plotDataItems[key].setPen(pg.mkPen(color=line_color, width=4))
+        self.plotDataItems[key].setSymbol('o')
+        self.plotDataItems[key].setSymbolPen(line_color)
+        self.plotDataItems[key].setSymbolBrush(line_color.lighter(150))
+        self.plotDataItems[key].setSymbolSize(4)
+        self.legend.addItem(self.plotDataItems[key], f'{self._grouping_label} = {key:0.1f}')
 
 
 class TrialsTableModel(DataFrameTableModel):
@@ -619,17 +624,21 @@ class OnlinePlotsModel(QObject):
     sessionStringAvailable = Signal(str)
     tableModel = TrialsTableModel()
     sessionString = ''
-    probability_set = DefaultSettings.PROBABILITY_SET
-    contrast_set = DefaultSettings.CONTRAST_SET
     _trial_data = pd.DataFrame()
     _bpod_data: list[pd.DataFrame] = list()
     _jsonable_offset = 0
     _current_trial = 0
 
     @validate_call(config=dict(arbitrary_types_allowed=True))
-    def __init__(self, session: FilePath | DirectoryPath | UUID4, parent: QObject | None = None):
+    def __init__(
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        grouping_variable: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
+    ):
         super().__init__(parent=parent)
-        is_live = False
+        self.is_live = live
 
         # If session is a UUID ...
         if not isinstance(session, Path):
@@ -641,13 +650,13 @@ class OnlinePlotsModel(QObject):
                 raise ValueError(f'Could not find session with ID {session}')
 
             # load Task Data File
-            datasets = one.list_datasets(session, filename='*taskData.raw.jsonable')
+            datasets = one.list_datasets(session, filename=f'*{FILENAME_DATA}')
             if len(datasets) == 0:
                 raise ValueError(f'Could not find Task Data File for session {session}')
             session = one.load_dataset(session, datasets[0], download_only=True)
 
             # load Task Settings File
-            datasets = one.list_datasets(session, filename='*_iblrig_taskSettings.raw.json')
+            datasets = one.list_datasets(session, filename=f'*{FILENAME_SETTINGS}')
             if len(datasets) > 0:
                 one.load_dataset(session, datasets[0], download_only=True)
 
@@ -656,36 +665,34 @@ class OnlinePlotsModel(QObject):
             if not session.name.startswith('raw_task_data'):
                 raise ValueError(f'Not a Raw Data Directory: {session}')
             self.raw_data_folder = session
-            self.jsonable_file = self.raw_data_folder.joinpath('_iblrig_taskData.raw.jsonable')
-            self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
+            self.jsonable_file = self.raw_data_folder.joinpath(FILENAME_DATA)
+            self.settings_file = self.raw_data_folder.joinpath(FILENAME_SETTINGS)
             if not self.jsonable_file.exists():
                 print('Waiting for data ...')
                 while not self.jsonable_file.exists():
                     time.sleep(0.2)
-            is_live = True
 
         # If session is a file ...
         elif session.is_file():
-            if not session.name.endswith('.raw.jsonable'):
+            if not session.name.endswith(''.join(FILENAME_DATA.suffixes)):
                 raise ValueError(f'Not a Task Data File: {session}')
             self.jsonable_file = session
             self.raw_data_folder = session.parent
-            self.settings_file = self.raw_data_folder.joinpath('_iblrig_taskSettings.raw.json')
+            self.settings_file = self.raw_data_folder.joinpath(FILENAME_SETTINGS)
 
+        # load settings json file
         if self.settings_file.exists():
             with self.settings_file.open('r') as f:
                 self.task_settings = json.load(f)
-            self.probability_set = [self.task_settings.get('PROBABILITY_LEFT')] + self.task_settings.get(
-                'BLOCK_PROBABILITY_SET', []
-            )
-            self.contrast_set = np.unique(np.abs(self.task_settings.get('CONTRAST_SET')))
-
-        self.signed_contrasts = np.r_[-np.flipud(self.contrast_set[1:]), self.contrast_set]
+        self.grouping_variable = grouping_variable or getattr(self, 'task_settings', {}).get(
+            'PLOT_GROUPING_VARIABLE', GROUPING_VARIABLE
+        )
         self.psychometrics = pd.DataFrame(
             columns=['count', 'response_time', 'choice', 'response_time_std', 'choice_std'],
-            index=pd.MultiIndex.from_product([self.probability_set, self.signed_contrasts]),
+            index=pd.MultiIndex(levels=[[], []], codes=[[], []], names=[self.grouping_variable, 'signed_contrast'], dtype=float),
+            dtype=float,
         )
-        self.psychometrics['count'] = 0
+        self.psychometrics['count'] = self.psychometrics['count'].astype('int')
         self.reward_amount = 0
         self._t0 = 0
         self._n_trials = 0
@@ -700,7 +707,7 @@ class OnlinePlotsModel(QObject):
 
         # read the jsonable file and instantiate a QFileSystemWatcher
         self.readJsonable(self.jsonable_file)
-        if is_live:
+        if self.is_live:
             self.jsonableWatcher = QFileSystemWatcher([str(self.jsonable_file)], parent=self)
             self.jsonableWatcher.fileChanged.connect(self.readJsonable)
 
@@ -747,10 +754,15 @@ class OnlinePlotsModel(QObject):
             if row.get('response_side') == 0:
                 continue
             choice = row.position > 0 if row.trial_correct else row.position < 0
-            indexer = (row.stim_probability_left, row.signed_contrast)
-            if indexer not in self.psychometrics.index:
-                self.psychometrics.loc[indexer, :] = np.nan
-                self.psychometrics.loc[indexer, 'count'] = 0
+            indexer = (row[self.grouping_variable], row.signed_contrast)
+            if indexer not in self.psychometrics.index:  # add row for a new trial type if it's not there yet
+                new_trial_type = pd.DataFrame(
+                    data=[[0] + [float('nan')] * (len(self.psychometrics.columns) - 1)],
+                    columns=self.psychometrics.columns,
+                    index=pd.MultiIndex.from_tuples([indexer], names=self.psychometrics.index.names),
+                )
+                self.psychometrics = pd.concat([self.psychometrics, new_trial_type]).sort_index(level='signed_contrast')
+
             self.psychometrics.loc[indexer, 'count'] += 1
             self.psychometrics.loc[indexer, 'response_time'], self.psychometrics.loc[indexer, 'response_time_std'] = online_std(
                 new_sample=row.response_time,
@@ -848,10 +860,16 @@ class OnlinePlotsModel(QObject):
 class OnlinePlotsView(QMainWindow):
     colormap = pg.colormap.get('tab10', source='matplotlib')
 
-    def __init__(self, session: FilePath | DirectoryPath | UUID4, parent: QObject | None = None):
+    def __init__(
+        self,
+        session: FilePath | DirectoryPath | UUID4,
+        group_by: str | None = None,
+        parent: QObject | None = None,
+        live: bool = False,
+    ):
         super().__init__(parent)
         pg.setConfigOptions(antialias=True)
-        self.model = OnlinePlotsModel(session, self)
+        self.model = OnlinePlotsModel(session=session, grouping_variable=group_by, parent=self, live=live)
 
         self.statusBar().clearMessage()
         self.setWindowTitle('Online Plots')
@@ -903,7 +921,11 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.trials, 1, 0, 2, 1)
 
         # psychometric function
-        self.psychometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        grouping_values = np.unique(self.model.psychometrics.index.get_level_values(self.model.grouping_variable))
+        grouping_label = self.model.grouping_variable
+        if grouping_label == 'stim_probability_left':
+            grouping_label = 'p'
+        self.psychometricWidget = FunctionWidget(self, self.colormap, grouping_values, grouping_label)
         self.psychometricWidget.plotItem.setTitle('Psychometric Function', color='k')
         self.psychometricWidget.plotItem.getAxis('left').setLabel('Rightward Choices (%)')
         self.psychometricWidget.plotItem.addItem(pg.InfiniteLine(0.5, 0, 'black'))
@@ -912,7 +934,7 @@ class OnlinePlotsView(QMainWindow):
         layout.addWidget(self.psychometricWidget, 1, 1, 1, 1)
 
         # chronometric function
-        self.chronometricWidget = FunctionWidget(parent=self, colors=self.colormap, probabilities=self.model.probability_set)
+        self.chronometricWidget = FunctionWidget(self, self.colormap, grouping_values, grouping_label)
         self.chronometricWidget.plotItem.setTitle('Chronometric Function', color='k')
         self.chronometricWidget.plotItem.getAxis('left').setLabel('Response Time (s)')
         self.chronometricWidget.plotItem.setLogMode(x=False, y=True)
@@ -990,20 +1012,23 @@ class OnlinePlotsView(QMainWindow):
         self.bpodWidget.setData(self.model.bpod_data(trial))
         self.trials.table_view.setCurrentIndex(self.model.tableModel.index(trial, 0))
         self.trials.table_view.scrollTo(self.model.tableModel.index(trial, 0))
-        for p in self.model.probability_set:
-            data = self.model.psychometrics.loc[p].dropna(axis=0).astype(float)
-            x = data.index.to_numpy()
+        for group_var, data in self.model.psychometrics.groupby(self.model.grouping_variable):
+            x = data.index.get_level_values('signed_contrast').to_numpy('float')
             y = data.choice.to_numpy()
             sqrt_n = np.sqrt(data['count'].to_numpy())
             e = data.choice_std.to_numpy() / sqrt_n
-            self.psychometricWidget.upperCurves[p].setData(x=x, y=y + e)
-            self.psychometricWidget.lowerCurves[p].setData(x=x, y=y - e)
-            self.psychometricWidget.plotDataItems[p].setData(x=x, y=y)
+            if group_var not in self.psychometricWidget.upperCurves:
+                self.psychometricWidget.addFunction(group_var)
+            self.psychometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
+            self.psychometricWidget.lowerCurves[group_var].setData(x=x, y=y - e)
+            self.psychometricWidget.plotDataItems[group_var].setData(x=x, y=y)
             y = data.response_time.to_numpy()
             e = data.response_time_std.to_numpy() / sqrt_n
-            self.chronometricWidget.upperCurves[p].setData(x=x, y=y + e)
-            self.chronometricWidget.lowerCurves[p].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
-            self.chronometricWidget.plotDataItems[p].setData(x=x, y=y)
+            if group_var not in self.chronometricWidget.upperCurves:
+                self.chronometricWidget.addFunction(group_var)
+            self.chronometricWidget.upperCurves[group_var].setData(x=x, y=y + e)
+            self.chronometricWidget.lowerCurves[group_var].setData(x=x, y=np.clip(y - e, np.finfo(float).tiny, None))
+            self.chronometricWidget.plotDataItems[group_var].setData(x=x, y=y)
         self.performanceWidget.setValue(self.model.percentCorrect())
         self.rewardWidget.setValue(self.model.reward_amount)
         self.update()
@@ -1035,36 +1060,115 @@ class OnlinePlotsView(QMainWindow):
             self.settings.setValue('size', self.size())
         super().resizeEvent(event)
 
+    def closeEvent(self, event):
+        if self.model.is_live and self.model.raw_data_folder is not None:
+            self.model.setCurrentTrial(self.model.nTrials() - 1)
+            filename = self.model.raw_data_folder / 'online_plots.png'
+            if not filename.exists():
+                self.save_as_png(filename)
+        event.accept()
+
+    def save_as_png(self, filename: os.PathLike | str) -> None:
+        """Save plot as a PNG file."""
+        filename = Path(filename).with_suffix('.png')
+        img = self.centralWidget().grab()
+        img.save(str(filename), 'PNG')
+
 
 def online_plots_cli(*args):
+    """
+    Command-line entry point for launching the IBL Online Plots application.
+
+    This function extends ``sys.argv`` with the provided arguments, parses
+    them via a Pydantic CLI settings class, and then invokes
+    :func:`online_plots_app`.
+
+    Parameters
+    ----------
+    *args : Any
+        Additional arguments to simulate command-line input. These will be
+        converted to strings and appended to ``sys.argv``.
+    """
     sys.argv.extend([str(arg) for arg in args])
 
-    class CLISettings(BaseSettings, cli_parse_args=True, cli_enforce_required=False, cli_avoid_json=True):
+    class CLISettings(
+        BaseSettings,
+        cli_parse_args=True,
+        cli_enforce_required=False,
+        cli_avoid_json=True,
+        cli_hide_none_type=True,
+    ):
         """Display a Session's Online Plot."""
 
         session: CliPositionalArg[FilePath | DirectoryPath | UUID4] = Field(description="a session's Task Data File or eID")
+        group: str | None = Field(
+            description='override the data column to group data by',
+            validation_alias=AliasChoices('g', 'group'),
+            default=None,
+        )
 
-    # set app information
+    if len(sys.argv) < 2:
+        session, group = None, None
+    else:
+        cli = CLISettings()
+        session, group = cli.session, cli.group
+    online_plots_app(session=session, group=group)
+
+
+def online_plots_app(
+    session: FilePath | DirectoryPath | UUID4 | None = None,
+    group: str | None = None,
+    stop_event: mpEvent | None = None,
+    live: bool = False,
+) -> None:
+    """
+    Launch the IBL Online Plots GUI.
+
+    This function initializes a Qt application, loads the selected session
+    (or prompts the user to select one if none is provided), and displays the
+    OnlinePlotsView window.
+
+    Parameters
+    ----------
+    session : FilePath | DirectoryPath | UUID4, optional
+        The session data to load. Can be a file path, directory path, UUID, or
+        ``None``. If ``None``, a file dialog will prompt the user to choose a
+        Task Data file.
+    group : str | None, optional
+        Name of the data column to group by. If ``None``, the default grouping
+        will be used.
+    stop_event : multiprocessing.synchronize.Event, optional
+        Event to signal graceful shutdown.
+    live : bool, optional
+        Whether to use live plotting. If ``True``, the GUI will update on
+        changes. Default is ``False``.
+    """
     QCoreApplication.setOrganizationName('International Brain Laboratory')
     QCoreApplication.setOrganizationDomain('internationalbrainlab.org')
     QCoreApplication.setApplicationName('IBLRIG Online Plots')
     if os.name == 'nt':
+        import ctypes
+
         app_id = f'IBL.iblrig.online_plots.{iblrig_version}'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QApplication([])
 
-    if len(sys.argv) < 2:
+    if session is None:
         local_subjects_folder = str(get_local_and_remote_paths()['local_subjects_folder'])
         session, _ = QFileDialog.getOpenFileName(
             caption='Select Task Data File', filter='Task Data (*.raw.jsonable)', directory=local_subjects_folder
         )
         if len(session) == 0:
             return
-    else:
-        session = CLISettings().session
-    window = OnlinePlotsView(session)
+
+    window = OnlinePlotsView(session=session, group_by=group, live=live)
     window.show()
+
+    if stop_event is not None:
+        timer = QTimer()
+        timer.timeout.connect(lambda: window.close() if stop_event.is_set() else None)
+        timer.start(500)
 
     sys.exit(app.exec())
 

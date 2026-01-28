@@ -1,6 +1,16 @@
 Changelog
 =========
 
+UNRELEASED
+----------
+* added: Neuropixel coordinate registration tool for NP2.4
+* added: Online Plots are stored as PNG and added to Alyx as a Session Note
+* added: Parameter to define grouping variable for Online Plots
+* added: `FRAMECLOCK_CHANNEL` hardware setting for Neurophotometrics
+* changed: Refactored methods for creating sound waveforms
+* changed: Updated debiasing routine for readability (no functional changes)
+* fixed: white noise stimuli had a DC offset
+
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC

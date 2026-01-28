@@ -349,11 +349,13 @@ def neurophotometrics_description(
         case 'bpod':
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
+            hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+            settings = hardware_settings.device_neurophotometrics
             experiment_description = {'devices': {'neurophotometrics': description}}
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
                 acquisition_software='daqami',
                 collection='raw_photometry_data',
-                frameclock_channel='AI7',
+                frameclock_channel=settings.FRAMECLOCK_CHANNEL,
             )
             return experiment_description
         case _:
