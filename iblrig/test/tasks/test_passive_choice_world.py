@@ -78,16 +78,18 @@ class TestInstantiatePassiveChoiceWorld(BaseTestCases.CommonTestInstantiateTask)
         self.task.create_session()
         # serial_messages is empty after mock(); provide dummy entries for bpod lookups
         self.task.bpod.serial_messages = defaultdict(lambda: {'message': [0]})
-        with patch.multiple(
-            self.task,
-            trigger_bonsai_cameras=lambda: None,
-            run_passive_visual_stim=lambda *a, **kw: None,
-            valve_open=lambda *a, **kw: None,
-            sound_play_tone=lambda *a, **kw: None,
-            sound_play_noise=lambda *a, **kw: None,
-            send_trial_info_to_bonsai=lambda: None,
-            bonsai_visual_udp_client=MagicMock(),
-        ), patch('time.sleep'):
+        with (
+            patch.multiple(
+                self.task,
+                trigger_bonsai_cameras=lambda: None,
+                run_passive_visual_stim=lambda *a, **kw: None,
+                valve_open=lambda *a, **kw: None,
+                sound_play_tone=lambda *a, **kw: None,
+                sound_play_noise=lambda *a, **kw: None,
+                send_trial_info_to_bonsai=lambda: None,
+                bonsai_visual_udp_client=MagicMock(),
+            ),
+            patch('time.sleep'),
+        ):
             self.task._run()
         self.assertTrue(self.task.paths.SESSION_FOLDER.joinpath('transfer_me.flag').exists())
-

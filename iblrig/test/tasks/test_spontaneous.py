@@ -1,4 +1,3 @@
-from unittest.mock import patch
 
 from iblrig.test.base import IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
