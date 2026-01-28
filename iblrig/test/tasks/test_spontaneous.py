@@ -1,4 +1,3 @@
-
 from iblrig.test.base import IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_spontaneousBpod.task import Session as SpontaneousBpodSession
