@@ -152,7 +152,7 @@ def make_sound(
             sound = tone
         case chans if chans in ['L', 'left']:
             sound = np.column_stack((tone, null))
-        case chans if chans in ['RL', 'right']:
+        case chans if chans in ['R', 'right']:
             sound = np.column_stack((null, tone))
         case 'stereo':
             sound = np.column_stack((tone, tone))
