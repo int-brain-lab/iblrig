@@ -61,7 +61,9 @@ class TestApplyHanningEnvelope:
 
     def test_zero_fade(self):
         waveform = np.ones(1000)
-        enveloped = sound.apply_hanning_envelope(waveform, d=0, fs=44100)
+        with patch.object(np, 'hanning') as mock_hanning:
+            enveloped = sound.apply_hanning_envelope(waveform, d=0, fs=44100)
+            mock_hanning.assert_not_called()
         assert np.array_equal(waveform, enveloped)
 
     def test_too_short_waveform(self):
@@ -116,6 +118,82 @@ class TestSineStimulus:
         assert np.isclose(peak_freq, f, atol=1.0), f'Peak frequency {peak_freq} not close to {f}'
 
 
+class TestWhiteNoiseStimulus:
+    def test_basic_output(self):
+        d = 1.0
+        fs = 44100
+
+        noise = sound.white_noise_stimulus(d=d, fs=fs)
+        assert isinstance(noise, np.ndarray)
+        assert noise.ndim == 1
+        assert len(noise) == int(d * fs)
+        assert np.max(np.abs(noise)) <= 1.0
+
+    def test_zero_mean(self):
+        """White noise should be zero-mean, i.e. no DC offset."""
+        noise = sound.white_noise_stimulus(d=10.0)
+        assert np.isclose(noise.mean(), 0, atol=0.01), f'DC offset too large: {noise.mean()}'
+
+    def test_range(self):
+        """White noise should span both positive and negative values."""
+        noise = sound.white_noise_stimulus(d=1.0)
+        assert noise.min() < 0, 'White noise has no negative values'
+        assert noise.max() > 0, 'White noise has no positive values'
+
+    def test_amplitude_and_gain(self):
+        d = 0.1
+        fs = 44100
+
+        np.random.seed(0)
+        base = sound.white_noise_stimulus(d=d, fs=fs, amplitude=1.0, gain_db=0.0)
+        np.random.seed(0)
+        attenuated = sound.white_noise_stimulus(d=d, fs=fs, amplitude=1.0, gain_db=-6.0)
+        np.random.seed(0)
+        amplified = sound.white_noise_stimulus(d=d, fs=fs, amplitude=1.0, gain_db=6.0)
+        assert np.max(np.abs(attenuated)) < np.max(np.abs(base))
+        assert np.max(np.abs(amplified)) > np.max(np.abs(base))
+
+        np.random.seed(0)
+        stim_amp_2 = sound.white_noise_stimulus(d=d, fs=fs, amplitude=2.0, gain_db=0.0)
+        assert np.isclose(np.max(np.abs(stim_amp_2)), 2 * np.max(np.abs(base)), rtol=1e-2)
+
+    def test_fade_envelope_applied(self):
+        fs = 44100
+        d_fade = 0.05
+        np.random.seed(0)
+        noise = sound.white_noise_stimulus(d=1.0, fs=fs, d_fade=d_fade)
+        n_fade = int(d_fade * fs)
+        # first and last samples should be near zero due to fade
+        assert np.isclose(noise[0], 0.0, atol=1e-4)
+        assert np.isclose(noise[-1], 0.0, atol=1e-4)
+        # middle section should have significant amplitude
+        assert np.max(np.abs(noise[n_fade:-n_fade])) > 0.5
+
+    def test_gain_db(self):
+        """Test that gain_db applies the correct scaling."""
+        np.random.seed(0)
+        ref = sound.white_noise_stimulus(d=1.0, gain_db=0.0)
+        np.random.seed(0)
+        attenuated = sound.white_noise_stimulus(d=1.0, gain_db=-20.0)
+        np.random.seed(0)
+        amplified = sound.white_noise_stimulus(d=1.0, gain_db=20.0)
+        # -20 dB should scale by 0.1, +20 dB should scale by 10
+        np.testing.assert_allclose(attenuated, ref * 0.1, rtol=1e-6)
+        np.testing.assert_allclose(amplified, ref * 10, rtol=1e-6)
+
+    def test_frequency_content(self):
+        """White noise should have a roughly flat power spectrum (no dominant frequency)."""
+        fs = 44100
+        noise = sound.white_noise_stimulus(d=1.0, fs=fs)
+        spectrum = np.abs(np.fft.rfft(noise)) ** 2
+        # Split spectrum into frequency bands and check that power is roughly uniform
+        n_bands = 10
+        band_edges = np.linspace(0, len(spectrum), n_bands + 1, dtype=int)
+        band_power = [spectrum[band_edges[i] : band_edges[i + 1]].mean() for i in range(n_bands)]
+        # No band should have more than 3x the power of any other
+        assert max(band_power) / min(band_power) < 3, 'Power spectrum is not flat enough for white noise'
+
+
 class TestFormatSound:
     def test_output_dtype_and_shape(self):
         stereo_wave = np.array([[0.5, -0.5], [1.0, -1.0], [-0.25, 0.25]], dtype=np.float32)
@@ -137,11 +215,10 @@ class TestFormatSound:
     def test_file_output(self, tmp_path):
         stereo_wave = np.ones((10, 2), dtype=np.float32) * 0.5
         file_path = tmp_path / 'test_sound.bin'
-        _ = sound.format_sound(stereo_wave, file_path=str(file_path))
+        result = sound.format_sound(stereo_wave, file_path=file_path)
         assert file_path.exists()
-        with open(file_path, 'rb') as f:
-            data = f.read()
-            assert len(data) == 10 * 2 * 4  # 10 samples × 2 channels × 4 bytes
+        file_data = np.fromfile(file_path, dtype=np.int32).reshape(-1, 2)
+        np.testing.assert_array_equal(file_data, result)
 
     def test_invalid_input_raises(self):
         mono_wave = np.ones((10,), dtype=np.float32)  # Not stereo

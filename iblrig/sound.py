@@ -1,7 +1,10 @@
 import logging
+from os import PathLike
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
+from pydantic import NonNegativeFloat, PositiveFloat, PositiveInt, validate_call
 
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
@@ -53,6 +56,8 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> n
     ValueError
         If the fade duration is too long.
     """
+    if d == 0.0:
+        return waveform
     n_samples_waveform = len(waveform)
     n_samples_fade = int(d * fs)
     if 2 * n_samples_fade > n_samples_waveform:
@@ -69,28 +74,70 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> n
     return waveform * envelope
 
 
+@validate_call
 def sine_stimulus(
-    d: float | int, f: float | int, fs: int = 44100, amplitude: float = 1.0, gain_db: float = 0.0, d_fade: float = 0.01
+    d: PositiveFloat,
+    f: PositiveFloat,
+    fs: PositiveInt = 44100,
+    amplitude: NonNegativeFloat = 1.0,
+    gain_db: float = 0.0,
+    d_fade: NonNegativeFloat = 0.01,
 ) -> np.ndarray:
     """
     Generate a sine wave stimulus: A sine wave with a Hanning fade-in and fade-out, defined amplitude and gain.
 
     Parameters
     ----------
-    d : float or int
+    d : float
         Duration of the sine wave in seconds. Must be positive.
-    f : float or int
+    f : float
         Frequency of the sine wave in Hertz (Hz). Must be positive.
     fs : int, optional
-        Sampling rate in samples per second (Hz). Default is 44100.
+        Sampling rate in samples per second (Hz). Must be positive. Default is 44100.
     amplitude : float, optional
-        Base amplitude of the tone before gain adjustment. Default is 1.0.
+        Base amplitude of the tone before gain adjustment. Must be non-negative. Default is 1.0.
     gain_db: float = 0.0
         Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
-    d_fade : float or int
-        Duration of the fade-in and fade-out sections in seconds.
+    d_fade : float
+        Duration of Hanning fade-in and fade-out sections in seconds. Must be non-negative. Default is 0.01 (10 ms).
     """
     stimulus = sine_wave(d=d, f=f, fs=fs)
+    stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
+    stimulus *= amplitude
+    stimulus *= 10 ** (gain_db / 20)
+    return stimulus
+
+
+@validate_call
+def white_noise_stimulus(
+    d: PositiveFloat,
+    fs: PositiveInt = 44100,
+    amplitude: NonNegativeFloat = 1.0,
+    gain_db: float = 0.0,
+    d_fade: NonNegativeFloat = 0.0,
+) -> np.ndarray:
+    """
+    Generate a sine wave stimulus: zero-mean white noise with a Hanning fade-in and fade-out, defined amplitude and gain.
+
+    Parameters
+    ----------
+    d : float
+        Duration of the waveform in seconds. Must be positive.
+    fs : int, optional
+        Sampling rate in samples per second (Hz). Must be positive. Default is 44100.
+    amplitude : float, optional
+        Base amplitude of the waveform before gain adjustment. Must be non-negative. Default is 1.0.
+    gain_db: float = 0.0
+        Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
+    d_fade : float
+        Duration of Hanning fade-in and fade-out sections in seconds. Must be non-negative. Default is 0.0 (no fade).
+
+    Returns
+    -------
+    np.ndarray
+        Array of uniform white noise samples in [-amplitude, amplitude].
+    """
+    stimulus = np.random.rand(int(fs * d)) * 2 - 1
     stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
     stimulus *= amplitude
     stimulus *= 10 ** (gain_db / 20)
@@ -139,9 +186,9 @@ def make_sound(
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
     if frequency < 0:
-        tone = amplitude * np.random.rand(int(rate * duration)) * (10 ** (gain_db / 20))
+        tone = white_noise_stimulus(d=duration, fs=rate, amplitude=amplitude, gain_db=gain_db, d_fade=fade)
     else:
-        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
+        tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, gain_db=gain_db, d_fade=fade)
 
     ttl = np.ones(len(tone)) * 0.99
     ttl[round(rate / 100) :] = 0  # 10 ms TTL
@@ -165,7 +212,7 @@ def make_sound(
     return sound
 
 
-def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> np.ndarray:
+def format_sound(sound: np.ndarray, file_path: PathLike | str | None = None, flat: bool = False) -> np.ndarray:
     """
     Format a stereo sound array into a binary-compatible int32 format.
 
@@ -177,7 +224,7 @@ def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> 
     ----------
     sound : np.ndarray
         A 2D NumPy array of shape (n_samples, 2) containing stereo float audio data.
-    file_path : str, optional
+    file_path : PathLike or str, optional
         If provided, the formatted audio will be written to this binary file.
     flat : bool, optional
         If True, return a 1D flattened array. Otherwise, return (n_samples, 2) shape.
@@ -200,9 +247,8 @@ def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> 
     interleaved = bin_sound.reshape(-1)  # Interleave the samples as a 1D array: [L, R, L, R, ...]
 
     # Optionally save to binary file
-    if file_path:
-        with open(file_path, 'wb') as bf:
-            bf.write(interleaved.tobytes())
+    if file_path is not None:
+        Path(file_path).write_bytes(interleaved.tobytes())
 
     return bin_sound.flatten() if flat else bin_sound
 
