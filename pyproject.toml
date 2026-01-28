@@ -22,7 +22,7 @@ dependencies = [
     "iblqt>=0.8.0",
     "ONE-api>=3.3.0",
     "tycmd-wrapper>=0.2.1",
-    "ibl-photometry>=0.1.1",
+    "ibl-photometry==0.1.1",
     #
     # Everything else
     "annotated-types>=0.7.0",
