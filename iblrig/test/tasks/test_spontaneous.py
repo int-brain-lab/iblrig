@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from iblrig.test.base import IntegrationFullRuns
 from iblrig_tasks._iblrig_tasks_spontaneous.task import Session as SpontaneousSession
 from iblrig_tasks._iblrig_tasks_spontaneousBpod.task import Session as SpontaneousBpodSession
@@ -15,6 +17,8 @@ class Spontaneous(IntegrationFullRuns):
         assert self.task.paths.SESSION_FOLDER.joinpath('transfer_me.flag').exists(), 'transfer_me.flag not found'
 
 
+@patch('iblrig.hardware.Bpod', autospec=True)
+@patch('iblrig.base_tasks.BpodMixin.send_spacers')
 class SpontaneousBpod(IntegrationFullRuns):
     def setUp(self) -> None:
         super().setUp()
