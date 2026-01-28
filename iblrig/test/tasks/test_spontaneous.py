@@ -17,13 +17,13 @@ class Spontaneous(IntegrationFullRuns):
         assert self.task.paths.SESSION_FOLDER.joinpath('transfer_me.flag').exists(), 'transfer_me.flag not found'
 
 
-@patch('iblrig.hardware.Bpod', autospec=True)
-@patch('iblrig.base_tasks.BpodMixin.send_spacers')
 class SpontaneousBpod(IntegrationFullRuns):
     def setUp(self) -> None:
         super().setUp()
         self.task = SpontaneousBpodSession(one=self.one, duration_secs=2, **self.task_kwargs)
 
+    @patch('iblrig.hardware.Bpod', autospec=True)
+    @patch('iblrig.base_tasks.BpodMixin.send_spacers')
     def test_task_spontaneous_bpod(self, mock_send_spacers, *_):
         self.task.hardware_settings['device_bpod']['COM_BPOD'] = 'FakePort'
         self.task.run()
