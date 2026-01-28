@@ -2,7 +2,7 @@ import argparse
 
 import numpy as np
 
-from iblatlas import atlas
+import iblatlas.atlas
 from ibllib.ephys.spikes import create_insertion
 from iblrig.base_tasks import EmptySession
 from iblrig.transfer_experiments import EphysCopier
@@ -41,7 +41,7 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
 def neuropixel24_micromanipulator_coordinates(
     ref_shank: dict,
     pname: str,
-    ba: atlas.BrainAtlas | None = None,
+    ba: iblatlas.atlas.BrainAtlas | None = None,
     shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
 ) -> dict[str, dict]:
     """
@@ -87,22 +87,16 @@ def neuropixel24_micromanipulator_coordinates(
         combining the probe name with a shank letter (e.g., 'probe01a', 'probe01b'). Each value
         is a dictionary containing the calculated coordinates with keys: 'x', 'y', 'z', 'phi',
         'theta', 'depth', and 'roll'.
-
-    Raises
-    ------
-    ValueError
-        If pivot_shank is not 'a' or 'd'.
     """
     shank_order = 'abcd'
 
-    ba = atlas.NeedlesAtlas() if ba is None else ba
+    ba = iblatlas.atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
-    import iblatlas.atlas
 
     for i, d in enumerate(shank_spacings_um):
         dx = np.sin((ref_shank['phi']) / 180 * np.pi) * d
         dy = -np.cos((ref_shank['phi']) / 180 * np.pi) * d
-        # apply the roll transforatiom
+        # apply the roll transformation
         dx, dy, dz = iblatlas.atlas.rodrigues_rotation(
             v=np.array([dx, dy, 0]),  # vector to rotate
             k=np.array(iblatlas.atlas.sph2cart(1, ref_shank['theta'], ref_shank['phi'])),  # rotation axis
@@ -117,8 +111,8 @@ def neuropixel24_micromanipulator_coordinates(
             'depth': ref_shank['depth'],
             'roll': ref_shank['roll'],
         }
-        insertion = atlas.Insertion.from_dict(shank, brain_atlas=ba)
-        xyz_entry = atlas.Insertion.get_brain_entry(insertion.trajectory, ba)
+        insertion = iblatlas.atlas.Insertion.from_dict(shank, brain_atlas=ba)
+        xyz_entry = iblatlas.atlas.Insertion.get_brain_entry(insertion.trajectory, ba)
         if i == 0:
             xyz_ref = xyz_entry
         shank['z'] = xyz_entry[2] * 1e6
