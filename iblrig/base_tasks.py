@@ -733,6 +733,7 @@ class BaseSession(ABC):
 
         signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
+        self.paths['SESSION_FOLDER'].joinpath('transfer_me.flag').touch()  # ensure that the transfer_me.flag is created
 
         # post task instructions
         log.critical('Graceful exit')
@@ -1613,8 +1614,6 @@ class SpontaneousSession(BaseSession):
                 break
             if self.stopped:
                 break
-        # Create the transfer flag file when the session finishes.
-        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
 
 class SpontaneousBpodSession(SpontaneousSession, BpodMixin):

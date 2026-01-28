@@ -92,9 +92,6 @@ class Session(ChoiceWorldSession):
         # Run the passive part i.e. spontaneous activity and RFMapping stim
         self.run_passive_visual_stim(sa_time=timedelta(seconds=self.task_params['SPONTANEOUS_ACTIVITY_SECONDS']))
 
-        # Create the transfer flag.
-        self.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-
         if self.task_params['SKIP_EVENT_REPLAY'] is True:
             log.info('Skipping replay of task events')
             return
