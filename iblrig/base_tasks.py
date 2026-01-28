@@ -733,6 +733,7 @@ class BaseSession(ABC):
 
         signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
+        self.paths['SESSION_FOLDER'].joinpath('transfer_me.flag').touch()  # ensure that the transfer_me.flag is created
 
         # post task instructions
         log.critical('Graceful exit')
