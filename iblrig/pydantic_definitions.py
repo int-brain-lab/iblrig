@@ -2,6 +2,7 @@ from collections import abc
 from datetime import date
 from pathlib import Path
 from typing import Annotated, Literal
+from warnings import warn
 
 import pandas as pd
 from annotated_types import Ge, Le
@@ -30,9 +31,11 @@ BehaviourInputPort = Annotated[int, Ge(1), Le(4)]
 
 class BunchModel(BaseModel, abc.MutableMapping):
     def __getitem__(self, key):
+        warn(f"Use attribute syntax to access item, e.g. model.{key} instead of model['{key}'].", DeprecationWarning, 2)
         return getattr(self, key)
 
     def __setitem__(self, key, value):
+        warn(f"Use attribute syntax to access item, e.g. model.{key} instead of model['{key}'].", DeprecationWarning, 2)
         setattr(self, key, value)
 
     def __len__(self):
