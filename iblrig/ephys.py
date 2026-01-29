@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import datetime
 import logging
 import string
 from pathlib import Path
@@ -10,12 +9,9 @@ import numpy as np
 from iblatlas import atlas
 from iblrig.base_tasks import EmptySession
 from iblrig.net import get_server_communicator, read_stdin, update_alyx_token
-from iblrig.path_helper import load_pydantic_yaml
-from iblrig.pydantic_definitions import RigSettings
 from iblrig.transfer_experiments import EphysCopier
 from iblutil.io import net
 from iblutil.util import setup_logger
-from one.alf.io import next_num_folder
 from one.api import OneAlyx
 
 
@@ -98,36 +94,14 @@ def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_s
 
 
 async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
-    # from iblrig.base_tasks import EmptySession
-
     log = logging.getLogger(__name__)
 
-    # if PARAMS.get('PROBE_TYPE_00', '3B') != '3B' or PARAMS.get('PROBE_TYPE_01', '3B') != '3B':
-    #     raise NotImplementedError('Only 3B probes supported.')
-    # if n_probes is None:
-    #     n_probes = sum(k.lower().startswith('probe_type_') for k in PARAMS)
-
-    # FIXME this isn't working!
-    # session = EmptySession(subject=mouse, interactive=False, iblrig_settings=iblrig_settings)
-    # session_path = session.paths.SESSION_FOLDER
-    # FIXME The following should be done by the EmptySession class
-    iblrig_settings = load_pydantic_yaml(RigSettings)
-    date = datetime.datetime.now().date().isoformat()
-    num = next_num_folder(iblrig_settings.iblrig_local_data_path / mouse / date)
-    session_path = iblrig_settings.iblrig_local_data_path / mouse / date / num
+    session = EmptySession(subject=mouse, interactive=False)
+    session_path = session.paths.SESSION_FOLDER
     raw_data_folder = session_path.joinpath('raw_ephys_data')
-    raw_data_folder.mkdir(parents=True, exist_ok=True)
-
-    log.info('Created %s', raw_data_folder)
-    remote_subject_folder = iblrig_settings.iblrig_remote_subjects_path
-
-    for n in range(n_probes):
-        probe_folder = raw_data_folder / f'probe{n:02}'
-        probe_folder.mkdir(exist_ok=True)
-        log.info('Created %s', probe_folder)
 
     # Save the stub files locally and in the remote repo for future copy script to use
-    copier = EphysCopier(session_path=session_path, remote_subjects_folder=remote_subject_folder)
+    copier = EphysCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
     communicator, _ = await get_server_communicator(service_uri, 'neuropixel')
     copier.initialize_experiment(nprobes=n_probes)
 
@@ -185,8 +159,8 @@ async def main_v8_networked(mouse, debug=False, n_probes=2, service_uri=None):
                         S = net.base.ExpMessage  # noqa
                         match event:
                             case S.EXPINFO:
-                                reponse_data = {'exp_ref': one.dict2ref(exp_ref), 'main_sync': True}
-                                await communicator.info(net.base.ExpStatus.RUNNING, reponse_data, addr=addr)
+                                response_data = {'exp_ref': one.dict2ref(exp_ref), 'main_sync': True}
+                                await communicator.info(net.base.ExpStatus.RUNNING, response_data, addr=addr)
                             case S.EXPSTATUS:
                                 await communicator.status(net.base.ExpStatus.RUNNING, addr=addr)
                             case S.EXPINIT:

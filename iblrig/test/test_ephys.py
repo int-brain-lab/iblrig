@@ -52,7 +52,7 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self):
         """Set up keyboard input and settings mocks."""
-        # Set up keyboad input mock
+        # Set up keyboard input mock
         # When we set self.keyboard to a non-empty string, the test function should interpret this as
         # keyboard input and stop the session (i.e. close the communicator and return)
         self.keyboard = ''
@@ -73,9 +73,12 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
         (remote := self.tmpdir.joinpath('remote')).mkdir()
         (remote_subjects := remote.joinpath('subjects')).mkdir()
         self.settings = Bunch(
-            iblrig_local_data_path=local, iblrig_remote_data_path=remote, iblrig_remote_subjects_path=remote_subjects
+            iblrig_local_data_path=local,
+            iblrig_remote_data_path=remote,
+            iblrig_remote_subjects_path=remote_subjects,
+            ALYX_LAB='lab',
         )
-        m = patch('iblrig.ephys.load_pydantic_yaml', return_value=self.settings)
+        m = patch('iblrig.base_tasks.load_pydantic_yaml', return_value=self.settings)
         m.start()
         self.addCleanup(m.stop)
         self.addr = '192.168.0.5:99998'  # Fake address of the behaviour rig
@@ -119,7 +122,7 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
             ('init', ({'exp_ref': ref, 'status': net.base.ExpStatus.RUNNING},), kwargs),
             ('start', ({'subject': 'foo', 'date': date.today(), 'sequence': 1},), kwargs),
             ('status', (net.base.ExpStatus.RUNNING,), kwargs),
-            ('close', (), {}),  # should be called after the last message (when keyboad input is simulated)
+            ('close', (), {}),  # should be called after the last message (when keyboard input is simulated)
         ]
         # Check odd method calls as even ones are the on_event calls
         actual_reponses = map(tuple, self.communicator.method_calls[1::2])
@@ -128,14 +131,15 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
 
         # Check that the local and remote sessions were created
         expected = [
-            f'local/foo/{date.today()}/001/transfer_me.flag',
-            f'local/foo/{date.today()}/001/_ibl_experiment.description_ephys.yaml',
+            f'local/lab/Subjects/foo/{date.today()}/001/transfer_me.flag',
+            f'local/lab/Subjects/foo/{date.today()}/001/_ibl_experiment.description_ephys.yaml',
             f'remote/subjects/foo/{date.today()}/001/_devices/{date.today()}_1_foo@ephys.status_pending',
             f'remote/subjects/foo/{date.today()}/001/_devices/{date.today()}_1_foo@ephys.yaml',
         ]
         self.assertCountEqual(map(self.tmpdir.joinpath, expected), self.tmpdir.rglob('*.*'))
         # Should have created the raw ephys folders
-        self.assertEqual(2, len(list(self.tmpdir.glob(f'local/foo/{date.today()}/001/raw_ephys_data/probe??'))))
+        pattern = f'local/lab/Subjects/foo/{date.today()}/001/raw_ephys_data/probe??'
+        self.assertEqual(2, len(list(self.tmpdir.glob(pattern))))
 
     async def test_abort_session(self):
         """Test the main_v8_networked function with misc events and user 'abort' input."""
@@ -169,7 +173,7 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
             ('start', ({'subject': 'foo', 'date': date.today(), 'sequence': 1},), kwargs),
             ('confirmed_send', ((net.base.ExpMessage.EXPINTERRUPT, {'status': net.base.ExpStatus.RUNNING}),), kwargs),
             ('confirmed_send', ((net.base.ExpMessage.EXPCLEANUP, {'status': net.base.ExpStatus.RUNNING}),), kwargs),
-            ('close', (), {}),  # should be called after the last message (when keyboad input is simulated)
+            ('close', (), {}),  # should be called after the last message (when keyboard input is simulated)
         ]
         # Check odd method calls as even ones are the on_event calls
         for expected, actual in zip(expected_responses, map(tuple, self.communicator.method_calls[1::2]), strict=False):
@@ -177,7 +181,7 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
 
         # Check that the local and remote sessions were removed
         self.assertFalse(any(self.tmpdir.rglob('*.*')))
-        self.assertFalse(self.tmpdir.joinpath(f'local/foo/{date.today()}/001').exists())
+        self.assertFalse(self.tmpdir.joinpath(f'local/lab/Subjects/foo/{date.today()}/001').exists())
 
         # Check behaviour when user does not confirm cleanup
         self.communicator.reset_mock()  # _iterate_messages asserts no methods were called yet
@@ -187,7 +191,7 @@ class TestPrepareEphysSessionNetworked(unittest.IsolatedAsyncioTestCase):
             await iblrig.ephys.main_v8_networked('foo', debug=True)
             mock_input.assert_called_once()
         self.assertTrue(any(self.tmpdir.rglob('*.*')))
-        self.assertTrue(self.tmpdir.joinpath(f'local/foo/{date.today()}/001').exists())
+        self.assertTrue(self.tmpdir.joinpath(f'local/lab/Subjects/foo/{date.today()}/001').exists())
 
     async def test_alyx_request(self):
         """Test the main_v8_networked function alyx request message."""
