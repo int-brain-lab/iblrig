@@ -4,7 +4,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
 import yaml
@@ -15,7 +15,7 @@ import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
-from iblrig.pydantic_definitions import HardwareSettings, RigSettings
+from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
 from iblutil.util import Bunch
 from one.alf.spec import is_session_path
 
@@ -55,7 +55,7 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
     return sessions[:n]
 
 
-def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[dict]:
+def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[dict[str, Any]]:
     """
     Return information on the last n sessions with matching protocol.
 
@@ -88,12 +88,12 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
         collection_int = int(i[-1]) if i[-1].isnumeric() else 0
         return x.get('protocol_number', collection_int)
 
-    protocols = []
+    protocols: list[dict[str, Any]] = []
     if subject_folder is None or Path(subject_folder).exists() is False:
         return protocols
-    sessions = subject_folder.glob('????-??-??/*/_ibl_experiment.description*.yaml')  # seq may be X or XXX
+    sessions = list(subject_folder.glob('????-??-??/*/_ibl_experiment.description*.yaml'))  # seq may be X or XXX
     # Make extra sure to only include valid sessions
-    sessions = filter(lambda x: is_session_path(x.relative_to(subject_folder.parent).parent), sessions)
+    sessions = [x for x in sessions if is_session_path(x.relative_to(subject_folder.parent).parent)]
     for file_experiment in sorted(sessions, reverse=True):
         session_path = file_experiment.parent
         ad = session_params.read_params(file_experiment)
@@ -121,12 +121,21 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
     return protocols
 
 
+class LocalAndRemotePaths(BunchModel):
+    """Paths to local and remote data folders."""
+
+    local_data_folder: Path
+    remote_data_folder: Path | None
+    local_subjects_folder: Path
+    remote_subjects_folder: Path | None
+
+
 def get_local_and_remote_paths(
     local_path: os.PathLike | str | None = None,
     remote_path: os.PathLike | str | None = None,
     lab: str | None = None,
     iblrig_settings: RigSettings | dict | None = None,
-) -> Bunch:
+) -> LocalAndRemotePaths:
     """
     Parse input arguments to transfer commands.
 
@@ -147,8 +156,8 @@ def get_local_and_remote_paths(
 
     Returns
     -------
-    Bunch
-        Bunch with the following keys:
+    LocalAndRemotePaths
+        Pydantic model with the following fields:
 
         - ``local_data_folder`` : pathlib.Path
         - ``remote_data_folder`` : pathlib.Path or None
@@ -159,46 +168,50 @@ def get_local_and_remote_paths(
     if iblrig_settings is None and ((local_path is None) or (remote_path is None) or (lab is None)):
         iblrig_settings = load_pydantic_yaml(RigSettings)
 
-    # dump the settings to a dict
+    # make sure that iblrig_settings is a dict
+    # TODO: ideally we'd keep it as a Pydantic model throughout, but this may need refactoring some tests
     if isinstance(iblrig_settings, RigSettings):
         iblrig_settings = iblrig_settings.model_dump()
+    elif iblrig_settings is None:
+        iblrig_settings = {}
 
-    paths = Bunch({'local_data_folder': local_path, 'remote_data_folder': remote_path})
-    if paths.local_data_folder is None:
-        paths.local_data_folder = (
-            Path(p) if (p := iblrig_settings['iblrig_local_data_path']) else Path.home().joinpath('iblrig_data')
-        )
-    elif isinstance(paths.local_data_folder, str):
-        paths.local_data_folder = Path(paths.local_data_folder)
-    if paths.remote_data_folder is None:
-        paths.remote_data_folder = Path(p) if (p := iblrig_settings['iblrig_remote_data_path']) else None
-    elif isinstance(paths.remote_data_folder, str):
-        paths.remote_data_folder = Path(paths.remote_data_folder)
+    # define local data folder
+    local_data_folder = Path(local_path or iblrig_settings.get('iblrig_local_data_path', Path.home().joinpath('iblrig_data')))
 
-    # Get the subjects folders. If not defined in the settings, assume local_data_folder + /Subjects
-    paths.local_subjects_folder = (iblrig_settings or {}).get('iblrig_local_subjects_path', None)
-    lab = lab or (iblrig_settings or {}).get('ALYX_LAB', None)
-    if paths.local_subjects_folder is None:
-        if paths.local_data_folder.name == 'Subjects':
-            paths.local_subjects_folder = paths.local_data_folder
-        elif lab:  # append lab/Subjects part
-            paths.local_subjects_folder = paths.local_data_folder.joinpath(lab, 'Subjects')
-        else:  # NB: case is important here. ALF spec expects lab folder before 'Subjects' (capitalized)
-            paths.local_subjects_folder = paths.local_data_folder.joinpath('subjects')
+    # define remote data folder
+    remote_data_folder = remote_path or iblrig_settings.get('iblrig_remote_data_path')
+    remote_data_folder = Path(remote_data_folder) if remote_data_folder else None
+
+    # define local subjects folder
+    local_subjects_folder = iblrig_settings.get('iblrig_local_subjects_path')
+    if local_subjects_folder is None:
+        if local_data_folder.name == 'Subjects':
+            local_subjects_folder = local_data_folder
+        elif (lab := lab or iblrig_settings.get('ALYX_LAB')) is not None:
+            local_subjects_folder = local_data_folder / lab / 'Subjects'
+        else:
+            local_subjects_folder = local_data_folder / 'subjects'
+            # NB: case is important here. ALF spec expects lab folder before 'Subjects' (capitalized)
     else:
-        paths.local_subjects_folder = Path(paths.local_subjects_folder)
+        local_subjects_folder = Path(local_subjects_folder)
 
-    #  Get the remote subjects folders. If not defined in the settings, assume remote_data_folder + /Subjects
-    paths.remote_subjects_folder = (iblrig_settings or {}).get('iblrig_remote_subjects_path', None)
-    if paths.remote_subjects_folder is None:
-        if paths.remote_data_folder:
-            if paths.remote_data_folder.name == 'Subjects':
-                paths.remote_subjects_folder = paths.remote_data_folder
+    # define remote subjects folder
+    remote_subjects_folder = iblrig_settings.get('iblrig_remote_subjects_path')
+    if remote_subjects_folder is None:
+        if remote_data_folder is not None:
+            if remote_data_folder.name == 'Subjects':
+                remote_subjects_folder = remote_data_folder
             else:
-                paths.remote_subjects_folder = paths.remote_data_folder.joinpath('Subjects')
+                remote_subjects_folder = remote_data_folder / 'Subjects'
     else:
-        paths.remote_subjects_folder = Path(paths.remote_subjects_folder)
-    return paths
+        remote_subjects_folder = Path(remote_subjects_folder)
+
+    return LocalAndRemotePaths(
+        local_data_folder=local_data_folder,
+        remote_data_folder=remote_data_folder,
+        local_subjects_folder=local_subjects_folder,
+        remote_subjects_folder=remote_subjects_folder,
+    )
 
 
 def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:

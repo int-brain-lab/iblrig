@@ -49,56 +49,56 @@ class TestPathHelper(unittest.TestCase):
             'remote_subjects_folder': None,
             **{k[7:-4] + 'folder': v for k, v in settings.items() if k.startswith('iblrig')},
         }
-        self.assertDictEqual(expected, paths)
+        self.assertDictEqual(expected, paths.model_dump())
 
         # Test lab arg
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings, lab='bazlab')
-        self.assertEqual(tmp / 'iblrigv8_data' / 'bazlab' / 'Subjects', paths['local_subjects_folder'])
+        self.assertEqual(tmp / 'iblrigv8_data' / 'bazlab' / 'Subjects', paths.local_subjects_folder)
 
         # Test no lab
         settings['ALYX_LAB'] = None
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertEqual(tmp / 'iblrigv8_data' / 'subjects', paths['local_subjects_folder'])
+        self.assertEqual(tmp / 'iblrigv8_data' / 'subjects', paths.local_subjects_folder)
 
         # Test Subjects already in local data path
         iblrig_settings = RigSettings.model_validate({**settings, 'iblrig_local_data_path': tmp / 'Subjects'})
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertEqual(paths['local_subjects_folder'], paths['local_data_folder'])
+        self.assertEqual(paths.local_subjects_folder, paths.local_data_folder)
 
         # Test subjects path
         settings['iblrig_local_subjects_path'] = tmp / 'iblrigv8_data'
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertEqual(paths['local_subjects_folder'], paths['local_data_folder'])
+        self.assertEqual(paths.local_subjects_folder, paths.local_data_folder)
 
         # Test remote data path
         settings['iblrig_remote_data_path'] = tmp / 'remote'
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertEqual(settings['iblrig_remote_data_path'], paths['remote_data_folder'])
-        self.assertEqual(tmp / 'remote' / 'Subjects', paths['remote_subjects_folder'])
+        self.assertEqual(settings['iblrig_remote_data_path'], paths.remote_data_folder)
+        self.assertEqual(tmp / 'remote' / 'Subjects', paths.remote_subjects_folder)
 
         # Test remote subjects path
         settings['iblrig_remote_data_path'] = tmp / 'remote' / 'Subjects'
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertEqual(settings['iblrig_remote_data_path'], paths['remote_data_folder'])
-        self.assertEqual(paths['remote_data_folder'], paths['remote_subjects_folder'])
+        self.assertEqual(settings['iblrig_remote_data_path'], paths.remote_data_folder)
+        self.assertEqual(paths.remote_data_folder, paths.remote_subjects_folder)
 
         # Test iblrig_remote_subjects_path in settings
         settings['iblrig_remote_subjects_path'] = tmp / 'remote'
         iblrig_settings = RigSettings.model_validate(settings)
         paths = path_helper.get_local_and_remote_paths(iblrig_settings=iblrig_settings)
-        self.assertNotEqual(paths['remote_subjects_folder'], paths['remote_data_folder'])
-        self.assertEqual(settings['iblrig_remote_subjects_path'], paths['remote_subjects_folder'])
+        self.assertNotEqual(paths.remote_subjects_folder, paths.remote_data_folder)
+        self.assertEqual(settings['iblrig_remote_subjects_path'], paths.remote_subjects_folder)
 
         # Test paths args
         paths = path_helper.get_local_and_remote_paths(
             local_path=str(tmp / 'local'), remote_path=str(tmp / 'other'), iblrig_settings=iblrig_settings
         )
-        self.assertEqual(tmp / 'other', paths['remote_data_folder'])
-        self.assertEqual(tmp / 'local', paths['local_data_folder'])
+        self.assertEqual(tmp / 'other', paths.remote_data_folder)
+        self.assertEqual(tmp / 'local', paths.local_data_folder)
 
 
 class TestIterateCollection(unittest.TestCase):
