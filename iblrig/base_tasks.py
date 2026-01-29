@@ -258,11 +258,11 @@ class BaseSession(ABC):
         iblrig_settings: dict | None = None,
         **_,
     ):
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)

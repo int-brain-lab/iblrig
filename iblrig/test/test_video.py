@@ -55,7 +55,7 @@ class BaseCameraTest(BaseTestCases.CommonTestTask):
         super().get_task_kwargs()
         # Some test hardware settings
         hws = self.task_kwargs['hardware_settings']
-        hws['device_cameras'] = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')['device_cameras']
+        hws['device_cameras'] = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml').device_cameras
         hws['device_cameras']['default']['right'] = hws['device_cameras']['default']['left']
         hws['MAIN_SYNC'] = False
         # Some test rig settings
