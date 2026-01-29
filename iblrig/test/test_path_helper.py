@@ -12,22 +12,13 @@ import yaml
 import ibllib.tests.fixtures.utils as fu
 from ibllib.tests import TEST_DB
 from iblrig import path_helper
-from iblrig.constants import BASE_DIR
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
 TEST_ALYX_URL = TEST_DB['base_url']
 
 
-class TestPathHelper(unittest.TestCase):
-    def test_get_commit_hash(self):
-        import subprocess
-
-        out = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
-        # Run it
-        ch = path_helper.get_commit_hash(BASE_DIR)
-        self.assertTrue(out == ch)
-
+class TestGetLocalAndRemotePaths(unittest.TestCase):
     def test_get_local_and_remote_paths(self):
         """Test iblrig.path_helper.get_local_and_remote_paths function."""
         tmpdir = tempfile.TemporaryDirectory()

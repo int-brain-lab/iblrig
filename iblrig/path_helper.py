@@ -2,7 +2,6 @@ import logging
 import os
 import re
 import shutil
-import subprocess
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -337,17 +336,6 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
         if rs.get('device_cameras') is None:
             rs['device_cameras'] = {}
     return rs
-
-
-def get_commit_hash(folder: str):
-    here = os.getcwd()
-    os.chdir(folder)
-    out = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
-    os.chdir(here)
-    if not out:
-        log.debug('Commit hash is empty string')
-    log.debug(f'Found commit hash {out}')
-    return out
 
 
 def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
