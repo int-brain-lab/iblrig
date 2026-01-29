@@ -1,25 +1,23 @@
 import logging
-import os
-import re
 import shutil
+from os import PathLike
 from pathlib import Path
 from typing import Any, TypeVar
 
 import numpy as np
 import yaml
 from packaging import version
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
-import iblrig
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
-from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
+from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML, SETTINGS_PATH
 from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
 from iblutil.util import Bunch
 from one.alf.spec import is_session_path
 
 log = logging.getLogger(__name__)
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar('T', HardwareSettings, RigSettings)
 
 
 def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[dict]:
@@ -130,8 +128,8 @@ class LocalAndRemotePaths(BunchModel):
 
 
 def get_local_and_remote_paths(
-    local_path: os.PathLike | str | None = None,
-    remote_path: os.PathLike | str | None = None,
+    local_path: PathLike | str | None = None,
+    remote_path: PathLike | str | None = None,
     lab: str | None = None,
     iblrig_settings: RigSettings | dict | None = None,
 ) -> LocalAndRemotePaths:
@@ -144,9 +142,9 @@ def get_local_and_remote_paths(
 
     Parameters
     ----------
-    local_path : os.PathLike or str, optional
+    local_path : PathLike or str, optional
         Local data path. If None, the value is read from the settings file.
-    remote_path : os.PathLike or str, optional
+    remote_path : PathLike or str, optional
         Remote data path. If None, the value is read from the settings file.
     lab : str, optional
         Lab name used to construct the local subjects folder path. If None, the value is read from the settings file.
@@ -213,20 +211,46 @@ def get_local_and_remote_paths(
     )
 
 
-def _load_settings_yaml(filename: Path | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> Bunch:
+def _load_settings_yaml(filename: PathLike | str = RIG_SETTINGS_YAML, do_raise: bool = True) -> dict[str, Any]:
+    """
+    Load and patch a YAML settings file.
+
+    Parameters
+    ----------
+    filename : PathLike or str, optional
+        Path to the YAML file. Bare filenames (without directory components)
+        are resolved relative to the IBLRIG settings folder.
+        Defaults to RIG_SETTINGS_YAML.
+    do_raise : bool, optional
+        If True (default), exceptions are raised. If False, exceptions are
+        logged and an empty dict is returned.
+
+    Returns
+    -------
+    dict[str, Any]
+        The loaded and patched settings.
+    """
     filename = Path(filename)
-    if not filename.is_absolute():
-        filename = Path(iblrig.__file__).parents[1].joinpath('settings', filename)
-    if not filename.exists() and not do_raise:
-        log.error(f'File not found: {filename}')
-        return Bunch()
-    with open(filename) as fp:
-        rs = yaml.safe_load(fp)
-    rs = patch_settings(rs, filename.stem)
-    return Bunch(rs)
+
+    # if the filename is relative, assume it is relative to the settings folder
+    if filename.name == str(filename):
+        filename = SETTINGS_PATH / filename
+
+    # read the file and patch it, return as dict
+    try:
+        with filename.open() as f:
+            settings_yaml = yaml.safe_load(f) or {}
+        settings_yaml = patch_settings(settings_yaml, filename.stem)
+    except Exception as e:
+        if do_raise:
+            raise
+        else:
+            log.exception(e)
+            return {}
+    return settings_yaml
 
 
-def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_raise: bool = True) -> T:
+def load_pydantic_yaml(model: type[T], filename: PathLike | str | None = None, do_raise: bool = True) -> T:
     """
     Load YAML data from a specified file or a standard IBLRIG settings file,
     validate it using a Pydantic model, and return the validated Pydantic model
@@ -236,7 +260,7 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
     ----------
     model : Type[T]
         The Pydantic model class to validate the YAML data against.
-    filename : Path | str | None, optional
+    filename : PathLike | str | None, optional
         The path to the YAML file.
         If None (default), the function deduces the appropriate standard IBLRIG
         settings file based on the model.
@@ -266,23 +290,29 @@ def load_pydantic_yaml(model: type[T], filename: Path | str | None = None, do_ra
             filename = RIG_SETTINGS_YAML
         else:
             raise TypeError(f'Cannot deduce filename for model `{model.__name__}`.')
+    else:
+        filename = Path(filename)
+
+    # load and validate the settings file, return the validated model instance
+    settings_dict = _load_settings_yaml(filename=filename, do_raise=True)
+
     if filename not in (HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML):
         # TODO: We currently skip validation of pydantic models if an extra
         #       filename is provided that does NOT correspond to the standard
         #       settings files of IBLRIG. This should be re-evaluated.
+        log.warning('Skipping validation of settings file `%s`', filename.name)
         do_raise = False
-    rs = _load_settings_yaml(filename=filename, do_raise=do_raise)
     try:
-        return model.model_validate(rs)
+        return model.model_validate(settings_dict)
     except ValidationError as e:
         if not do_raise:
             log.exception(e)
-            return model.model_construct(**rs)
+            return model.model_construct(**settings_dict)
         else:
-            raise e
+            raise
 
 
-def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> None:
+def save_pydantic_yaml(data: T, filename: PathLike | str | None = None) -> None:
     if filename is None:
         if isinstance(data, HardwareSettings):
             filename = HARDWARE_SETTINGS_YAML
@@ -294,20 +324,20 @@ def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> None:
         filename = Path(filename)
     yaml_data = data.model_dump()
     data.model_validate(yaml_data)
-    with open(filename, 'w') as f:
+    with filename.open('w') as f:
         log.debug(f'Dumping {type(data).__name__} to {filename.name}')
         yaml.dump(yaml_data, f, sort_keys=False)
 
 
-def patch_settings(rs: dict, filename: str | Path) -> dict:
+def patch_settings(settings: dict, filename: str | PathLike) -> dict:
     """
     Update loaded settings files to ensure compatibility with latest version.
 
     Parameters
     ----------
-    rs : dict
+    settings : dict
         A loaded settings file.
-    filename : str | Path
+    filename : str | PathLike
         The filename of the settings file.
 
     Returns
@@ -316,29 +346,29 @@ def patch_settings(rs: dict, filename: str | Path) -> dict:
         The updated settings.
     """
     filename = Path(filename)
-    settings_version = version.parse(rs.get('VERSION', '0.0.0'))
+    settings_version = version.parse(settings.get('VERSION', '0.0.0'))
     if filename.stem.startswith('hardware'):
-        if settings_version < version.Version('1.0.0') and 'device_camera' in rs:
+        if settings_version < version.Version('1.0.0') and 'device_camera' in settings:
             log.info('Patching hardware settings; assuming left camera label')
-            rs['device_cameras'] = {'left': rs.pop('device_camera')}
-            rs['VERSION'] = '1.0.0'
-        if 'device_cameras' in rs and rs['device_cameras'] is not None:
-            rs['device_cameras'] = {k: v for k, v in rs['device_cameras'].items() if v}  # remove empty keys
-            idx_missing = set(rs['device_cameras']) == {'left'} and 'INDEX' not in rs['device_cameras']['left']
+            settings['device_cameras'] = {'left': settings.pop('device_camera')}
+            settings['VERSION'] = '1.0.0'
+        if 'device_cameras' in settings and settings['device_cameras'] is not None:
+            settings['device_cameras'] = {k: v for k, v in settings['device_cameras'].items() if v}  # remove empty keys
+            idx_missing = set(settings['device_cameras']) == {'left'} and 'INDEX' not in settings['device_cameras']['left']
             if settings_version < version.Version('1.1.0') and idx_missing:
                 log.info('Patching hardware settings; assuming left camera index and training workflow')
-                workflow = rs['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
+                workflow = settings['device_cameras']['left'].pop('BONSAI_WORKFLOW', None)
                 bonsai_workflows = {'setup': 'devices/camera_setup/setup_video.bonsai', 'recording': workflow}
-                rs['device_cameras'] = {
+                settings['device_cameras'] = {
                     'training': {'BONSAI_WORKFLOW': bonsai_workflows, 'left': {'INDEX': 1, 'SYNC_LABEL': 'audio'}}
                 }
-                rs['VERSION'] = '1.1.0'
-        if rs.get('device_cameras') is None:
-            rs['device_cameras'] = {}
-    return rs
+                settings['VERSION'] = '1.1.0'
+        if settings.get('device_cameras') is None:
+            settings['device_cameras'] = {}
+    return settings
 
 
-def iterate_collection(session_path: str, collection_name='raw_task_data') -> str:
+def iterate_collection(session_path: PathLike | str, collection_name='raw_task_data') -> str:
     """
     Given a session path returns the next numbered collection name.
 
@@ -366,14 +396,16 @@ def iterate_collection(session_path: str, collection_name='raw_task_data') -> st
     >>> iterate_collection('./subject/2020-01-01/001', collection_name='raw_imaging_data')
     'raw_imaging_data_01'
     """
-    if not Path(session_path).exists():
+    session_path = Path(session_path)
+    if not session_path.exists():
         return f'{collection_name}_00'
-    collections = filter(Path.is_dir, Path(session_path).iterdir())
-    collection_names = map(lambda x: x.name, collections)
-    tasks = sorted(filter(re.compile(f'{collection_name}' + '_[0-9]{2}').match, collection_names))
+    tasks = sorted(p.name for p in session_path.glob(f'{collection_name}_[0-9][0-9]') if p.is_dir())
     if len(tasks) == 0:
         return f'{collection_name}_00'
-    return f'{collection_name}_{int(tasks[-1][-2:]) + 1:02}'
+    next_id = int(tasks[-1][-2:]) + 1
+    if next_id > 99:
+        raise ValueError(f'Maximum number of collections reached in {session_path}')
+    return f'{collection_name}_{next_id:02}'
 
 
 def create_bonsai_layout_from_template(workflow_file: Path) -> None:
