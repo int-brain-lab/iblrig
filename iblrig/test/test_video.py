@@ -50,9 +50,9 @@ class BaseCameraTest(BaseTestCases.CommonTestTask):
         self.tmp.joinpath('remote').mkdir()
         self.tmp.joinpath('local').mkdir()
 
-    def get_task_kwargs(self, tmpdir=True):
+    def get_task_kwargs(self):
         """Generate test task kwargs for typical video PC."""
-        super().get_task_kwargs(tmpdir=tmpdir)
+        super().get_task_kwargs()
         # Some test hardware settings
         hws = self.task_kwargs['hardware_settings']
         hws['device_cameras'] = load_pydantic_yaml(HardwareSettings, 'hardware_settings_template.yaml')['device_cameras']
