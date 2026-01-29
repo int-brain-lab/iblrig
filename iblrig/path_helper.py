@@ -126,27 +126,44 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
 
 
 def get_local_and_remote_paths(
-    local_path: str | Path | None = None, remote_path: str | Path | None = None, lab: str | None = None, iblrig_settings=None
-) -> dict:
+    local_path: os.PathLike | str | None = None,
+    remote_path: os.PathLike | str | None = None,
+    lab: str | None = None,
+    iblrig_settings: RigSettings | dict | None = None,
+) -> Bunch:
     """
-    Function used to parse input arguments to transfer commands.
+    Parse input arguments to transfer commands.
 
     If the arguments are None, reads in the settings and returns the values from the files.
-    local_subjects_path always has a fallback on the home directory / iblrig_data
-    remote_subjects_path has no fallback and will return None when all options are exhausted
-    :param local_path:
-    :param remote_path:
-    :param lab:
-    :param iblrig_settings: if provided, settings dictionary, otherwise will load the default settings files
-    :return: dictionary, with following keys (example output)
-       {'local_data_folder': PosixPath('C:/iblrigv8_data'),
-        'remote_data_folder': PosixPath('Y:/'),
-        'local_subjects_folder': PosixPath('C:/iblrigv8_data/mainenlab/Subjects'),
-        'remote_subjects_folder': PosixPath('Y:/Subjects')}
+    ``local_subjects_path`` always has a fallback on the home directory / iblrig_data.
+    ``remote_subjects_path`` has no fallback and will return None when all options are exhausted.
+
+    Parameters
+    ----------
+    local_path : os.PathLike or str, optional
+        Local data path. If None, the value is read from the settings file.
+    remote_path : os.PathLike or str, optional
+        Remote data path. If None, the value is read from the settings file.
+    lab : str, optional
+        Lab name used to construct the local subjects folder path. If None, the value is read from the settings file.
+    iblrig_settings : RigSettings or dict, optional
+        Settings dictionary. If None, the default settings files are loaded.
+
+    Returns
+    -------
+    Bunch
+        Bunch with the following keys:
+
+        - ``local_data_folder`` : pathlib.Path
+        - ``remote_data_folder`` : pathlib.Path or None
+        - ``local_subjects_folder`` : pathlib.Path
+        - ``remote_subjects_folder`` : pathlib.Path or None
     """
     # we only want to attempt to load the settings file if necessary
     if iblrig_settings is None and ((local_path is None) or (remote_path is None) or (lab is None)):
         iblrig_settings = load_pydantic_yaml(RigSettings)
+
+    # dump the settings to a dict
     if isinstance(iblrig_settings, RigSettings):
         iblrig_settings = iblrig_settings.model_dump()
 
