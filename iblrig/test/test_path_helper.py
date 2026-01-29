@@ -196,6 +196,99 @@ class TestIterateProtocols(unittest.TestCase):
         self.assertEqual([], path_helper._iterate_protocols(subject_folder, task))
 
 
+class TestIteratePreviousSessions(unittest.TestCase):
+    """Test for iblrig.path_helper.iterate_previous_sessions."""
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.tmpdir = Path(tmp.name)
+        self.local_dir = self.tmpdir / 'local'
+        self.remote_dir = self.tmpdir / 'remote'
+        self.task = 'ephysCW'
+        self.settings = {'NTRIALS': 260}
+
+    def _create_session(self, root, date='1900-01-01', num='001', lab='fakelab'):
+        sp = fu.create_fake_session_folder(root, date=date, num=num, lab=lab, increment=False)
+        p = fu.create_fake_raw_behavior_data_folder(sp, task=self.task, folder='raw_task_data_00', write_pars_stub=True)
+        fu.populate_task_settings(p, self.settings)
+        return sp
+
+    def test_local_only(self):
+        """Sessions returned when no remote folder is configured."""
+        self._create_session(self.local_dir, date='2024-01-01')
+        self._create_session(self.local_dir, date='2024-01-02')
+        sessions = path_helper.iterate_previous_sessions(
+            'fakemouse',
+            self.task,
+            n=5,
+            local_path=self.local_dir,
+            remote_path=None,
+            lab='fakelab',
+        )
+        self.assertEqual(2, len(sessions))
+        # Should be reverse chronological
+        self.assertIn('2024-01-02', str(sessions[0]['session_path']))
+        self.assertIn('2024-01-01', str(sessions[1]['session_path']))
+
+    def test_n_limits_results(self):
+        """At most n sessions are returned."""
+        for d in ('2024-01-01', '2024-01-02', '2024-01-03'):
+            self._create_session(self.local_dir, date=d)
+        sessions = path_helper.iterate_previous_sessions(
+            'fakemouse',
+            self.task,
+            n=2,
+            local_path=self.local_dir,
+            remote_path=None,
+            lab='fakelab',
+        )
+        self.assertEqual(2, len(sessions))
+
+    def test_deduplication_local_and_remote(self):
+        """Sessions present in both local and remote are deduplicated, local wins."""
+        self._create_session(self.local_dir, date='2024-01-01')
+        self._create_session(self.remote_dir, date='2024-01-01')
+        sessions = path_helper.iterate_previous_sessions(
+            'fakemouse',
+            self.task,
+            n=5,
+            local_path=self.local_dir,
+            remote_path=self.remote_dir / 'Subjects',
+            lab='fakelab',
+        )
+        self.assertEqual(1, len(sessions))
+        self.assertIn('local', str(sessions[0]['session_path']))  # Local should win
+
+    def test_merge_local_and_remote(self):
+        """Unique sessions from local and remote are merged and sorted."""
+        self._create_session(self.local_dir, date='2024-01-01')
+        self._create_session(self.remote_dir, date='2024-01-02', lab='')
+        sessions = path_helper.iterate_previous_sessions(
+            'fakemouse',
+            self.task,
+            n=5,
+            local_path=self.local_dir,
+            remote_path=self.remote_dir / 'Subjects',
+            lab='fakelab',
+        )
+        self.assertEqual(2, len(sessions))
+        self.assertIn('2024-01-02', str(sessions[0]['session_path']))
+        self.assertIn('2024-01-01', str(sessions[1]['session_path']))
+
+    def test_no_sessions(self):
+        """Returns empty list when no matching sessions exist."""
+        sessions = path_helper.iterate_previous_sessions(
+            'fakemouse',
+            self.task,
+            n=5,
+            local_path=self.local_dir,
+            remote_path=None,
+            lab='fakelab',
+        )
+        self.assertEqual([], sessions)
+
+
 class TestPatchSettings(unittest.TestCase):
     """Test for iblrig.path_helper.patch_settings."""
 
