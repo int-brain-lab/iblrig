@@ -218,6 +218,7 @@ class TestIteratePreviousSessions(unittest.TestCase):
             local_path=self.local_dir,
             remote_path=None,
             lab='fakelab',
+            iblrig_settings={},
         )
         self.assertEqual(2, len(sessions))
         # Should be reverse chronological
@@ -235,6 +236,7 @@ class TestIteratePreviousSessions(unittest.TestCase):
             local_path=self.local_dir,
             remote_path=None,
             lab='fakelab',
+            iblrig_settings={},
         )
         self.assertEqual(2, len(sessions))
 
@@ -249,6 +251,7 @@ class TestIteratePreviousSessions(unittest.TestCase):
             local_path=self.local_dir,
             remote_path=self.remote_dir / 'Subjects',
             lab='fakelab',
+            iblrig_settings={},
         )
         self.assertEqual(1, len(sessions))
         self.assertIn('local', str(sessions[0]['session_path']))  # Local should win
@@ -264,6 +267,7 @@ class TestIteratePreviousSessions(unittest.TestCase):
             local_path=self.local_dir,
             remote_path=self.remote_dir / 'Subjects',
             lab='fakelab',
+            iblrig_settings={},
         )
         self.assertEqual(2, len(sessions))
         self.assertIn('2024-01-02', str(sessions[0]['session_path']))
@@ -278,6 +282,7 @@ class TestIteratePreviousSessions(unittest.TestCase):
             local_path=self.local_dir,
             remote_path=None,
             lab='fakelab',
+            iblrig_settings={},
         )
         self.assertEqual([], sessions)
 
