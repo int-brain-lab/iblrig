@@ -45,18 +45,14 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
     list[dict]
         List of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
     """
-    rig_paths = get_local_and_remote_paths(**kwargs)
-    local_subjects_folder = rig_paths['local_subjects_folder']
-    remote_subjects_folder = rig_paths['remote_subjects_folder']
-    sessions = _iterate_protocols(local_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
-    if remote_subjects_folder is not None:
-        remote_sessions = _iterate_protocols(remote_subjects_folder.joinpath(subject_name), task_name=task_name, n=n)
-        if remote_sessions is not None:
-            sessions.extend(remote_sessions)
-        # here we rely on the fact that np.unique sort and then we output sessions with the last one first
-        _, ises = np.unique([s['session_stub'] for s in sessions], return_index=True)
-        sessions = [sessions[i] for i in np.flipud(ises)]
-    return sessions
+    paths = get_local_and_remote_paths(**kwargs)
+    sessions = _iterate_protocols(paths.local_subjects_folder / subject_name, task_name=task_name, n=n)
+    if paths.remote_subjects_folder is not None:
+        remote_sessions = _iterate_protocols(paths.remote_subjects_folder / subject_name, task_name=task_name, n=n)
+        sessions.extend(remote_sessions)
+        _, indices = np.unique([s['session_stub'] for s in sessions], return_index=True)  # returns *sorted* unique elements
+        sessions = [sessions[i] for i in np.flipud(indices)]
+    return sessions[:n]
 
 
 def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[dict]:
