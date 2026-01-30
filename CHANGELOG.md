@@ -10,6 +10,7 @@ UNRELEASED
 * changed: Refactored methods for creating sound waveforms
 * changed: Updated debiasing routine for readability (no functional changes)
 * changed: Refactoring of GUI code
+* changed: Refactoring of `path_helper` module
 * fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
 
 8.29.0
