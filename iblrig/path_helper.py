@@ -51,13 +51,13 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
     n : int, optional
         maximum number of protocols to return
     **kwargs
-        Optional arguments to be passed to iblrig.path_helper.get_local_and_remote_paths
+        Optional arguments to be passed to :func:`get_local_and_remote_paths`.
         If not used, will use the arguments from iblrig/settings/iblrig_settings.yaml
 
     Returns
     -------
     list[SessionInfo]
-        List of SessionInfo
+        List of :class:`SessionInfo`.
     """
     paths = get_local_and_remote_paths(**kwargs)
     sessions = _iterate_protocols(paths.local_subjects_folder / subject_name, task_name=task_name, n=n)
@@ -89,7 +89,7 @@ def _iterate_protocols(subject_folder: PathLike | str, task_name: str, n: int = 
     Returns
     -------
     list[SessionInfo]
-        List of SessionInfo
+        List of :class:`SessionInfo`.
     """
 
     def protocol_number(task_config: dict) -> int:
@@ -159,30 +159,30 @@ def get_local_and_remote_paths(
     """
     Parse input arguments to transfer commands.
 
-    If the arguments are None, reads in the settings and returns the values from the files.
+    If the arguments are :obj:`None`, reads in the settings and returns the values from the files.
     ``local_subjects_path`` always has a fallback on the home directory / iblrig_data.
-    ``remote_subjects_path`` has no fallback and will return None when all options are exhausted.
+    ``remote_subjects_path`` has no fallback and will return :obj:`None` when all options are exhausted.
 
     Parameters
     ----------
     local_path : PathLike or str, optional
-        Local data path. If None, the value is read from the settings file.
+        Local data path. If :obj:`None`, the value is read from the settings file.
     remote_path : PathLike or str, optional
-        Remote data path. If None, the value is read from the settings file.
+        Remote data path. If :obj:`None`, the value is read from the settings file.
     lab : str, optional
-        Lab name used to construct the local subjects folder path. If None, the value is read from the settings file.
-    iblrig_settings : RigSettings or dict, optional
-        Settings dictionary. If None, the default settings files are loaded.
+        Lab name used to construct the local subjects folder path. If :obj:`None`, the value is read from the settings file.
+    iblrig_settings : :class:`~iblrig.pydantic_definitions.RigSettings` or dict, optional
+        Settings dictionary. If :obj:`None`, the default settings files are loaded.
 
     Returns
     -------
-    LocalAndRemotePaths
+    :class:`LocalAndRemotePaths`
         Pydantic model with the following fields:
 
-        - ``local_data_folder`` : pathlib.Path
-        - ``remote_data_folder`` : pathlib.Path or None
-        - ``local_subjects_folder`` : pathlib.Path
-        - ``remote_subjects_folder`` : pathlib.Path or None
+        - ``local_data_folder`` : :class:`~pathlib.Path`
+        - ``remote_data_folder`` : :class:`~pathlib.Path` or :obj:`None`
+        - ``local_subjects_folder`` : :class:`~pathlib.Path`
+        - ``remote_subjects_folder`` : :class:`~pathlib.Path` or :obj:`None`
     """
     # we only want to attempt to load the settings file if necessary
     if iblrig_settings is None and ((local_path is None) or (remote_path is None) or (lab is None)):
@@ -241,17 +241,15 @@ def _load_settings_yaml(filename: PathLike | str = RIG_SETTINGS_YAML, do_raise: 
     Parameters
     ----------
     filename : PathLike or str, optional
-        Path to the YAML file. Bare filenames (without directory components)
-        are resolved relative to the IBLRIG settings folder.
-        Defaults to RIG_SETTINGS_YAML.
+        Path to the YAML file. Bare filenames (without directory components) are resolved relative to the IBLRIG settings folder.
+        Defaults to :const:`~iblrig.constants.RIG_SETTINGS_YAML`.
     do_raise : bool, optional
-        If True (default), exceptions are raised. If False, exceptions are
-        logged and an empty dict is returned.
+        If :obj:`True` (default), exceptions are raised. If :obj:`False`, exceptions are logged and an empty dict is returned.
 
     Returns
     -------
     dict[str, Any]
-        The loaded and patched settings.
+        The loaded and patched settings (see :func:`patch_settings`).
     """
     filename = Path(filename)
 
@@ -280,7 +278,8 @@ def deduce_settings_filename(model_type: type[T]) -> Path:
     Parameters
     ----------
     model_type : type[T]
-        The Pydantic model class (`HardwareSettings` or `RigSettings`).
+        The Pydantic model class (:class:`~iblrig.pydantic_definitions.HardwareSettings` or
+        :class:`~iblrig.pydantic_definitions.RigSettings`).
 
     Returns
     -------
@@ -290,7 +289,7 @@ def deduce_settings_filename(model_type: type[T]) -> Path:
     Raises
     ------
     TypeError
-        If `model_type` is not a recognised settings model.
+        If *model_type* is not a recognised settings model.
     """
     if model_type == HardwareSettings:
         return HARDWARE_SETTINGS_YAML
@@ -302,36 +301,32 @@ def deduce_settings_filename(model_type: type[T]) -> Path:
 
 def load_pydantic_yaml(model: type[T], filename: PathLike | str | None = None, do_raise: bool = True) -> T:
     """
-    Load YAML data from a specified file or a standard IBLRIG settings file,
-    validate it using a Pydantic model, and return the validated Pydantic model
-    instance.
+    Load YAML data from a specified file or a standard IBLRIG settings file, validate it using a Pydantic model, and return the
+    validated Pydantic model instance.
 
     Parameters
     ----------
-    model : Type[T]
+    model : type[T]
         The Pydantic model class to validate the YAML data against.
-    filename : PathLike | str | None, optional
-        The path to the YAML file.
-        If None (default), the function deduces the appropriate standard IBLRIG
-        settings file based on the model.
+    filename : PathLike or str or None, optional
+        The path to the YAML file. If :obj:`None` (default), the function deduces the appropriate standard IBLRIG settings file
+        via :func:`deduce_settings_filename`.
     do_raise : bool, optional
-        If True (default), raise a ValidationError if validation fails.
-        If False, log the validation error and construct a model instance
-        with the provided data. Defaults to True.
+        If :obj:`True` (default), raise a :exc:`~pydantic.ValidationError` if validation fails.  If :obj:`False`, log the error
+        and return an instance built with :meth:`~pydantic.BaseModel.model_construct`.
 
     Returns
     -------
     T
-        An instance of the Pydantic model, validated against the YAML data.
+        An instance of *model*, validated against the YAML data.
 
     Raises
     ------
     ValidationError
-        If validation fails and do_raise is set to True.
-        The raised exception contains details about the validation error.
+        If validation fails and *do_raise* is :obj:`True`.
     TypeError
-        If the filename is None and the model class is not recognized as
-        HardwareSettings or RigSettings.
+        If *filename* is :obj:`None` and *model* is not recognised by
+        :func:`deduce_settings_filename`.
     """
     # deduce filename if not provided
     filename = Path(filename) if filename else deduce_settings_filename(model)
@@ -362,14 +357,15 @@ def save_pydantic_yaml(model: T, filename: PathLike | str | None = None) -> None
     Parameters
     ----------
     model : T
-        A Pydantic model instance (`HardwareSettings` or `RigSettings`).
+        A Pydantic model instance (:class:`~iblrig.pydantic_definitions.HardwareSettings` or
+        :class:`~iblrig.pydantic_definitions.RigSettings`).
     filename : PathLike or str or None, optional
-        Destination file path.  If `None`, the standard IBLRIG settings file is deduced from the type of `data`
+        Destination file path.  If :obj:`None`, the standard IBLRIG settings file is deduced via :func:`deduce_settings_filename`.
 
     Raises
     ------
     TypeError
-        If *filename* is `None` and the type of *data* is not a recognised settings model.
+        If *filename* is :obj:`None` and the type of *model* is not recognised by :func:`deduce_settings_filename`.
     ValidationError
         If the round-trip validation of the dumped data fails.
     """
@@ -464,17 +460,14 @@ def create_bonsai_layout_from_template(workflow_file: Path) -> None:
     """
     Create a Bonsai layout file from a template if it does not already exist.
 
-    If the file with the suffix `.bonsai.layout` does not exist for the given
-    workflow file, this function will attempt to create it from a template
-    file with the suffix `.bonsai.layout_template`. If the template file also
-    does not exist, the function logs that no template layout is available.
+    If the file with the suffix `.bonsai.layout` does not exist for the given workflow file, this function will attempt to create
+    it from a template file with the suffix `.bonsai.layout_template`. If the template file also does not exist, the function logs
+    that no template layout is available.
 
-    Background: Bonsai stores dialog settings (window position, control
-    visibility, etc.) in an XML file with the suffix `.bonsai.layout`. These
-    layout files are user-specific and may be overwritten locally by the user
-    according to their preferences. To ensure that a default layout is
-    available, a template file with the suffix `.bonsai.layout_template` can
-    be provided as a starting point.
+    Background: Bonsai stores dialog settings (window position, control visibility, etc.) in an XML file with the suffix
+    `.bonsai.layout`. These layout files are user-specific and may be overwritten locally by the user according to their
+    preferences. To ensure that a default layout is available, a template file with the suffix `.bonsai.layout_template` can be
+    provided as a starting point.
 
     Parameters
     ----------
@@ -484,7 +477,7 @@ def create_bonsai_layout_from_template(workflow_file: Path) -> None:
     Raises
     ------
     FileNotFoundError
-        If the provided workflow_file does not exist.
+        If the provided *workflow_file* does not exist.
     """
     if not workflow_file.exists():
         raise FileNotFoundError(workflow_file)
