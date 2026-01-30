@@ -14,7 +14,7 @@ import pandas as pd
 
 import iblrig.choiceworld
 from iblrig import session_creator
-from iblrig.path_helper import iterate_previous_sessions
+from iblrig.path_helper import iterate_previous_sessions, SessionInfo
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession
@@ -106,7 +106,7 @@ class TestGetPreviousSession(BaseTestCases.CommonTestTask):
             iblrig_settings=self.session_b.iblrig_settings,
         )
         self.assertEqual((2, 2.1), (training_info['training_phase'], training_info['adaptive_reward']))
-        self.assertIsInstance(session_info, dict)
+        self.assertIsInstance(session_info, SessionInfo)
 
         # test the task instantiation
         t = TrainingChoiceWorldSession(**self.task_kwargs, training_phase=4, adaptive_reward=2.9, adaptive_gain=6.0)

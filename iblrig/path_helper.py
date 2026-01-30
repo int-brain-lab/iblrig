@@ -13,14 +13,22 @@ from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML, SETTINGS_PATH
 from iblrig.pydantic_definitions import BunchModel, HardwareSettings, RigSettings
-from iblutil.util import Bunch
 from one.alf.spec import is_session_path
 
 log = logging.getLogger(__name__)
 T = TypeVar('T', HardwareSettings, RigSettings)
 
 
-def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[dict]:
+class SessionInfo(BunchModel):
+    session_stub: str
+    session_path: Path
+    task_collection: str
+    experiment_description: dict
+    task_settings: dict
+    file_task_data: Path
+
+
+def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[SessionInfo]:
     """
     Iterate over the sessions of a given subject in both the remote and local path and search for a given protocol name.
     Return the information of the last n found matching protocols in the form of a dictionary.
@@ -39,20 +47,20 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
 
     Returns
     -------
-    list[dict]
-        List of dictionaries with keys: session_path, experiment_description, task_settings, file_task_data
+    list[SessionInfo]
+        List of SessionInfo
     """
     paths = get_local_and_remote_paths(**kwargs)
     sessions = _iterate_protocols(paths.local_subjects_folder / subject_name, task_name=task_name, n=n)
     if paths.remote_subjects_folder is not None:
         remote_sessions = _iterate_protocols(paths.remote_subjects_folder / subject_name, task_name=task_name, n=n)
         sessions.extend(remote_sessions)
-        _, indices = np.unique([s['session_stub'] for s in sessions], return_index=True)  # returns *sorted* unique elements
+        _, indices = np.unique([s.session_stub for s in sessions], return_index=True)  # returns *sorted* unique elements
         sessions = [sessions[i] for i in np.flipud(indices)]
     return sessions[:n]
 
 
-def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[dict[str, Any]]:
+def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[SessionInfo]:
     """
     Return information on the last n sessions with matching protocol.
 
@@ -71,9 +79,8 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
 
     Returns
     -------
-    list[dict]
-        list of dictionaries with keys: session_stub, session_path, experiment_description,
-        task_settings, file_task_data.
+    list[SessionInfo]
+        List of SessionInfo
     """
 
     def proc_num(x):
@@ -85,7 +92,7 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
         collection_int = int(i[-1]) if i[-1].isnumeric() else 0
         return x.get('protocol_number', collection_int)
 
-    protocols: list[dict[str, Any]] = []
+    protocols: list[SessionInfo] = []
     if subject_folder is None or Path(subject_folder).exists() is False:
         return protocols
     sessions = list(subject_folder.glob('????-??-??/*/_ibl_experiment.description*.yaml'))  # seq may be X or XXX
@@ -102,15 +109,13 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
             if task_settings.get('NTRIALS', min_trials + 1) < min_trials:  # ignore sessions with too few trials
                 continue
             protocols.append(
-                Bunch(
-                    {
-                        'session_stub': '_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
-                        'session_path': file_experiment.parent,
-                        'task_collection': adt['collection'],
-                        'experiment_description': ad,
-                        'task_settings': task_settings,
-                        'file_task_data': session_path.joinpath(adt['collection'], '_iblrig_taskData.raw.jsonable'),
-                    }
+                SessionInfo(
+                    session_stub='_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
+                    session_path=file_experiment.parent,
+                    task_collection=adt['collection'],
+                    experiment_description=ad,
+                    task_settings=task_settings,
+                    file_task_data=session_path / adt['collection'] / '_iblrig_taskData.raw.jsonable',
                 )
             )
             if len(protocols) >= n:

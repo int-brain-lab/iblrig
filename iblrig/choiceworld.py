@@ -11,7 +11,7 @@ import numpy.typing as npt
 import pandas as pd
 
 import iblrig.raw_data_loaders
-from iblrig.path_helper import iterate_previous_sessions
+from iblrig.path_helper import iterate_previous_sessions, SessionInfo
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def get_subject_training_info(
     default_reward: float = DEFAULT_REWARD_VOLUME,
     mode: Literal['silent', 'raise'] = 'silent',
     **kwargs,
-) -> tuple[dict, dict | None]:
+) -> tuple[dict, SessionInfo | None]:
     """
     Goes through a subject's history and gets the latest training phase and adaptive reward volume.
 
@@ -88,8 +88,8 @@ def get_subject_training_info(
         session_info = iterate_previous_sessions(subject_name, task_name=task_name, n=1, **kwargs)
         if len(session_info) > 0:
             session_info = session_info[0]
-            task_settings = session_info.get('task_settings')
-            trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.get('file_task_data'))
+            task_settings = session_info.task_settings
+            trials_data, _ = iblrig.raw_data_loaders.load_task_jsonable(session_info.file_task_data)
     except Exception as e:
         log.exception(msg='Error obtaining training information from previous session!', exc_info=e)
         training_info['adaptive_gain'] = stim_gain_on_error
