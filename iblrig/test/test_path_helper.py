@@ -6,12 +6,15 @@ import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
+from pydantic import BaseModel, ValidationError
 
 import ibllib.tests.fixtures.utils as fu
 from ibllib.tests import TEST_DB
 from iblrig import path_helper
+from iblrig.constants import HARDWARE_SETTINGS_YAML, RIG_SETTINGS_YAML
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 
@@ -90,6 +93,33 @@ class TestGetLocalAndRemotePaths(unittest.TestCase):
         )
         self.assertEqual(tmp / 'other', paths.remote_data_folder)
         self.assertEqual(tmp / 'local', paths.local_data_folder)
+
+    def test_no_settings_all_args_provided(self):
+        """When iblrig_settings is None but all paths and lab are provided, settings are not loaded."""
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        tmp = Path(tmpdir.name)
+        paths = path_helper.get_local_and_remote_paths(local_path=tmp / 'local', remote_path=tmp / 'remote', lab='testlab')
+        self.assertEqual(tmp / 'local', paths.local_data_folder)
+        self.assertEqual(tmp / 'remote', paths.remote_data_folder)
+
+    def test_no_settings_loads_from_file(self):
+        """When iblrig_settings is None and a path is missing, settings are loaded from file."""
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        tmp = Path(tmpdir.name)
+        mock_settings = RigSettings.model_validate(
+            {
+                'iblrig_local_data_path': tmp / 'data',
+                'iblrig_remote_data_path': None,
+                'ALYX_USER': 'foo',
+                'ALYX_URL': TEST_ALYX_URL,
+                'ALYX_LAB': 'mocklab',
+            }
+        )
+        with patch.object(path_helper, 'load_pydantic_yaml', return_value=mock_settings):
+            paths = path_helper.get_local_and_remote_paths()
+        self.assertEqual(tmp / 'data', paths.local_data_folder)
 
 
 class TestIterateCollection(unittest.TestCase):
@@ -369,19 +399,14 @@ class TestDeduceFilename(unittest.TestCase):
 
     def test_hardware_settings(self):
         """HardwareSettings maps to HARDWARE_SETTINGS_YAML."""
-        from iblrig.constants import HARDWARE_SETTINGS_YAML
-
         self.assertEqual(HARDWARE_SETTINGS_YAML, path_helper.deduce_settings_filename(HardwareSettings))
 
     def test_rig_settings(self):
         """RigSettings maps to RIG_SETTINGS_YAML."""
-        from iblrig.constants import RIG_SETTINGS_YAML
-
         self.assertEqual(RIG_SETTINGS_YAML, path_helper.deduce_settings_filename(RigSettings))
 
     def test_unknown_model_raises(self):
         """TypeError for unrecognised model type."""
-        from pydantic import BaseModel
 
         class Dummy(BaseModel):
             x: int = 1
@@ -395,7 +420,6 @@ class TestLoadPydanticYaml(unittest.TestCase):
 
     def test_unknown_model_raises_type_error(self):
         """TypeError raised when model is not HardwareSettings or RigSettings and no filename given."""
-        from pydantic import BaseModel
 
         class Dummy(BaseModel):
             x: int = 1
@@ -415,13 +439,21 @@ class TestLoadPydanticYaml(unittest.TestCase):
             result = load_pydantic_yaml(HardwareSettings, fname)
         self.assertIsInstance(result, HardwareSettings)
 
+    def test_validation_error_do_raise_true(self):
+        """When do_raise=True and standard filename, ValidationError propagates."""
+        with (
+            patch('iblrig.path_helper._load_settings_yaml', return_value={'INVALID_FIELD': 'bad_value'}),
+            patch('iblrig.path_helper.deduce_settings_filename', return_value=path_helper.HARDWARE_SETTINGS_YAML),
+            self.assertRaises(ValidationError),
+        ):
+            load_pydantic_yaml(HardwareSettings)
+
 
 class TestSavePydanticYaml(unittest.TestCase):
     """Tests for iblrig.path_helper.save_pydantic_yaml."""
 
     def test_unknown_model_raises_type_error(self):
         """TypeError raised when model instance is not HardwareSettings or RigSettings."""
-        from pydantic import BaseModel
 
         class Dummy(BaseModel):
             x: int = 1
