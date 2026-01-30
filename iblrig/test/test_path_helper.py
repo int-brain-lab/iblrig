@@ -349,5 +349,162 @@ class TestYAML(unittest.TestCase):
             assert settings1 == settings2
 
 
+class TestLoadSettingsYaml(unittest.TestCase):
+    """Tests for iblrig.path_helper._load_settings_yaml."""
+
+    def test_exception_do_raise_false(self):
+        """When do_raise=False, exceptions are logged and an empty dict returned."""
+        with self.assertLogs('iblrig.path_helper', level='ERROR'):
+            result = path_helper._load_settings_yaml('/nonexistent/file.yaml', do_raise=False)
+        self.assertEqual({}, result)
+
+    def test_exception_do_raise_true(self):
+        """When do_raise=True, exceptions propagate."""
+        with self.assertRaises(FileNotFoundError):
+            path_helper._load_settings_yaml('/nonexistent/file.yaml', do_raise=True)
+
+
+class TestDeduceFilename(unittest.TestCase):
+    """Tests for iblrig.path_helper._deduce_filename."""
+
+    def test_hardware_settings(self):
+        """HardwareSettings maps to HARDWARE_SETTINGS_YAML."""
+        from iblrig.constants import HARDWARE_SETTINGS_YAML
+
+        self.assertEqual(HARDWARE_SETTINGS_YAML, path_helper.deduce_settings_filename(HardwareSettings))
+
+    def test_rig_settings(self):
+        """RigSettings maps to RIG_SETTINGS_YAML."""
+        from iblrig.constants import RIG_SETTINGS_YAML
+
+        self.assertEqual(RIG_SETTINGS_YAML, path_helper.deduce_settings_filename(RigSettings))
+
+    def test_unknown_model_raises(self):
+        """TypeError for unrecognised model type."""
+        from pydantic import BaseModel
+
+        class Dummy(BaseModel):
+            x: int = 1
+
+        with self.assertRaises(TypeError):
+            path_helper.deduce_settings_filename(Dummy)
+
+
+class TestLoadPydanticYaml(unittest.TestCase):
+    """Tests for iblrig.path_helper.load_pydantic_yaml."""
+
+    def test_unknown_model_raises_type_error(self):
+        """TypeError raised when model is not HardwareSettings or RigSettings and no filename given."""
+        from pydantic import BaseModel
+
+        class Dummy(BaseModel):
+            x: int = 1
+
+        with self.assertRaises(TypeError):
+            load_pydantic_yaml(Dummy)
+
+    def test_validation_error_do_raise_false(self):
+        """When do_raise=False, validation errors are logged and model_construct is used."""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            yaml.dump({'INVALID_FIELD': 'bad_value'}, f)
+            f.flush()
+            fname = f.name
+        self.addCleanup(lambda: os.unlink(fname))
+        # Non-standard filename triggers do_raise=False internally
+        with self.assertLogs('iblrig.path_helper', level='WARNING'):
+            result = load_pydantic_yaml(HardwareSettings, fname)
+        self.assertIsInstance(result, HardwareSettings)
+
+
+class TestSavePydanticYaml(unittest.TestCase):
+    """Tests for iblrig.path_helper.save_pydantic_yaml."""
+
+    def test_unknown_model_raises_type_error(self):
+        """TypeError raised when model instance is not HardwareSettings or RigSettings."""
+        from pydantic import BaseModel
+
+        class Dummy(BaseModel):
+            x: int = 1
+
+        with self.assertRaises(TypeError):
+            save_pydantic_yaml(Dummy(x=1))
+
+
+class TestCreateBonsaiLayout(unittest.TestCase):
+    """Tests for iblrig.path_helper.create_bonsai_layout_from_template."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.tmpdir = Path(tmp.name)
+
+    def test_missing_workflow_raises(self):
+        """FileNotFoundError when workflow file does not exist."""
+        with self.assertRaises(FileNotFoundError):
+            path_helper.create_bonsai_layout_from_template(self.tmpdir / 'missing.bonsai')
+
+    def test_layout_created_from_template(self):
+        """Layout file is created from template when it doesn't exist."""
+        wf = self.tmpdir / 'workflow.bonsai'
+        wf.touch()
+        template = self.tmpdir / 'workflow.bonsai.layout_template'
+        template.write_text('<Layout>test</Layout>')
+        path_helper.create_bonsai_layout_from_template(wf)
+        layout = self.tmpdir / 'workflow.bonsai.layout'
+        self.assertTrue(layout.exists())
+        self.assertEqual('<Layout>test</Layout>', layout.read_text())
+
+    def test_existing_layout_not_overwritten(self):
+        """Existing layout file is not overwritten."""
+        wf = self.tmpdir / 'workflow.bonsai'
+        wf.touch()
+        layout = self.tmpdir / 'workflow.bonsai.layout'
+        layout.write_text('existing')
+        template = self.tmpdir / 'workflow.bonsai.layout_template'
+        template.write_text('new')
+        path_helper.create_bonsai_layout_from_template(wf)
+        self.assertEqual('existing', layout.read_text())
+
+    def test_no_template_available(self):
+        """No error when neither layout nor template exist."""
+        wf = self.tmpdir / 'workflow.bonsai'
+        wf.touch()
+        path_helper.create_bonsai_layout_from_template(wf)
+        self.assertFalse((self.tmpdir / 'workflow.bonsai.layout').exists())
+
+
+class TestProtocolNumber(unittest.TestCase):
+    """Test the protocol_number inner function via _iterate_protocols."""
+
+    def test_explicit_protocol_number_key(self):
+        """When protocol_number key is present, it is used for sorting."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        tmpdir = Path(tmp.name)
+        task = 'testTask'
+        settings = {'NTRIALS': 260}
+
+        sp = fu.create_fake_session_folder(tmpdir)
+        # Create experiment description with explicit protocol_number
+        stub = {
+            'tasks': [
+                {task: {'collection': 'raw_task_data_00', 'protocol_number': 5}},
+                {task: {'collection': 'raw_task_data_01', 'protocol_number': 10}},
+            ]
+        }
+        p0 = fu.create_fake_raw_behavior_data_folder(
+            sp, task=task, folder='raw_task_data_00', write_pars_stub={'behaviour': stub}
+        )
+        fu.populate_task_settings(p0, settings)
+        p1 = fu.create_fake_raw_behavior_data_folder(sp, task=task, folder='raw_task_data_01', write_pars_stub=False)
+        fu.populate_task_settings(p1, settings)
+
+        subject_folder = sp.parent.parent
+        results = path_helper._iterate_protocols(subject_folder, task, n=1)
+        # Should pick the one with higher protocol_number (raw_task_data_01, pn=10)
+        self.assertEqual(1, len(results))
+        self.assertEqual('raw_task_data_01', results[0]['task_collection'])
+
+
 if __name__ == '__main__':
     unittest.main(exit=False)

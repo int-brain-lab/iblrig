@@ -21,6 +21,8 @@ T = TypeVar('T', HardwareSettings, RigSettings)
 
 
 class SessionInfo(BunchModel):
+    """Information about a session."""
+
     session_stub: str
     """Session stub in the form of YYYY-MM-DD_NNN"""
     session_path: Path
@@ -271,6 +273,33 @@ def _load_settings_yaml(filename: PathLike | str = RIG_SETTINGS_YAML, do_raise: 
     return settings_yaml
 
 
+def deduce_settings_filename(model_type: type[T]) -> Path:
+    """
+    Resolve the YAML settings filename for a given Pydantic model type.
+
+    Parameters
+    ----------
+    model_type : type[T]
+        The Pydantic model class (`HardwareSettings` or `RigSettings`).
+
+    Returns
+    -------
+    Path
+        The resolved settings file path.
+
+    Raises
+    ------
+    TypeError
+        If `model_type` is not a recognised settings model.
+    """
+    if model_type == HardwareSettings:
+        return HARDWARE_SETTINGS_YAML
+    elif model_type == RigSettings:
+        return RIG_SETTINGS_YAML
+    else:
+        raise TypeError(f'Cannot deduce filename for model `{model_type.__name__}`.')
+
+
 def load_pydantic_yaml(model: type[T], filename: PathLike | str | None = None, do_raise: bool = True) -> T:
     """
     Load YAML data from a specified file or a standard IBLRIG settings file,
@@ -304,15 +333,8 @@ def load_pydantic_yaml(model: type[T], filename: PathLike | str | None = None, d
         If the filename is None and the model class is not recognized as
         HardwareSettings or RigSettings.
     """
-    if filename is None:
-        if model == HardwareSettings:
-            filename = HARDWARE_SETTINGS_YAML
-        elif model == RigSettings:
-            filename = RIG_SETTINGS_YAML
-        else:
-            raise TypeError(f'Cannot deduce filename for model `{model.__name__}`.')
-    else:
-        filename = Path(filename)
+    # deduce filename if not provided
+    filename = Path(filename) if filename else deduce_settings_filename(model)
 
     # load and validate the settings file, return the validated model instance
     settings_dict = _load_settings_yaml(filename=filename, do_raise=True)
@@ -333,21 +355,30 @@ def load_pydantic_yaml(model: type[T], filename: PathLike | str | None = None, d
             raise
 
 
-def save_pydantic_yaml(data: T, filename: PathLike | str | None = None) -> None:
-    if filename is None:
-        if isinstance(data, HardwareSettings):
-            filename = HARDWARE_SETTINGS_YAML
-        elif isinstance(data, RigSettings):
-            filename = RIG_SETTINGS_YAML
-        else:
-            raise TypeError(f'Cannot deduce filename for model `{type(data).__name__}`.')
-    else:
-        filename = Path(filename)
-    yaml_data = data.model_dump()
-    data.model_validate(yaml_data)
+def save_pydantic_yaml(model: T, filename: PathLike | str | None = None) -> None:
+    """
+    Validate a Pydantic model instance and save it as YAML.
+
+    Parameters
+    ----------
+    model : T
+        A Pydantic model instance (`HardwareSettings` or `RigSettings`).
+    filename : PathLike or str or None, optional
+        Destination file path.  If `None`, the standard IBLRIG settings file is deduced from the type of `data`
+
+    Raises
+    ------
+    TypeError
+        If *filename* is `None` and the type of *data* is not a recognised settings model.
+    ValidationError
+        If the round-trip validation of the dumped data fails.
+    """
+    filename = Path(filename) if filename else deduce_settings_filename(type(model))
+    data = model.model_dump()
+    model.model_validate(data)
     with filename.open('w') as f:
-        log.debug(f'Dumping {type(data).__name__} to {filename.name}')
-        yaml.dump(yaml_data, f, sort_keys=False)
+        log.debug(f'Dumping {type(model).__name__} to {filename.name}')
+        yaml.dump(data, f, sort_keys=False)
 
 
 def patch_settings(settings: dict, filename: str | PathLike) -> dict:
