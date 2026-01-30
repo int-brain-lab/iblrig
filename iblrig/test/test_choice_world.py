@@ -14,7 +14,7 @@ import pandas as pd
 
 import iblrig.choiceworld
 from iblrig import session_creator
-from iblrig.path_helper import iterate_previous_sessions, SessionInfo
+from iblrig.path_helper import SessionInfo, iterate_previous_sessions
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import BaseTestCases
 from iblrig_tasks._iblrig_tasks_passiveChoiceWorld.task import Session as PassiveChoiceWorldSession

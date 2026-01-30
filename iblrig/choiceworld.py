@@ -11,7 +11,7 @@ import numpy.typing as npt
 import pandas as pd
 
 import iblrig.raw_data_loaders
-from iblrig.path_helper import iterate_previous_sessions, SessionInfo
+from iblrig.path_helper import SessionInfo, iterate_previous_sessions
 
 log = logging.getLogger(__name__)
 
