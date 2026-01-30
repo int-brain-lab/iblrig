@@ -1,4 +1,5 @@
 import logging
+import re
 import shutil
 from os import PathLike
 from pathlib import Path
@@ -21,11 +22,17 @@ T = TypeVar('T', HardwareSettings, RigSettings)
 
 class SessionInfo(BunchModel):
     session_stub: str
+    """Session stub in the form of YYYY-MM-DD_NNN"""
     session_path: Path
+    """Path to the session folder"""
     task_collection: str
+    """Name of the task collection"""
     experiment_description: dict
+    """Experiment description"""
     task_settings: dict
+    """Task settings"""
     file_task_data: Path
+    """Path to the task data file"""
 
 
 def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **kwargs) -> list[SessionInfo]:
@@ -60,7 +67,7 @@ def iterate_previous_sessions(subject_name: str, task_name: str, n: int = 1, **k
     return sessions[:n]
 
 
-def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_trials: int = 43) -> list[SessionInfo]:
+def _iterate_protocols(subject_folder: PathLike | str, task_name: str, n: int = 1, min_trials: int = 43) -> list[SessionInfo]:
     """
     Return information on the last n sessions with matching protocol.
 
@@ -68,7 +75,7 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
 
     Parameters
     ----------
-    subject_folder : Path
+    subject_folder : PathLike or str
         A subject folder containing dated folders.
     task_name : str
         The task protocol name to look for.
@@ -83,39 +90,48 @@ def _iterate_protocols(subject_folder: Path, task_name: str, n: int = 1, min_tri
         List of SessionInfo
     """
 
-    def proc_num(x):
-        """Return protocol number.
-
-        Use 'protocol_number' key if present (unlikely), otherwise use collection name.
+    def protocol_number(task_config: dict) -> int:
         """
-        i = (x or {}).get('collection', '00').split('_')
-        collection_int = int(i[-1]) if i[-1].isnumeric() else 0
-        return x.get('protocol_number', collection_int)
+        Return protocol number.
+
+        Use `protocol_number` key if present (unlikely), otherwise use collection name.
+        """
+        if 'protocol_number' in task_config:
+            return task_config['protocol_number']
+        collection = task_config.get('collection', '')
+        match = re.search(r'_(\d+)$', collection)
+        return int(match.group(1)) if match else 0
+
+    # return early if subject folder does not exist
+    subject_folder = Path(subject_folder)
+    if not subject_folder.exists():
+        return []
+
+    # list all sessions in subject folder
+    sessions = list(subject_folder.glob('????-??-??/*/_ibl_experiment.description*.yaml'))  # seq may be X or XXX
+    sessions = [x for x in sessions if is_session_path(x.parent.relative_to(subject_folder.parent))]
 
     protocols: list[SessionInfo] = []
-    if subject_folder is None or Path(subject_folder).exists() is False:
-        return protocols
-    sessions = list(subject_folder.glob('????-??-??/*/_ibl_experiment.description*.yaml'))  # seq may be X or XXX
-    # Make extra sure to only include valid sessions
-    sessions = [x for x in sessions if is_session_path(x.relative_to(subject_folder.parent).parent)]
     for file_experiment in sorted(sessions, reverse=True):
         session_path = file_experiment.parent
-        ad = session_params.read_params(file_experiment)
-        # reversed: we look for the last task first if the protocol ran twice
-        tasks = filter(None, map(lambda x: x.get(task_name), ad.get('tasks', [])))
-        for adt in sorted(tasks, key=proc_num, reverse=True):
-            if not (task_settings := load_settings(session_path, task_collection=adt['collection'])):
+        experiment_description = session_params.read_params(file_experiment)
+
+        # prefer the latest run if the same protocol ran more than once
+        tasks = filter(None, map(lambda x: x.get(task_name), experiment_description.get('tasks', [])))
+        for task in sorted(tasks, key=protocol_number, reverse=True):
+            task_collection = task['collection']
+            if not (task_settings := load_settings(session_path, task_collection=task_collection)):
                 continue
             if task_settings.get('NTRIALS', min_trials + 1) < min_trials:  # ignore sessions with too few trials
                 continue
             protocols.append(
                 SessionInfo(
-                    session_stub='_'.join(file_experiment.parent.parts[-2:]),  # 2019-01-01_001
-                    session_path=file_experiment.parent,
-                    task_collection=adt['collection'],
-                    experiment_description=ad,
+                    session_stub='_'.join(session_path.parts[-2:]),  # YYYY-MM-DD_NNN
+                    session_path=session_path,
+                    task_collection=task_collection,
+                    experiment_description=experiment_description,
                     task_settings=task_settings,
-                    file_task_data=session_path / adt['collection'] / '_iblrig_taskData.raw.jsonable',
+                    file_task_data=session_path / task_collection / '_iblrig_taskData.raw.jsonable',
                 )
             )
             if len(protocols) >= n:
