@@ -20,7 +20,7 @@ jobs:
           version-file: 'pyproject.toml'
           args: 'check --output-format=github'
       - run: 'ruff format --check --diff'
-        
+
   tests:
     name: build (${{ matrix.python-version }}, ${{ matrix.os }})
     needs: ruff
@@ -42,7 +42,9 @@ jobs:
         run: uv sync --no-default-groups --group test --group ci --extra project-extraction
       - name: Install required libraries (Ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libportaudio2 libegl1 libxkbcommon-x11-0
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libportaudio2 libegl1 libxkbcommon-x11-0
       - name: iblrig unit tests
         run: pytest
         env:
