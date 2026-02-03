@@ -142,12 +142,22 @@ def _iterate_protocols(subject_folder: PathLike | str, task_name: str, n: int = 
 
 
 class LocalAndRemotePaths(BunchModel):
-    """Paths to local and remote data folders."""
+    """
+    Paths to local and remote data folders.
+
+    See Also
+    --------
+    :func:`get_local_and_remote_paths`
+    """
 
     local_data_folder: Path
+    r"""Local data folder. Typically ``C:\iblrigv8_data``."""
     remote_data_folder: Path | None
+    r"""Remote data folder. Typically ``Y:\``."""
     local_subjects_folder: Path
+    r"""Local subjects folder. Typically ``C:\iblrigv8_data\labname\Subjects``."""
     remote_subjects_folder: Path | None
+    r"""Remote subjects folder. Typically ``Y:\Subjects``."""
 
 
 def get_local_and_remote_paths(
@@ -156,7 +166,7 @@ def get_local_and_remote_paths(
     lab: str | None = None,
     iblrig_settings: RigSettings | dict | None = None,
 ) -> LocalAndRemotePaths:
-    """
+    r"""
     Parse input arguments to transfer commands.
 
     If the arguments are :obj:`None`, reads in the settings and returns the values from the files.
@@ -183,6 +193,17 @@ def get_local_and_remote_paths(
         - ``remote_data_folder`` : :class:`~pathlib.Path` or :obj:`None`
         - ``local_subjects_folder`` : :class:`~pathlib.Path`
         - ``remote_subjects_folder`` : :class:`~pathlib.Path` or :obj:`None`
+
+    Notes
+    -----
+    On a standard installation of IBLRIG these paths are typically:
+
+    - ``local_data_folder``: ``C:\iblrigv8_data``
+    - ``remote_data_folder``: ``Y:\``
+    - ``local_subjects_folder``: ``C:\iblrigv8_data\labname\Subjects``
+    - ``remote_subjects_folder``: ``Y:\Subjects``
+
+    The paths are based on the parameters set in ``RigSettings.yaml``.
     """
     # we only want to attempt to load the settings file if necessary
     if iblrig_settings is None and ((local_path is None) or (remote_path is None) or (lab is None)):
