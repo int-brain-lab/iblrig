@@ -12,6 +12,7 @@ UNRELEASED
 * changed: Refactoring of GUI code
 * changed: Refactoring of `path_helper` module
 * fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
+* fixed: buggy frame2ttl calibration for firmware version 4+
 
 8.29.0
 ------
