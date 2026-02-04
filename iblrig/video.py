@@ -217,9 +217,9 @@ def validate_video_cmd():
     parser.add_argument('camera_name', help='name of the camera (default: left)', nargs='?', default='left', type=str)
     args = parser.parse_args()
 
-    hwsettings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+    hw_settings = load_pydantic_yaml(HardwareSettings)
     file_path = Path(args.video_path)
-    configuration = hwsettings.device_cameras.get(args.configuration, None)
+    configuration = hw_settings.device_cameras.get(args.configuration, None)
     camera = configuration.get(args.camera_name, None) if configuration is not None else None
 
     if not file_path.exists():

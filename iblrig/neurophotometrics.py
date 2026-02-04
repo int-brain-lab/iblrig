@@ -51,7 +51,7 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
     # starts the neurophotometrics device / bonsai workflow
 
     # settings
-    hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+    hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     settings = hardware_settings.device_neurophotometrics
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
 
@@ -349,7 +349,7 @@ def neurophotometrics_description(
         case 'bpod':
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
-            hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+            hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
             settings = hardware_settings.device_neurophotometrics
             experiment_description = {'devices': {'neurophotometrics': description}}
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(

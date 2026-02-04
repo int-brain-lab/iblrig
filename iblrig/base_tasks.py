@@ -258,11 +258,11 @@ class BaseSession(ABC):
         iblrig_settings: dict | None = None,
         **_,
     ):
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)
@@ -367,17 +367,12 @@ class BaseSession(ABC):
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
-        rig_computer_paths = path_helper.get_local_and_remote_paths(
-            local_path=self.iblrig_settings.iblrig_local_data_path,
-            remote_path=self.iblrig_settings.iblrig_remote_data_path,
-            lab=self.iblrig_settings.ALYX_LAB,
-            iblrig_settings=self.iblrig_settings,
-        )
+        rig_computer_paths = path_helper.get_local_and_remote_paths(iblrig_settings=self.iblrig_settings)
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
         paths.VISUAL_STIM_FOLDER = BASE_PATH.joinpath('visual_stim')
-        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
-        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths.local_subjects_folder
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths.remote_subjects_folder
         # initialize the session path
         date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
             self.session_info.SUBJECT_NAME, self.session_info.SESSION_START_TIME[:10]
