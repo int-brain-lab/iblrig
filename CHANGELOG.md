@@ -4,6 +4,7 @@ Changelog
 8.29.2
 ------
 * changed: allow free-form subject when Alyx URL is not set
+* fixed: buggy frame2ttl calibration for firmware version 4+
 
 8.29.1
 ------
