@@ -11,14 +11,21 @@ UNRELEASED
 * changed: Updated debiasing routine for readability (no functional changes)
 * changed: Refactoring of GUI code
 * changed: Refactoring of `path_helper` module
-* fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
+
+-------------------------------
+
+8.29.1
+------
 * fixed: jitter in Gabor stimulus of passive task
+* fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
 
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC
 * fixed: Stop/Pause button not always working for UDP sessions
 * changed: use UV for packaging
+
+-------------------------------
 
 8.28.2
 ------
