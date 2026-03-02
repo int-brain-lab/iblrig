@@ -110,6 +110,7 @@ typing = [
     "types-requests>=2.32.4.20250611",
     "types-python-dateutil>=2.9.0.20250516",
     "types-pyserial>=3.5.0.20250326",
+    "pandas-stubs>=2.3.3.260113",
 ]
 ci = [
     "pytest-github-actions-annotate-failures>=0.3.0",
