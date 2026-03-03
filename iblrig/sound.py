@@ -165,7 +165,7 @@ def make_sound(
     return sound
 
 
-def format_sound(sound: np.array, file_path: str = None, flat: bool = False) -> np.ndarray:
+def format_sound(sound: np.array, file_path: str | None = None, flat: bool = False) -> np.ndarray:
     """
     Format a stereo sound array into a binary-compatible int32 format.
 

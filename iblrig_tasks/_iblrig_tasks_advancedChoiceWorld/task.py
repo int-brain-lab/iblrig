@@ -8,7 +8,7 @@ import iblrig.misc
 from iblrig.base_choice_world import NTRIALS_INIT, ActiveChoiceWorldSession
 
 # read defaults from task_parameters.yaml
-with open(Path(__file__).parent.joinpath('task_parameters.yaml')) as f:
+with Path(__file__).parent.joinpath('task_parameters.yaml').open() as f:
     DEFAULTS = yaml.safe_load(f)
 
 

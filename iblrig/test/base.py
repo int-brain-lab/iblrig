@@ -15,7 +15,7 @@ from unittest.mock import patch
 import ibllib.pipes.dynamic_pipeline
 import iblrig
 from ibllib.io.extractors.base import protocol2extractor
-from ibllib.tests import TEST_DB  # noqa
+from ibllib.tests import TEST_DB
 from iblrig.base_tasks import BaseSession
 from one.api import ONE, OneAlyx
 

@@ -326,10 +326,7 @@ class ChoiceWorldSession(
 
         if file_jsonable_fixture is not None:
             task_data = jsonable.read(file_jsonable_fixture)
-            # pop-out the bpod data from the table
-            bpod_data = []
-            for td in task_data:
-                bpod_data.append(td.pop('behavior_data'))
+            bpod_data = [td.pop('behavior_data') for td in task_data]  # pop-out the bpod data from the table
 
             class MockTrial(Trial):
                 def export(self):
@@ -387,9 +384,9 @@ class ChoiceWorldSession(
             if ~np.isnan(sma.state_timer_matrix[i]):
                 out_state = states_indices[sma.state_timer_matrix[i]]
                 edges.append(f'{letter}{states_letters[out_state]}')
-            for inputs in sma.input_matrix[i]:
-                if inputs[0] == 0:
-                    edges.append(f'{letter}{states_letters[states_indices[inputs[1]]]}')
+            edges.extend(
+                f'{letter}{states_letters[states_indices[inputs[1]]]}' for inputs in sma.input_matrix[i] if inputs[0] == 0
+            )
         dot.edges(edges)
         if output_file is not None:
             try:

@@ -201,7 +201,7 @@ def get_changelog() -> str:
             f'https://raw.githubusercontent.com/int-brain-lab/iblrig/{branch}/CHANGELOG.md', allow_redirects=True
         ).text
     except (requests.RequestException, RuntimeError):
-        with open(Path(BASE_DIR).joinpath('CHANGELOG.md')) as f:
+        with Path(BASE_DIR).joinpath('CHANGELOG.md').open() as f:
             changelog = f.read()
     return changelog
 

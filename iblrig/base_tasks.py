@@ -320,12 +320,13 @@ class BaseSession(ABC):
 
         # loop through files and update the dictionary, the latest files in the hierarchy have precedence
         task_params = dict()
-        for param_file in base_parameters_files:
-            if Path(param_file).exists():
-                with open(param_file) as fp:
-                    params = yaml.safe_load(fp)
-                if params is not None:
-                    task_params.update(params)
+        for param_file in [Path(p) for p in base_parameters_files]:
+            if not param_file.exists():
+                continue
+            with param_file.open() as fp:
+                params = yaml.safe_load(fp)
+            if params is not None:
+                task_params.update(params)
 
         # at last sort the dictionary so itś easier for a human to navigate the many keys, return as a Bunch
         return Bunch(sorted(task_params.items()))
@@ -429,12 +430,12 @@ class BaseSession(ABC):
     def make_experiment_description_dict(
         task_protocol: str,
         task_collection: str,
-        procedures: list = None,
-        projects: list = None,
-        hardware_settings: dict | HardwareSettings = None,
-        stub: Path = None,
-        extractors: list = None,
-        camera_config: str = None,
+        procedures: list | None = None,
+        projects: list | None = None,
+        hardware_settings: dict | HardwareSettings | None = None,
+        stub: Path | None = None,
+        extractors: list | None = None,
+        camera_config: str | None = None,
     ):
         """
         Construct an experiment description dictionary.
@@ -445,17 +446,17 @@ class BaseSession(ABC):
             The task protocol name, e.g. _ibl_trainingChoiceWorld2.0.0.
         task_collection : str
             The task collection name, e.g. raw_task_data_00.
-        procedures : list
+        procedures : list, optional
             An optional list of Alyx procedures.
-        projects : list
+        projects : list, optional
             An optional list of Alyx protocols.
-        hardware_settings : dict
+        hardware_settings : dict, optional
             An optional dict of hardware devices, loaded from the hardware_settings.yaml file.
-        stub : dict
+        stub : dict, optional
             An optional experiment description stub to update.
-        extractors: list
+        extractors: list, optional
             An optional list of extractor names for the task.
-        camera_config : str
+        camera_config : str, optional
             The camera configuration name in the hardware settings. Defaults to the first key in
             'device_cameras'.
 
@@ -542,7 +543,7 @@ class BaseSession(ABC):
         else:
             json_file = self.paths['SETTINGS_FILE_PATH']
         json_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(json_file, 'w') as outfile:
+        with json_file.open('w') as outfile:
             json.dump(output_dict, outfile, indent=4, sort_keys=True, default=str)  # converts datetime objects to string
         return json_file  # PosixPath
 

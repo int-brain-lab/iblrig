@@ -196,7 +196,7 @@ class FunctionWidget(PlotWidget):
         self.fillItems[key] = pg.FillBetweenItem(self.upperCurves[key], self.lowerCurves[key], brush=fill_color, pen=null_pen)
         self.addItem(self.fillItems[key])
         self.plotDataItems[key] = self.plotItem.plot(connect='all')
-        self.plotDataItems[key].setData(x=[1, np.NAN], y=[np.NAN, 1])
+        self.plotDataItems[key].setData(x=[1, np.nan], y=[np.nan, 1])
         self.plotDataItems[key].setPen(pg.mkPen(color=line_color, width=4))
         self.plotDataItems[key].setSymbol('o')
         self.plotDataItems[key].setSymbolPen(line_color)
@@ -732,7 +732,7 @@ class OnlinePlotsModel(QObject):
             axis=1,
         )
         table['Response Time / s'] = self._trial_data.apply(
-            lambda row: np.NAN if row.get('response_side') == 0 else row.get('response_time'), axis=1
+            lambda row: np.nan if row.get('response_side') == 0 else row.get('response_time'), axis=1
         )
         self.tableModel.setDataFrame(table)
 

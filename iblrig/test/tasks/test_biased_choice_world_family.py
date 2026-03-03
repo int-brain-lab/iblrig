@@ -447,7 +447,7 @@ def get_fixtures():
             'RotaryEncoder1_3': [33.9907],
             'RotaryEncoder1_2': [49.5787],
         },
-    }  # noqa
+    }
     error_trial = {
         'Bpod start timestamp': 0.0,
         'Trial start timestamp': 0.0,
@@ -556,7 +556,7 @@ def get_fixtures():
             'RotaryEncoder1_3': [1.1886, 11.780000000000001],
             'RotaryEncoder1_1': [13.4859],
         },
-    }  # noqa
+    }
     no_go_trial = {
         'Bpod start timestamp': 0.0,
         'Trial start timestamp': 2950.106299,
@@ -658,5 +658,5 @@ def get_fixtures():
             'RotaryEncoder1_4': [2961.126499],
             'RotaryEncoder1_1': [3011.1679990000002],
         },
-    }  # noqa
+    }
     return dict(correct=correct_trial, error=error_trial, no_go=no_go_trial)

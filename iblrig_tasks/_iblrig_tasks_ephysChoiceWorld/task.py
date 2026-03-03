@@ -41,7 +41,7 @@ class Session(BiasedChoiceWorldSession):
             Session template ID (0-11).
         """
         trials_table = pd.read_parquet(Path(__file__).parent.joinpath('trials_fixtures.pqt'))
-        trials_table = (
+        return (
             trials_table.loc[trials_table['session_id'] == session_template_id].reindex().drop(columns=['session_id'])
         ).reset_index()
         return trials_table

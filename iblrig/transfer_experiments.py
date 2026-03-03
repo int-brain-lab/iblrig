@@ -514,7 +514,7 @@ class BehaviorCopier(SessionCopier):
                 # Patch the settings file to wrap the session and continue the copying.
                 log.warning(f'Recovering crashed session {self.session_path}')
                 settings_file = self.session_path.joinpath(collection, '_iblrig_taskSettings.raw.json')
-                with open(settings_file) as fid:
+                with settings_file.open() as fid:
                     raw_settings = json.load(fid)
                 raw_settings['NTRIALS'] = int(ntrials)
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
@@ -523,7 +523,7 @@ class BehaviorCopier(SessionCopier):
                 end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
                 end_time += timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
-                with open(settings_file, 'w') as fid:
+                with settings_file.open('w') as fid:
                     json.dump(raw_settings, fid)
         log.critical(f'{self.state}, {self.session_path}')
         return super()._copy_collections()  # proceed with copy

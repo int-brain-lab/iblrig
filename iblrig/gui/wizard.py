@@ -1103,7 +1103,7 @@ class RigWizard(QMainWindow, Ui_wizard):
                     cmd.extend(['--remote', *remotes])
                 for key, value in self.task_arguments.items():
                     if isinstance(value, list):
-                        cmd.extend([key] + value)
+                        cmd.extend([key, *value])
                     elif isinstance(value, bool):
                         if value is True:
                             cmd.append(key)

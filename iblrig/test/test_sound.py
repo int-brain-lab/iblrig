@@ -141,7 +141,7 @@ class TestFormatSound:
         assert file_path.exists()
         with open(file_path, 'rb') as f:
             data = f.read()
-            assert len(data) == 10 * 2 * 4  # 10 samples × 2 channels × 4 bytes
+            assert len(data) == 10 * 2 * 4  # 10 samples x 2 channels x 4 bytes
 
     def test_invalid_input_raises(self):
         mono_wave = np.ones((10,), dtype=np.float32)  # Not stereo

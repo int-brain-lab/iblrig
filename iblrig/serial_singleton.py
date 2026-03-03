@@ -4,7 +4,7 @@ import re
 import struct
 import threading
 from collections.abc import Generator
-from typing import Any, overload
+from typing import Any, ClassVar, overload
 
 import numpy as np
 import serial
@@ -19,7 +19,7 @@ class SerialSingletonException(serial.SerialException):
 
 
 class SerialSingleton(serial.Serial):
-    _instances: dict[str | None, serial.Serial] = dict()
+    _instances: ClassVar[dict[str | None, serial.Serial]] = dict()
     _initialized = False
     _lock = threading.RLock()
 

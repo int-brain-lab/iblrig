@@ -20,7 +20,7 @@ FLAG_FILE_NAMES = ['transfer_me.flag', 'create_me.flag', 'poop_count.flag', 'pas
 log = logging.getLogger(__name__)
 
 
-def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
+def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] | None = None) -> argparse.ArgumentParser:
     """
     Return the task's argument parser.
 
@@ -60,12 +60,12 @@ def get_task_argument_parser(parents: Sequence[argparse.ArgumentParser] = None):
     return parser
 
 
-def _post_parse_arguments(**kwargs):
+def _post_parse_arguments(**kwargs) -> dict:
     """
     Post-process arguments after parsing.
 
     This function is used to force the interactive mode to True (as it is a call from a user) and to override the
-    settings file value for the user. This function is split for the purpos of unit-testing.
+    settings file value for the user. This function is split for the purpose of unit-testing.
 
     Parameters
     ----------
@@ -84,14 +84,23 @@ def _post_parse_arguments(**kwargs):
     return kwargs
 
 
-def get_task_arguments(parents: Sequence[argparse.ArgumentParser] = None):
+def get_task_arguments(parents: Sequence[argparse.ArgumentParser] | None = None) -> dict:
     """
-    Parse input to run the tasks. All the variables are fed to the Session instance
-    task.py -s subject_name -p projects_name -c procedures_name --no-interactive
-    :param extra_args: list of dictionaries of additional argparse arguments to add to the parser
-        For example, to add a new toto and titi arguments, use:
-        get_task_arguments({'--toto', type=str, default='toto'}, {'--titi', action='store_true', default=False})
-    :return:
+    Parse input to run the tasks.
+
+    All variables are fed to the Session instance.
+
+    Example: ``task.py -s subject_name -p projects_name -c procedures_name --no-interactive``
+
+    Parameters
+    ----------
+    parents : sequence of argparse.ArgumentParser, optional
+        Additional argument parsers to use as parents.
+
+    Returns
+    -------
+    dict
+        Parsed task arguments as a dictionary.
     """
     parser = get_task_argument_parser(parents=parents)
     kwargs = vars(parser.parse_args())

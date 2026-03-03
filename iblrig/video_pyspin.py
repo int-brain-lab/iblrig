@@ -94,11 +94,11 @@ def process_camera(func: Callable[..., Any]) -> Callable[..., tuple[Any, ...]]:
         results = []
         if camera is None:
             with Cameras() as camera_list:
-                for i in range(len(camera_list)):
-                    results.append(func(*args, camera=camera_list[i], **kwargs))
+                for cam in camera_list:
+                    results.append(func(*args, camera=cam, **kwargs))
         elif isinstance(camera, PySpin.CameraList):
-            for i in range(len(camera)):
-                results.append(func(*args, camera=camera[i], **kwargs))
+            for cam in camera:
+                results.append(func(*args, camera=cam, **kwargs))
         else:
             results.append(func(*args, camera=camera, **kwargs))
 

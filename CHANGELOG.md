@@ -1,8 +1,8 @@
 Changelog
 =========
 
-UNRELEASED
-----------
+8.30.0a0 (UNRELEASED)
+---------------------
 * added: Neuropixel coordinate registration tool for NP2.4
 * added: Online Plots are stored as PNG and added to Alyx as a Session Note
 * added: Parameter to define grouping variable for Online Plots

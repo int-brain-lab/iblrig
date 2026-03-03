@@ -141,7 +141,7 @@ def _get_copiers(
     copier: type[SessionCopier],
     local_folder: Path,
     remote_folder: Path,
-    lab: str = None,
+    lab: str | None = None,
     glob_pattern: str = '*/????-??-??/*/transfer_me.flag',
     interactive: bool = False,
     **kwargs,
@@ -240,8 +240,8 @@ def _build_glob_pattern(subject='*', date='*-*-*', number='*', flag_file='transf
 
 def transfer_data(
     tag=None,
-    local_path: Path = None,
-    remote_path: Path = None,
+    local_path: Path | None = None,
+    remote_path: Path | None = None,
     dry: bool = False,
     interactive: bool = False,
     cleanup_weeks=2,
@@ -254,9 +254,9 @@ def transfer_data(
     ----------
     tag : str
         The acquisition PC tag to transfer, e.g. 'behavior', 'video', 'ephys', 'timeline', etc.
-    local_path : Path
+    local_path : Path, optional
         Path to local subjects folder, otherwise fetches path from iblrig_settings.yaml file.
-    remote_path : Path
+    remote_path : Path, optional
         Path to remote subjects folder, otherwise fetches path from iblrig_settings.yaml file.
     dry : bool
         Do not copy or remove local data.

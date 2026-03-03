@@ -50,11 +50,11 @@ def main(v7_path=None, v8_path=None):
     v8_path = v8_path / 'iblrig_settings_template.yaml'
     v8_path_hw = v8_path.with_name('hardware_settings_template.yaml')
 
-    with open(v7_path) as fp:
+    with v7_path.open() as fp:
         v7_settings = json.load(fp)
-    with open(v8_path_hw) as fp:
+    with v8_path_hw.open() as fp:
         v8_hw_settings = yaml.safe_load(fp)
-    with open(v8_path) as fp:
+    with v8_path.open() as fp:
         v8_settings = yaml.safe_load(fp)
 
     # Hardware settings
@@ -71,7 +71,7 @@ def main(v7_path=None, v8_path=None):
             for field in fields:
                 v8_hw_settings[device][field] = v7_settings[field]
 
-    with open(v8_path_hw.with_name('hardware_settings.yaml'), 'w') as fp:
+    with v8_path_hw.with_name('hardware_settings.yaml').open('w') as fp:
         yaml.safe_dump(v8_hw_settings, fp)
 
     # IBL rig settings
@@ -88,7 +88,7 @@ def main(v7_path=None, v8_path=None):
     v8_settings['ALYX_URL'] = one.params.get_default_client()
     v8_settings['ALYX_USER'] = one.params.get(client=v8_settings['ALYX_URL'], silent=True).ALYX_LOGIN
 
-    with open(v8_path.with_name('iblrig_settings.yaml'), 'w') as fp:
+    with v8_path.with_name('iblrig_settings.yaml').open('w') as fp:
         yaml.safe_dump(v8_settings, fp)
     return v8_settings, v8_hw_settings
 

@@ -46,10 +46,7 @@ class RemoteDevicesListView(QListView):
         self.setMouseTracking(True)  # needed for status tips
 
     def getDevices(self):
-        out = []
-        for idx in self.selectedIndexes():
-            out.append(self.model().itemData(idx)[Qt.UserRole])
-        return out
+        return [self.model().itemData(idx)[Qt.UserRole] for idx in self.selectedIndexes()]
 
 
 class RemoteDevicesItemModel(QStandardItemModel):

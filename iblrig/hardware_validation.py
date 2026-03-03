@@ -338,7 +338,7 @@ class ValidatorBpod(ValidatorSerial):
 
     def _run(self):
         # close existing Bpod singleton
-        if (bpod := Bpod._instances.get(self.hardware_settings.device_bpod.COM_BPOD, None)) is not None:  # noqa
+        if (bpod := Bpod._instances.get(self.hardware_settings.device_bpod.COM_BPOD, None)) is not None:
             bpod.close()
 
         # invoke ValidateSerialDevice._run()

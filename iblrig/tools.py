@@ -225,7 +225,7 @@ def _build_bonsai_cmd(
         cmd.append('--no-boot')
     if parameters is not None:
         for key, value in parameters.items():
-            cmd.append(f'-p:{key}={str(value)}')
+            cmd.append(f'-p:{key}={value!s}')
     return cmd
 
 
