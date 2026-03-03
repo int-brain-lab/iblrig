@@ -1,14 +1,17 @@
+"""Audio synthesis and sound card configuration"""
+
 import logging
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
+import numpy.typing as npt
 
 from pybpod_soundcard_module.module_api import DataType, SampleRate, SoundCardModule
 
 log = logging.getLogger(__name__)
 
 
-def sine_wave(d: float, f: float, fs: int = 44100) -> np.ndarray:
+def sine_wave(d: float, f: float, fs: int = 44100) -> npt.NDArray[np.float64]:
     """
     Generate a sine wave signal.
 
@@ -23,20 +26,20 @@ def sine_wave(d: float, f: float, fs: int = 44100) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray of float64
         Array containing the sine wave samples.
     """
     t = np.arange(d * fs) / fs
     return np.sin(2 * np.pi * f * t)
 
 
-def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> np.ndarray:
+def apply_hanning_envelope(waveform: npt.NDArray[np.float64], d: float, fs: int = 44100) -> npt.NDArray[np.float64]:
     """
     Apply a Hanning fade-in and fade-out to an audio waveform.
 
     Parameters
     ----------
-    waveform : np.ndarray
+    waveform : numpy.ndarray of float64
         The input audio waveform (1D array of samples).
     d : float
         Duration of the fade-in and fade-out sections in seconds.
@@ -45,7 +48,7 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> n
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray of float64
         The waveform with the Hanning amplitude envelope applied.
 
     Raises
@@ -71,7 +74,7 @@ def apply_hanning_envelope(waveform: np.ndarray, d: float, fs: int = 44100) -> n
 
 def sine_stimulus(
     d: float | int, f: float | int, fs: int = 44100, amplitude: float = 1.0, gain_db: float = 0.0, d_fade: float = 0.01
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """
     Generate a sine wave stimulus: A sine wave with a Hanning fade-in and fade-out, defined amplitude and gain.
 
@@ -87,8 +90,13 @@ def sine_stimulus(
         Base amplitude of the tone before gain adjustment. Default is 1.0.
     gain_db: float = 0.0
         Gain adjustment in decibels. Positive to amplify, negative to attenuate. Default is 0.0.
-    d_fade : float or int
-        Duration of the fade-in and fade-out sections in seconds.
+    d_fade : float, optional
+        Duration of the fade-in and fade-out sections in seconds. Default is 0.01.
+
+    Returns
+    -------
+    numpy.ndarray of float64
+        Sine wave stimulus with Hanning envelope and gain applied.
     """
     stimulus = sine_wave(d=d, f=f, fs=fs)
     stimulus = apply_hanning_envelope(waveform=stimulus, d=d_fade, fs=fs)
@@ -105,7 +113,7 @@ def make_sound(
     fade: float = 0.01,
     chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R', 'left', 'right'] = 'L+TTL',
     gain_db: float = 0.0,
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     """
     Generate a sound waveform with optional fade and channel configurations.
 
@@ -135,7 +143,7 @@ def make_sound(
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray of float64
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
     if frequency < 0:
@@ -165,7 +173,7 @@ def make_sound(
     return sound
 
 
-def format_sound(sound: np.array, file_path: str | None = None, flat: bool = False) -> np.ndarray:
+def format_sound(sound: npt.NDArray[np.floating[Any]], file_path: str | None = None, flat: bool = False) -> npt.NDArray[np.int32]:
     """
     Format a stereo sound array into a binary-compatible int32 format.
 
@@ -175,7 +183,7 @@ def format_sound(sound: np.array, file_path: str | None = None, flat: bool = Fal
 
     Parameters
     ----------
-    sound : np.ndarray
+    sound : numpy.ndarray of floating
         A 2D NumPy array of shape (n_samples, 2) containing stereo float audio data.
     file_path : str, optional
         If provided, the formatted audio will be written to this binary file.
@@ -184,7 +192,7 @@ def format_sound(sound: np.array, file_path: str | None = None, flat: bool = Fal
 
     Returns
     -------
-    np.ndarray
+    numpy.ndarray of int32
         The formatted int32 sound array, either flattened or in original shape.
 
     Raises
@@ -209,7 +217,7 @@ def format_sound(sound: np.array, file_path: str | None = None, flat: bool = Fal
 
 def configure_sound_card(
     card: SoundCardModule | None = None,
-    sounds: list[np.ndarray] | None = None,
+    sounds: list[npt.NDArray[np.float64]] | None = None,
     indexes: list[int] | None = None,
     sample_rate: int = 96000,
 ) -> None:
@@ -260,8 +268,8 @@ def configure_sound_card(
     else:
         raise ValueError(f'Sound sample rate {sample_rate} must be 96000 or 192000')
 
-    sounds = [format_sound(s, flat=True) for s in sounds]
-    for sound, index in zip(sounds, indexes, strict=False):
+    sounds_int32 = [format_sound(s, flat=True) for s in sounds]
+    for sound, index in zip(sounds_int32, indexes, strict=False):
         card.send_sound(sound, index, sample_rate, DataType.INT32)
 
     if close_card:
