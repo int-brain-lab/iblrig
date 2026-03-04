@@ -171,7 +171,7 @@ def init_neurophotometrics_subject(
     Parameters
     ----------
     subject : str
-        The name of the session_stub for this session.
+        The subject nickname.
     rois : Iterable[str]
         List of ROIs to be recorded.
     locations : Iterable[str]
@@ -201,7 +201,7 @@ def init_neurophotometrics_subject(
     # inferring session number
     folders = list(subject_date_folder.glob('*/'))
     # filter to only those folders that are three numbers (and nothing else)
-    session_folders = [folder for folder in folders if re.match(r'\d{3}', folder.name) and folder.is_dir()]
+    session_folders = [folder for folder in folders if re.fullmatch(r'\d{3}', folder.name) and folder.is_dir()]
 
     # this is continuously incrementing. A problem that UDP based communiction between the rigs and the
     # neurophotometrics computer can fix.
@@ -244,8 +244,7 @@ def _validate_neurophotometrics_description(
     if sync_mode == 'bpod':
         assert sync_channel in (0, 1), 'sync channel must be either 0 or 1'
     if sync_mode == 'daqami':
-        assert sync_channel in (0, 1, 2, 3, 4, 5, 6), 'sync channel must be between 0 and 6'
-        # actually now - placed the frame clock on DI0 so it should exclude 0
+        assert sync_channel in (1, 2, 3, 4, 5, 6), 'sync channel must be between 1 and 6 (DI0 is reserved for the frame clock)'
 
     # assert compatible shapes
     assert len(rois) == len(locations), 'The number of ROIs and locations must be the same.'
@@ -300,10 +299,10 @@ def neurophotometrics_description(
     -------
         neurophotometrics:
             fibers:
-            - roi: G0
-                location: VTA
-            - roi: G1
-                location: DR
+                G0:
+                    location: VTA
+                G1:
+                    location: DR
             collection: raw_photometry_data
             sync_label: bnc1out
             sync_channel: 1
@@ -315,10 +314,10 @@ def neurophotometrics_description(
     -------
         neurophotometrics:
             fibers:
-            - roi: G0
-                location: VTA
-            - roi: G1
-                location: DR
+                G0:
+                    location: VTA
+                G1:
+                    location: DR
             collection: raw_photometry_data
             sync_channel: 1
             datetime: 2024-09-19T14:13:18.749259
