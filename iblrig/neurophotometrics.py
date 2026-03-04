@@ -240,10 +240,10 @@ def init_neurophotometrics_subject(
 
 
 def _validate_neurophotometrics_description(
-    rois: Sequence[str] | None = None,
-    locations: Sequence[str] | None = None,
-    sync_channel: int | None = None,
-    sync_mode: Literal['bpod', 'daqami'] | None = None,
+    rois: Sequence[str],
+    locations: Sequence[str],
+    sync_channel: int,
+    sync_mode: Literal['bpod', 'daqami'],
 ):
     """Helper function to validate the output of the CLI parser, or programmatic use."""
     if rois is None or locations is None or sync_channel is None or sync_mode is None:
