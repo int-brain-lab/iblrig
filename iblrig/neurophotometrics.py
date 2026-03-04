@@ -4,12 +4,13 @@ This module provides utilities for configuring, starting, and managing Neurophot
 FP3002 fiber photometry recordings within iblrig sessions. It handles Bonsai workflow
 launching, hardware settings validation, brain region lookups, and data transfer.
 """
+
 import argparse
 import logging
 import re
 from collections.abc import Sequence
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 import iblrig.path_helper
 from iblatlas.atlas import BrainRegions
@@ -290,7 +291,7 @@ def neurophotometrics_description(
     sync_mode: Literal['bpod', 'daqami'] = 'bpod',
     collection: str = 'raw_photometry_data',
     validate: bool = True,
-) -> dict:
+) -> dict[str, Any]:
     """
     Build the ``neurophotometrics`` section of an experiment description dictionary.
 
@@ -362,7 +363,7 @@ def neurophotometrics_description(
 
     # generate description
     date_time = datetime.now() if start_time is None else start_time
-    description = {
+    description: dict[str, Any] = {
         'sync_channel': sync_channel,
         'datetime': date_time.isoformat(),
         'collection': collection,
