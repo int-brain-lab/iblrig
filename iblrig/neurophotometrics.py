@@ -1,3 +1,9 @@
+"""Neurophotometrics FP3002 fiber photometry hardware integration.
+
+This module provides utilities for configuring, starting, and managing Neurophotometrics
+FP3002 fiber photometry recordings within iblrig sessions. It handles Bonsai workflow
+launching, hardware settings validation, brain region lookups, and data transfer.
+"""
 import argparse
 import logging
 import re
