@@ -81,7 +81,7 @@ from iblrig.misc import get_task_argument_parser
 from iblrig.path_helper import load_pydantic_yaml, save_pydantic_yaml
 from iblrig.pydantic_definitions import HardwareSettings, RigSettings
 from iblrig.raw_data_loaders import load_task_jsonable
-from iblrig.tools import alyx_reachable, get_lab_location_dict, internet_available
+from iblrig.tools import alyx_reachable, get_lab_location_dict, internet_available, update_json_file
 from iblrig.valve import Valve
 from iblrig.version_management import check_for_updates, get_changelog
 from iblutil.util import Bunch, setup_logger
@@ -1228,18 +1228,18 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.previous_subject = self.model.subject
 
             # manage poop count
-            dlg = QInputDialog()
-            droppings, ok = dlg.getInt(
-                self,
-                'Droppings',
-                'Number of droppings:',
+            poop_dialog = QInputDialog()
+            droppings, ok = poop_dialog.getInt(
+                parent=self,
+                title='Droppings',
+                label='Number of droppings:',
                 value=0,
                 min=0,
-                flags=dlg.windowFlags() & ~Qt.WindowContextHelpButtonHint,
+                flags=poop_dialog.windowFlags() & ~Qt.WindowContextHelpButtonHint,
             )
-            session_data['POOP_COUNT'] = droppings
-            with open(task_settings_file, 'w') as fid:
-                json.dump(session_data, fid, indent=4, sort_keys=True, default=str)
+            if not ok:
+                log.warning('Cancelled by user - assuming poop count is 0')
+            update_json_file(task_settings_file, {'POOP_COUNT': droppings}, indent=4, sort_keys=True, default=str)
 
     def _cleanup_failed_session(self):
         """
