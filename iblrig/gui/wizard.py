@@ -1227,8 +1227,6 @@ class RigWizard(QMainWindow, Ui_wizard):
                     # touch dud.flag file
                     self.model.session_folder.joinpath('dud.flag').touch()
 
-                    # add a dud flag to the experiment description file
-
                     # remove all subdirectories (`raw_task_data_00`, `raw_video_data`, ...) to save space
                     for item in self.model.session_folder.iterdir():
                         if item.is_dir():

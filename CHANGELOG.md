@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.29.2
+------
+* fixed: handling of dud sessions (session folders emptied rather than deleted)
+
 8.29.1
 ------
 * fixed: jitter in Gabor stimulus of passive task
