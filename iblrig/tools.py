@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import platform
@@ -13,6 +14,7 @@ from dataclasses import dataclass
 from datetime import date
 from functools import cache
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, TypeVar
 
 from iblrig import __version__ as iblrig_version
@@ -56,6 +58,61 @@ def ask_user(prompt: str, default: bool = False) -> bool:
             return True
         elif user_input in ['n', 'no']:
             return False
+
+
+def update_json_file(json_file: os.PathLike | str, values: dict[str, Any], **kwargs) -> dict[str, Any]:
+    """
+    Update specific key-value pairs in a JSON file atomically.
+
+    Reads the JSON file, updates it with the provided values, and writes it back
+    using atomic file replacement. This ensures data integrity if the operation
+    is interrupted.
+
+    Parameters
+    ----------
+    json_file : os.PathLike or str
+        Path to the JSON file to update.
+    values : dict[str, Any]
+        Dictionary of key-value pairs to update in the JSON file.
+    **kwargs
+        Additional keyword arguments passed to json.dump() (e.g., indent, sort_keys).
+
+    Returns
+    -------
+    dict[str, Any]
+        The updated JSON data after applying the values.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the JSON file does not exist.
+    ValueError
+        If the JSON root is not an object.
+    json.JSONDecodeError
+        If the file contains invalid JSON.
+    """
+    # ensure that we're dealing with a Path object
+    json_file = Path(json_file)
+
+    # read the JSON file
+    with json_file.open('r') as f:
+        json_data = json.load(f)
+
+    # ensure that the JSON root is an object
+    if not isinstance(json_data, dict):
+        raise ValueError(f'JSON root must be an object (dict), got {type(json_data).__name__}')
+
+    # update the JSON data with the provided values
+    json_data.update(values)
+
+    # write the updated JSON data back to the file atomically
+    with NamedTemporaryFile(mode='w', delete=False) as f:
+        json.dump(json_data, f, **kwargs)
+        temp_file_path = Path(f.name)
+    temp_file_path.replace(json_file)
+
+    # return the updated JSON data
+    return json_data
 
 
 def get_anydesk_id(format_id: bool = True, silent: bool = False) -> str | None:
