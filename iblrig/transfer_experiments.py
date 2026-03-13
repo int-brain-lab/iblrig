@@ -166,6 +166,9 @@ class SessionCopier:
         Will try to get as far as possible in the copy process (from states 0 init experiment to state 3 finalize experiment)
         if possible, and return earlier if the process can't be completed.
         """
+        if self.session_path.joinpath('dud.flag').exists():
+            log.info(f'Skipping {self.session_path} because it has been marked as a dud.')
+            return
         if self.state == CopyState.HARD_RESET:  # this case is not implemented automatically and corresponds to a hard reset
             log.info(f'{self.state}, {self.session_path}')
             shutil.rmtree(self.remote_session_path)
