@@ -659,7 +659,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # also adding here the grace timedelta of 1 minute because of comparing HHMM to HHMMSS timestamps
                 timedeltas = [t + timedelta(0, 60) for t in timedeltas]
                 dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
-                if dt_min < timedelta(0,600):
+                if dt_min < timedelta(0, 600):
                     log.warning('time difference between daqami and neurophotometrics start times is more than 5 minutes')
                 daqami_folder = folders[timedeltas.index(dt_min)]
 
@@ -682,15 +682,15 @@ class NeurophotometricsCopier(SessionCopier):
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
                 remote_file = remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms')
                 if remote_file.exists():  # prevent overwriting already copied files
-                    today = datetime.now().strftime("%Y-%m-%d")
+                    today = datetime.now().strftime('%Y-%m-%d')
                     shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
                 shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
         # read neurophotometrics file
         raw_photometry_df = pd.read_csv(csv_raw_photometry)
         remote_file = remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt')
-        if remote_file.exists(): # prevent overwriting already copied files
-            today = datetime.now().strftime("%Y-%m-%d")
+        if remote_file.exists():  # prevent overwriting already copied files
+            today = datetime.now().strftime('%Y-%m-%d')
             shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
         raw_photometry_df.to_parquet(remote_file)
 
