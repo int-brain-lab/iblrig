@@ -278,7 +278,7 @@ def transfer_data(
     kwargs['glob_pattern'] = _build_glob_pattern(**kwargs)
     kwargs = {k: v for k, v in kwargs.items() if k not in ('subject', 'date', 'number', 'flag_file')}
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
-    copier = tag2copier.get(tag.lower(), SessionCopier)
+    copier = tag2copier.get(tag.lower().split('_')[0], SessionCopier)
     logger.info('Searching for %s sessions using %s class', tag.lower(), copier.__name__)
     expected_devices = kwargs.pop('number_of_expected_devices', None)
     copiers = _get_copiers(copier, local_subject_folder, remote_subject_folder, interactive=interactive, tag=tag, **kwargs)
@@ -323,7 +323,7 @@ def remove_local_sessions(weeks=2, local_path=None, remote_path=None, dry=False,
     """
     local_subject_folder, remote_subject_folder = _get_subjects_folders(local_path, remote_path)
     size = 0
-    copier = tag2copier.get(tag.lower(), SessionCopier)
+    copier = tag2copier.get(tag.lower().split('_')[0], SessionCopier)
     removed = []
     for flag in sorted(list(local_subject_folder.rglob(f'_ibl_experiment.description_{tag}.yaml')), reverse=True):
         session_path = flag.parent
