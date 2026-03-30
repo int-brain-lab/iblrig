@@ -432,7 +432,9 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
         else:
             self.uiLineEditUser.setPlaceholderText('')
+            self.uiLineEditUser.setEnabled(False)
             self.uiPushButtonLogIn.setEnabled(False)
+            self.uiComboSubject.setEditable(True)
 
         # tools
         self.uiPushFlush.clicked.connect(self.flush)
