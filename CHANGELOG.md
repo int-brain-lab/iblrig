@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.29.2
+------
+* changed: allow free-form subject when Alyx URL is not set
+
 8.29.1
 ------
 * fixed: jitter in Gabor stimulus of passive task
@@ -11,6 +15,8 @@ Changelog
 * added: GUI settings for changing MAIN_SYNC
 * fixed: Stop/Pause button not always working for UDP sessions
 * changed: use UV for packaging
+
+-------------------------------
 
 8.28.2
 ------
