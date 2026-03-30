@@ -1,6 +1,7 @@
 import argparse
 
 import numpy as np
+import yaml
 
 import iblatlas.atlas
 from ibllib.ephys.spikes import create_insertion
@@ -11,13 +12,43 @@ from one.webclient import no_cache as no_cache_context
 
 
 def prepare_ephys_session_cmd():
-    parser = argparse.ArgumentParser(prog='start_video_session', description='Prepare video PC for video recording session.')
+    parser = argparse.ArgumentParser(prog='start_ephys_session', description='Prepare ephys PC for ephys recording session.')
     parser.add_argument('subject_name', help='name of subject')
     parser.add_argument('nprobes', help='number of probes', type=int, default=2)
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     prepare_ephys_session(args.subject_name, args.nprobes)
+
+def prepare_multi_drive_session_cmd():
+    parser = argparse.ArgumentParser(prog='start_ephys_session_multi_drive',
+                                     description='Prepare ephys PC for ephys recording session with multiple drives.')
+    parser.add_argument('subject_name', help='name of subject')
+    parser.add_argument('multi_drive_config_yaml', help='path to yaml config file')
+    parser.add_argument('--debug', action='store_true', help='enable debugging mode')
+    args = parser.parse_args()
+    setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
+    with open(args.multi_drive_config_yaml) as fp:
+        drive_map = yaml.safe_load(fp) or {}
+    prepare_multi_drive_ephys_session(args.subject_name, drive_map)
+
+
+def prepare_multi_drive_ephys_session(subject_name: str, drive_map: dict):
+    if not isinstance(drive_map, dict) or not drive_map:
+        raise ValueError('multi_drive_config_yaml must define a non-empty mapping of {drive_path: nprobes}')
+
+    probe_offset = 0
+    for i, (drive, nprobes) in enumerate(drive_map.items()):
+
+        session = EmptySession(subject=subject_name, iblrig_settings={'iblrig_local_data_path': drive}, interactive=False)
+        session_path = session.paths.SESSION_FOLDER
+
+        copier = EphysCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
+                             tag=f'ephys_{i}')
+        main_sync = i == 0
+        copier.initialize_experiment(nprobes=nprobes, probe_offset=probe_offset, main_sync=main_sync)
+        probe_offset += nprobes
+
 
 
 def prepare_ephys_session(subject_name: str, nprobes: int = 2):

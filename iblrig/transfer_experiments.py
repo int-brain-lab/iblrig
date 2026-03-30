@@ -539,14 +539,14 @@ class EphysCopier(SessionCopier):
     tag = 'ephys'
     assert_connect_on_init = True
 
-    def initialize_experiment(self, acquisition_description=None, nprobes=None, main_sync=True, **kwargs):
+    def initialize_experiment(self, acquisition_description=None, nprobes=None, probe_offset=0, main_sync=True, **kwargs):
         if not acquisition_description:
             acquisition_description = {'devices': {'neuropixel': {}}}
             neuropixel = acquisition_description['devices']['neuropixel']
             if nprobes is None:
                 nprobes = len(list(self.session_path.glob('**/*.ap.bin')))
             for n in range(nprobes):
-                name = f'probe{n:02}'
+                name = f'probe{probe_offset+n:02}'
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = acquisition_description if neuropixel else {}
@@ -558,7 +558,7 @@ class EphysCopier(SessionCopier):
         # once the session folders have been initialized, create the probe folders
         (ephys_path := self.session_path.joinpath('raw_ephys_data')).mkdir(exist_ok=True)
         for n in range(nprobes):
-            ephys_path.joinpath(f'probe{n:02}').mkdir(exist_ok=True)
+            ephys_path.joinpath(f'probe{probe_offset+n:02}').mkdir(exist_ok=True)
 
     def _copy_collections(self):
         """Here we overload the copy to be able to rename the probes properly and also create the insertions."""
