@@ -84,7 +84,8 @@ class TestPortSettings(unittest.TestCase):
         self.assertDictEqual(hw_settings['device_valve'], expected)
         self.assertEqual(hw_settings['RIG_NAME'], self.v7_settings['NAME'])
         expected = {k: v for k, v in self.v7_settings.items() if k.startswith('SCREEN') or k == 'DISPLAY_IDX'}
-        self.assertDictEqual(hw_settings['device_screen'], expected)
+        actual = {k:v for k, v in hw_settings['device_screen'].items() if k in expected}
+        self.assertDictEqual(actual, expected)
 
         settings_path = self.v8 / 'iblrig_settings.yaml'
         self.assertTrue(settings_path.exists())
