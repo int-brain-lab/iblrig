@@ -3,8 +3,9 @@ Changelog
 
 8.29.2
 ------
-* changed: allow free-form subject when Alyx URL is not set
+* fixed: new SCREEN_RESOLUTION setting for non-standard screens (fixes screen detection during Frame2TTL calibration)
 * fixed: buggy frame2ttl calibration for firmware version 4+
+* changed: allow free-form subject when Alyx URL is not set
 
 8.29.1
 ------
