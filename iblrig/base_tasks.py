@@ -634,6 +634,9 @@ class BaseSession(ABC):
         --------
         :external+iblenv:meth:`ibllib.oneibl.registration.IBLRegistrationClient.register_session` - The registration method.
         """
+        if self.iblrig_settings.ALYX_URL is None:
+            log.warning('ALYX_URL not set - session will not be registered to Alyx')
+            return
         if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
             log.warning('Not registering test subject to Alyx')
             return

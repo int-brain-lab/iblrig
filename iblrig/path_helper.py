@@ -267,7 +267,7 @@ def save_pydantic_yaml(data: T, filename: Path | str | None = None) -> None:
             raise TypeError(f'Cannot deduce filename for model `{type(data).__name__}`.')
     else:
         filename = Path(filename)
-    yaml_data = data.model_dump()
+    yaml_data = data.model_dump(mode='json')
     data.model_validate(yaml_data)
     with open(filename, 'w') as f:
         log.debug(f'Dumping {type(data).__name__} to {filename.name}')
