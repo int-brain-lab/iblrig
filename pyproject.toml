@@ -14,10 +14,10 @@ dependencies = [
     # IBL packages
     "iblatlas>=0.10.0",
     "ibllib>=3.4.3",
-    "iblpybpod-no-gui>=3.1.1",
+    "iblpybpod-no-gui>=3.1.2",
     "iblutil>=1.20.0",
-    "iblqt>=0.8.0",
-    "ONE-api>=3.4.1",
+    "iblqt>=0.8.2",
+    "ONE-api>=3.5.0",
     "tycmd-wrapper>=0.2.1",
     "ibl-photometry>=0.1.2",
     #

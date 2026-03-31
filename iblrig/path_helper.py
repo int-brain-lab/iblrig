@@ -391,7 +391,7 @@ def save_pydantic_yaml(model: T, filename: PathLike | str | None = None) -> None
         If the round-trip validation of the dumped data fails.
     """
     filename = Path(filename) if filename else deduce_settings_filename(type(model))
-    data = model.model_dump()
+    data = model.model_dump(mode='json')
     model.model_validate(data)
     with filename.open('w') as f:
         log.debug(f'Dumping {type(model).__name__} to {filename.name}')
