@@ -1,24 +1,24 @@
 Changelog
 =========
 
-UNRELEASED
-----------
-* added: Neuropixel coordinate registration tool for NP2.4
-* added: Online Plots are stored as PNG and added to Alyx as a Session Note
-* added: Parameter to define grouping variable for Online Plots
-* added: `FRAMECLOCK_CHANNEL` hardware setting for Neurophotometrics
-* changed: Refactored methods for creating sound waveforms
-* changed: Updated debiasing routine for readability (no functional changes)
-* changed: Refactoring of GUI code
-* changed: Refactoring of `path_helper` module
-* fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
+
+8.29.2
+------
+* changed: allow free-form subject when Alyx URL is not set
 * fixed: buggy frame2ttl calibration for firmware version 4+
+
+8.29.1
+------
+* fixed: jitter in Gabor stimulus of passive task
+* fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
 
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC
 * fixed: Stop/Pause button not always working for UDP sessions
 * changed: use UV for packaging
+
+-------------------------------
 
 8.28.2
 ------
