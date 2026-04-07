@@ -362,6 +362,36 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         self.assertEqual(1, len(final_experiment_description['tasks']))
         self.assertEqual(set(final_experiment_description['sync'].keys()), {'nidq'})
 
+    def test_ephys_copy_raises_on_probe_name_mismatch(self):
+        """Raise when probe folders inferred from disk do not match experiment description probes."""
+
+        task_kwargs = copy.deepcopy(self.session_kwargs)
+        task_kwargs['hardware_settings'].update({'device_cameras': None, 'MAIN_SYNC': False})
+        session = _create_behavior_session(kwargs=task_kwargs, ntrials=50)
+        folder_session_ephys = Path(self.td.name).joinpath('ephys', 'Subjects', *session.paths.SESSION_FOLDER.parts[-3:])
+
+        # Create ephys files for two probes on disk.
+        populate_raw_spikeglx(folder_session_ephys, model='3B', n_probes=2)
+
+        ec = EphysCopier(session_path=folder_session_ephys, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
+        # Deliberately initialize a single probe description to trigger the mismatch check.
+        ec.initialize_experiment(nprobes=1, probe_labels=['probe00'])
+        with self.assertRaisesRegex(ValueError, 'Probe names on disk'):
+            ec.copy_collections()
+
+        # Deliberately initialize a dual probe description with different labels.
+        ec.initialize_experiment(nprobes=2, probe_labels=['probe01', 'probe04'])
+        with self.assertRaisesRegex(ValueError, 'Probe names on disk'):
+            ec.copy_collections()
+
+        # Check that if the probe labels doesn't match nprobes we get an error
+        with self.assertRaisesRegex(AssertionError, 'Number of probe labels must match number of probes'):
+            ec.initialize_experiment(nprobes=2, probe_labels=['probe01'])
+
+        # Confirm normal mode works
+        ec.initialize_experiment(nprobes=2, probe_labels=['probe00', 'probe01'])
+        ec.copy_collections()
+
     def test_copy_snapshots(self):
         """Test copy of snapshots folder(s)."""
         # Create without task data
@@ -466,8 +496,8 @@ class TestEphysMultiDriveIntegration(TestIntegrationTransferExperimentsBase):
 
         stub_a = session_params.read_params(local_stub_a[0])
         stub_b = session_params.read_params(local_stub_b[0])
-        self.assertEqual({'probe00', 'probe01'}, set(stub_a['devices']['neuropixel'].keys()))
-        self.assertEqual({'probe02'}, set(stub_b['devices']['neuropixel'].keys()))
+        self.assertEqual({'probe00', 'probe02'}, set(stub_a['devices']['neuropixel'].keys()))
+        self.assertEqual({'probe01'}, set(stub_b['devices']['neuropixel'].keys()))
 
         remote_stub_a = list(self.remote.rglob('_devices/*@ephys_0.yaml'))
         remote_stub_b = list(self.remote.rglob('_devices/*@ephys_1.yaml'))
@@ -502,4 +532,4 @@ class TestEphysMultiDriveIntegration(TestIntegrationTransferExperimentsBase):
         consolidated_file = copiers_0[0].remote_session_path.joinpath('_ibl_experiment.description.yaml')
         self.assertTrue(consolidated_file.exists())
         consolidated = session_params.read_params(consolidated_file)
-        self.assertEqual({'probe00', 'probe01', 'probe02'}, set(consolidated['devices']['neuropixel'].keys()))
+        self.assertEqual({'probe00', 'probe01', 'probe02'}, set(sorted(consolidated['devices']['neuropixel'].keys())))

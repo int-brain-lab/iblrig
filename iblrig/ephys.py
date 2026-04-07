@@ -19,6 +19,7 @@ def prepare_ephys_session_cmd():
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
     prepare_ephys_session(args.subject_name, args.nprobes)
 
+
 def prepare_multi_drive_session_cmd():
     parser = argparse.ArgumentParser(prog='start_ephys_session_multi_drive',
                                      description='Prepare ephys PC for ephys recording session with multiple drives.')
@@ -36,8 +37,11 @@ def prepare_multi_drive_ephys_session(subject_name: str, drive_map: dict):
     if not isinstance(drive_map, dict) or not drive_map:
         raise ValueError('multi_drive_config_yaml must define a non-empty mapping of {drive_path: nprobes}')
 
-    probe_offset = 0
-    for i, (drive, nprobes) in enumerate(drive_map.items()):
+    total_probes = sum(drive_map.values())
+    drives = list(drive_map.keys())
+    probe_to_drives = split_probes(total_probes, drives)
+
+    for i, (drive, n_probes) in enumerate(drive_map.items()):
 
         session = EmptySession(subject=subject_name, iblrig_settings={'iblrig_local_data_path': drive}, interactive=False)
         session_path = session.paths.SESSION_FOLDER
@@ -45,9 +49,34 @@ def prepare_multi_drive_ephys_session(subject_name: str, drive_map: dict):
         copier = EphysCopier(session_path=session_path, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
                              tag=f'ephys_{i}')
         main_sync = i == 0
-        copier.initialize_experiment(nprobes=nprobes, probe_offset=probe_offset, main_sync=main_sync)
-        probe_offset += nprobes
+        probe_labels = [f'probe{n:02}' for n in probe_to_drives[drive]]
 
+        copier.initialize_experiment(nprobes=n_probes, probe_labels=probe_labels, main_sync=main_sync)
+
+
+def split_probes(n_probes: int, drives: list) -> dict:
+    """
+    Distribute probe indices across drives in an alternating fashion.
+
+    Parameters
+    ----------
+    n_probes: int
+        Number of probes
+    drives: list
+        A list of drive names (e.g. ["C", "D"])
+
+    Returns
+    -------
+        dict: Mapping of drive -> probe indices
+    """
+    probes = np.arange(n_probes)
+    n_drives = len(drives)
+
+    allocation = {}
+    for i, drive in enumerate(drives):
+        allocation[drive] = probes[i::n_drives]
+
+    return allocation
 
 
 def prepare_ephys_session(subject_name: str, nprobes: int = 2):
