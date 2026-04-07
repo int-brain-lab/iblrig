@@ -539,14 +539,23 @@ class EphysCopier(SessionCopier):
     tag = 'ephys'
     assert_connect_on_init = True
 
-    def initialize_experiment(self, acquisition_description=None, nprobes=None, probe_offset=0, main_sync=True, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.file_experiment_description.exists() and self.experiment_description is None:
+            self._experiment_description = session_params.read_params(self.file_experiment_description)
+
+    def initialize_experiment(self, acquisition_description=None, nprobes=None, probe_labels=None, main_sync=True, **kwargs):
         if not acquisition_description:
             acquisition_description = {'devices': {'neuropixel': {}}}
             neuropixel = acquisition_description['devices']['neuropixel']
             if nprobes is None:
                 nprobes = len(list(self.session_path.glob('**/*.ap.bin')))
-            for n in range(nprobes):
-                name = f'probe{probe_offset+n:02}'
+
+            if probe_labels is not None:
+                assert len(probe_labels) == nprobes, 'Number of probe labels must match number of probes'
+            else:
+                probe_labels = [f'probe{n:02}' for n in range(nprobes)]
+            for name in probe_labels:
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'sync', 'nidq.yaml')
             acquisition_description = acquisition_description if neuropixel else {}
@@ -557,13 +566,28 @@ class EphysCopier(SessionCopier):
         super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
         # once the session folders have been initialized, create the probe folders
         (ephys_path := self.session_path.joinpath('raw_ephys_data')).mkdir(exist_ok=True)
-        for n in range(nprobes):
-            ephys_path.joinpath(f'probe{probe_offset+n:02}').mkdir(exist_ok=True)
+        for name in probe_labels:
+            ephys_path.joinpath(name).mkdir(exist_ok=True)
 
     def _copy_collections(self):
         """Here we overload the copy to be able to rename the probes properly and also create the insertions."""
         log.info(f'Transferring ephys session: {self.session_path} to {self.remote_session_path}')
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
+        ap_files = list(self.session_path.rglob('*.ap.*bin'))
+        if len(ap_files) > 0:
+            log.info(f'Found {len(ap_files)} ap files in {self.session_path}, checking names match experiment description')
+            new_folders = ibllib.pipes.misc.move_ephys_files(self.session_path, dry=True)
+            probes = sorted(self.experiment_description['devices']['neuropixel'])
+            new_probes = [n.name for n in new_folders]
+
+            if sorted(new_probes) != sorted(probes):
+                raise ValueError(
+                    f'Probe names on disk: {probes} and those in the experiment description file: '
+                    f'{new_probes} do not match. Please correct the local and remote experiment '
+                    f'description stub files for tag {self.tag} to match the probe names on disk '
+                    f'before copying.'
+                )
+
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template
         path_wiring = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'neuropixel', 'wirings')
