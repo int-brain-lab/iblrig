@@ -572,7 +572,7 @@ class EphysCopier(SessionCopier):
         """Here we overload the copy to be able to rename the probes properly and also create the insertions."""
         log.info(f'Transferring ephys session: {self.session_path} to {self.remote_session_path}')
         ibllib.pipes.misc.rename_ephys_files(self.session_path)
-        ap_files = list(self.session_path.rglob("*.ap.*bin"))
+        ap_files = list(self.session_path.rglob('*.ap.*bin'))
         if len(ap_files) > 0:
             log.info(f'Found {len(ap_files)} ap files in {self.session_path}, checking names match experiment description')
             new_folders = ibllib.pipes.misc.move_ephys_files(self.session_path, dry=True)
@@ -580,10 +580,12 @@ class EphysCopier(SessionCopier):
             new_probes = [n.name for n in new_folders]
 
             if sorted(new_probes) != sorted(probes):
-                raise ValueError(f'Probe names on disk: {probes} and those in the experiment description file: '
-                                 f'{new_probes} do not match. Please correct the local and remote experiment '
-                                 f'description stub files for tag {self.tag} to match the probe names on disk '
-                                 f'before copying.')
+                raise ValueError(
+                    f'Probe names on disk: {probes} and those in the experiment description file: '
+                    f'{new_probes} do not match. Please correct the local and remote experiment '
+                    f'description stub files for tag {self.tag} to match the probe names on disk '
+                    f'before copying.'
+                )
 
         ibllib.pipes.misc.move_ephys_files(self.session_path)
         # copy the wiring files from template

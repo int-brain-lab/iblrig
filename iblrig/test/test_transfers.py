@@ -464,9 +464,7 @@ class TestBuildGlobPattern(unittest.TestCase):
 
 
 class TestEphysMultiDriveIntegration(TestIntegrationTransferExperimentsBase):
-
     def setUp(self):
-
         super().setUp()
 
         self.drive_a = Path(self.td.name).joinpath('driveA')
@@ -477,7 +475,6 @@ class TestEphysMultiDriveIntegration(TestIntegrationTransferExperimentsBase):
         self.remote = self.iblrig_settings['iblrig_remote_data_path']
 
     def test_prepare_and_transfer_multi_drive_sessions(self):
-
         drive_map = {str(self.drive_a): 2, str(self.drive_b): 1}
         config_file = Path(self.td.name).joinpath('multi_drive.yaml')
         with open(config_file, 'w') as fp:
