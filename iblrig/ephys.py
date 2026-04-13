@@ -2,10 +2,11 @@ import argparse
 import string
 
 import numpy as np
-import yaml
 
 from iblatlas import atlas
 from iblrig.base_tasks import EmptySession
+from iblrig.path_helper import load_pydantic_yaml
+from iblrig.pydantic_definitions import RigSettings
 from iblrig.transfer_experiments import EphysCopier
 from iblutil.util import setup_logger
 
@@ -25,18 +26,16 @@ def prepare_multi_drive_session_cmd():
         prog='start_ephys_session_multi_drive', description='Prepare ephys PC for ephys recording session with multiple drives.'
     )
     parser.add_argument('subject_name', help='name of subject')
-    parser.add_argument('multi_drive_config_yaml', help='path to yaml config file')
     parser.add_argument('--debug', action='store_true', help='enable debugging mode')
     args = parser.parse_args()
     setup_logger(name='iblrig', level='DEBUG' if args.debug else 'INFO')
-    with open(args.multi_drive_config_yaml) as fp:
-        drive_map = yaml.safe_load(fp) or {}
-    prepare_multi_drive_ephys_session(args.subject_name, drive_map)
+    prepare_multi_drive_ephys_session(args.subject_name)
 
 
-def prepare_multi_drive_ephys_session(subject_name: str, drive_map: dict):
-    if not isinstance(drive_map, dict) or not drive_map:
-        raise ValueError('multi_drive_config_yaml must define a non-empty mapping of {drive_path: nprobes}')
+def prepare_multi_drive_ephys_session(subject_name: str):
+    drive_map = load_pydantic_yaml(RigSettings).EPHYS_MULTIDRIVE_MAPPING
+    if drive_map is None:
+        raise ValueError('Must define EPHYS_MULTIDRIVE_MAPPING in settings/iblrig_settings.yaml')
 
     total_probes = sum(drive_map.values())
     drives = list(drive_map.keys())

@@ -1,6 +1,7 @@
 from collections import abc
 from datetime import date
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+from string import ascii_lowercase
 from typing import Annotated, Literal
 
 import pandas as pd
@@ -75,6 +76,27 @@ class RigSettings(BunchModel, validate_assignment=True):
     ALYX_USER: str | None = Field(description='Your Alyx username')
     ALYX_URL: AnyUrl | None = Field(title='Alyx URL', description='The URL to your Alyx database')
     ALYX_LAB: str | None = Field(description="Your lab's name as registered on the Alyx database")
+    EPHYS_MULTIDRIVE_MAPPING: dict[PureWindowsPath, PositiveInt] | None = Field(
+        description='Probe mapping for multi-drive ephys recordings', default=None
+    )
+
+    @field_validator('EPHYS_MULTIDRIVE_MAPPING')
+    @classmethod
+    def check_drive_letters(cls, value):
+        if value is None:
+            return value
+        new_dict = {}
+        if len(value) < 2:
+            raise ValueError('must define at least two drives')
+        for path, ids in value.items():
+            new_path = path
+            if not new_path.is_absolute() and len(new_path.parts) == 1 and str(new_path).lower() in ascii_lowercase:
+                new_path = PureWindowsPath(str(new_path) + ':/')
+            if new_path == PureWindowsPath(new_path.anchor):
+                new_dict[PureWindowsPath(str(new_path) + ':/')] = ids
+                continue
+            raise ValueError(f'{path} is not a drive letter')
+        return new_dict
 
     @field_validator('ALYX_USER', 'ALYX_LAB')
     def str_must_not_contain_space(cls, v):  # noqa: N805
