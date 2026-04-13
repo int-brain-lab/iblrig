@@ -15,12 +15,12 @@ dependencies = [
     # Please refer to https://pdm-project.org/en/latest/usage/dependency/ for details.
     #
     # IBL packages
-    "iblatlas>=0.9.0",
-    "ibllib>=3.4.0",
-    "iblpybpod-no-gui>=3.1.1",
+    "iblatlas>=0.10.0",
+    "ibllib>=3.4.3",
+    "iblpybpod-no-gui>=3.1.2",
     "iblutil>=1.20.0",
-    "iblqt>=0.8.0",
-    "ONE-api>=3.3.0",
+    "iblqt>=0.8.2",
+    "ONE-api>=3.5.0",
     "tycmd-wrapper>=0.2.1",
     "ibl-photometry==0.1.1",
     #
@@ -100,7 +100,7 @@ doc = [
     "sphinx>=7.4.7",
     "sphinx-autobuild>=2024.10.3",
     "sphinx-lesson>=0.8.19",
-    "sphinx-simplepdf>=1.6.0",
+    "sphinx-simplepdf>=1.6.0,<1.7.0",
     "myst-parser>=4.0.1",
     "sphinx-design>=0.6.1",
     "sphinx-copybutton>=0.5.2",
