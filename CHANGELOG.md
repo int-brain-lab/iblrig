@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.29.3
+------
+* fixed: crash when trying to set Status LED on Bpods that don't support it
+
 8.29.2
 ------
 * changed: allow free-form subject when Alyx URL is not set
