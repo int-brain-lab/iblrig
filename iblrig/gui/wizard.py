@@ -1309,7 +1309,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         try:
             bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
-        except (OSError, BpodErrorException, AttributeError):
+        except (OSError, BpodErrorException, AttributeError, IndexError):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
 
