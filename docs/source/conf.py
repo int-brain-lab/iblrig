@@ -41,9 +41,8 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'one:': ('https://int-brain-lab.github.io/ONE/', None),
     'pydantic': ('https://docs.pydantic.dev/latest/', None),
-    'iblenv': ('https://int-brain-lab.github.io/iblenv/', None),
+    'iblenv': ('https://docs.internationalbrainlab.org/', None),
     'pyserial': ('https://pyserial.readthedocs.io/en/latest/', None),
-    'Sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
 
 # -- Options for HTML output -------------------------------------------------

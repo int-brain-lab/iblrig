@@ -721,7 +721,7 @@ wheels = [
 
 [[package]]
 name = "iblpybpod-no-gui"
-version = "3.1.1"
+version = "3.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aenum" },
@@ -733,9 +733,9 @@ dependencies = [
     { name = "pyusb" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f9/a9/7807ebea47e66375f2c3057265e7d463275bbf07694a259446952c8836dc/iblpybpod-no-gui-3.1.1.tar.gz", hash = "sha256:b87edaa1e1814f0fc7522207ddb24550853d201881c91fb42193a4c853e6be45", size = 76535, upload-time = "2025-04-14T12:26:33.422Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/ea/da9d4cb81f7b1aa2a446e96474ba883136adb770b6f472e8276bf2d80407/iblpybpod_no_gui-3.1.2.tar.gz", hash = "sha256:462b1c98798a8207863b76f46b08544aefcf432cc3e4206497caf2bb0ded8f14", size = 78679, upload-time = "2026-03-31T12:16:38.573Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/fe/90e71b8b4737b733f27f9f2d171be7db016ad46345b6d2f18d1de70faa47/iblpybpod_no_gui-3.1.1-py3-none-any.whl", hash = "sha256:dc57fd091da6d1072f8c6db46a015a630dfceb722980b19c0684a54098a4041e", size = 117406, upload-time = "2025-04-14T12:26:31.862Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/b0/b2db74a42315d20306ec69e07c464b62130440087e1e3803777cf2813b85/iblpybpod_no_gui-3.1.2-py3-none-any.whl", hash = "sha256:e4fd41701d42ea6e466ac05aad42ad26bde72c4a29a38f4689683255f6ab6d26", size = 117795, upload-time = "2026-03-31T12:16:37.399Z" },
 ]
 
 [[package]]
@@ -857,13 +857,13 @@ requires-dist = [
     { name = "ibl-photometry", specifier = ">=0.1.2" },
     { name = "iblatlas", specifier = ">=0.10.0" },
     { name = "ibllib", specifier = ">=3.4.3" },
-    { name = "iblpybpod-no-gui", specifier = ">=3.1.1" },
-    { name = "iblqt", specifier = ">=0.8.0" },
+    { name = "iblpybpod-no-gui", specifier = ">=3.1.2" },
+    { name = "iblqt", specifier = ">=0.8.2" },
     { name = "iblutil", specifier = ">=1.20.0" },
     { name = "ipython", specifier = ">=8.37.0" },
     { name = "matplotlib", specifier = ">=3.10.3" },
     { name = "numpy", specifier = "<2.0.0" },
-    { name = "one-api", specifier = ">=3.4.1" },
+    { name = "one-api", specifier = ">=3.5.0" },
     { name = "packaging", specifier = ">=25.0" },
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "pandera", specifier = ">=0.24.0" },
@@ -904,7 +904,7 @@ dev = [
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinx-design", specifier = ">=0.6.1" },
     { name = "sphinx-lesson", specifier = ">=0.8.19" },
-    { name = "sphinx-simplepdf", specifier = ">=1.6.0" },
+    { name = "sphinx-simplepdf", specifier = ">=1.6.0,<1.7.0" },
     { name = "types-pyserial", specifier = ">=3.5.0.20250326" },
     { name = "types-python-dateutil", specifier = ">=2.9.0.20250516" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20250516" },
@@ -917,7 +917,7 @@ doc = [
     { name = "sphinx-copybutton", specifier = ">=0.5.2" },
     { name = "sphinx-design", specifier = ">=0.6.1" },
     { name = "sphinx-lesson", specifier = ">=0.8.19" },
-    { name = "sphinx-simplepdf", specifier = ">=1.6.0" },
+    { name = "sphinx-simplepdf", specifier = ">=1.6.0,<1.7.0" },
 ]
 test = [
     { name = "pytest", specifier = ">=8.4.1" },
@@ -1547,7 +1547,7 @@ wheels = [
 
 [[package]]
 name = "one-api"
-version = "3.4.1"
+version = "3.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
@@ -1560,9 +1560,9 @@ dependencies = [
     { name = "ruff" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/b1/edd8dbc1c6fb30b3d3ddc88af39241fd87d355b3d0b4dc6a0f1c7fe7af48/one_api-3.4.1.tar.gz", hash = "sha256:e1eaef97b70d0240e1ed4d98e38d61742973a9dd1702424d5d79adf999a738a1", size = 1025743, upload-time = "2025-10-21T12:54:12.9Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/7f/4d9a0fb6485d1a862f3780e4a179b3da879d7820a12a1eaf89a346cf7bc9/one_api-3.5.0.tar.gz", hash = "sha256:eb7ca8b875975a3aafd18beacb0fc7b3b08b4afd4fb35b2aea027272acdc1b4b", size = 1027318, upload-time = "2026-03-13T14:09:19.956Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/6f/11c4327a6895258f7e043404236c551e594dadd76d23489f63cd4b01d2ec/one_api-3.4.1-py3-none-any.whl", hash = "sha256:b2c7fe8ec6d7c04ea55685242195274c277f9e1365440022ccfc77e7b0ce0bea", size = 1035237, upload-time = "2025-10-21T12:54:11.318Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/d8/3b28381503a14809950ba05bf7bd5920d393cdab5ceb7bbdd582bfa60573/one_api-3.5.0-py3-none-any.whl", hash = "sha256:0297ace476b500ebbddbdff8078ba8872255a413d4f3694cdca768ab4062f6f6", size = 1036728, upload-time = "2026-03-13T14:09:17.708Z" },
 ]
 
 [[package]]
@@ -2720,7 +2720,7 @@ wheels = [
 
 [[package]]
 name = "sphinx-simplepdf"
-version = "1.7.0"
+version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -2728,9 +2728,9 @@ dependencies = [
     { name = "sphinx" },
     { name = "weasyprint" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/41/ca/4d157b8b8f1dabedc35bd2c8a5cc04b16cebc8abf5c17830029f2a092fda/sphinx_simplepdf-1.7.0.tar.gz", hash = "sha256:4e2d323e30cabdff53c12abf1694a9029e667f9a01db343c49341180324caaef", size = 2285303, upload-time = "2025-12-02T06:33:07.868Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/28/43db1675815af866ce6ecb09d07b192da27fdc7a811f43f8f3760c2c89ea/sphinx-simplepdf-1.6.0.tar.gz", hash = "sha256:bc8412c6b029886ae2e9241612dfc59c4cd35fa8cf2e7eb987c14126d422a939", size = 2282868, upload-time = "2023-01-20T10:18:26.815Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/26/ef3efd9534fde12bc4bcf8d8fe21c46c62b2235ee946f11cc1413b9cec54/sphinx_simplepdf-1.7.0-py3-none-any.whl", hash = "sha256:eaea30c6dc9dc7d63de566545c448585d792be60243a046cd9c40307d5ca96c6", size = 2295733, upload-time = "2025-12-02T06:33:03.812Z" },
+    { url = "https://files.pythonhosted.org/packages/74/98/8dbde560e7a22654c5980561ec2d5417efe999af1939a861909485c6e9ff/sphinx_simplepdf-1.6.0-py3-none-any.whl", hash = "sha256:466a2b7e2000997ebf4dae62d88cd37b27d38c436ca23e81caf939e1d0e611f1", size = 2292403, upload-time = "2023-01-20T10:18:20.405Z" },
 ]
 
 [[package]]

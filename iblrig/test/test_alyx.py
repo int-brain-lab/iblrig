@@ -33,7 +33,12 @@ class TestRegisterSession(BaseTestCases.CommonTestTask):
         self.addCleanup(self.one.alyx.rest, 'subjects', 'delete', id=self.subject)
 
         # Task settings
-        iblrig_settings = {'ALYX_LAB': self.lab, 'iblrig_local_subjects_path': self.tmp, 'iblrig_local_data_path': self.tmp}
+        iblrig_settings = {
+            'ALYX_URL': TEST_DB['base_url'],
+            'ALYX_LAB': self.lab,
+            'iblrig_local_subjects_path': self.tmp,
+            'iblrig_local_data_path': self.tmp,
+        }
         hardware_settings = {'RIG_NAME': self.one.alyx.rest('locations', 'list', lab=self.lab)[0]['name']}
         self.task_settings = {
             **self.task_kwargs,
