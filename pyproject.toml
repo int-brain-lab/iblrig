@@ -13,7 +13,7 @@ readme = "README.md"
 dependencies = [
     # IBL packages
     "iblatlas>=0.10.0",
-    "ibllib>=3.4.3",
+    "ibllib>=4.0.0",
     "iblpybpod-no-gui>=3.1.2",
     "iblutil>=1.20.0",
     "iblqt>=0.8.2",
