@@ -54,7 +54,9 @@ class TaskArgsMixin:
             tmpdir = tempfile.TemporaryDirectory()
         if tmpdir:
             p = Path(tmpdir.name if isinstance(tmpdir, tempfile.TemporaryDirectory) else tmpdir)
-            task_kwargs['iblrig_settings'].update(iblrig_remote_data_path=None, iblrig_local_data_path=p)
+            task_kwargs['iblrig_settings'].update(
+                iblrig_remote_data_path=None, iblrig_local_data_path=p, ALYX_URL=TEST_DB['base_url']
+            )
         return task_kwargs, tmpdir
 
     def get_task_kwargs(self, tmpdir=True):
