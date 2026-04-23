@@ -17,6 +17,7 @@ device_rotary_encoder:
   COM_ROTARY_ENCODER: null
 device_screen:
   DISPLAY_IDX: 1
+  SCREEN_RESOLUTION: [2048, 1536]
   SCREEN_FREQ_TARGET: 60
   SCREEN_FREQ_TEST_DATE: null  # optional
   SCREEN_FREQ_TEST_STATUS: null  # optional

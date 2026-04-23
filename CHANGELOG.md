@@ -1,9 +1,20 @@
 Changelog
 =========
 
-8.29.2
+8.29.4
 ------
 * fixed: handling of dud sessions (session folders emptied rather than deleted)
+
+8.29.3
+------
+* fixed: crash when trying to set Status LED on Bpods that don't support it
+
+8.29.2
+------
+* changed: allow free-form subject when Alyx URL is not set
+* fixed: new SCREEN_RESOLUTION setting for non-standard screens (fixes screen detection during Frame2TTL calibration)
+* fixed: buggy frame2ttl calibration for firmware version 4+
+* fixed: missing import in iblpybpod-no-gui
 
 8.29.1
 ------
@@ -15,6 +26,8 @@ Changelog
 * added: GUI settings for changing MAIN_SYNC
 * fixed: Stop/Pause button not always working for UDP sessions
 * changed: use UV for packaging
+
+-------------------------------
 
 8.28.2
 ------
