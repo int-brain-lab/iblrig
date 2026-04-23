@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.29.4
+------
+* fixed: handling of dud sessions (session folders emptied rather than deleted)
+
 8.29.3
 ------
 * fixed: crash when trying to set Status LED on Bpods that don't support it

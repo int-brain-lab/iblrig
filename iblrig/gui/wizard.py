@@ -1214,19 +1214,26 @@ class RigWizard(QMainWindow, Ui_wizard):
 
             # check if session was a dud
             if (
-                (ntrials := session_data['NTRIALS']) < 42
+                (n_trials := session_data['NTRIALS']) < 42
                 and not any([x in self.model.task_name for x in ('spontaneous', 'passive')])
                 and not self.append_session
             ):
                 answer = QMessageBox.question(
                     self,
                     'Is this a dud?',
-                    f'The session consisted of only {ntrials:d} trial'
-                    f'{"s" if ntrials > 1 else ""} and appears to be a dud.\n\n'
+                    f'The session consisted of only {n_trials:d} trial'
+                    f'{"s" if n_trials > 1 else ""} and appears to be a dud.\n\n'
                     f'Should it be deleted?',
                 )
                 if answer == QMessageBox.Yes:
-                    shutil.rmtree(self.model.session_folder)
+                    # touch dud.flag file
+                    self.model.session_folder.joinpath('dud.flag').touch()
+
+                    # remove all subdirectories (`raw_task_data_00`, `raw_video_data`, ...) to save space
+                    for item in self.model.session_folder.iterdir():
+                        if item.is_dir():
+                            shutil.rmtree(item)
+
                     self.previous_subject = None
                     return
             self.previous_subject = self.model.subject
