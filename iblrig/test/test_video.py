@@ -9,11 +9,12 @@ from unittest.mock import ANY, DEFAULT, MagicMock, call, patch
 
 import numpy as np
 
+from iblrig.test.test_video_pyspin import get_mock_pyspin
 from iblutil.io import net
 from iblutil.util import Bunch
 
 """In order to mock iblrig.video_pyspin.enable_camera_trigger we must mock PySpin here."""
-sys.modules['PySpin'] = MagicMock()
+sys.modules['PySpin'] = get_mock_pyspin()
 
 from iblrig import video  # noqa
 from iblrig.test.base import BaseTestCases  # noqa

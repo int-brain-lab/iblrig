@@ -1,7 +1,7 @@
 from collections import abc
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import pandas as pd
 from annotated_types import Ge, Le
@@ -12,13 +12,17 @@ from pydantic import (
     DirectoryPath,
     Field,
     FilePath,
+    NonNegativeFloat,
+    NonNegativeInt,
     PlainSerializer,
     PositiveFloat,
     PositiveInt,
     field_serializer,
     field_validator,
+    model_validator,
 )
 from pydantic_core._pydantic_core import PydanticUndefined
+from typing_extensions import Self
 
 from iblrig.constants import BASE_PATH
 
@@ -141,28 +145,98 @@ class HardwareSettingsScale(BunchModel):
     COM_SCALE: str | None = None
 
 
-class HardwareSettingsCamera(BunchModel):
-    INDEX: int
-    FPS: PositiveInt | None = Field(
-        title='Camera frame rate',
-        default=None,
-        description='An optional frame rate (for camera QC only)',
-    )
-    WIDTH: PositiveInt | None = Field(
-        title='Camera frame width',
-        default=None,
-        description='An optional frame width (for camera QC only)',
-    )
-    HEIGHT: PositiveInt | None = Field(
-        title='Camera frame height',
-        default=None,
-        description='An optional frame hight (for camera QC only)',
-    )
+class HardwareSettingsCameraParameters(BunchModel):
+    LABEL: str = Field(title='Camera label', description="The camera's label", exclude=True)
     SYNC_LABEL: str | None = Field(
         title='Camera DAQ sync label',
         default=None,
         description='The name of the DAQ channel wired to the camera GPIO',
     )
+    INDEX: NonNegativeInt | None = Field(
+        title='Camera Index',
+        default=None,
+        description="The camera's index as reported by FlyCapture",
+        deprecated='Use of INDEX is deprecated. Please use SERIAL instead.',
+    )
+    SERIAL: str | None = Field(
+        title='Camera serial number', default=None, description="The camera's serial number as reported by FlyCapture"
+    )
+    FPS: PositiveInt | None = Field(
+        title='Camera frame rate',
+        default=None,
+        description='An optional frame rate',
+    )
+    VIDEO_MODE: NonNegativeInt = Field(
+        title='Video Mode',
+        default=0,
+        description='Current video mode',
+        ge=0,
+        le=1,
+    )
+    WIDTH: PositiveInt | None = Field(
+        title='Camera frame width',
+        default=None,
+        description='An optional frame width',
+    )
+    HEIGHT: PositiveInt | None = Field(
+        title='Camera frame height',
+        default=None,
+        description='An optional frame height',
+    )
+    EXPOSURE_TIME_US: PositiveFloat = Field(
+        title='Exposure Time',
+        default=10000,
+        description='Exposure time in microseconds',
+    )
+    EXPOSURE_COMPENSATION_EV: float = Field(
+        title='Camera exposure compensation',
+        default=0.7,
+        description='The measured or target image plane illuminance in EV',
+    )
+    BLACK_LEVEL: NonNegativeFloat = Field(
+        title='Black Level',
+        default=2,
+        description='Analog black level in percent',
+    )
+    GAIN_DB: NonNegativeFloat = Field(
+        title='Gain',
+        default=12,
+        description='Gain applied to the image in dB',
+    )
+    LINE_MODE: list[Literal['Input', 'Output']] = Field(
+        title='Line Mode',
+        default=['Input', 'Output', 'Output', 'Input'],
+        description='Controls whether the physical Line is used to Input or Output a signal',
+        min_length=2,
+        max_length=2,
+    )
+    LINE_SOURCE: list[Literal['ExposureActive', 'ExternalTriggerActive', 'UserOutput2'], None] = Field(
+        title='Line Source',
+        default=[None, 'ExposureActive', 'ExposureActive', None],
+        description='Selects which internal acquisition or I/O source signal to output on the selected line',
+        min_length=2,
+        max_length=2,
+    )
+    STROBE_DURATION_US: list[NonNegativeFloat] = Field(
+        title='Strobe Duration',
+        default=[None, 10e3, 10e3, None],
+        description='Sets the duration (in microseconds) of the Strobe Signal',
+        min_length=2,
+        max_length=2,
+    )
+    STROBE_DELAY_US: list[NonNegativeFloat] = Field(
+        title='Strobe Delay',
+        default=[None, 0, 0, None],
+        description='Sets the duration (in microseconds) of the delay before starting the Strobe Signal.',
+        min_length=2,
+        max_length=2,
+    )
+
+    @model_validator(mode='after')
+    def check_index_or_serial(self) -> Self:
+        if self.INDEX is None and self.SERIAL is None:
+            raise ValueError('Either SERIAL or INDEX is required')
+        return self
 
 
 class HardwareSettingsNeurophotometrics(BunchModel):
@@ -190,6 +264,36 @@ class HardwareSettingsCameraWorkflow(BunchModel):
         return v
 
 
+class HardwareSettingsCameraProfile(BunchModel, extra='allow'):
+    """Pydantic Model for a camera profile, defining BONSAI workflows and parameters for one or multiple cameras."""
+
+    BONSAI_WORKFLOW: HardwareSettingsCameraWorkflow
+
+    @model_validator(mode='before')
+    @classmethod
+    def parse_extra_as_camera_parameters(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate all fields other than BONSAI_WORKFLOW as HardwareSettingsCameraParameters."""
+        if len(data) == 1:
+            raise ValueError('Parameters for at least one camera must be specified.')
+        for key, val in list(data.items()):
+            if key != 'BONSAI_WORKFLOW':
+                val['LABEL'] = key  # So we can assess the camera label from within the sub-model
+                data[key] = HardwareSettingsCameraParameters.model_validate(val)
+        return data
+
+
+class HardwareSettingsCamera(BunchModel, extra='allow'):
+    """Pydantic Model for cameras, containing one or several camera profiles."""
+
+    @model_validator(mode='before')
+    @classmethod
+    def parse_extra_as_camera_profiles(cls, data: dict[str, Any]) -> dict[str, Any]:
+        """Validate all fields as HardwareSettingsCameraProfile."""
+        if len(data) == 0:
+            raise ValueError('At least one camera profile must be specified.')
+        return {key: HardwareSettingsCameraProfile.model_validate(val) for key, val in data.items()}
+
+
 class HardwareSettingsMicrophone(BunchModel):
     BONSAI_WORKFLOW: Path
 
@@ -209,7 +313,7 @@ class HardwareSettings(BunchModel):
     device_sound: HardwareSettingsSound | None = None
     device_valve: HardwareSettingsValve | None = None
     device_scale: HardwareSettingsScale = HardwareSettingsScale()
-    device_cameras: dict[str, dict[str, HardwareSettingsCameraWorkflow | HardwareSettingsCamera]] | None
+    device_cameras: HardwareSettingsCamera | None
     device_microphone: HardwareSettingsMicrophone | None = None
     device_neurophotometrics: HardwareSettingsNeurophotometrics | None = None
     VERSION: str
