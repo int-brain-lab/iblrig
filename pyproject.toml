@@ -13,12 +13,12 @@ readme = "README.md"
 dependencies = [
     # IBL packages
     "iblatlas>=0.10.0",
-    "ibllib>=3.4.3",
+    "ibllib>=4.0.0",
     "iblpybpod-no-gui>=3.1.2",
     "iblutil>=1.20.0",
     "iblqt>=0.8.2",
     "ONE-api>=3.5.0",
-    "tycmd-wrapper>=0.2.1",
+#    "tycmd-wrapper>=0.2.1",
     "ibl-photometry>=0.1.2",
     #
     # Everything else
@@ -63,7 +63,8 @@ upgrade_iblrig          = "iblrig.upgrade_iblrig:upgrade"
 install_spinnaker       = "iblrig.video:install_spinnaker"
 install_pyspin          = "iblrig.video:install_pyspin"
 start_video_session     = "iblrig.video:prepare_video_session_cmd"
-start_ephys_session     = "iblrig.ephys:prepare_ephys_session_cmd"
+start_ephys_session           = "iblrig.ephys:prepare_ephys_session_cmd"
+start_ephys_session_multi_drive = "iblrig.ephys:prepare_multi_drive_session_cmd"
 start_neurophotometrics = 'iblrig.neurophotometrics:start_neurophotometrics_cli'
 start_photometry_task   = 'iblrig.neurophotometrics:initialize_subject_cli'
 convert_uis             = "iblrig.gui.tools:convert_uis"

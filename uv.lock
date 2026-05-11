@@ -625,21 +625,21 @@ wheels = [
 
 [[package]]
 name = "ibl-photometry"
-version = "0.1.2"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ibllib" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "one-api" },
     { name = "pandas" },
     { name = "pandera", extra = ["pandas"] },
-    { name = "pytest" },
     { name = "pywavelets" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/82/ca/ffda377ec199a9829929fe4241bc0560ef6d078a813e048821f13d5f859e/ibl_photometry-0.1.2.tar.gz", hash = "sha256:590534cc55c67b29de72cc915d307ecb4daddd912644764bc0cc50810f0c18fc", size = 17241552, upload-time = "2025-09-24T16:47:21.4Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/ea/c9a7c3d972238147cb88cb65d1060c5d92049c74500c3b539b9515e51e39/ibl_photometry-0.3.2.tar.gz", hash = "sha256:710ef8dce682a27c2bc8176f0b9df56f629ceed0424bbe1a6aaf345d929a0f81", size = 17112922, upload-time = "2026-04-10T09:43:45.649Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/8d/ec5c685c04e382ace766496466d7c8146333d8142250c0ea3a475852b4cf/ibl_photometry-0.1.2-py3-none-any.whl", hash = "sha256:befb24c2aa10dbeb7554fa3b0e8931da5104357f07c3bfb7a4015e0fc79b2233", size = 17096782, upload-time = "2025-09-24T16:47:19.193Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/72/5c1e3198ea45cd0644f1242e970e5bb22102737d180486302ce4027f3158/ibl_photometry-0.3.2-py3-none-any.whl", hash = "sha256:d30314f765f10af36a57c1a6b48e02207a32678430b43f4b4ed8b415f3baa821", size = 47956, upload-time = "2026-04-10T09:43:43.906Z" },
 ]
 
 [[package]]
@@ -676,7 +676,7 @@ wheels = [
 
 [[package]]
 name = "ibllib"
-version = "3.4.3"
+version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
@@ -686,6 +686,7 @@ dependencies = [
     { name = "globus-sdk" },
     { name = "graphviz" },
     { name = "ibl-neuropixel" },
+    { name = "ibl-photometry" },
     { name = "ibl-style" },
     { name = "iblatlas" },
     { name = "iblqt" },
@@ -714,9 +715,9 @@ dependencies = [
     { name = "sparse" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2d/9b/b4837c1e76fdd86802ba7a2bfc995706df9bf1c3340d0ff597442476039f/ibllib-3.4.3.tar.gz", hash = "sha256:e175f2abb235fabd2f3620dfd5a29753d37249b437c890e388b824d5f8283eaf", size = 8517346, upload-time = "2025-11-25T10:52:30.153Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/45/7087b92fef260260a10bb989f0d2a85c35c9e7ad6b590423076a4805f90c/ibllib-4.0.0.tar.gz", hash = "sha256:bf6094179649de193ff04d795f0216435593d6fce70295201e0ee7d3b3b039bc", size = 8525204, upload-time = "2026-04-15T11:44:12.945Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/1a/fc2460d26113256fd2e3de335bb2e0167a135d4a8d82445e7cad1c3ed383/ibllib-3.4.3-py3-none-any.whl", hash = "sha256:845a7ed8cfadd0ba6da4548d08f3655049e5b3d74d1bd0f087e618e4f3a7459d", size = 8733754, upload-time = "2025-11-25T10:52:27.826Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/ef/3e141822ff1622c4477b672c616b3f433561e3eaf21a765a62366147ace2/ibllib-4.0.0-py3-none-any.whl", hash = "sha256:90c5c8f33f65eeef50bd89b2b7f669c51bcfb73792444afcbe60f2f93f467b37", size = 8744507, upload-time = "2026-04-15T11:44:10.351Z" },
 ]
 
 [[package]]
@@ -856,7 +857,7 @@ requires-dist = [
     { name = "graphviz", specifier = ">=0.20.3" },
     { name = "ibl-photometry", specifier = ">=0.1.2" },
     { name = "iblatlas", specifier = ">=0.10.0" },
-    { name = "ibllib", specifier = ">=3.4.3" },
+    { name = "ibllib", specifier = ">=4.0.0" },
     { name = "iblpybpod-no-gui", specifier = ">=3.1.2" },
     { name = "iblqt", specifier = ">=0.8.2" },
     { name = "iblutil", specifier = ">=1.20.0" },
