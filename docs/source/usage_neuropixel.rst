@@ -65,6 +65,14 @@ To initiate the data transfer from the local server to the remote server, open a
    C:\iblrigv8\venv\scripts\Activate.ps1
    transfer_data --tag ephys
 
+When using multiple drives, run the transfer once per drive using the drive index as the tag suffix:
+
+.. code:: powershell
+
+   C:\iblrigv8\venv\scripts\Activate.ps1
+   transfer_data --tag ephys_0
+   transfer_data --tag ephys_1
+
 The transfer local and remote directories are set in the
 ``iblrig/settings/iblrig_settings.py`` file.
 
