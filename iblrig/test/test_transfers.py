@@ -216,9 +216,11 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
                 raise RuntimeError('read failure')
             return load_task_jsonable(path)
 
-        with mock.patch('iblrig.transfer_experiments.load_task_jsonable', side_effect=_fail_on_patched):
-            with self.assertRaises(RuntimeError):
-                sc.copy_collections()
+        with (
+            mock.patch('iblrig.transfer_experiments.load_task_jsonable', side_effect=_fail_on_patched),
+            self.assertRaises(RuntimeError),
+        ):
+            sc.copy_collections()
 
         # original jsonable must be untouched; no stray .patched file should remain
         self.assertFalse(jsonable_path.with_suffix('.patched').exists())

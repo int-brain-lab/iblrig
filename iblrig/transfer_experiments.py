@@ -518,18 +518,19 @@ class BehaviorCopier(SessionCopier):
                     jsonable_lines = jsonable.read_text().splitlines()
                     jsonable_patched = jsonable.with_suffix('.patched')
                     jsonable_patched.write_text('\n'.join(jsonable_lines[:-1]) + '\n')
-                    try:
-                        patched_trials, patched_bpod_data = load_task_jsonable(jsonable_patched)
-                        assert patched_trials.equals(trials.iloc[:-1])
-                        assert patched_bpod_data == bpod_data[:-1]
-                    except Exception as e:
+                    try:  # patching should be trivial, but let's make sure we don't botch the file by accident
+                        original_trials = trials.copy()
+                        original_bpod_data = bpod_data.copy()
+                        trials, bpod_data = load_task_jsonable(jsonable_patched)
+                        assert trials.equals(original_trials.iloc[:-1])
+                        assert bpod_data == original_bpod_data[:-1]
+                    except Exception as e:  # abort! abort!
                         jsonable_patched.unlink()
                         raise RuntimeError(f'Failed to patch {jsonable.name} - aborting') from e
-                    jsonable.rename(jsonable.with_suffix('.jsonable.original'))
-                    jsonable_patched.rename(jsonable)
-                    trials = patched_trials
-                    bpod_data = patched_bpod_data
-                    trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                    else:  # all good - rename the original file and proceed with copy
+                        jsonable.rename(jsonable.with_suffix('.jsonable.original'))
+                        jsonable_patched.rename(jsonable)
+                        trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
 
                 ntrials = trials.shape[0]
                 # We have the case where the session hard crashed.
