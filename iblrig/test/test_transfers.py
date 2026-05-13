@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import random
 import tempfile
@@ -17,9 +18,11 @@ import iblrig.neurophotometrics
 import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
+from ibllib.io.raw_data_loaders import load_settings
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
+from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import TASK_KWARGS
 from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
@@ -166,6 +169,60 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
     """This test emulates the `transfer_data` command as run on the rig."""
+
+    def _create_session_with_invalid_last_timestamp(self, ntrials=50):
+        """Helper: create a hard-crash session with an overflow timestamp on the last trial."""
+        session = _create_behavior_session(ntrials=ntrials, hard_crash=True, kwargs=self.session_kwargs)
+        jsonable_path = next(session.paths.SESSION_FOLDER.rglob('_iblrig_taskData.raw.jsonable'))
+        lines = jsonable_path.read_text().splitlines()
+        last = json.loads(lines[-1])
+        last['behavior_data']['Trial end timestamp'] = 1e308
+        lines[-1] = json.dumps(last)
+        jsonable_path.write_text('\n'.join(lines))
+        return session, jsonable_path, lines
+
+    def test_behavior_copy_invalid_last_timestamp(self):
+        """When pybpod crashes, the last trial may have an overflow timestamp. The copier should drop it and recover."""
+        ntrials = 50
+        session, jsonable_path, _ = self._create_session_with_invalid_last_timestamp(ntrials)
+        sc = BehaviorCopier(
+            session_path=session.paths.SESSION_FOLDER,
+            remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
+        )
+        self.assertTrue(sc.copy_collections())
+
+        # verify the patched settings reflect ntrials - 1
+        settings = load_settings(session.paths.SESSION_FOLDER, task_collection='raw_task_data_00')
+        self.assertEqual(settings['NTRIALS'], ntrials - 1)
+        # verify the jsonable was rewritten without the corrupted last trial
+        # the original (corrupted) file is kept as .jsonable.original; no stray .patched file should remain
+        self.assertTrue(jsonable_path.with_suffix('.jsonable.original').exists())
+        self.assertFalse(jsonable_path.with_suffix('.patched').exists())
+        trials_rewritten, bpod_rewritten = load_task_jsonable(jsonable_path)
+        self.assertEqual(len(trials_rewritten), ntrials - 1)
+        self.assertLess(bpod_rewritten[-1]['Trial end timestamp'], 1e308)
+
+    def test_behavior_copy_invalid_last_timestamp_patch_failure(self):
+        """If the patched jsonable fails verification the copy should abort, leaving the original file intact."""
+        ntrials = 50
+        session, jsonable_path, lines = self._create_session_with_invalid_last_timestamp(ntrials)
+        sc = BehaviorCopier(
+            session_path=session.paths.SESSION_FOLDER,
+            remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
+        )
+
+        def _fail_on_patched(path):
+            if str(path).endswith('.patched'):
+                raise RuntimeError('read failure')
+            return load_task_jsonable(path)
+
+        with mock.patch('iblrig.transfer_experiments.load_task_jsonable', side_effect=_fail_on_patched):
+            with self.assertRaises(RuntimeError):
+                sc.copy_collections()
+
+        # original jsonable must be untouched; no stray .patched file should remain
+        self.assertFalse(jsonable_path.with_suffix('.patched').exists())
+        self.assertEqual(jsonable_path.read_text(), '\n'.join(lines))
 
     def test_behavior_copy_complete_session(self):
         """
