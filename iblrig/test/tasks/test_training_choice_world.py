@@ -93,6 +93,29 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     assert trials_table.debias_trial.sum() == 0
 
 
+class TestZeroContrastPosition(BaseTestCases.CommonTestInstantiateTask):
+    """Regression test: zero-contrast trials must be assigned left/right with equal probability."""
+
+    def setUp(self):
+        self.get_task_kwargs()
+        self.task = TrainingChoiceWorldSession(**self.task_kwargs, training_phase=4)
+        self.task.create_session()
+
+    def test_zero_contrast_position_is_balanced(self):
+        np.random.seed(0)
+        n_trials = 2000
+        trial_fixtures = get_fixtures()
+        for _ in range(n_trials):
+            self.task.next_trial()
+            self.task.trial_completed(trial_fixtures['correct'])
+        zero_contrast_trials = self.task.trials_table[: self.task.trial_num][self.task.trials_table.contrast == 0]
+        positions = zero_contrast_trials['position'].values
+        self.assertGreater(len(positions), 0, 'No zero-contrast trials were generated')
+        frac_left = np.mean(positions < 0)
+        self.assertGreater(frac_left, 0.4, f'Zero-contrast trials skewed left: {frac_left:.2f}')
+        self.assertLess(frac_left, 0.6, f'Zero-contrast trials skewed right: {frac_left:.2f}')
+
+
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
     @classmethod
     def setUpClass(cls):

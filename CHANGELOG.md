@@ -1,6 +1,10 @@
 Changelog
 =========
 
+8.29.4
+------
+* fixed: zero-contrast trials in TrainingChoiceWorld always showed up on the left.
+
 8.29.3
 ------
 * fixed: crash when trying to set Status LED on Bpods that don't support it
