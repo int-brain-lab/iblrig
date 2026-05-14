@@ -3,7 +3,7 @@ Changelog
 
 8.29.4
 ------
-* fixed: zero-contrast trials in TrainingChoiceWorld always showed up on the left.
+* fixed: zero-contrast trials in TrainingChoiceWorld and TrainingPhaseChoiceWorld were always rewarded on the left.
 
 8.29.3
 ------
