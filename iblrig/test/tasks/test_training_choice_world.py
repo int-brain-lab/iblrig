@@ -108,7 +108,9 @@ class TestZeroContrastPosition(BaseTestCases.CommonTestInstantiateTask):
         for _ in range(n_trials):
             self.task.next_trial()
             self.task.trial_completed(trial_fixtures['correct'])
-        zero_contrast_trials = self.task.trials_table[: self.task.trial_num][self.task.trials_table.contrast == 0]
+        zero_contrast_trials = self.task.trials_table[
+            (self.task.trials_table.index < self.task.trial_num) & (self.task.trials_table.contrast == 0)
+        ]
         positions = zero_contrast_trials['position'].values
         self.assertGreater(len(positions), 0, 'No zero-contrast trials were generated')
         frac_left = np.mean(positions < 0)
