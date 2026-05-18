@@ -513,6 +513,7 @@ class BehaviorCopier(SessionCopier):
                 # We fix this by dropping the last trial from the jsonable.
                 try:
                     trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                    datetime.today() + trial_duration  # this will trigger an OverflowError on invalid trial durations
                 except OverflowError:
                     log.warning(f'Last trial of session has invalid time stamp - dropping trial from {jsonable.name} ...')
                     jsonable_lines = jsonable.read_text().splitlines()
@@ -543,7 +544,6 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
                 raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
                 # cast the timestamp in a datetime object and add the session length to it
-                print(trial_duration)
                 end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f') + trial_duration
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
