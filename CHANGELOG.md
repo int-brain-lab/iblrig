@@ -4,6 +4,7 @@ Changelog
 8.29.4
 ------
 * fixed: zero-contrast trials in TrainingChoiceWorld and TrainingPhaseChoiceWorld were always rewarded on the left.
+* fixed: crashed sessions could not be transferred when they contained invalid timestamps.
 
 8.29.3
 ------
