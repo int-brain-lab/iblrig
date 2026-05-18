@@ -1,11 +1,40 @@
+import contextlib
+import importlib.metadata
+import inspect
+import pkgutil
+
 import numpy as np
 import pandas as pd
+import pytest
 
 from iblrig import choiceworld
-from iblrig.test.base import BaseTestCases
+from iblrig.base_choice_world import TrainingChoiceWorldSession as _BaseTrainingSession
+from iblrig.test.base import BaseTestCases, TaskArgsMixin
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
 from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
+
+
+def _all_subclasses(cls):
+    for sub in cls.__subclasses__():
+        yield sub
+        yield from _all_subclasses(sub)
+
+
+# Import every module from every installed distribution that exposes an iblrig_* package,
+# so that __subclasses__() is fully populated at collection time regardless of which
+# project_extraction-style packages are installed.
+for _dist in importlib.metadata.distributions():
+    with contextlib.suppress(Exception):
+        for _pkg_name in (_dist.read_text('top_level.txt') or '').splitlines():
+            if not _pkg_name.strip().startswith('iblrig_'):
+                continue
+            _pkg = importlib.import_module(_pkg_name.strip())
+            for _mod_info in pkgutil.walk_packages(_pkg.__path__, _pkg.__name__ + '.'):
+                with contextlib.suppress(Exception):
+                    importlib.import_module(_mod_info.name)
+
+_TRAINING_SESSION_CLASSES = list(_all_subclasses(_BaseTrainingSession))
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
@@ -93,29 +122,26 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     assert trials_table.debias_trial.sum() == 0
 
 
-class TestZeroContrastPosition(BaseTestCases.CommonTestInstantiateTask):
+@pytest.mark.parametrize('session_class', _TRAINING_SESSION_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
+def test_zero_contrast_position_is_balanced(session_class, tmp_path):
     """Regression test: zero-contrast trials must be assigned left/right with equal probability."""
+    task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
+    sig = inspect.signature(session_class.__init__)
+    phase_kwarg = {'training_level': 4} if 'training_level' in sig.parameters else {'training_phase': 4}
+    task = session_class(**task_kwargs, **phase_kwarg)
+    task.create_session()
 
-    def setUp(self):
-        self.get_task_kwargs()
-        self.task = TrainingChoiceWorldSession(**self.task_kwargs, training_phase=4)
-        self.task.create_session()
+    np.random.seed(0)
+    trial_fixtures = get_fixtures()
+    for _ in range(2000):
+        task.next_trial()
+        task.trial_completed(trial_fixtures['correct'])
 
-    def test_zero_contrast_position_is_balanced(self):
-        np.random.seed(0)
-        n_trials = 2000
-        trial_fixtures = get_fixtures()
-        for _ in range(n_trials):
-            self.task.next_trial()
-            self.task.trial_completed(trial_fixtures['correct'])
-        zero_contrast_trials = self.task.trials_table[
-            (self.task.trials_table.index < self.task.trial_num) & (self.task.trials_table.contrast == 0)
-        ]
-        positions = zero_contrast_trials['position'].values
-        self.assertGreater(len(positions), 0, 'No zero-contrast trials were generated')
-        frac_left = np.mean(positions < 0)
-        self.assertGreater(frac_left, 0.4, f'Zero-contrast trials skewed left: {frac_left:.2f}')
-        self.assertLess(frac_left, 0.6, f'Zero-contrast trials skewed right: {frac_left:.2f}')
+    zero_trials = task.trials_table[(task.trials_table.index < task.trial_num) & (task.trials_table.contrast == 0)]
+    positions = zero_trials['position'].values
+    assert len(positions) > 0, 'No zero-contrast trials were generated'
+    frac_left = np.mean(positions < 0)
+    assert 0.4 < frac_left < 0.6, f'Zero-contrast trials imbalanced: frac_left={frac_left:.2f}'
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
