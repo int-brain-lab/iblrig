@@ -508,6 +508,32 @@ class BehaviorCopier(SessionCopier):
                         shutil.rmtree(self.remote_session_path)  # remove likely dud
                     return False
                 trials, bpod_data = load_task_jsonable(jsonable)
+
+                # For unknown reasons, pybpod sometimes crashes, leaving the last trial with an invalid timestamp.
+                # We fix this by dropping the last trial from the jsonable.
+                try:
+                    trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                    datetime.today() + trial_duration  # this will trigger an OverflowError on invalid trial durations
+                except OverflowError:
+                    log.warning(f'Last trial of session has invalid time stamp - dropping trial from {jsonable.name} ...')
+                    jsonable_lines = jsonable.read_text().splitlines()
+                    jsonable_patched = jsonable.with_suffix('.patched')
+                    jsonable_patched.write_text('\n'.join(jsonable_lines[:-1]) + '\n')
+                    try:  # patching should be trivial, but let's make sure we don't botch the file by accident
+                        original_trials = trials.copy()
+                        original_bpod_data = bpod_data.copy()
+                        trials, bpod_data = load_task_jsonable(jsonable_patched)
+                        assert len(trials) == len(original_trials) - 1
+                        assert bpod_data == original_bpod_data[:-1]
+                    except Exception as e:  # abort! abort!
+                        jsonable_patched.unlink()
+                        log.error(f'Failed to patch {jsonable.name} - aborting', exc_info=e)
+                        return False
+                    else:  # all good - rename the original file and proceed with copy
+                        jsonable.rename(jsonable.with_suffix('.jsonable.original'))
+                        jsonable_patched.rename(jsonable)
+                        trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+
                 ntrials = trials.shape[0]
                 # We have the case where the session hard crashed.
                 # Patch the settings file to wrap the session and continue the copying.
@@ -519,8 +545,7 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
                 raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
                 # cast the timestamp in a datetime object and add the session length to it
-                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-                end_time += timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f') + trial_duration
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
