@@ -527,7 +527,8 @@ class BehaviorCopier(SessionCopier):
                         assert bpod_data == original_bpod_data[:-1]
                     except Exception as e:  # abort! abort!
                         jsonable_patched.unlink()
-                        raise RuntimeError(f'Failed to patch {jsonable.name} - aborting') from e
+                        log.error(f'Failed to patch {jsonable.name} - aborting', exc_info=e)
+                        return False
                     else:  # all good - rename the original file and proceed with copy
                         jsonable.rename(jsonable.with_suffix('.jsonable.original'))
                         jsonable_patched.rename(jsonable)
