@@ -156,6 +156,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         self.task.create_session()
 
     def test_task(self):
+        np.random.seed(42)
         for i_trial in range(1300):
             original_phase = self.task.training_phase
             self.task.next_trial()
