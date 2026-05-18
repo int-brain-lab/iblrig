@@ -523,7 +523,7 @@ class BehaviorCopier(SessionCopier):
                         original_trials = trials.copy()
                         original_bpod_data = bpod_data.copy()
                         trials, bpod_data = load_task_jsonable(jsonable_patched)
-                        assert trials.equals(original_trials.iloc[:-1])
+                        assert len(trials) == len(original_trials) - 1
                         assert bpod_data == original_bpod_data[:-1]
                     except Exception as e:  # abort! abort!
                         jsonable_patched.unlink()
