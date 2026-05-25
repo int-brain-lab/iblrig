@@ -250,9 +250,9 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         daqami_offset_b = timedelta(minutes=-10)  # 10 minutes before the session of interest
         daqami_offset_c = timedelta(minutes=-30)  # 30 minutes before the last neurophotometrics session
 
-        daqami_start_time_a = neurophotometrics_start_time_a + daqami_offset_a
+        _ = neurophotometrics_start_time_a + daqami_offset_a
         daqami_start_time_b = neurophotometrics_start_time_b + daqami_offset_b
-        daqami_start_time_c = neurophotometrics_start_time_c + daqami_offset_c
+        _ = neurophotometrics_start_time_c + daqami_offset_c
 
         _ = self.create_fake_data(
             neurophotometrics_start_time=neurophotometrics_start_time_a,
@@ -300,9 +300,9 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             / 'daqami_sync.tdms'
         )
         remote_daqami_file = copier.remote_session_path / 'raw_photometry_data' / '_mcc_DAQdata.raw.tdms'
-        with open(local_daqami_file, 'r') as file_handle:
+        with open(local_daqami_file) as file_handle:
             daqami_timestamp_local = file_handle.readlines()
-        with open(remote_daqami_file, 'r') as file_handle:
+        with open(remote_daqami_file) as file_handle:
             daqami_timestamp_remote = file_handle.readlines()
 
         assert daqami_timestamp_local == daqami_timestamp_remote
