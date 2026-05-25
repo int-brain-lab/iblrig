@@ -77,40 +77,98 @@ class TestIntegrationTransferExperimentsBase(unittest.TestCase):
     def tearDown(self):
         self.td.cleanup()
 
-    def side_effect(self, *args, filename=None, **kwargs):
+    def return_settings_from_template(self, *args, filename=None, **kwargs):
+        """side effect for mocking: return the iblrig / hardware settings
+        from the respective template file"""
         if filename.name.endswith('hardware_settings.yaml'):
             return self.hardware_settings
-        else:
+        elif filename.name.endswith('iblrig_settings.yaml'):
             return self.iblrig_settings
+        else:
+            raise FileNotFoundError(f'unknown settings file: {filename}')
 
 
 class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperimentsBase):
     """for testing the photometry"""
 
-    def create_fake_data(self, start_time: datetime | None = None) -> Path:
-        if start_time is None:
-            start_time = datetime.now()
-        datestr = start_time.strftime('%Y-%m-%d')
-        timestr = start_time.strftime('T%H%M%S')
-        neurophotometrics_folder = self.iblrig_settings['iblrig_local_data_path'].joinpath('neurophotometrics', datestr, timestr)
+    neurophotometrics_hardware_defaults = {'FRAMECLOCK_CHANNEL': 1}
+
+    def return_settings_from_template(self, *args, filename=None, **kwargs):
+        """for mocking: return the iblrig / hardware settings from the respective
+        template file"""
+        if filename.name.endswith('hardware_settings.yaml'):
+            self.hardware_settings['device_neurophotometrics'] = self.neurophotometrics_hardware_defaults
+            return self.hardware_settings
+        elif filename.name.endswith('iblrig_settings.yaml'):
+            return self.iblrig_settings
+        else:
+            raise FileNotFoundError(f'unknown settings file: {filename}')
+
+    def create_fake_data(
+        self,
+        neurophotometrics_start_time: datetime | None = None,
+        sync_mode: str = 'bpod',
+        daqami_offset_timedelta: timedelta | None = None,
+    ) -> Path:
+        """creates photometry data for testing the copier, returns the path of the
+        session folder that was created"""
+        if neurophotometrics_start_time is None:
+            neurophotometrics_start_time = datetime.now()
+
+        # create neurophotometrics folder
+        neurophotometrics_folder = (
+            self.iblrig_settings['iblrig_local_data_path']
+            / 'neurophotometrics'
+            / neurophotometrics_start_time.strftime('%Y-%m-%d')
+            / neurophotometrics_start_time.strftime('T%H%M%S')
+        )
         neurophotometrics_folder.mkdir(exist_ok=True, parents=True)
 
-        # creating fake digital_inputs.csv
-        cols_dtypes = dict(
-            ChannelName=str,
-            Channel='int8',
-            AlwaysTrue='bool',
-            SystemTimestamp='float64',
-            ComputerTimestamp='float64',
-        )
-        cols = list(cols_dtypes.keys())
-        digital_inputs_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
-        for col, dtype in cols_dtypes.items():
-            digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
+        if sync_mode == 'bpod':
+            # creating fake digital_inputs.csv
 
-        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv')
+            # NOTE
+            # ideally, we would import this definition from iblphotometry
+            # iblphotometry should not be a dependency of iblrig
+            # photometry (or any modality) specific code should live in a different module/repo
+            # that extends iblrig and can import iblphotometry
+            cols_dtypes = dict(
+                ChannelName=str,
+                Channel='int8',
+                AlwaysTrue='bool',
+                SystemTimestamp='float64',
+                ComputerTimestamp='float64',
+            )
+            cols = list(cols_dtypes.keys())
+            # create the digital inputs file
+            digital_inputs_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
+            for col, dtype in cols_dtypes.items():
+                digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
+            digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv')
+
+        elif sync_mode == 'daqami':
+            # creating daqami sync data created with a time offset
+            if daqami_offset_timedelta is None:
+                # by default, daqami is assumed to have started 5 minutes before the neurophotometrics
+                daqami_offset_timedelta = timedelta(min=-5)
+            daqami_start_time = neurophotometrics_start_time + daqami_offset_timedelta
+
+            # creating fake daq sync file
+            daqami_folder = (
+                self.iblrig_settings['iblrig_local_data_path']
+                / 'daqami'
+                / daqami_start_time.strftime('%Y-%m-%d')
+                / daqami_start_time.strftime('T%H%M')
+            )
+            daqami_folder.mkdir(parents=True, exist_ok=True)
+            # in order to later test if the correct daq files were copied, the timestamp of their creation
+            # is written into the file (as it is stripped from the filename that ispresent at the local
+            # but not at the remote)
+            with open(daqami_folder / 'daqami_sync.tdms', 'w') as file_handle:
+                file_handle.write(daqami_start_time.isoformat())
 
         # creating fake photometry data file
+        # see note above
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
@@ -129,20 +187,25 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         logger.info('Created fake photometry data in %s', neurophotometrics_folder)
         return neurophotometrics_folder
 
-    def test_copier(self):
+    def test_copier_bpod(self):
+        # DEBUG to check: timestamp of created session
         session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
-        timestamp_session = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
+        session_start_time = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
 
         # create several fake photometry datasets
         # this is to assure that the correct dataset is picked by the copier
-        timestamp_neurophotometrics = timestamp_session + timedelta(minutes=-5)
-        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-20))
-        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=-10))
-        local_photometry_path = self.create_fake_data(timestamp_neurophotometrics)  # this is the relevant one
-        self.create_fake_data(timestamp_neurophotometrics + timedelta(minutes=10))
+        neurophotometrics_start_time_a = session_start_time + timedelta(hours=-1)
+        neurophotometrics_start_time_b = session_start_time + timedelta(minutes=-5)
+        neurophotometrics_start_time_c = session_start_time + timedelta(hours=+2)
+
+        _ = self.create_fake_data(neurophotometrics_start_time=neurophotometrics_start_time_a)
+        local_photometry_folder_b = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_b
+        )  # < this is the relevant one
+        _ = self.create_fake_data(neurophotometrics_start_time=neurophotometrics_start_time_c)
 
         # copy data
-        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.return_settings_from_template):
             iblrig.neurophotometrics.init_neurophotometrics_subject(
                 subject='test_subject',
                 rois=['Region1G', 'Region2G'],
@@ -153,22 +216,96 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
             self.assertEqual(copier.state, CopyState.COMPLETE)
 
-        # check that the correct data was copied
-        remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
-        # check raw data
-        data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
-        data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+        # test if the files were copied
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.channels.csv').exists()
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.digitalInputs.pqt').exists()
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt').exists()
+
+        # verify the contents of the raw photometry files
+        data_raw_local = pd.read_csv(local_photometry_folder_b / 'raw_photometry' / 'raw_photometry.csv')
+        data_raw_remote = pd.read_parquet(
+            copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt'
+        )
         pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
-        # check digital inputs data
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
-        data_digital_inputs_local = pd.read_csv(local_photometry_path.joinpath('digital_inputs.csv'))
+
+        # verify the contents of the digital input files
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.digitalInputs.pqt').exists()
+        data_digital_inputs_local = pd.read_csv(local_photometry_folder_b / 'digital_inputs.csv')
         data_digital_inputs_remote = pd.read_parquet(
-            remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt')
+            copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.digitalInputs.pqt'
         )
         pd.testing.assert_frame_equal(data_digital_inputs_local, data_digital_inputs_remote, check_dtype=False)
+
+    def test_copier_daq(self):
+        session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
+        session_start_time = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
+
+        # create several fake photometry datasets
+        # this is to assure that the correct dataset is picked by the copier
+        neurophotometrics_start_time_a = session_start_time + timedelta(hours=-1)
+        neurophotometrics_start_time_b = session_start_time + timedelta(minutes=-5)
+        neurophotometrics_start_time_c = session_start_time + timedelta(hours=+1)
+
+        daqami_offset_a = timedelta(hours=-2)  # 2h before the first neurophotometrics
+        daqami_offset_b = timedelta(minutes=-10)  # 10 minutes before the session of interest
+        daqami_offset_c = timedelta(minutes=-30)  # 30 minutes before the last neurophotometrics session
+
+        daqami_start_time_a = neurophotometrics_start_time_a + daqami_offset_a
+        daqami_start_time_b = neurophotometrics_start_time_b + daqami_offset_b
+        daqami_start_time_c = neurophotometrics_start_time_c + daqami_offset_c
+
+        _ = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_a,
+            daqami_offset_timedelta=daqami_offset_a,
+            sync_mode='daqami',
+        )
+        local_photometry_folder_b = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_b,
+            daqami_offset_timedelta=daqami_offset_b,
+            sync_mode='daqami',
+        )  # < this is the relevant one
+        _ = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_c,
+            daqami_offset_timedelta=daqami_offset_c,
+            sync_mode='daqami',
+        )
+
+        # copy data
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.return_settings_from_template):
+            iblrig.neurophotometrics.init_neurophotometrics_subject(
+                subject='test_subject',
+                rois=['Region1G', 'Region2G'],
+                locations=['VTA', 'SNc'],
+                sync_channel=0,
+                sync_mode='daqami',
+            )
+            (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(copier.state, CopyState.COMPLETE)
+
+        # check that the correct data was copied
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt').exists()
+        # check raw data
+        data_raw_local = pd.read_csv(local_photometry_folder_b / 'raw_photometry' / 'raw_photometry.csv')
+        data_raw_remote = pd.read_parquet(
+            copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt'
+        )
+        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
+
+        # check daq data
+        local_daqami_folder = self.iblrig_settings['iblrig_local_data_path'] / 'daqami'
+        local_daqami_file = (
+            local_daqami_folder
+            / daqami_start_time_b.strftime('%Y-%m-%d')
+            / daqami_start_time_b.strftime('T%H%M')
+            / 'daqami_sync.tdms'
+        )
+        remote_daqami_file = copier.remote_session_path / 'raw_photometry_data' / '_mcc_DAQdata.raw.tdms'
+        with open(local_daqami_file, 'r') as file_handle:
+            daqami_timestamp_local = file_handle.readlines()
+        with open(remote_daqami_file, 'r') as file_handle:
+            daqami_timestamp_remote = file_handle.readlines()
+
+        assert daqami_timestamp_local == daqami_timestamp_remote
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
@@ -184,7 +321,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         for hard_crash in [False, True]:
             session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
             session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
-            with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
+            with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.return_settings_from_template):
                 iblrig.commands.transfer_data(
                     local_path=session.iblrig_settings['iblrig_local_data_path'],
                     remote_path=session.iblrig_settings['iblrig_remote_data_path'],
@@ -198,7 +335,7 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         session = _create_behavior_session(ntrials=50, hard_crash=hard_crash, kwargs=self.session_kwargs)
         session.paths.SESSION_FOLDER.joinpath('transfer_me.flag').touch()
 
-        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.side_effect):
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.return_settings_from_template):
             iblrig.commands.transfer_data(tag='behavior')
         sc = BehaviorCopier(session_path=session.paths.SESSION_FOLDER, remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER)
         self.assertEqual(sc.state, 3)

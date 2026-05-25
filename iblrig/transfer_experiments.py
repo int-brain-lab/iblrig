@@ -644,7 +644,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
                 # all folders of that day, parse by start with T
-                folders = local_and_remote_paths['local_data_folder'].joinpath('daqami', session_date).glob('*/')
+                folders = (local_and_remote_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
                 folders = [folder for folder in folders if folder.name.startswith('T')]
                 daqami_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders]
 
@@ -659,12 +659,12 @@ class NeurophotometricsCopier(SessionCopier):
                 # also adding here the grace timedelta of 1 minute because of comparing HHMM to HHMMSS timestamps
                 timedeltas = [t + timedelta(0, 60) for t in timedeltas]
                 dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
-                if dt_min < timedelta(0, 600):
-                    log.warning('time difference between daqami and neurophotometrics start times is more than 5 minutes')
+                if dt_min > timedelta(minutes=30):
+                    log.warning('time difference between daqami and neurophotometrics start times is more than 30 minutes')
                 daqami_folder = folders[timedeltas.index(dt_min)]
 
                 # check here if multiple daqami files exist
-                if len(list(daqami_folder.glob('*'))) == 2:
+                if len(list(daqami_folder.glob('*.tdms'))) == 1:
                     # this is the expected case, all is fine
                     daqami_file = daqami_folder.joinpath('daqami_sync.tdms')
                 else:
@@ -681,9 +681,9 @@ class NeurophotometricsCopier(SessionCopier):
                 remote_sync_path = self.remote_session_path.joinpath(neurophotometrics_description['sync_metadata']['collection'])
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
                 remote_file = remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms')
-                if remote_file.exists():  # prevent overwriting already copied files
-                    today = datetime.now().strftime('%Y-%m-%d')
-                    shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
+                # if remote_file.exists():  # prevent overwriting already copied files
+                #     today = datetime.now().strftime('%Y-%m-%d')
+                #     shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
                 shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
         # read neurophotometrics file
