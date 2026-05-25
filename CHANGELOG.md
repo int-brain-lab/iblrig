@@ -12,7 +12,9 @@ UNRELEASED
 * changed: Refactoring of GUI code
 * changed: Refactoring of `path_helper` module
 
--------------------------------
+8.29.3
+------
+* fixed: crash when trying to set Status LED on Bpods that don't support it
 
 8.29.2
 ------
