@@ -653,15 +653,25 @@ class NeurophotometricsCopier(SessionCopier):
                     '/'.join(neurophotometrics_session_path.parts[-2:]), '%Y-%m-%d/T%H%M%S'
                 )
 
-                # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
-                timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
+                if len(daqami_start_times) == 1:
+                    # in this case, there is a single daq file for the entire day
+                    # and it might be, that this daq file starts _slightly_ after the
+                    # bonsai timestamp (because of the order of initialization discrepancy)
+                    daqami_folder = folders[0]
+                    if abs(neurophotometrics_start_time - daqami_start_times[0]) > timedelta(minutes=20):
+                        raise ValueError(
+                            'daq start time is more then 20 minutes after the neurophotometrics start time, manually inspect'
+                        )
+                else:
+                    # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
+                    timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
 
-                # also adding here the grace timedelta of 1 minute because of comparing HHMM to HHMMSS timestamps
-                timedeltas = [t + timedelta(0, 60) for t in timedeltas]
-                dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
-                if dt_min > timedelta(minutes=30):
-                    log.warning('time difference between daqami and neurophotometrics start times is more than 30 minutes')
-                daqami_folder = folders[timedeltas.index(dt_min)]
+                    # also adding here the grace timedelta of 1 minute because of comparing HHMM to HHMMSS timestamps
+                    timedeltas = [t + timedelta(0, 60) for t in timedeltas]
+                    dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
+                    if dt_min > timedelta(minutes=30):
+                        log.warning('time difference between daqami and neurophotometrics start times is more than 30 minutes')
+                    daqami_folder = folders[timedeltas.index(dt_min)]
 
                 # check here if multiple daqami files exist
                 if len(list(daqami_folder.glob('*.tdms'))) == 1:

@@ -109,6 +109,7 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         neurophotometrics_start_time: datetime | None = None,
         sync_mode: str = 'bpod',
         daqami_offset_timedelta: timedelta | None = None,
+        create_daqami_data: bool = True,
     ) -> Path:
         """creates photometry data for testing the copier, returns the path of the
         session folder that was created"""
@@ -146,8 +147,10 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
                 digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
             digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv')
 
-        elif sync_mode == 'daqami':
+        elif sync_mode == 'daqami' and create_daqami_data:
             # creating daqami sync data created with a time offset
+            # only conditionally creating daqami data because it's possible to have
+            # only one file per day
             if daqami_offset_timedelta is None:
                 # by default, daqami is assumed to have started 5 minutes before the neurophotometrics
                 daqami_offset_timedelta = timedelta(min=-5)
@@ -297,6 +300,79 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             local_daqami_folder
             / daqami_start_time_b.strftime('%Y-%m-%d')
             / daqami_start_time_b.strftime('T%H%M')
+            / 'daqami_sync.tdms'
+        )
+        remote_daqami_file = copier.remote_session_path / 'raw_photometry_data' / '_mcc_DAQdata.raw.tdms'
+        with open(local_daqami_file) as file_handle:
+            daqami_timestamp_local = file_handle.readlines()
+        with open(remote_daqami_file) as file_handle:
+            daqami_timestamp_remote = file_handle.readlines()
+
+        assert daqami_timestamp_local == daqami_timestamp_remote
+
+    def test_copier_daq_single_daq_file(self):
+        """this test case covers the scenario in which there is only one file one the DAQ,
+        and it's time stamp is _after_ the neurophotometrics timestamp
+        I think this is caused by the user opening bonsai before the daqami software and the
+        timestamp is written at the moment of bonsai opening, _not_ when the play button is
+        pushed"""
+        session = _create_behavior_session(ntrials=50, kwargs=self.session_kwargs)
+        session_start_time = datetime.fromisoformat(session.session_info['SESSION_START_TIME'])
+
+        # create several fake photometry datasets
+        # this is to assure that the correct dataset is picked by the copier
+        neurophotometrics_start_time_a = session_start_time + timedelta(minutes=-30)
+        neurophotometrics_start_time_b = session_start_time + timedelta(hours=+2)
+        neurophotometrics_start_time_c = session_start_time + timedelta(hours=+3)
+
+        daqami_offset = timedelta(minutes=5)  # daq timestamp is just after neurophotometrics timestamp
+
+        daqami_start_time = neurophotometrics_start_time_a + daqami_offset
+
+        local_photometry_folder_a = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_a,
+            daqami_offset_timedelta=daqami_offset,
+            sync_mode='daqami',
+            create_daqami_data=True,
+        )  # < this is the relevant one for this test
+        _ = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_b,
+            sync_mode='daqami',
+            create_daqami_data=False,
+        )
+        _ = self.create_fake_data(
+            neurophotometrics_start_time=neurophotometrics_start_time_c,
+            sync_mode='daqami',
+            create_daqami_data=False,
+        )
+
+        # copy data
+        with mock.patch('iblrig.path_helper._load_settings_yaml', side_effect=self.return_settings_from_template):
+            iblrig.neurophotometrics.init_neurophotometrics_subject(
+                subject='test_subject',
+                rois=['Region1G', 'Region2G'],
+                locations=['VTA', 'SNc'],
+                sync_channel=0,
+                sync_mode='daqami',
+            )
+            (copier,) = iblrig.commands.transfer_data(tag='neurophotometrics')
+            self.assertEqual(copier.state, CopyState.COMPLETE)
+
+        # check that the correct data was copied
+        assert (copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt').exists()
+        # check raw data
+        data_raw_local = pd.read_csv(local_photometry_folder_a / 'raw_photometry' / 'raw_photometry.csv')
+        data_raw_remote = pd.read_parquet(
+            copier.remote_session_path / 'raw_photometry_data' / '_neurophotometrics_fpData.raw.pqt'
+        )
+        pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
+
+        # check daq data
+        local_daqami_folder = self.iblrig_settings['iblrig_local_data_path'] / 'daqami'
+        local_daqami_file = (
+            local_daqami_folder
+            / daqami_start_time.strftime('%Y-%m-%d')
+            / daqami_start_time.strftime('T%H%M')
             / 'daqami_sync.tdms'
         )
         remote_daqami_file = copier.remote_session_path / 'raw_photometry_data' / '_mcc_DAQdata.raw.tdms'
