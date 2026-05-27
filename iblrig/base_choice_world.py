@@ -1091,7 +1091,10 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
         # draw the next trial
         signed_contrast = choiceworld.draw_training_contrast(self.training_phase)
-        position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
+        if signed_contrast == 0:
+            position = int(np.random.choice(self.task_params.STIM_POSITIONS))
+        else:
+            position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
         contrast = np.abs(signed_contrast)
 
         # debiasing: if the previous trial was incorrect, not a no-go and easy

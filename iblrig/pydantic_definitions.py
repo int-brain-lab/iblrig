@@ -12,6 +12,7 @@ from pydantic import (
     DirectoryPath,
     Field,
     FilePath,
+    NonNegativeInt,
     PlainSerializer,
     PositiveFloat,
     PositiveInt,
@@ -112,7 +113,7 @@ class HardwareSettingsRotaryEncoder(BunchModel):
 
 
 class HardwareSettingsScreen(BunchModel):
-    DISPLAY_IDX: int = Field(ge=0, le=1)  # -1 = Default, 0 = First, 1 = Second, 2 = Third, etc
+    DISPLAY_IDX: NonNegativeInt
     SCREEN_RESOLUTION: tuple[PositiveInt, PositiveInt] = (2048, 1536)
     SCREEN_FREQ_TARGET: PositiveInt
     SCREEN_FREQ_TEST_DATE: date | None = None
