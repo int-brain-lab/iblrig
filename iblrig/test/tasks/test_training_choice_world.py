@@ -1,8 +1,8 @@
-from unittest.mock import MagicMock, patch
 import contextlib
 import importlib.metadata
 import inspect
 import pkgutil
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd

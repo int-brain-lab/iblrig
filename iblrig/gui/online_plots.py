@@ -726,9 +726,11 @@ class OnlinePlotsModel(QObject):
         table.columns = ['Trial', 'Stimulus', 'Contrast']
         table['Debias'] = self._trial_data.get('debias_trial', False)
         table['Outcome'] = self._trial_data.apply(
-            lambda row: 'no-go'
-            if (row.get('response_side') == 0 or row.get('response_time') > 60)
-            else ('correct' if row.get('trial_correct') else 'error'),
+            lambda row: (
+                'no-go'
+                if (row.get('response_side') == 0 or row.get('response_time') > 60)
+                else ('correct' if row.get('trial_correct') else 'error')
+            ),
             axis=1,
         )
         table['Response Time / s'] = self._trial_data.apply(
