@@ -5,6 +5,7 @@ import json
 import logging
 import random
 import string
+import tempfile
 import unittest
 from functools import partial
 from pathlib import Path
@@ -42,13 +43,26 @@ class TaskArgsMixin:
     def addCleanup(self, function, /, *args, **kwargs) -> None: ...  # noqa: N802
 
     @staticmethod
-    def create_task_kwargs() -> tuple[dict[str, Any], TemporaryDirectory]:
-        """Copy task keyword arguments and create a temporary directory."""
+    def create_task_kwargs(tmpdir=True):
+        """
+        Copy task keyword arguments and create a temporary directory.
+
+        Parameters
+        ----------
+        tmpdir : bool, tempfile.TemporaryDirectory, pathlib.Path
+            An optional temporary directory to add to kwargs as iblrig settings local data path.
+            If False, the default location is used. If True, a new tempdir is created and added to
+            teardown routine.
+
+        """
         task_kwargs = copy.deepcopy(TASK_KWARGS)
-        tmpdir = TemporaryDirectory()
-        task_kwargs['iblrig_settings'].update(
-            iblrig_remote_data_path=None, iblrig_local_data_path=Path(tmpdir.name), ALYX_URL=TEST_DB['base_url']
-        )
+        if tmpdir is True:
+            tmpdir = tempfile.TemporaryDirectory()
+        if tmpdir:
+            p = Path(tmpdir.name if isinstance(tmpdir, tempfile.TemporaryDirectory) else tmpdir)
+            task_kwargs['iblrig_settings'].update(
+                iblrig_remote_data_path=None, iblrig_local_data_path=p, ALYX_URL=TEST_DB['base_url']
+            )
         return task_kwargs, tmpdir
 
     def get_task_kwargs(self):
