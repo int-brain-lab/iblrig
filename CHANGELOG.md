@@ -12,6 +12,14 @@ UNRELEASED
 * changed: Refactoring of GUI code
 * changed: Refactoring of `path_helper` module
 
+-------------------------------
+
+8.29.4
+------
+* fixed: zero-contrast trials in TrainingChoiceWorld and TrainingPhaseChoiceWorld were always rewarded on the left.
+* fixed: crashed sessions could not be transferred when they contained invalid timestamps.
+* fixed: removed upper bound from DISPLAY_IDX parameter
+
 8.29.3
 ------
 * fixed: crash when trying to set Status LED on Bpods that don't support it
