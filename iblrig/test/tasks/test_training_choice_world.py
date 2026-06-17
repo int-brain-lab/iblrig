@@ -1,5 +1,5 @@
 import contextlib
-import importlib.metadata
+import importlib
 import inspect
 import pkgutil
 
@@ -12,6 +12,7 @@ from iblrig.base_choice_world import TrainingChoiceWorldSession as _BaseTraining
 from iblrig.test.base import BaseTestCases, TaskArgsMixin
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld_c0_CW.task import Session as TrainingChoiceWorldC0CWSession
 from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
 
 
@@ -21,20 +22,22 @@ def _all_subclasses(cls):
         yield from _all_subclasses(sub)
 
 
-# Import every module from every installed distribution that exposes an iblrig_* package,
-# so that __subclasses__() is fully populated at collection time regardless of which
-# project_extraction-style packages are installed.
-for _dist in importlib.metadata.distributions():
+# Import every module from every importable iblrig_* top-level package, so that
+# __subclasses__() is fully populated at collection time regardless of which
+# project_extraction-style packages are installed. We discover the packages directly
+# from sys.path rather than from distribution metadata (top_level.txt), which is not
+# emitted by modern pyproject/editable installs.
+for _mod in pkgutil.iter_modules():
+    if not (_mod.ispkg and _mod.name.startswith('iblrig_')):
+        continue
     with contextlib.suppress(Exception):
-        for _pkg_name in (_dist.read_text('top_level.txt') or '').splitlines():
-            if not _pkg_name.strip().startswith('iblrig_'):
-                continue
-            _pkg = importlib.import_module(_pkg_name.strip())
-            for _mod_info in pkgutil.walk_packages(_pkg.__path__, _pkg.__name__ + '.'):
-                with contextlib.suppress(Exception):
-                    importlib.import_module(_mod_info.name)
+        _pkg = importlib.import_module(_mod.name)
+        for _mod_info in pkgutil.walk_packages(_pkg.__path__, _pkg.__name__ + '.'):
+            with contextlib.suppress(Exception):
+                importlib.import_module(_mod_info.name)
 
-_TRAINING_SESSION_CLASSES = list(_all_subclasses(_BaseTrainingSession))
+_TRAINING_C0_CW_CLASSES = [TrainingChoiceWorldC0CWSession] + list(_all_subclasses(TrainingChoiceWorldC0CWSession))
+_TRAINING_CW_CLASSES = list(set(_all_subclasses(_BaseTrainingSession)) - set(_TRAINING_C0_CW_CLASSES))
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
@@ -122,7 +125,7 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     assert trials_table.debias_trial.sum() == 0
 
 
-@pytest.mark.parametrize('session_class', _TRAINING_SESSION_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
+@pytest.mark.parametrize('session_class', _TRAINING_CW_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
 def test_zero_contrast_position_is_balanced(session_class, tmp_path):
     """Regression test: zero-contrast trials must be assigned left/right with equal probability."""
     task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
@@ -142,6 +145,28 @@ def test_zero_contrast_position_is_balanced(session_class, tmp_path):
     assert len(positions) > 0, 'No zero-contrast trials were generated'
     frac_left = np.mean(positions < 0)
     assert 0.4 < frac_left < 0.6, f'Zero-contrast trials imbalanced: frac_left={frac_left:.2f}'
+
+
+@pytest.mark.parametrize('session_class', _TRAINING_C0_CW_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
+def test_zero_contrast_position_is_left(session_class, tmp_path):
+    """Regression test: zero-contrast trials must be assigned left."""
+    task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
+    sig = inspect.signature(session_class.__init__)
+    phase_kwarg = {'training_level': 4} if 'training_level' in sig.parameters else {'training_phase': 4}
+    task = session_class(**task_kwargs, **phase_kwarg)
+    task.create_session()
+
+    np.random.seed(0)
+    trial_fixtures = get_fixtures()
+    for _ in range(2000):
+        task.next_trial()
+        task.trial_completed(trial_fixtures['correct'])
+
+    zero_trials = task.trials_table[(task.trials_table.index < task.trial_num) & (task.trials_table.contrast == 0)]
+    positions = zero_trials['position'].values
+    assert len(positions) > 0, 'No zero-contrast trials were generated'
+    frac_left = np.mean(positions < 0)
+    assert frac_left == 1, f'Zero-contrast trials assigned to wrong side: frac_left={frac_left:.2f}'
 
 
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
