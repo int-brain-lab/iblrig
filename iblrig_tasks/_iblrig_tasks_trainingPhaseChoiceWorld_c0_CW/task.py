@@ -11,7 +11,7 @@ class Session(TrainingPhaseChoiceWorldSession, TrainingChoiceWorldC0CWSession):
 
     In the standard protocol, a zero-contrast stimulus is assigned to a randomly chosen side. In this protocol, zero-contrast
     trials follows a deterministic convention: the stimulus is always placed on the left, and a clockwise turn is therefore the
-    rewarded one (see :meth:`next_trial`).
+    rewarded one (see :meth:`_map_signed_contrast_to_position`).
 
     Use this protocol when you need behaviour that matches subjects trained under the legacy convention - for example to keep a
     cohort consistent with historical data.

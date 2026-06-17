@@ -2,6 +2,7 @@ import contextlib
 import importlib
 import inspect
 import pkgutil
+import random
 
 import numpy as np
 import pandas as pd
@@ -149,7 +150,7 @@ def test_zero_contrast_position_is_balanced(session_class, tmp_path):
 
 @pytest.mark.parametrize('session_class', _TRAINING_C0_CW_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
 def test_zero_contrast_position_is_left(session_class, tmp_path):
-    """Regression test: zero-contrast trials must be assigned left."""
+    """Regression test: zero-contrast trials must be assigned left for TrainingChoiceWorldC0CW (and child classes)."""
     task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
     sig = inspect.signature(session_class.__init__)
     phase_kwarg = {'training_level': 4} if 'training_level' in sig.parameters else {'training_phase': 4}
