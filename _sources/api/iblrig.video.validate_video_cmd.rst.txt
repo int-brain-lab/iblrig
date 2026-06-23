@@ -1,0 +1,6 @@
+iblrig.video.validate\_video\_cmd
+=================================
+
+.. currentmodule:: iblrig.video
+
+.. autofunction:: validate_video_cmd

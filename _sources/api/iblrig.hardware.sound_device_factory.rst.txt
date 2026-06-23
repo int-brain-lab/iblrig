@@ -1,0 +1,6 @@
+iblrig.hardware.sound\_device\_factory
+======================================
+
+.. currentmodule:: iblrig.hardware
+
+.. autofunction:: sound_device_factory

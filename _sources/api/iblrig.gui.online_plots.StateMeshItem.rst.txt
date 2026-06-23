@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.StateMeshItem
+======================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: StateMeshItem
+   :parts: 1
+
+|
+
+.. autoclass:: StateMeshItem
+   :members:
+   :undoc-members:

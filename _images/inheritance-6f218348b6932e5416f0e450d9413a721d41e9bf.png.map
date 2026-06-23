@@ -1,0 +1,11 @@
+<map id="inheritance122b61db2e" name="inheritance122b61db2e">
+<area shape="rect" id="node1" href="#iblrig.gui.online_plots.BpodWidget" target="_top" title="A widget for visualizing Bpod data in a graphical layout." alt="" coords="715,16,765,28"/>
+<area shape="rect" id="node2" title="Convenience class consisting of a :class:`GraphicsView " alt="" coords="608,16,691,28"/>
+<area shape="rect" id="node3" title="Re&#45;implementation of QGraphicsView that removes scrollbars and allows unambiguous control of the " alt="" coords="529,16,584,28"/>
+<area shape="rect" id="node4" title="QGraphicsView(parent: Optional[QWidget] = None)" alt="" coords="445,16,505,28"/>
+<area shape="rect" id="node5" title="QAbstractScrollArea(parent: Optional[QWidget] = None)" alt="" coords="346,16,422,28"/>
+<area shape="rect" id="node6" title="QFrame(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="286,16,323,28"/>
+<area shape="rect" id="node7" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="224,16,263,28"/>
+<area shape="rect" id="node8" title="QObject(parent: Optional[QObject] = None)" alt="" coords="154,3,191,16"/>
+<area shape="rect" id="node10" title="QPaintDevice()" alt="" coords="146,28,200,40"/>
+</map>

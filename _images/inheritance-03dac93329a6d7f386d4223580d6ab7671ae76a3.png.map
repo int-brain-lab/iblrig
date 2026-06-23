@@ -1,0 +1,7 @@
+<map id="inheritanced86d22adba" name="inheritanced86d22adba">
+<area shape="rect" id="node1" title="A Qt TableModel for Pandas DataFrames." alt="" coords="539,3,648,20"/>
+<area shape="rect" id="node6" href="#iblrig.gui.online_plots.TrialsTableModel" target="_top" title="A table model that displays status tips for entries in the trials table." alt="" coords="680,3,765,20"/>
+<area shape="rect" id="node2" title="QAbstractTableModel(parent: Optional[QObject] = None)" alt="" coords="404,3,508,20"/>
+<area shape="rect" id="node3" title="QAbstractItemModel(parent: Optional[QObject] = None)" alt="" coords="271,3,373,20"/>
+<area shape="rect" id="node4" title="QObject(parent: Optional[QObject] = None)" alt="" coords="192,3,240,20"/>
+</map>

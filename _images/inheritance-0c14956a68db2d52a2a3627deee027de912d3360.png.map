@@ -1,0 +1,8 @@
+<map id="inheritancef496570574" name="inheritancef496570574">
+<area shape="rect" id="node1" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="506,48,571,70"/>
+<area shape="rect" id="node8" href="#iblrig.gui.valve.ValveCalibrationDialog" target="_top" title="ValveCalibrationDialog" alt="" coords="615,27,763,49"/>
+<area shape="rect" id="node2" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="394,48,462,70"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="272,26,337,48"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="257,69,352,91"/>
+<area shape="rect" id="node7" href="iblrig.gui.ui_valve.Ui_valve.html#iblrig.gui.ui_valve.Ui_valve" target="_top" title="Ui_valve" alt="" coords="504,5,573,27"/>
+</map>

@@ -1,0 +1,6 @@
+iblrig.ephys.neuropixel24\_micromanipulator\_coordinates
+========================================================
+
+.. currentmodule:: iblrig.ephys
+
+.. autofunction:: neuropixel24_micromanipulator_coordinates

@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.TrialsWidget
+=====================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: TrialsWidget
+   :parts: 1
+
+|
+
+.. autoclass:: TrialsWidget
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.path\_helper.load\_pydantic\_yaml
+========================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: load_pydantic_yaml

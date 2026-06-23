@@ -1,0 +1,7 @@
+<map id="inheritance3b04076b79" name="inheritance3b04076b79">
+<area shape="rect" id="node1" href="#iblrig.gui.online_plots.OnlinePlotsView" target="_top" title="OnlinePlotsView" alt="" coords="651,28,763,50"/>
+<area shape="rect" id="node2" title="QMainWindow(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="507,28,609,50"/>
+<area shape="rect" id="node3" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="396,28,465,50"/>
+<area shape="rect" id="node4" title="QObject(parent: Optional[QObject] = None)" alt="" coords="274,6,339,28"/>
+<area shape="rect" id="node6" title="QPaintDevice()" alt="" coords="258,49,354,71"/>
+</map>

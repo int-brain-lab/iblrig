@@ -1,0 +1,13 @@
+iblrig.gui.ui\_validation.Ui\_validation
+========================================
+
+.. currentmodule:: iblrig.gui.ui_validation
+
+.. inheritance-diagram:: Ui_validation
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_validation
+   :members:
+   :undoc-members:

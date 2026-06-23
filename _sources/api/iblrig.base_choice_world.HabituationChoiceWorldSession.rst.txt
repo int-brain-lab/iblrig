@@ -1,0 +1,13 @@
+iblrig.base\_choice\_world.HabituationChoiceWorldSession
+========================================================
+
+.. currentmodule:: iblrig.base_choice_world
+
+.. inheritance-diagram:: HabituationChoiceWorldSession
+   :parts: 1
+
+|
+
+.. autoclass:: HabituationChoiceWorldSession
+   :members:
+   :undoc-members:

@@ -1,0 +1,13 @@
+iblrig.gui.tab\_data.Column
+===========================
+
+.. currentmodule:: iblrig.gui.tab_data
+
+.. inheritance-diagram:: Column
+   :parts: 1
+
+|
+
+.. autoclass:: Column
+   :members:
+   :undoc-members:

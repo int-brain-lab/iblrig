@@ -1,0 +1,13 @@
+iblrig.transfer\_experiments.EphysCopier
+========================================
+
+.. currentmodule:: iblrig.transfer_experiments
+
+.. inheritance-diagram:: EphysCopier
+   :parts: 1
+
+|
+
+.. autoclass:: EphysCopier
+   :members:
+   :undoc-members:

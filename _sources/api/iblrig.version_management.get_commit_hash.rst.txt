@@ -1,0 +1,6 @@
+iblrig.version\_management.get\_commit\_hash
+============================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: get_commit_hash

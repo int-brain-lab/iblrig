@@ -1,0 +1,6 @@
+iblrig.session\_creator.make\_ephyscw\_pc
+=========================================
+
+.. currentmodule:: iblrig.session_creator
+
+.. autofunction:: make_ephyscw_pc

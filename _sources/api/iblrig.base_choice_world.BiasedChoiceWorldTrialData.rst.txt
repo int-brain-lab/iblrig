@@ -1,0 +1,13 @@
+iblrig.base\_choice\_world.BiasedChoiceWorldTrialData
+=====================================================
+
+.. currentmodule:: iblrig.base_choice_world
+
+.. inheritance-diagram:: BiasedChoiceWorldTrialData
+   :parts: 1
+
+|
+
+.. autoclass:: BiasedChoiceWorldTrialData
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.misc.draw\_contrast
+==========================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: draw_contrast

@@ -1,0 +1,13 @@
+iblrig.video.CameraSession
+==========================
+
+.. currentmodule:: iblrig.video
+
+.. inheritance-diagram:: CameraSession
+   :parts: 1
+
+|
+
+.. autoclass:: CameraSession
+   :members:
+   :undoc-members:

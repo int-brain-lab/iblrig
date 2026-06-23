@@ -1,0 +1,6 @@
+iblrig.path\_helper.iterate\_previous\_sessions
+===============================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: iterate_previous_sessions

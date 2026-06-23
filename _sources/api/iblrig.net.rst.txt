@@ -1,0 +1,29 @@
+iblrig.net
+==========
+
+.. automodule:: iblrig.net
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      check_uri_match
+      get_remote_devices
+      get_remote_devices_file
+      get_server_communicator
+      install_alyx_token
+      read_stdin
+      update_alyx_token
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Auxiliaries
+      ExpInfo
+   

@@ -1,0 +1,458 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.video_pyspin &mdash; iblrig 8.29.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=1aca6793" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=e9df6548" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=858a5a96"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deprecation_notes.html">Deprecation Notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.video_pyspin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.video_pyspin</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">PySpin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">NonNegativeInt</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="camera_log">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.camera_log.html#iblrig.video_pyspin.camera_log">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">camera_log</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stacklevel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Camera #</span><span class="si">{</span><span class="n">camera</span><span class="o">.</span><span class="n">DeviceID</span><span class="p">()</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot; .&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span></div>
+
+
+
+<div class="viewcode-block" id="Cameras">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.Cameras.html#iblrig.video_pyspin.Cameras">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Cameras</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to manage camera instances using the PySpin library.</span>
+
+<span class="sd">    This class provides a context manager for initializing and deinitializing cameras. It ensures that cameras are</span>
+<span class="sd">    properly initialized when entering the context and deinitialized when exiting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Cameras.__init__">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.Cameras.html#iblrig.video_pyspin.Cameras.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_cameras</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the Cameras instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        init_cameras : bool, optional</span>
+<span class="sd">            If True, initializes the cameras upon creation of the instance (default is True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">System</span><span class="o">.</span><span class="n">GetInstance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">GetCameras</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_cameras</span> <span class="o">=</span> <span class="n">init_cameras</span>
+        <span class="k">if</span> <span class="n">init_cameras</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">Init</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraList</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enters the runtime context related to this object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PySpin.CameraList</span>
+<span class="sd">            The list of initialized cameras.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exits the runtime context related to this object.</span>
+
+<span class="sd">        Deinitializes the cameras if they were initialized and releases the system instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_cameras</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">DeInit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cameras</span><span class="o">.</span><span class="n">Clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">ReleaseInstance</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="process_camera">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.process_camera.html#iblrig.video_pyspin.process_camera">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_camera</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator to process a camera or a list of cameras.</span>
+
+<span class="sd">    This decorator allows a function to accept a single camera instance, a list of camera instances, or None. If None</span>
+<span class="sd">    is provided, the decorator will iterate over all available cameras managed by the Cameras context manager and call</span>
+<span class="sd">    the decorated function for each camera.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : Callable</span>
+<span class="sd">        The function to be decorated, which will be called with each camera instance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Callable</span>
+<span class="sd">        The wrapped function that processes the camera input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="c1"># find camera parameter</span>
+        <span class="k">if</span> <span class="s1">&#39;camera&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">camera</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;camera&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span> <span class="o">|</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraList</span><span class="p">):</span>
+            <span class="n">camera</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">camera</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># call the wrapped function</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">camera</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Cameras</span><span class="p">()</span> <span class="k">as</span> <span class="n">camera_list</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">camera_list</span><span class="p">)):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">camera_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraList</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">camera</span><span class="p">)):</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="c1"># return results as tuple</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span>  <span class="c1"># type: ignore</span></div>
+
+
+
+<div class="viewcode-block" id="get_node">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.get_node.html#iblrig.video_pyspin.get_node">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_node</span><span class="p">(</span><span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">,</span> <span class="n">node_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">INode</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve a node from the camera&#39;s node map.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    camera : PySpin.CameraPtr</span>
+<span class="sd">        The camera pointer from which to retrieve the node.</span>
+<span class="sd">    node_name : str</span>
+<span class="sd">        The name of the node to retrieve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PySpin.INode</span>
+<span class="sd">        The node corresponding to the specified node name.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        If the node is not available or not readable for the specified camera.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node_map</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">GetNodeMap</span><span class="p">()</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">node_map</span><span class="o">.</span><span class="n">GetNode</span><span class="p">(</span><span class="n">node_name</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">IsAvailable</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Node `</span><span class="si">{</span><span class="n">node_name</span><span class="si">}</span><span class="s1">` is not available for camera #</span><span class="si">{</span><span class="n">camera</span><span class="o">.</span><span class="n">DeviceID</span><span class="p">()</span><span class="si">}</span><span class="s1">.&#39;</span>
+    <span class="k">assert</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">IsReadable</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Node `</span><span class="si">{</span><span class="n">node_name</span><span class="si">}</span><span class="s1">` is not readable for camera #</span><span class="si">{</span><span class="n">camera</span><span class="o">.</span><span class="n">DeviceID</span><span class="p">()</span><span class="si">}</span><span class="s1">.&#39;</span>
+    <span class="k">return</span> <span class="n">node</span></div>
+
+
+
+<div class="viewcode-block" id="get_enumeration_pointer">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.get_enumeration_pointer.html#iblrig.video_pyspin.get_enumeration_pointer">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_enumeration_pointer</span><span class="p">(</span><span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">,</span> <span class="n">node_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CEnumerationPtr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieve a pointer to an enumeration node from the camera&#39;s node map.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    camera : PySpin.CameraPtr</span>
+<span class="sd">        The camera pointer from which to retrieve the enumeration node.</span>
+<span class="sd">    node_name : str</span>
+<span class="sd">        The name of the enumeration node to retrieve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PySpin.CEnumerationPtr</span>
+<span class="sd">        Pointer to the enumeration node corresponding to the specified node name.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        If the pointer is not valid for the specified camera.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">get_node</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="n">node_name</span><span class="p">)</span>
+    <span class="n">pointer</span> <span class="o">=</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CEnumerationPtr</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pointer</span><span class="o">.</span><span class="n">IsValid</span><span class="p">(),</span> <span class="sa">f</span><span class="s1">&#39;Invalid CEnumerationPtr </span><span class="si">{</span><span class="n">pointer</span><span class="o">.</span><span class="n">GetName</span><span class="p">()</span><span class="si">}</span><span class="s1"> for camera #</span><span class="si">{</span><span class="n">camera</span><span class="o">.</span><span class="n">DeviceID</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">pointer</span></div>
+
+
+
+<div class="viewcode-block" id="acquisition_ok">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.acquisition_ok.html#iblrig.video_pyspin.acquisition_ok">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">acquisition_ok</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test image acquisition for all available cameras.</span>
+
+<span class="sd">    This function attempts to acquire an image from each camera and checks if the acquisition was successful. It logs</span>
+<span class="sd">    the results of the acquisition test for each camera.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if all cameras successfully acquired an image, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">with</span> <span class="n">Cameras</span><span class="p">()</span> <span class="k">as</span> <span class="n">cameras</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+            <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Testing image acquisition&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">BeginAcquisition</span><span class="p">()</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">GetNextImage</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">IsValid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">image</span><span class="o">.</span><span class="n">GetImageStatus</span><span class="p">()</span> <span class="o">==</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">SPINNAKER_IMAGE_STATUS_NO_ERROR</span><span class="p">:</span>
+                    <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Acquisition test was successful&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Acquisition test failed&#39;</span><span class="p">)</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Acquisition test failed: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">IsValid</span><span class="p">():</span>
+                    <span class="n">image</span><span class="o">.</span><span class="n">Release</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">EndAcquisition</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">success</span></div>
+
+
+
+<div class="viewcode-block" id="reset_all_cameras">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.reset_all_cameras.html#iblrig.video_pyspin.reset_all_cameras">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reset_all_cameras</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset all available cameras and wait for them to come back online.</span>
+
+<span class="sd">    This function initializes each camera, attempts to reset it, and then deinitializes it.</span>
+<span class="sd">    After resetting, it waits for all cameras to come back online, logging the status of each camera.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">Cameras</span><span class="p">(</span><span class="n">init_cameras</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">cameras</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Iterate through each camera and reset</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+            <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">Init</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">DeviceReset</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">SpinnakerException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Error resetting camera: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Resetting camera&#39;</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">DeInit</span><span class="p">()</span>
+
+        <span class="c1"># Wait for all cameras to come back online</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Waiting for </span><span class="si">{</span><span class="s2">&quot;camera&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;cameras&quot;</span><span class="si">}</span><span class="s1"> to come back online (~10 s) ...&#39;</span><span class="p">)</span>
+        <span class="n">all_cameras_online</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">all_cameras_online</span><span class="p">:</span>
+            <span class="n">all_cameras_online</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cameras</span><span class="p">)):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">Init</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">SpinnakerException</span><span class="p">:</span>
+                    <span class="n">all_cameras_online</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;Back online.&#39;</span><span class="p">)</span>
+                    <span class="n">cameras</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">DeInit</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_cameras_online</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="enable_camera_trigger">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.enable_camera_trigger.html#iblrig.video_pyspin.enable_camera_trigger">[docs]</a>
+<span class="nd">@process_camera</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable or disable the trigger for a specified camera or all cameras.</span>
+
+<span class="sd">    This function allows you to enable or disable the trigger mode for a given camera / given cameras.</span>
+<span class="sd">    If no camera is specified, it will enable or disable the trigger mode for all available cameras.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    enable : bool</span>
+<span class="sd">        A flag indicating whether to enable (True) or disable (False) the camera trigger.</span>
+<span class="sd">    camera : PySpin.CameraPtr, PySpin.CameraList or None, optional</span>
+<span class="sd">        A pointer to a specific camera instance, a list of instances, or None. If None is specified, all available</span>
+<span class="sd">        cameras will be considered.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    PySpin.SpinnakerException</span>
+<span class="sd">        If there is an error while setting the trigger mode for the camera.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">trigger_mode_ptr</span> <span class="o">=</span> <span class="n">get_enumeration_pointer</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="s1">&#39;TriggerMode&#39;</span><span class="p">)</span>
+        <span class="n">trigger_mode_val</span> <span class="o">=</span> <span class="n">trigger_mode_ptr</span><span class="o">.</span><span class="n">GetEntryByName</span><span class="p">(</span><span class="s1">&#39;On&#39;</span> <span class="k">if</span> <span class="n">enable</span> <span class="k">else</span> <span class="s1">&#39;Off&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">trigger_mode_ptr</span><span class="o">.</span><span class="n">GetIntValue</span><span class="p">()</span> <span class="o">!=</span> <span class="n">trigger_mode_val</span><span class="p">:</span>
+            <span class="n">trigger_mode_ptr</span><span class="o">.</span><span class="n">SetIntValue</span><span class="p">(</span><span class="n">trigger_mode_val</span><span class="p">)</span>
+            <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="s2">&quot;Enabled&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">enable</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;Disabled&quot;</span><span class="si">}</span><span class="s1"> trigger&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Error setting trigger: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="select_line">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.select_line.html#iblrig.video_pyspin.select_line">[docs]</a>
+<span class="nd">@process_camera</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">select_line</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">line_selector_ptr</span> <span class="o">=</span> <span class="n">get_enumeration_pointer</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="s1">&#39;LineSelector&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">line_selector_ptr</span><span class="o">.</span><span class="n">GetIntValue</span><span class="p">()</span> <span class="o">!=</span> <span class="n">line</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line_selector_ptr</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">())),</span> <span class="s1">&#39;Not a valid GPIO line&#39;</span>
+        <span class="n">line_selector_ptr</span><span class="o">.</span><span class="n">SetIntValue</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Selecting GPIO line </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_line_mode">
+<a class="viewcode-back" href="../../api/iblrig.video_pyspin.set_line_mode.html#iblrig.video_pyspin.set_line_mode">[docs]</a>
+<span class="nd">@process_camera</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_line_mode</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;Input&#39;</span><span class="p">,</span> <span class="s1">&#39;Output&#39;</span><span class="p">],</span> <span class="n">camera</span><span class="p">:</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">CameraPtr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">select_line</span><span class="p">(</span><span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">)</span>
+        <span class="n">line_mode_ptr</span> <span class="o">=</span> <span class="n">get_enumeration_pointer</span><span class="p">(</span><span class="n">camera</span><span class="p">,</span> <span class="s1">&#39;LineMode&#39;</span><span class="p">)</span>
+        <span class="n">valid_vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">GetDisplayName</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line_mode_ptr</span><span class="o">.</span><span class="n">GetEntries</span><span class="p">()]</span>
+        <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">valid_vals</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Invalid line mode `</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">`&#39;</span>
+        <span class="n">line_mode_val</span> <span class="o">=</span> <span class="n">line_mode_ptr</span><span class="o">.</span><span class="n">GetEntryByName</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line_mode_ptr</span><span class="o">.</span><span class="n">GetIntValue</span><span class="p">()</span> <span class="o">!=</span> <span class="n">line_mode_val</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="s1">&#39;W&#39;</span> <span class="ow">in</span> <span class="n">PySpin</span><span class="o">.</span><span class="n">EAccessModeClass_ToString</span><span class="p">(</span><span class="n">line_mode_ptr</span><span class="o">.</span><span class="n">GetAccessMode</span><span class="p">()),</span> <span class="s1">&#39;Node is not writable&#39;</span>
+            <span class="n">line_mode_ptr</span><span class="o">.</span><span class="n">SetIntValue</span><span class="p">(</span><span class="n">line_mode_val</span><span class="p">)</span>
+            <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Setting line mode for GPIO line </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s1"> to `</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">`&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">camera_log</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Error setting GPIO line </span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s1"> to `</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">`: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2026 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

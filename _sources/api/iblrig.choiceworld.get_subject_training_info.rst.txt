@@ -1,0 +1,6 @@
+iblrig.choiceworld.get\_subject\_training\_info
+===============================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: get_subject_training_info

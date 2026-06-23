@@ -1,0 +1,5 @@
+<map id="inheritance18ae08651a" name="inheritance18ae08651a">
+<area shape="rect" id="node1" href="#iblrig.gui.tab_data.DataWorker" target="_top" title="DataWorker" alt="" coords="543,5,641,31"/>
+<area shape="rect" id="node2" title="QThread(parent: Optional[QObject] = None)" alt="" coords="417,5,495,31"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="295,5,369,31"/>
+</map>

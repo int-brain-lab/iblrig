@@ -1,0 +1,13 @@
+iblrig.gui.splash.Splash
+========================
+
+.. currentmodule:: iblrig.gui.splash
+
+.. inheritance-diagram:: Splash
+   :parts: 1
+
+|
+
+.. autoclass:: Splash
+   :members:
+   :undoc-members:

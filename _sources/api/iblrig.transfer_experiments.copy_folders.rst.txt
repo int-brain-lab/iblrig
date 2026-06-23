@@ -1,0 +1,6 @@
+iblrig.transfer\_experiments.copy\_folders
+==========================================
+
+.. currentmodule:: iblrig.transfer_experiments
+
+.. autofunction:: copy_folders

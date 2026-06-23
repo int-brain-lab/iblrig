@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.Colors
+===============================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: Colors
+   :parts: 1
+
+|
+
+.. autoclass:: Colors
+   :members:
+   :undoc-members:

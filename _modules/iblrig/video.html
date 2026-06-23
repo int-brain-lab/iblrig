@@ -1,0 +1,1026 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.video &mdash; iblrig 8.29.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=1aca6793" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=e9df6548" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=858a5a96"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deprecation_notes.html">Deprecation Notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.video</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.video</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ibllib.io.raw_data_loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_embedded_frame_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ibllib.io.video</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_video_meta</span><span class="p">,</span> <span class="n">label_from_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.base_tasks</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmptySession</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">HARDWARE_SETTINGS_YAML</span><span class="p">,</span> <span class="n">HAS_PYSPIN</span><span class="p">,</span> <span class="n">HAS_SPINNAKER</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.net</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExpInfo</span><span class="p">,</span> <span class="n">get_server_communicator</span><span class="p">,</span> <span class="n">read_stdin</span><span class="p">,</span> <span class="n">update_alyx_token</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.path_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_pydantic_yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.pydantic_definitions</span><span class="w"> </span><span class="kn">import</span> <span class="n">HardwareSettings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">ask_user</span><span class="p">,</span> <span class="n">call_bonsai</span><span class="p">,</span> <span class="n">call_bonsai_async</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblrig.transfer_experiments</span><span class="w"> </span><span class="kn">import</span> <span class="n">VideoCopier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblutil.io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">hashfile</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+    <span class="n">net</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">iblutil.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">one.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">OneAlyx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">one.converters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConversionMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">one.remote</span><span class="w"> </span><span class="kn">import</span> <span class="n">aws</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">one.webclient</span><span class="w"> </span><span class="kn">import</span> <span class="n">http_download_file</span>  <span class="c1"># type: ignore</span>
+
+<span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">):</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">iblrig</span><span class="w"> </span><span class="kn">import</span> <span class="n">video_pyspin</span>
+
+<span class="n">SPINNAKER_ASSET</span> <span class="o">=</span> <span class="mi">59586</span>
+<span class="n">SPINNAKER_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;SpinnakerSDK_FULL_3.2.0.57_x64.exe&#39;</span>
+<span class="n">SPINNAKER_MD5</span> <span class="o">=</span> <span class="s1">&#39;aafc07c858dc2ab2e2a7d6ef900ca9a7&#39;</span>
+
+<span class="n">PYSPIN_ASSET</span> <span class="o">=</span> <span class="mi">59584</span>
+<span class="n">PYSPIN_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;spinnaker_python-3.2.0.57-cp310-cp310-win_amd64.zip&#39;</span>
+<span class="n">PYSPIN_MD5</span> <span class="o">=</span> <span class="s1">&#39;f93294208e0ecec042adb2f75cb72609&#39;</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_download_from_alyx_or_flir</span><span class="p">(</span><span class="n">asset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_md5</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download a file from Alyx or FLIR server and verify its integrity using MD5 checksum.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    asset : int</span>
+<span class="sd">        The asset identifier for the file on FLIR server.</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The name of the file to be downloaded.</span>
+<span class="sd">    target_md5 : str</span>
+<span class="sd">        The expected MD5 checksum value for the downloaded file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Path</span>
+<span class="sd">        The path to the downloaded file.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Exception</span>
+<span class="sd">        If the downloaded file&#39;s MD5 checksum does not match the expected value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Downloading </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
+    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;Downloads&#39;</span><span class="p">)</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">out_dir</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;target_dir&#39;</span><span class="p">:</span> <span class="n">out_dir</span><span class="p">,</span> <span class="s1">&#39;clobber&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;return_md5&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+    <span class="c1"># if the file already exists skip all downloads</span>
+    <span class="k">if</span> <span class="n">out_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">hashfile</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">out_file</span><span class="p">)</span> <span class="o">==</span> <span class="n">target_md5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out_file</span>
+
+    <span class="c1"># first try to download from public s3 bucket</span>
+    <span class="n">tmp_file</span> <span class="o">=</span> <span class="n">aws</span><span class="o">.</span><span class="n">s3_download_file</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;resources/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="n">out_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tmp_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">md5_sum</span> <span class="o">=</span> <span class="n">hashfile</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">)</span>
+
+    <span class="c1"># if that fails try to download from flir server</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;https://flir.netx.net/file/asset/</span><span class="si">{</span><span class="n">asset</span><span class="si">}</span><span class="s1">/original/attachment&#39;</span>
+            <span class="n">tmp_file</span><span class="p">,</span> <span class="n">md5_sum</span> <span class="o">=</span> <span class="n">http_download_file</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;`</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">` could not be downloaded - manual intervention is necessary&#39;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+    <span class="c1"># finally</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">md5_sum</span> <span class="o">!=</span> <span class="n">target_md5</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;`</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">` does not match the expected MD5 - manual intervention is necessary&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out_file</span>
+
+
+<div class="viewcode-block" id="install_spinnaker">
+<a class="viewcode-back" href="../../api/iblrig.video.install_spinnaker.html#iblrig.video.install_spinnaker">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_spinnaker</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Install the Spinnaker SDK for Windows.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Exception</span>
+<span class="sd">        If the function is not run on Windows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check prerequisites</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;install_spinnaker can only be run on Windows.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Display some information</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This script will try to automatically download &amp; install Spinnaker SDK for Windows&#39;</span><span class="p">)</span>
+    <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Press [ENTER] to continue.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Check for existing installation</span>
+    <span class="k">if</span> <span class="n">HAS_SPINNAKER</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ask_user</span><span class="p">(</span><span class="s1">&#39;Spinnaker SDK for Windows is already installed. Do you want to continue anyways?&#39;</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Download &amp; install Spinnaker SDK</span>
+    <span class="n">file_winsdk</span> <span class="o">=</span> <span class="n">_download_from_alyx_or_flir</span><span class="p">(</span><span class="n">SPINNAKER_ASSET</span><span class="p">,</span> <span class="n">SPINNAKER_FILENAME</span><span class="p">,</span> <span class="n">SPINNAKER_MD5</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Installing Spinnaker SDK for Windows ...&#39;</span><span class="p">)</span>
+    <span class="nb">input</span><span class="p">(</span>
+        <span class="s1">&#39;Please select the &quot;Application Development&quot; Installation Profile. Everything else can be left at &#39;</span>
+        <span class="s1">&#39;default values. Press [ENTER] to continue.&#39;</span>
+    <span class="p">)</span>
+    <span class="n">return_code</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">(</span><span class="n">file_winsdk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Installation of Spinnaker SDK was successful.&#39;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">file_winsdk</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="install_pyspin">
+<a class="viewcode-back" href="../../api/iblrig.video.install_pyspin.html#iblrig.video.install_pyspin">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">install_pyspin</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Install PySpin to the IBLRIG Python environment.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Exception</span>
+<span class="sd">        If the function is not run on Windows.</span>
+<span class="sd">        If the function is not started in the IBLRIG virtual environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check prerequisites</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;nt&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;install_pyspin can only be run on Windows.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">base_prefix</span> <span class="o">==</span> <span class="n">sys</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;install_pyspin needs to be started in the IBLRIG venv.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Display some information</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This script will try to automatically download &amp; install PySpin to the IBLRIG Python environment&#39;</span><span class="p">)</span>
+    <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Press [ENTER] to continue.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Download &amp; install PySpin</span>
+    <span class="k">if</span> <span class="n">HAS_PYSPIN</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PySpin is already installed.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file_zip</span> <span class="o">=</span> <span class="n">_download_from_alyx_or_flir</span><span class="p">(</span><span class="n">PYSPIN_ASSET</span><span class="p">,</span> <span class="n">PYSPIN_FILENAME</span><span class="p">,</span> <span class="n">PYSPIN_MD5</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Installing PySpin ...&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">file_zip</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">file_whl</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">file_zip</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s1">&#39;.whl&#39;</span><span class="p">,</span> <span class="n">file_zip</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">return_code</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s1">&#39;-m&#39;</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">,</span> <span class="n">file_whl</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="n">return_code</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_call</span><span class="p">([</span><span class="s1">&#39;uv&#39;</span><span class="p">,</span> <span class="s1">&#39;pip&#39;</span><span class="p">,</span> <span class="s1">&#39;install&#39;</span><span class="p">,</span> <span class="n">file_whl</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">return_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Installation of PySpin was successful.&#39;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">file_whl</span><span class="p">)</span>
+        <span class="n">file_zip</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="prepare_video_session_cmd">
+<a class="viewcode-back" href="../../api/iblrig.video.prepare_video_session_cmd.html#iblrig.video.prepare_video_session_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_video_session_cmd</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_SPINNAKER</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ask_user</span><span class="p">(</span><span class="s2">&quot;Spinnaker SDK doesn&#39;t seem to be installed. Do you want to install it now?&quot;</span><span class="p">):</span>
+            <span class="n">install_spinnaker</span><span class="p">()</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_PYSPIN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ask_user</span><span class="p">(</span><span class="s2">&quot;PySpin doesn&#39;t seem to be installed. Do you want to install it now?&quot;</span><span class="p">):</span>
+            <span class="n">install_pyspin</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;start_video_session&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Prepare video PC for video recording session.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--subject_name&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of subject (optional if service-uri provided)&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;--profile&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;camera configuration name, found in &quot;device_cameras&quot; map of hardware_settings.yaml&#39;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;--service-uri&#39;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;the service URI to listen to messages on. pass &quot;:&lt;port&gt;&quot; to specify port only.&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--debug&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;enable debugging mode&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">subject_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">service_uri</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;--subject-name is mandatory if --service-uri has not been provided.&#39;</span><span class="p">)</span>
+
+    <span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;DEBUG&#39;</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">debug</span> <span class="k">else</span> <span class="s1">&#39;INFO&#39;</span>
+    <span class="n">service_uri</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">service_uri</span>
+    <span class="k">if</span> <span class="n">service_uri</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">CameraSession</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">subject_name</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">CameraSessionNetworked</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">subject_name</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">service_uri</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="validate_video_cmd">
+<a class="viewcode-back" href="../../api/iblrig.video.validate_video_cmd.html#iblrig.video.validate_video_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_video_cmd</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s1">&#39;validate_video&#39;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Validate video session.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;video_path&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Path to the video file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;configuration&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of the configuration (default: default)&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;camera_name&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;name of the camera (default: left)&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">hwsettings</span><span class="p">:</span> <span class="n">HardwareSettings</span> <span class="o">=</span> <span class="n">load_pydantic_yaml</span><span class="p">(</span><span class="n">HardwareSettings</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">video_path</span><span class="p">)</span>
+    <span class="n">configuration</span> <span class="o">=</span> <span class="n">hwsettings</span><span class="o">.</span><span class="n">device_cameras</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">configuration</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">camera</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">camera_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File not found: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">or</span> <span class="n">file_path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s1">&#39;.avi&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Not a video file: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No such configuration: </span><span class="si">{</span><span class="n">configuration</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">configuration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No such camera: </span><span class="si">{</span><span class="n">camera</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_video</span><span class="p">(</span><span class="n">video_path</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">camera</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="validate_video">
+<a class="viewcode-back" href="../../api/iblrig.video.validate_video.html#iblrig.video.validate_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check raw video file saved as expected.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    video_path : pathlib.Path</span>
+<span class="sd">        Path to the video file.</span>
+<span class="sd">    config : iblrig.pydantic_definitions.HardwareSettingsCamera</span>
+<span class="sd">        The expected video configuration.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if all checks pass.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">ConversionMixin</span><span class="o">.</span><span class="n">path2ref</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">as_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Checking </span><span class="si">%s</span><span class="s1"> camera for session </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">label_from_path</span><span class="p">(</span><span class="n">video_path</span><span class="p">),</span> <span class="n">ref</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">video_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Raw video file does not exist: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">video_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Raw video file empty: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">get_video_meta</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">20</span> <span class="k">if</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;N frames = </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">20</span> <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;Duration = </span><span class="si">%.2f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">HEIGHT</span> <span class="ow">and</span> <span class="n">meta</span><span class="o">.</span><span class="n">height</span> <span class="o">!=</span> <span class="n">config</span><span class="o">.</span><span class="n">HEIGHT</span><span class="p">:</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Frame height = </span><span class="si">%i</span><span class="s1">; expected </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">HEIGHT</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">WIDTH</span> <span class="ow">and</span> <span class="n">meta</span><span class="o">.</span><span class="n">width</span> <span class="o">!=</span> <span class="n">config</span><span class="o">.</span><span class="n">WIDTH</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Frame width = </span><span class="si">%i</span><span class="s1">; expected </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">WIDTH</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">FPS</span> <span class="ow">and</span> <span class="n">meta</span><span class="o">.</span><span class="n">fps</span> <span class="o">!=</span> <span class="n">config</span><span class="o">.</span><span class="n">FPS</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Frame rate = </span><span class="si">%i</span><span class="s1">; expected </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">FPS</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">fps</span><span class="p">)</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Failed to open video file: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">video_path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Check frame data</span>
+    <span class="n">count</span><span class="p">,</span> <span class="n">gpio</span> <span class="o">=</span> <span class="n">load_embedded_frame_data</span><span class="p">(</span><span class="n">video_path</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label_from_path</span><span class="p">(</span><span class="n">video_path</span><span class="p">))</span>
+    <span class="n">dropped</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dropped</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Log ERROR if &gt; .1% frames dropped, otherwise log INFO</span>
+        <span class="n">pct_dropped</span> <span class="o">=</span> <span class="n">dropped</span> <span class="o">/</span> <span class="p">(</span><span class="n">count</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span> <span class="k">if</span> <span class="n">pct_dropped</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="k">else</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;Missed frames (</span><span class="si">%.2f%%</span><span class="s1">) - frame data N = </span><span class="si">%i</span><span class="s1">; video file N = </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">pct_dropped</span><span class="p">,</span> <span class="n">count</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">!=</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Frame count / video frame mismatch - frame counts = </span><span class="si">%i</span><span class="s1">; video frames = </span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">count</span><span class="p">),</span> <span class="n">meta</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">SYNC_LABEL</span><span class="p">:</span>
+        <span class="n">min_events</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># The minimum expected number of GPIO events</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">ch</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">gpio</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;No GPIO events detected.&#39;</span><span class="p">)</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gpio</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">ch</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">30</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">min_events</span> <span class="k">else</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1"> event(s) on GPIO #</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ch</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">]),</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ok</span></div>
+
+
+
+<div class="viewcode-block" id="CameraSession">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CameraSession</span><span class="p">(</span><span class="n">EmptySession</span><span class="p">):</span>
+<div class="viewcode-block" id="CameraSession.__init__">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        subject : str, optional</span>
+<span class="sd">            The subject name.</span>
+<span class="sd">        config_name : str=&#39;default&#39;</span>
+<span class="sd">            The name of the camera configuration key in the hardware settings to use.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        status : str</span>
+<span class="sd">            This status will be returned when messages received during the main loop and determines response to</span>
+<span class="sd">            remote events.</span>
+<span class="sd">        communicator : iblutil.io.net.app.EchoProtocol</span>
+<span class="sd">            A Communicator object that can be used to communicate with the behaviour rig.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copier</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># The VideoSession copier; created by _init_paths</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;append&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">subject</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># Attempt to create log</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+                <span class="s1">&#39;iblrig_logs&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">_camera-session.log&#39;</span>
+            <span class="p">)</span>
+            <span class="n">log_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup_loggers</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_level&#39;</span><span class="p">,</span> <span class="s1">&#39;INFO&#39;</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">log_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to set up logs: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hardware_settings</span><span class="o">.</span><span class="n">device_cameras</span><span class="p">[</span><span class="n">config_name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value_error</span> <span class="o">:=</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;&quot;No camera config in hardware_settings.yaml file.&quot;&#39;</span><span class="p">),</span> <span class="s1">&#39;add_note&#39;</span><span class="p">):</span>
+                <span class="n">value_error</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">HARDWARE_SETTINGS_YAML</span><span class="p">))</span>  <span class="c1"># py 3.11</span>
+            <span class="k">raise</span> <span class="n">value_error</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ex</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Config &quot;</span><span class="si">{</span><span class="n">config_name</span><span class="si">}</span><span class="s1">&quot; not in &quot;device_cameras&quot; hardware settings.&#39;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ex</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_ref</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ref</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_init_paths</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># not sure why super class doesn&#39;t do the assignment...</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;VISUAL_STIM_FOLDER&#39;</span><span class="p">,</span> <span class="s1">&#39;TASK_COLLECTION&#39;</span><span class="p">,</span> <span class="s1">&#39;DATA_FILE_PATH&#39;</span><span class="p">):</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_FOLDER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;LOCAL_SUBJECT_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+                <span class="n">exp_ref</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]),</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">exp_ref</span><span class="p">[</span><span class="s2">&quot;sequence&quot;</span><span class="p">]</span><span class="si">:</span><span class="s1">03</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+            <span class="c1"># Update session info</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SESSION_NUMBER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">[</span><span class="s1">&#39;sequence&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SUBJECT_NAME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_ref</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;raw_video_data&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copier</span> <span class="o">=</span> <span class="n">VideoCopier</span><span class="p">(</span>
+            <span class="n">session_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_FOLDER&#39;</span><span class="p">],</span> <span class="n">remote_subjects_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;REMOTE_SUBJECT_FOLDER&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ONE instance.</span>
+
+<span class="sd">        Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx</span>
+<span class="sd">        token from a remotely connected rig.  This instance is used for formatting the experiment reference string.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        one.api.One</span>
+<span class="sd">            An instance of ONE.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">one</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_one</span> <span class="o">=</span> <span class="n">OneAlyx</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_one</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_loggers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;INFO&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">_</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;iblrig&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_copy_log_to_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Copy the log file to the session folder.</span>
+
+<span class="sd">        This copies the iblrig_logs file handler to the session raw video data folder after closing and removing.</span>
+<span class="sd">        This should be run at the end of an acquisition. If no file handler is found or the SESSION_RAW_DATA_FOLDER</span>
+<span class="sd">        path is not set, the method will do nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tmplog</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="s1">&#39;iblrig_logs&#39;</span><span class="p">)</span>
+        <span class="n">file_handlers</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">)</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">tmplog</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">file_handler</span> <span class="o">:=</span> <span class="nb">next</span><span class="p">(</span><span class="n">file_handlers</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">):</span>
+                <span class="n">new_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;_ibl_log.info-acquisition.log&#39;</span><span class="p">)</span>
+                <span class="n">new_file</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Moving log file: </span><span class="si">%s</span><span class="s1"> -&gt; </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">file_handler</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">new_file</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cameras</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">or</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_bonsai_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">raw_data_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span>
+        <span class="n">filenamevideo</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_</span><span class="si">{}</span><span class="s1">Camera.raw.avi&#39;</span>
+        <span class="n">filenameframedata</span> <span class="o">=</span> <span class="s1">&#39;_iblrig_</span><span class="si">{}</span><span class="s1">Camera.frameData.bin&#39;</span>
+        <span class="n">cameras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cameras</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s1">CameraIndex&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">INDEX</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">cameras</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">capitalize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cameras</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;FileName</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">raw_data_folder</span> <span class="o">/</span> <span class="n">filenamevideo</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+            <span class="n">params</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;FileName</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">Data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">raw_data_folder</span> <span class="o">/</span> <span class="n">filenameframedata</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+<div class="viewcode-block" id="CameraSession.run_setup_workflow">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.run_setup_workflow">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_setup_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">workflows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">)</span>
+        <span class="c1"># align cameras</span>
+        <span class="k">if</span> <span class="n">workflows</span><span class="o">.</span><span class="n">setup</span><span class="p">:</span>
+            <span class="n">video_pyspin</span><span class="o">.</span><span class="n">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bonsai_params</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;CameraIndex&#39;</span><span class="p">)}</span>
+            <span class="n">call_bonsai</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">setup</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="mi">10</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSession.initialize_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.initialize_recording">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">workflows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">)</span>
+        <span class="n">video_pyspin</span><span class="o">.</span><span class="n">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bonsai_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="o">=</span> <span class="n">call_bonsai</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">recording</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copier</span><span class="o">.</span><span class="n">config2stub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">INITIALIZED</span></div>
+
+
+<div class="viewcode-block" id="CameraSession.start_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.start_recording">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Save the stub files locally and in the remote repo for future copy script to use</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">INITIALIZED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copier</span><span class="o">.</span><span class="n">initialize_experiment</span><span class="p">(</span><span class="n">acquisition_description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span>
+        <span class="n">video_pyspin</span><span class="o">.</span><span class="n">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">RUNNING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;To terminate video acquisition, please stop and close Bonsai workflow.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSession.finalize_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.finalize_recording">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">finalize_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">process_finished</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span> <span class="ow">and</span> <span class="n">process_finished</span>
+        <span class="c1"># Check video files were saved and configured correctly</span>
+        <span class="n">video_files</span> <span class="o">=</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bonsai_params</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.avi&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">video_file</span> <span class="ow">in</span> <span class="n">video_files</span><span class="p">:</span>
+            <span class="n">validate_video</span><span class="p">(</span><span class="n">video_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">label_from_path</span><span class="p">(</span><span class="n">video_file</span><span class="p">)])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;transfer_me.flag&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">touch</span><span class="p">()</span>
+        <span class="c1"># remove empty-folders and parent-folders</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">removedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CameraSession.stop_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.stop_recording">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Video acquisition session finished.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalize_recording</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CameraSession.run">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSession.html#iblrig.video.CameraSession.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SUBJECT_NAME&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_setup_workflow</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">CONNECTED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_recording</span><span class="p">()</span>
+        <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;PRESS ENTER TO START CAMERAS&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_recording</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">RUNNING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_recording</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_copy_log_to_session</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failed to copy log to session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CameraSessionNetworked">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CameraSessionNetworked</span><span class="p">(</span><span class="n">CameraSession</span><span class="p">):</span>
+<div class="viewcode-block" id="CameraSessionNetworked.__init__">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A camera session that listens for run commands from a remote computer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        subject : str, optional</span>
+<span class="sd">            The subject name.</span>
+<span class="sd">        config_name : str=&#39;default&#39;</span>
+<span class="sd">            The name of the camera configuration key in the hardware settings to use.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        status : str</span>
+<span class="sd">            This status will be returned when messages received during the main loop and determines response to</span>
+<span class="sd">            remote events.</span>
+<span class="sd">        communicator : iblutil.io.net.app.EchoProtocol</span>
+<span class="sd">            A Communicator object that can be used to communicate with the behaviour rig.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>  <span class="c1"># set of async tasks to await, namely the Bonsai process and remote com</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">subject</span><span class="o">=</span><span class="n">subject</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="n">config_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.listen">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.listen">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">listen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_uri</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Listen for remote rig.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        service_uri : str</span>
+<span class="sd">            The service URI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Already listening on </span><span class="si">%s</span><span class="s1">. Please call `close` method first.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">service_uri</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_server_communicator</span><span class="p">(</span><span class="n">service_uri</span><span class="p">,</span> <span class="s1">&#39;cameras&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">CONNECTED</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.initialize_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.initialize_recording">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">initialize_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">workflows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;BONSAI_WORKFLOW&#39;</span><span class="p">)</span>
+        <span class="n">video_pyspin</span><span class="o">.</span><span class="n">enable_camera_trigger</span><span class="p">(</span><span class="n">enable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">debug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_bonsai_async</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">recording</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bonsai_params</span><span class="p">(),</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">wait</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;bonsai&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copier</span><span class="o">.</span><span class="n">config2stub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;SESSION_RAW_DATA_FOLDER&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">INITIALIZED</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.start_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.start_recording">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start cameras (i.e. spawn Bonsai process).&quot;&quot;&quot;</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;bonsai&#39;</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">task</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">done</span><span class="p">(),</span> <span class="s1">&#39;No Bonsai process found!&#39;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">start_recording</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.stop_recording">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.stop_recording">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Video acquisition session finished.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalize_recording</span><span class="p">()</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;bool: True if communicator is connected.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">is_connected</span>
+
+<div class="viewcode-block" id="CameraSessionNetworked.run">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.run">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_uri</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main loop networked with behaviour rig.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="c1"># raise RuntimeError(&#39;Not connected. Please run `listen` first.&#39;)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">service_uri</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_setup_workflow</span><span class="p">()</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="c1"># TODO Add a check here with an attempt to reconnect if not connected and Bonsai workflow is running</span>
+            <span class="c1"># FIXME Run this as worker for asynchronicity</span>
+            <span class="c1"># Ensure we are awaiting a message from the remote rig.</span>
+            <span class="c1"># This task must be re-added each time a message is received.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="p">):</span>
+                <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">on_event</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpMessage</span><span class="o">.</span><span class="n">any</span><span class="p">()),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;remote&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;keyboard&#39;</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">anext</span><span class="p">(</span><span class="n">read_stdin</span><span class="p">()),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;keyboard&#39;</span><span class="p">))</span>
+            <span class="c1"># Await the next task outcome</span>
+            <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_when</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">FIRST_COMPLETED</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">done</span><span class="p">:</span>
+                <span class="k">match</span> <span class="n">task</span><span class="o">.</span><span class="n">get_name</span><span class="p">():</span>
+                    <span class="k">case</span> <span class="s1">&#39;keyboard&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">is_success</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+                            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_keyboard_input</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+                    <span class="k">case</span> <span class="s1">&#39;remote&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Remote com await cancelled&#39;</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Remote communicator closed&#39;</span><span class="p">)</span>
+                            <span class="k">break</span>  <span class="c1"># TODO cleanup and interact with com closed callbacks</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_message</span><span class="p">(</span><span class="o">*</span><span class="n">task</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                                    <span class="c1"># If running, keep connected and log error</span>
+                                    <span class="c1"># The behaviour rig can still connect at a later point</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failed to process message: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="c1"># If not running raise the exception after closing communicator</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                                    <span class="k">raise</span> <span class="n">ex</span>
+                    <span class="k">case</span> <span class="s1">&#39;bonsai&#39;</span><span class="p">:</span>
+                        <span class="c1"># Bonsai process was ended, most likely it was closed</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># TODO This can be added as done callback instead</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Bonsai error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Bonsai camera acquisition stopped&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">finalize_recording</span><span class="p">()</span>
+                        <span class="c1"># TODO We could send a message to remote here</span>
+                    <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unexpected task &quot;</span><span class="si">{</span><span class="n">task</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_copy_log_to_session</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Failed to copy log to session: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.close">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;End experiment and cleanup object.</span>
+
+<span class="sd">        This should be called before destroying the session object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Cancelling </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_async_tasks</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.reset">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.reset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset object for next session.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_connected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">service_uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">service_uri</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">CONNECTED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SESSION_NUMBER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Ensure previous exp ref invalid</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_process_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for all messages received during the main loop.&quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s1">&#39;exp&#39;</span><span class="p">)</span>
+        <span class="n">fcn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;on_&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">fcn</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;on_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> is not a callable method&#39;</span>
+        <span class="k">await</span> <span class="n">fcn</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_process_keyboard_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process user input from stdin.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">line</span> <span class="o">:=</span> <span class="p">(</span><span class="n">line</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()):</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Received keyboard event: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">match</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s1">&#39;STOP&#39;</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_recording</span><span class="p">()</span>
+            <span class="k">case</span> <span class="s1">&#39;QUIT&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">process_running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bonsai_process</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">process_running</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_recording</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">line</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;QUIT!&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">case</span> <span class="s1">&#39;START&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s1">&#39;No subject name provided. &#39;</span>
+                        <span class="s1">&#39;Please re-instantiate with subject param or await INIT message from remote rig.&#39;</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_start</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="p">{}],</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Command &quot;</span><span class="si">%s</span><span class="s1">&quot; not recognized. Options: &quot;START&quot;, &quot;QUIT&quot; or &quot;QUIT!&quot;&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_ref</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the recording.</span>
+
+<span class="sd">        This should be called by on_init but may be called by on_start if EXPSTART received before EXPINIT</span>
+<span class="sd">        or user manually starts session with START.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exp_ref : dict</span>
+<span class="sd">            The exp_ref to initialize.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_subject_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SUBJECT_NAME&#39;</span><span class="p">]</span>  <span class="c1"># subject passed in by user (if any)</span>
+        <span class="n">subject_name</span> <span class="o">=</span> <span class="n">exp_ref</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">current_subject_name</span> <span class="ow">or</span> <span class="p">(</span><span class="n">current_subject_name</span> <span class="o">==</span> <span class="n">subject_name</span><span class="p">),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;subject mismatch: </span><span class="si">{</span><span class="n">current_subject_name</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">subject_name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_paths</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize_recording</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s1">&#39;SUBJECT_NAME&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">subject_name</span><span class="p">,</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;subject mismatch: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">session_info</span><span class="p">[</span><span class="s2">&quot;SUBJECT_NAME&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">subject_name</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_init">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_init">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process init command from remote rig.</span>
+
+<span class="sd">        This method will initialize the recording and send a response to the remote rig. If an acquisition is already</span>
+<span class="sd">        running it will assert that the received experiment description matches the current one (this should be the</span>
+<span class="sd">        case when running chained protocols). If the expRef is wrong, the method will raise an error before responding,</span>
+<span class="sd">        which should be caught by the calling run method.  Thus one should be able to re-start the behaviour session</span>
+<span class="sd">        with the correct subject expRef or turn off UDPs at the behaviour rig without affecting the camera session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;INIT message received&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">exp_ref</span> <span class="o">:=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;exp_ref&#39;</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No experiment reference included with EXPINIT data&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">is_exp_ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid experiment reference included with EXPINIT data: </span><span class="si">{</span><span class="n">exp_ref</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exp_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">ref2dict</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+        <span class="c1"># NB: Only the first match case for which predicate is true will be run so we can update the status dynamically</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">CONNECTED</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;initialized.&#39;</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                <span class="c1"># Already running - this is fine so long as the exp refs match</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;received init message while already running.&#39;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">dict2ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">),</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;INIT message for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">dict2ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span><span class="si">}</span><span class="s1"> received; already running </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+            <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">INITIALIZED</span><span class="p">:</span>
+                <span class="c1"># Already initialized - this is fine so long as the exp refs match</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">dict2ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="si">}</span><span class="s1">, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">dict2ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;received init message while already initialized.&#39;</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span><span class="o">.</span><span class="n">STOPPED</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Currently experiments aren&#39;t stopped remotely; therefore the user should</span>
+<span class="sd">                use a new instantiation per experiment.</span>
+
+<span class="sd">                If we implement a way to end all on the behaviour rig, this could simply</span>
+<span class="sd">                re-initialize with the new exp ref.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;received init message after experiment ended. Please restart.&#39;</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unexpected status &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">init</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()],</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_start">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_start">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process init command from remote rig.&quot;&quot;&quot;</span>
+        <span class="n">exp_ref</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ExpStatus</span>  <span class="c1"># noqa - shorten for readability in match-case</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">exp_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">ref2dict</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">S</span><span class="o">.</span><span class="n">CONNECTED</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Received EXPSTART before EXPINIT&#39;</span>
+                <span class="p">)</span>  <span class="c1"># this is fine is user manually starts session via keyboard</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_recording</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">S</span><span class="o">.</span><span class="n">INITIALIZED</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;START message received&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_recording</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">S</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+                <span class="n">remote_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">dict2ref</span><span class="p">(</span><span class="n">exp_ref</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span> <span class="o">==</span> <span class="n">remote_ref</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;START message received; already running&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;START message for </span><span class="si">%s</span><span class="s1"> received; already running </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">remote_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">S</span><span class="o">.</span><span class="n">STOPPED</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;received start message after experiment ended. Please restart.&#39;</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">addr</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span>  <span class="c1"># Let behaviour PC know acquisition has started</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_end">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_end">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;STOP message received&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">}</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">immediately</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_interrupt">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_interrupt">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;STOP message received&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">}</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">immediately</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_cleanup">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_cleanup">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CLEANUP message received&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="o">|</span> <span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">}</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">immediately</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_status">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_status">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;STATUS message received&#39;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_info">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_info">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;INFO message received&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ExpInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exp_ref</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_description</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CameraSessionNetworked.on_alyx">
+<a class="viewcode-back" href="../../api/iblrig.video.CameraSessionNetworked.html#iblrig.video.CameraSessionNetworked.on_alyx">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_alyx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="n">base_url</span><span class="p">,</span> <span class="n">token</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">if</span> <span class="n">token</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;ALYX token received&#39;</span><span class="p">)</span>
+            <span class="n">update_alyx_token</span><span class="p">((</span><span class="n">base_url</span><span class="p">,</span> <span class="n">token</span><span class="p">),</span> <span class="n">addr</span><span class="p">,</span> <span class="n">one</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">offline</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">alyx</span><span class="o">.</span><span class="n">is_logged_in</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">alyx</span><span class="o">.</span><span class="n">base_url</span> <span class="o">==</span> <span class="n">base_url</span><span class="p">:</span>
+            <span class="c1"># Send our token</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">alyx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">one</span><span class="o">.</span><span class="n">alyx</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;ALYX token sent&#39;</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">prepare_video_session_cmd</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2026 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+<map id="inheritanceecabbb3208" name="inheritanceecabbb3208">
+<area shape="rect" id="node1" title="QAbstractItemDelegate(parent: Optional[QObject] = None)" alt="" coords="322,4,457,24"/>
+<area shape="rect" id="node4" title="QStyledItemDelegate(parent: Optional[QObject] = None)" alt="" coords="494,4,620,24"/>
+<area shape="rect" id="node2" title="QObject(parent: Optional[QObject] = None)" alt="" coords="228,4,285,24"/>
+<area shape="rect" id="node5" href="#iblrig.gui.online_plots.StimulusDelegate" target="_top" title="StimulusDelegate" alt="" coords="657,4,764,24"/>
+</map>

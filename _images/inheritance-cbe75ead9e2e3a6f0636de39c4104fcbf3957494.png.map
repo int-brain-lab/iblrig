@@ -1,0 +1,6 @@
+<map id="inheritance91d421d47d" name="inheritance91d421d47d">
+<area shape="rect" id="node1" title="QAbstractItemDelegate(parent: Optional[QObject] = None)" alt="" coords="310,4,440,23"/>
+<area shape="rect" id="node4" title="QStyledItemDelegate(parent: Optional[QObject] = None)" alt="" coords="476,4,597,23"/>
+<area shape="rect" id="node2" title="QObject(parent: Optional[QObject] = None)" alt="" coords="219,4,274,23"/>
+<area shape="rect" id="node5" href="#iblrig.gui.online_plots.ResponseTimeDelegate" target="_top" title="ResponseTimeDelegate" alt="" coords="632,4,764,23"/>
+</map>

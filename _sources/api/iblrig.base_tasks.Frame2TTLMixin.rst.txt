@@ -1,0 +1,13 @@
+iblrig.base\_tasks.Frame2TTLMixin
+=================================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: Frame2TTLMixin
+   :parts: 1
+
+|
+
+.. autoclass:: Frame2TTLMixin
+   :members:
+   :undoc-members:

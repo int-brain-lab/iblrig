@@ -1,0 +1,13 @@
+iblrig.video.CameraSessionNetworked
+===================================
+
+.. currentmodule:: iblrig.video
+
+.. inheritance-diagram:: CameraSessionNetworked
+   :parts: 1
+
+|
+
+.. autoclass:: CameraSessionNetworked
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.misc.get\_task\_arguments
+================================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: get_task_arguments

@@ -1,0 +1,13 @@
+iblrig.scale.Scale
+==================
+
+.. currentmodule:: iblrig.scale
+
+.. inheritance-diagram:: Scale
+   :parts: 1
+
+|
+
+.. autoclass:: Scale
+   :members:
+   :undoc-members:

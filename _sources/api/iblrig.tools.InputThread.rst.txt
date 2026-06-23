@@ -1,0 +1,13 @@
+iblrig.tools.InputThread
+========================
+
+.. currentmodule:: iblrig.tools
+
+.. inheritance-diagram:: InputThread
+   :parts: 1
+
+|
+
+.. autoclass:: InputThread
+   :members:
+   :undoc-members:

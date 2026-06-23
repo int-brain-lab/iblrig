@@ -1,0 +1,13 @@
+iblrig.hardware\_validation.ValidatorFrame2TTL
+==============================================
+
+.. currentmodule:: iblrig.hardware_validation
+
+.. inheritance-diagram:: ValidatorFrame2TTL
+   :parts: 1
+
+|
+
+.. autoclass:: ValidatorFrame2TTL
+   :members:
+   :undoc-members:

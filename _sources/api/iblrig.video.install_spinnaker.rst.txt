@@ -1,0 +1,6 @@
+iblrig.video.install\_spinnaker
+===============================
+
+.. currentmodule:: iblrig.video
+
+.. autofunction:: install_spinnaker

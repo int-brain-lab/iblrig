@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.EngagedCriterion
+=========================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: EngagedCriterion
+   :parts: 1
+
+|
+
+.. autoclass:: EngagedCriterion
+   :members:
+   :undoc-members:

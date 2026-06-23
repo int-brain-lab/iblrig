@@ -1,0 +1,13 @@
+iblrig.base\_tasks.BaseSession
+==============================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: BaseSession
+   :parts: 1
+
+|
+
+.. autoclass:: BaseSession
+   :members:
+   :undoc-members:

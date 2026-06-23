@@ -1,0 +1,13 @@
+iblrig.rig\_component.RigComponent
+==================================
+
+.. currentmodule:: iblrig.rig_component
+
+.. inheritance-diagram:: RigComponent
+   :parts: 1
+
+|
+
+.. autoclass:: RigComponent
+   :members:
+   :undoc-members:

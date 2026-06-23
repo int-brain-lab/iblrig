@@ -1,0 +1,13 @@
+iblrig.transfer\_experiments.VideoCopier
+========================================
+
+.. currentmodule:: iblrig.transfer_experiments
+
+.. inheritance-diagram:: VideoCopier
+   :parts: 1
+
+|
+
+.. autoclass:: VideoCopier
+   :members:
+   :undoc-members:

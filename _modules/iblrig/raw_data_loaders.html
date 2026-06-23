@@ -1,0 +1,374 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iblrig.raw_data_loaders &mdash; iblrig 8.29.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=1aca6793" />
+      <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx_lesson.css?v=e9df6548" />
+      <link rel="stylesheet" type="text/css" href="../../_static/term_role_formatting.css?v=4194e21c" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=858a5a96"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/minipres.js?v=a0d29692"></script>
+      <script>let toggleHintShow = 'Click to show';</script>
+      <script>let toggleHintHide = 'Click to hide';</script>
+      <script>let toggleOpenOnPrint = 'true';</script>
+      <script src="../../_static/togglebutton.js?v=b8b12719"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+      <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            iblrig
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Using IBLRIG v8</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../hardware.html">Hardware Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deprecation_notes.html">Deprecation Notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/int-brain-lab/iblrig">IBLRIG on GitHub</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://doi.org/10.6084/m9.figshare.11634732">Appendix 3: IBL protocol for setting up the behavioral training rig</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">iblrig</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">iblrig.raw_data_loaders</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for iblrig.raw_data_loaders</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas.core.dtypes.concat</span><span class="w"> </span><span class="kn">import</span> <span class="n">union_categoricals</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">RE_PATTERN_EVENT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?P&lt;Channel&gt;\D+\d?)_?(?P&lt;Value&gt;.*)$&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="load_task_jsonable">
+<a class="viewcode-back" href="../../api/iblrig.raw_data_loaders.load_task_jsonable.html#iblrig.raw_data_loaders.load_task_jsonable">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_task_jsonable</span><span class="p">(</span><span class="n">jsonable_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads in a task data jsonable file and returns a trials dataframe and a bpod data list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    jsonable_file : str or Path</span>
+<span class="sd">        full path to jsonable file.</span>
+<span class="sd">    offset : int, optional</span>
+<span class="sd">        The offset to start reading from. Defaults to 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        A tuple containing</span>
+
+<span class="sd">        *  trials_table : pandas.DataFrame</span>
+<span class="sd">              A DataFrame with the trial info in the same format as the Session trials table.</span>
+<span class="sd">        *  bpod_data : list</span>
+<span class="sd">              timing data for each trial</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jsonable_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">trials_table</span> <span class="o">=</span> <span class="p">[</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+
+    <span class="c1"># pop out bpod data</span>
+    <span class="n">bpod_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">td</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;behavior_data&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">td</span> <span class="ow">in</span> <span class="n">trials_table</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">trials_table</span><span class="p">),</span> <span class="n">bpod_data</span></div>
+
+
+
+<div class="viewcode-block" id="bpod_session_data_to_dataframe">
+<a class="viewcode-back" href="../../api/iblrig.raw_data_loaders.bpod_session_data_to_dataframe.html#iblrig.raw_data_loaders.bpod_session_data_to_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bpod_session_data_to_dataframe</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">existing_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Bpod session data into a single Pandas DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bpod_data : list of dict</span>
+<span class="sd">        A list of dictionaries as returned by load_task_jsonable, where each dictionary contains data for a single trial.</span>
+<span class="sd">    existing_data : pd.DataFrame</span>
+<span class="sd">        Existing dataframe that the incoming data will be appended to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A Pandas DataFrame containing event data from the specified trials, with the following columns:</span>
+
+<span class="sd">        *  Time : datetime.timedelta</span>
+<span class="sd">              timestamp of the event (datetime.timedelta)</span>
+<span class="sd">        *  Type : str (categorical)</span>
+<span class="sd">              type of the event (TrialStart, StateStart, InputEvent, etc.)</span>
+<span class="sd">        *  Trial : int</span>
+<span class="sd">              index of the trial, zero-based</span>
+<span class="sd">        *  State : str (categorical)</span>
+<span class="sd">              name of the state</span>
+<span class="sd">        *  Event : str (categorical)</span>
+<span class="sd">              name of the event (only for type InputEvent)</span>
+<span class="sd">        *  Channel : str (categorical)</span>
+<span class="sd">              name of the event&#39;s channel (only for a subset of InputEvents)</span>
+<span class="sd">        *  Value : int</span>
+<span class="sd">              value of the event (only for a subset of InputEvents)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># define trial index</span>
+    <span class="n">trials</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">existing_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;Trial&#39;</span> <span class="ow">in</span> <span class="n">existing_data</span><span class="p">:</span>
+        <span class="n">trials</span> <span class="o">+=</span> <span class="n">existing_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">Trial</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># loop over requested trials</span>
+    <span class="n">dataframes</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">existing_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[</span><span class="n">existing_data</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">trial</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trials</span><span class="p">):</span>
+        <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bpod_trial_data_to_dataframe</span><span class="p">(</span><span class="n">bpod_data</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">trial</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">concat_bpod_dataframes</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="concat_bpod_dataframes">
+<a class="viewcode-back" href="../../api/iblrig.raw_data_loaders.concat_bpod_dataframes.html#iblrig.raw_data_loaders.concat_bpod_dataframes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">concat_bpod_dataframes</span><span class="p">(</span><span class="n">dataframes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concatenate a list of DataFrames containing Bpod trial data into a single DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataframes : list of DataFrames</span>
+<span class="sd">        A list of dictionaries as returned by load_task_jsonable, where each dictionary contains data for a single trial.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A Pandas DataFrame containing event data from the specified trials, with the following columns:</span>
+
+<span class="sd">        *  Time : datetime.timedelta</span>
+<span class="sd">              timestamp of the event (datetime.timedelta)</span>
+<span class="sd">        *  Type : str (categorical)</span>
+<span class="sd">              type of the event (TrialStart, StateStart, InputEvent, etc.)</span>
+<span class="sd">        *  Trial : int</span>
+<span class="sd">              index of the trial, zero-based</span>
+<span class="sd">        *  State : str (categorical)</span>
+<span class="sd">              name of the state</span>
+<span class="sd">        *  Event : str (categorical)</span>
+<span class="sd">              name of the event (only for type InputEvent)</span>
+<span class="sd">        *  Channel : str (categorical)</span>
+<span class="sd">              name of the event&#39;s channel (only for a subset of InputEvents)</span>
+<span class="sd">        *  Value : int</span>
+<span class="sd">              value of the event (only for a subset of InputEvents)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">categories_type</span> <span class="o">=</span> <span class="n">union_categoricals</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframes</span><span class="p">])</span>
+    <span class="n">categories_state</span> <span class="o">=</span> <span class="n">union_categoricals</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframes</span><span class="p">])</span>
+    <span class="n">categories_event</span> <span class="o">=</span> <span class="n">union_categoricals</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframes</span><span class="p">])</span>
+    <span class="n">categories_channel</span> <span class="o">=</span> <span class="n">union_categoricals</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframes</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dataframes</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories_type</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories_state</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories_event</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">set_categories</span><span class="p">(</span><span class="n">categories_channel</span><span class="o">.</span><span class="n">categories</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="bpod_trial_data_to_dataframes">
+<a class="viewcode-back" href="../../api/iblrig.raw_data_loaders.bpod_trial_data_to_dataframes.html#iblrig.raw_data_loaders.bpod_trial_data_to_dataframes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bpod_trial_data_to_dataframes</span><span class="p">(</span>
+    <span class="n">bpod_trial_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">existing_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a list of Bpod trial data dictionaries into a list of Pandas DataFrames.</span>
+
+<span class="sd">    Each DataFrame corresponds to a single trial&#39;s data, as returned by `bpod_trial_data_to_dataframe`. If existing DataFrames are</span>
+<span class="sd">    provided, the new DataFrames will be appended to this list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bpod_trial_data : list of dict</span>
+<span class="sd">        A list of dictionaries, where each dictionary contains data for a single trial.</span>
+<span class="sd">    existing_data : list of pd.DataFrame, optional</span>
+<span class="sd">        An optional list of existing DataFrames to which the new DataFrames will be appended. If None, a new list will be created.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of pd.DataFrame</span>
+<span class="sd">        A list of Pandas DataFrames, each containing event data from the corresponding trial.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dataframes</span> <span class="o">=</span> <span class="n">existing_data</span> <span class="k">if</span> <span class="n">existing_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">trial_number</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataframes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">single_trial_data</span> <span class="ow">in</span> <span class="n">bpod_trial_data</span><span class="p">:</span>
+        <span class="n">dataframes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bpod_trial_data_to_dataframe</span><span class="p">(</span><span class="n">bpod_trial_data</span><span class="o">=</span><span class="n">single_trial_data</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="n">trial_number</span><span class="p">))</span>
+        <span class="n">trial_number</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">dataframes</span></div>
+
+
+
+<div class="viewcode-block" id="bpod_trial_data_to_dataframe">
+<a class="viewcode-back" href="../../api/iblrig.raw_data_loaders.bpod_trial_data_to_dataframe.html#iblrig.raw_data_loaders.bpod_trial_data_to_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bpod_trial_data_to_dataframe</span><span class="p">(</span><span class="n">bpod_trial_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">trial</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a single Bpod trial&#39;s data into a Pandas DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bpod_trial_data : dict</span>
+<span class="sd">        A dictionary containing data for a single trial, including timestamps and events.</span>
+<span class="sd">    trial : int</span>
+<span class="sd">        An integer representing the trial index.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.DataFrame</span>
+<span class="sd">        A Pandas DataFrame containing event data from the specified trial, with the following columns:</span>
+
+<span class="sd">        *  Time : datetime.timedelta</span>
+<span class="sd">              timestamp of the event (datetime.timedelta)</span>
+<span class="sd">        *  Type : str (categorical)</span>
+<span class="sd">              type of the event (TrialStart, StateStart, InputEvent, etc.)</span>
+<span class="sd">        *  Trial : int</span>
+<span class="sd">              index of the trial, zero-based</span>
+<span class="sd">        *  State : str (categorical)</span>
+<span class="sd">              name of the state</span>
+<span class="sd">        *  Event : str (categorical)</span>
+<span class="sd">              name of the event (only for type InputEvent)</span>
+<span class="sd">        *  Channel : str (categorical)</span>
+<span class="sd">              name of the event&#39;s channel (only for a subset of InputEvents)</span>
+<span class="sd">        *  Value : int</span>
+<span class="sd">              value of the event (only for a subset of InputEvents)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">trial_start</span> <span class="o">=</span> <span class="n">bpod_trial_data</span><span class="p">[</span><span class="s1">&#39;Trial start timestamp&#39;</span><span class="p">]</span>
+    <span class="n">trial_end</span> <span class="o">=</span> <span class="n">bpod_trial_data</span><span class="p">[</span><span class="s1">&#39;Trial end timestamp&#39;</span><span class="p">]</span>
+
+    <span class="n">state_times</span> <span class="o">=</span> <span class="n">bpod_trial_data</span><span class="p">[</span><span class="s1">&#39;States timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="n">event_times</span> <span class="o">=</span> <span class="n">bpod_trial_data</span><span class="p">[</span><span class="s1">&#39;Events timestamps&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+    <span class="c1"># convert bpod data to list of tuples</span>
+    <span class="n">event_list</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;TrialStart&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)]</span>
+    <span class="n">event_list</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;StateStart&#39;</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">times</span> <span class="ow">in</span> <span class="n">state_times</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">times</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t</span><span class="p">)]</span>
+    <span class="n">event_list</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;InputEvent&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">times</span> <span class="ow">in</span> <span class="n">event_times</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span><span class="p">]</span>
+    <span class="n">event_list</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">t</span><span class="p">,</span> <span class="s1">&#39;StateEnd&#39;</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)</span> <span class="k">for</span> <span class="n">state</span><span class="p">,</span> <span class="n">times</span> <span class="ow">in</span> <span class="n">state_times</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">t</span><span class="p">)]</span>
+    <span class="n">event_list</span> <span class="o">+=</span> <span class="p">[(</span><span class="n">trial_end</span> <span class="o">-</span> <span class="n">trial_start</span><span class="p">,</span> <span class="s1">&#39;TrialEnd&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">)]</span>
+    <span class="n">event_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">event_list</span><span class="p">)</span>
+
+    <span class="c1"># create dataframe with TimedeltaIndex</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">event_list</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="s1">&#39;State&#39;</span><span class="p">,</span> <span class="s1">&#39;Event&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">df</span><span class="o">.</span><span class="n">Time</span> <span class="o">+</span> <span class="n">trial_start</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;timedelta64[us]&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># cast types</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Trial&#39;</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">([</span><span class="n">trial</span><span class="p">],</span> <span class="n">downcast</span><span class="o">=</span><span class="s1">&#39;unsigned&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># extract channel name and value from Event strings</span>
+    <span class="c1"># since &#39;Event&#39; is categorical, only process its unique values for performance</span>
+    <span class="n">mappings</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">RE_PATTERN_EVENT</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+    <span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">&#39;Low&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;Out&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;In&#39;</span><span class="p">:</span> <span class="s1">&#39;1&#39;</span><span class="p">})</span>
+    <span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">,</span> <span class="n">downcast</span><span class="o">=</span><span class="s1">&#39;unsigned&#39;</span><span class="p">,</span> <span class="n">dtype_backend</span><span class="o">=</span><span class="s1">&#39;numpy_nullable&#39;</span><span class="p">)</span>
+
+    <span class="c1"># map the extracted channel and value information back to the DataFrame.</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Channel&#39;</span><span class="p">])</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">mappings</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018 – 2026 International Brain Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

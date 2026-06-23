@@ -1,0 +1,11 @@
+<map id="inheritance439eb30d19" name="inheritance439eb30d19">
+<area shape="rect" id="node1" href="#iblrig.gui.online_plots.FunctionWidget" target="_top" title="A widget for psychometric and chronometric functions" alt="" coords="702,16,765,29"/>
+<area shape="rect" id="node2" href="iblrig.gui.online_plots.PlotWidget.html#iblrig.gui.online_plots.PlotWidget" target="_top" title="PyQtGraph PlotWidget with tuned default settings." alt="" coords="630,16,678,29"/>
+<area shape="rect" id="node3" title="Re&#45;implementation of QGraphicsView that removes scrollbars and allows unambiguous control of the " alt="" coords="548,16,605,29"/>
+<area shape="rect" id="node4" title="QGraphicsView(parent: Optional[QWidget] = None)" alt="" coords="462,16,524,29"/>
+<area shape="rect" id="node5" title="QAbstractScrollArea(parent: Optional[QWidget] = None)" alt="" coords="359,16,437,29"/>
+<area shape="rect" id="node6" title="QFrame(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="297,16,334,29"/>
+<area shape="rect" id="node7" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="232,16,272,29"/>
+<area shape="rect" id="node8" title="QObject(parent: Optional[QObject] = None)" alt="" coords="160,3,198,16"/>
+<area shape="rect" id="node10" title="QPaintDevice()" alt="" coords="151,29,207,42"/>
+</map>

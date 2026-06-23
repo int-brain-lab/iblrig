@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.TrialsTableModel
+=========================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: TrialsTableModel
+   :parts: 1
+
+|
+
+.. autoclass:: TrialsTableModel
+   :members:
+   :undoc-members:

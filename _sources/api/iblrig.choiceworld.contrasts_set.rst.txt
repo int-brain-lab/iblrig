@@ -1,0 +1,6 @@
+iblrig.choiceworld.contrasts\_set
+=================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: contrasts_set

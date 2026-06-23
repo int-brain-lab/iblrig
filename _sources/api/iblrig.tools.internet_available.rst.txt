@@ -1,0 +1,6 @@
+iblrig.tools.internet\_available
+================================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: internet_available

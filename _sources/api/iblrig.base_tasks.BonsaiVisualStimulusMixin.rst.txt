@@ -1,0 +1,13 @@
+iblrig.base\_tasks.BonsaiVisualStimulusMixin
+============================================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: BonsaiVisualStimulusMixin
+   :parts: 1
+
+|
+
+.. autoclass:: BonsaiVisualStimulusMixin
+   :members:
+   :undoc-members:

@@ -1,0 +1,5 @@
+<map id="inheritancec23740633e" name="inheritancec23740633e">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/enum.html#enum.Enum" target="_top" title="Generic enumeration." alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node2" href="https://docs.python.org/3/library/enum.html#enum.IntEnum" target="_top" title="Enum where members are also (and must be) ints" alt="" coords="125,5,201,31"/>
+<area shape="rect" id="node3" href="#iblrig.hardware.SOFTCODE" target="_top" title="An enumeration." alt="" coords="249,5,340,31"/>
+</map>

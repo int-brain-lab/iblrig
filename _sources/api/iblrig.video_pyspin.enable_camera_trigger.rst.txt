@@ -1,0 +1,6 @@
+iblrig.video\_pyspin.enable\_camera\_trigger
+============================================
+
+.. currentmodule:: iblrig.video_pyspin
+
+.. autofunction:: enable_camera_trigger

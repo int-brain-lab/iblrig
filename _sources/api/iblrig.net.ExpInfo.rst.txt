@@ -1,0 +1,13 @@
+iblrig.net.ExpInfo
+==================
+
+.. currentmodule:: iblrig.net
+
+.. inheritance-diagram:: ExpInfo
+   :parts: 1
+
+|
+
+.. autoclass:: ExpInfo
+   :members:
+   :undoc-members:

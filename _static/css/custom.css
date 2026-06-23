@@ -1,0 +1,5 @@
+@import 'theme.css';
+
+.wy-table-responsive table th{white-space:nowrap}
+.wy-table-responsive table td{white-space:normal}
+.rst-content table.docutils td{vertical-align:top}

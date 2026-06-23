@@ -1,0 +1,6 @@
+iblrig.misc.get\_task\_argument\_parser
+=======================================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: get_task_argument_parser

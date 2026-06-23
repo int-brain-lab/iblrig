@@ -1,0 +1,20 @@
+iblrig.path\_helper
+===================
+
+.. automodule:: iblrig.path_helper
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      create_bonsai_layout_from_template
+      get_commit_hash
+      get_local_and_remote_paths
+      iterate_collection
+      iterate_previous_sessions
+      load_pydantic_yaml
+      patch_settings
+      save_pydantic_yaml
+   

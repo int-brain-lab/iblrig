@@ -1,0 +1,20 @@
+iblrig.misc
+===========
+
+.. automodule:: iblrig.misc
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      draw_contrast
+      get_biased_probs
+      get_port_events
+      get_session_path
+      get_task_argument_parser
+      get_task_arguments
+      online_std
+      truncated_exponential
+   

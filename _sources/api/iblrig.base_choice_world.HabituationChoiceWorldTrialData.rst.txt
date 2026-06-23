@@ -1,0 +1,13 @@
+iblrig.base\_choice\_world.HabituationChoiceWorldTrialData
+==========================================================
+
+.. currentmodule:: iblrig.base_choice_world
+
+.. inheritance-diagram:: HabituationChoiceWorldTrialData
+   :parts: 1
+
+|
+
+.. autoclass:: HabituationChoiceWorldTrialData
+   :members:
+   :undoc-members:

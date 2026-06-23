@@ -1,0 +1,6 @@
+iblrig.gui.online\_plots.is\_alf\_path
+======================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. autofunction:: is_alf_path

@@ -1,0 +1,6 @@
+iblrig.commands.remove\_local\_sessions
+=======================================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: remove_local_sessions

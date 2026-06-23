@@ -1,0 +1,14 @@
+iblrig.gui.resources\_rc
+========================
+
+.. automodule:: iblrig.gui.resources_rc
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      qCleanupResources
+      qInitResources
+   

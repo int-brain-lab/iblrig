@@ -1,0 +1,6 @@
+iblrig.neurophotometrics.init\_neurophotometrics\_subject
+=========================================================
+
+.. currentmodule:: iblrig.neurophotometrics
+
+.. autofunction:: init_neurophotometrics_subject

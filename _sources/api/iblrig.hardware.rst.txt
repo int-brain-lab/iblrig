@@ -1,0 +1,25 @@
+iblrig.hardware
+===============
+
+.. automodule:: iblrig.hardware
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      restart_com_port
+      sound_device_factory
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Bpod
+      RotaryEncoderModule
+      SOFTCODE
+   

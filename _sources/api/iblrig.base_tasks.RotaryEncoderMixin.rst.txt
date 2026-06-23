@@ -1,0 +1,13 @@
+iblrig.base\_tasks.RotaryEncoderMixin
+=====================================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: RotaryEncoderMixin
+   :parts: 1
+
+|
+
+.. autoclass:: RotaryEncoderMixin
+   :members:
+   :undoc-members:

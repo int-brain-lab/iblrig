@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.StimulusDelegate
+=========================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: StimulusDelegate
+   :parts: 1
+
+|
+
+.. autoclass:: StimulusDelegate
+   :members:
+   :undoc-members:

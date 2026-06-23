@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.ResponseTimeDelegate
+=============================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: ResponseTimeDelegate
+   :parts: 1
+
+|
+
+.. autoclass:: ResponseTimeDelegate
+   :members:
+   :undoc-members:

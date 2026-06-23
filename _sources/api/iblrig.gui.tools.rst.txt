@@ -1,0 +1,24 @@
+iblrig.gui.tools
+================
+
+.. automodule:: iblrig.gui.tools
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      convert_uis
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      RemoteDevicesItemModel
+      RemoteDevicesListView
+      SettingsDialog
+   

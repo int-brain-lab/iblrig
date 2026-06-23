@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.FunctionWidget
+=======================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: FunctionWidget
+   :parts: 1
+
+|
+
+.. autoclass:: FunctionWidget
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.version\_management.check\_upgrade\_prerequisites
+========================================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: check_upgrade_prerequisites

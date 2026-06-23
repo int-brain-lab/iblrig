@@ -1,0 +1,13 @@
+iblrig.hardware.RotaryEncoderModule
+===================================
+
+.. currentmodule:: iblrig.hardware
+
+.. inheritance-diagram:: RotaryEncoderModule
+   :parts: 1
+
+|
+
+.. autoclass:: RotaryEncoderModule
+   :members:
+   :undoc-members:

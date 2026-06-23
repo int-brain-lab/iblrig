@@ -1,0 +1,6 @@
+<map id="inheritanceb297aa21d5" name="inheritanceb297aa21d5">
+<area shape="rect" id="node1" href="#iblrig.gui.tab_data.DataItemDelegate" target="_top" title="DataItemDelegate" alt="" coords="654,4,764,24"/>
+<area shape="rect" id="node2" title="QStyledItemDelegate(parent: Optional[QObject] = None)" alt="" coords="492,4,617,24"/>
+<area shape="rect" id="node3" title="QAbstractItemDelegate(parent: Optional[QObject] = None)" alt="" coords="321,4,455,24"/>
+<area shape="rect" id="node4" title="QObject(parent: Optional[QObject] = None)" alt="" coords="227,4,284,24"/>
+</map>

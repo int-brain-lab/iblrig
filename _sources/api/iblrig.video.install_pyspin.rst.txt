@@ -1,0 +1,6 @@
+iblrig.video.install\_pyspin
+============================
+
+.. currentmodule:: iblrig.video
+
+.. autofunction:: install_pyspin

@@ -1,0 +1,7 @@
+<map id="inheritanceca03c43881" name="inheritanceca03c43881">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/io.html#io.IOBase" target="_top" title="The abstract base class for all I/O classes." alt="" coords="5,5,77,31"/>
+<area shape="rect" id="node4" href="https://docs.python.org/3/library/io.html#io.RawIOBase" target="_top" title="Base class for raw binary I/O." alt="" coords="157,5,253,31"/>
+<area shape="rect" id="node5" title="Serial port class POSIX implementation. Serial port configuration is" alt="" coords="509,31,581,56"/>
+<area shape="rect" id="node6" title="Serial port base class. Provides __init__ function and properties to" alt="" coords="352,5,443,31"/>
+<area shape="rect" id="node7" href="#iblrig.serial_singleton.SerialSingleton" target="_top" title="SerialSingleton" alt="" coords="629,31,749,56"/>
+</map>

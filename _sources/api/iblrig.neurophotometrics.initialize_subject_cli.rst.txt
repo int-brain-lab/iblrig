@@ -1,0 +1,6 @@
+iblrig.neurophotometrics.initialize\_subject\_cli
+=================================================
+
+.. currentmodule:: iblrig.neurophotometrics
+
+.. autofunction:: initialize_subject_cli
