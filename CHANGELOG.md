@@ -1,6 +1,10 @@
 Changelog
 =========
 
+UNRELEASED
+----------
+* fixed: unregistered sessions could not be transferred to the local lab server
+
 8.29.4
 ------
 * fixed: zero-contrast trials in TrainingChoiceWorld and TrainingPhaseChoiceWorld were always rewarded on the left.

@@ -172,7 +172,7 @@ class SessionCopier:
             self.initialize_experiment()
         if self.state == CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
-            # self.initialize_experiment()
+            self.initialize_experiment()
         if self.state == CopyState.PENDING:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
