@@ -1,8 +1,9 @@
 Changelog
 =========
 
-UNRELEASED
-----------
+8.29.5
+------
+* added: trainingChoiceWorld_c0_CW and trainingPhaseChoiceWorld_c0_CW task variants that always reward zero-contrast trials after CW movements
 * fixed: unregistered sessions could not be transferred to the local lab server
 
 8.29.4
