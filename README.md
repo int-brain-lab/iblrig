@@ -19,4 +19,5 @@ Links
 [![License](https://img.shields.io/github/license/int-brain-lab/iblrig)](https://github.com/int-brain-lab/iblrig/blob/iblrigv8/LICENSE)
 [![GitHub tag](https://img.shields.io/github/v/tag/int-brain-lab/iblrig)](https://github.com/int-brain-lab/iblrig/tags)
 [![GitHub Discussions](https://img.shields.io/github/discussions/int-brain-lab/iblrig)](https://github.com/int-brain-lab/iblrig/discussions)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)

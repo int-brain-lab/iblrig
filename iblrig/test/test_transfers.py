@@ -20,7 +20,6 @@ import iblrig.raw_data_loaders
 from ibllib.io import session_params
 from ibllib.io.raw_data_loaders import load_settings
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
-from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import TASK_KWARGS
@@ -101,16 +100,20 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
 
         # creating fake digital_inputs.csv
         cols_dtypes = dict(
-            ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
+            ChannelName=str,
+            Channel='int8',
+            AlwaysTrue='bool',
+            SystemTimestamp='float64',
+            ComputerTimestamp='float64',
         )
         cols = list(cols_dtypes.keys())
         digital_inputs_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
-        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
+        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv')
 
+        # creating fake photometry data file
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
@@ -119,17 +122,13 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             Region1G='float64',
             Region2G='float64',
         )
-
-        # creating fake photometry data file
         cols = list(cols_dtypes.keys())
         raw_photometry_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
         (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
         raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
-
         logger.info('Created fake photometry data in %s', neurophotometrics_folder)
         return neurophotometrics_folder
 
@@ -160,11 +159,19 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         # check that the correct data was copied
         remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
+        # check raw data
         data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
         data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
         pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
+        # check digital inputs data
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
+        data_digital_inputs_local = pd.read_csv(local_photometry_path.joinpath('digital_inputs.csv'))
+        data_digital_inputs_remote = pd.read_parquet(
+            remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt')
+        )
+        pd.testing.assert_frame_equal(data_digital_inputs_local, data_digital_inputs_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):

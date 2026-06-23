@@ -1,6 +1,19 @@
 Changelog
 =========
 
+UNRELEASED
+----------
+* added: Neuropixel coordinate registration tool for NP2.4
+* added: Online Plots are stored as PNG and added to Alyx as a Session Note
+* added: Parameter to define grouping variable for Online Plots
+* added: `FRAMECLOCK_CHANNEL` hardware setting for Neurophotometrics
+* changed: Refactored methods for creating sound waveforms
+* changed: Updated debiasing routine for readability (no functional changes)
+* changed: Refactoring of GUI code
+* changed: Refactoring of `path_helper` module
+
+-------------------------------
+
 8.29.5
 ------
 * added: trainingChoiceWorld_c0_CW and trainingPhaseChoiceWorld_c0_CW task variants that always reward zero-contrast trials after CW movements
