@@ -1132,10 +1132,7 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
 
         # draw the next trial
         signed_contrast = choiceworld.draw_training_contrast(self.training_phase)
-        if signed_contrast == 0:
-            position = int(np.random.choice(self.task_params.STIM_POSITIONS))
-        else:
-            position = self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
+        position = self._map_signed_contrast_to_position(signed_contrast)
         contrast = np.abs(signed_contrast)
 
         # DEBIASING
@@ -1199,6 +1196,16 @@ class TrainingChoiceWorldSession(ActiveChoiceWorldSession):
         # save and send trial info to bonsai
         self.draw_next_trial_info(pleft=self.task_params.PROBABILITY_LEFT, position=position, contrast=contrast)
         self.trials_table.at[self.trial_num, 'training_phase'] = self.training_phase
+
+    def _map_signed_contrast_to_position(self, signed_contrast: float) -> int:
+        """Map a signed contrast to a stimulus position.
+
+        For non-zero contrasts the side is determined by the sign of the contrast. A zero-contrast stimulus carries no
+        side information and is therefore assigned to a randomly chosen side.
+        """
+        if signed_contrast == 0:
+            return int(np.random.choice(self.task_params.STIM_POSITIONS))
+        return self.task_params.STIM_POSITIONS[int(np.sign(signed_contrast) == 1)]
 
     def show_trial_log(self, extra_info: dict[str, Any] | None = None, log_level: int = logging.INFO):
         # construct info dict
