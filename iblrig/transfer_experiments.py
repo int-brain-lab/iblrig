@@ -669,7 +669,7 @@ class NeurophotometricsCopier(SessionCopier):
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
                 # all folders of that day, parse by start with T
-                folders = local_and_remote_paths['local_data_folder'].joinpath('daqami', session_date).glob('*/')
+                folders = (local_and_remote_paths['local_data_folder'] / 'daqami' / session_date).glob('*/')
                 folders = [folder for folder in folders if folder.name.startswith('T')]
                 daqami_start_times = [datetime.strptime('/'.join(folder.parts[-2:]), '%Y-%m-%d/T%H%M') for folder in folders]
 
@@ -678,17 +678,28 @@ class NeurophotometricsCopier(SessionCopier):
                     '/'.join(neurophotometrics_session_path.parts[-2:]), '%Y-%m-%d/T%H%M%S'
                 )
 
-                # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
-                timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
+                if len(daqami_start_times) == 1:
+                    # in this case, there is a single daq file for the entire day
+                    # and it might be, that this daq file starts _slightly_ after the
+                    # bonsai timestamp (because of the order of initialization discrepancy)
+                    daqami_folder = folders[0]
+                    if abs(neurophotometrics_start_time - daqami_start_times[0]) > timedelta(minutes=20):
+                        raise ValueError(
+                            'daq start time is more then 20 minutes after the neurophotometrics start time, manually inspect'
+                        )
+                else:
+                    # get the corresponding daqami folder: find the corresponding daqami folder by the smallest positive timedelta
+                    timedeltas = [neurophotometrics_start_time - start_time for start_time in daqami_start_times]
 
-                # note: the timestamp of the neurophotometric is written when the Bonsai workflow is opened, NOT when the
-                # bonsai workflow is started! Therefore the neurophotometrics file is still timestamped BEFORE the
-                # daqami file, even though the bonsai recording starts after ...
-                dt_min = min([dt for dt in timedeltas if dt < timedelta(0)])
-                daqami_folder = folders[timedeltas.index(dt_min)]
+                    # also adding here the grace timedelta of 1 minute because of comparing HHMM to HHMMSS timestamps
+                    timedeltas = [t + timedelta(0, 60) for t in timedeltas]
+                    dt_min = min([dt for dt in timedeltas if dt > timedelta(0)])
+                    if dt_min > timedelta(minutes=30):
+                        log.warning('time difference between daqami and neurophotometrics start times is more than 30 minutes')
+                    daqami_folder = folders[timedeltas.index(dt_min)]
 
                 # check here if multiple daqami files exist
-                if len(list(daqami_folder.glob('*'))) == 2:
+                if len(list(daqami_folder.glob('*.tdms'))) == 1:
                     # this is the expected case, all is fine
                     daqami_file = daqami_folder.joinpath('daqami_sync.tdms')
                 else:
@@ -704,11 +715,19 @@ class NeurophotometricsCopier(SessionCopier):
                 # copy to the remote folder
                 remote_sync_path = self.remote_session_path.joinpath(neurophotometrics_description['sync_metadata']['collection'])
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
+                remote_file = remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms')
+                # if remote_file.exists():  # prevent overwriting already copied files
+                #     today = datetime.now().strftime('%Y-%m-%d')
+                #     shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
                 shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
         # read neurophotometrics file
         raw_photometry_df = pd.read_csv(csv_raw_photometry)
-        raw_photometry_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
+        remote_file = remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt')
+        if remote_file.exists():  # prevent overwriting already copied files
+            today = datetime.now().strftime('%Y-%m-%d')
+            shutil.copy(remote_file, remote_file.with_suffix(f'.{today}.backup'))
+        raw_photometry_df.to_parquet(remote_file)
 
         # TODO why are we explicitly copying this file?
         shutil.copy(
