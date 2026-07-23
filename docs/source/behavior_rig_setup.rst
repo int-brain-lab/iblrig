@@ -20,9 +20,17 @@ The standard IBL behavioral rig is designed for head-fixed steering-wheel
 tasks. It combines off-the-shelf components with manufactured and 3D-printed
 parts so that laboratories can reproduce a common apparatus.
 
-This guide covers physical assembly and wiring. CAD models and technical
-drawings are available from the `IBL Figshare collection
-<https://figshare.com/authors/International_Brain_Laboratory/8249913>`__.
+The steering-wheel task and its original apparatus were introduced by the
+`Cortex Lab <https://www.ucl.ac.uk/cortexlab/tools/wheel>`__, as described by
+`Burgess et al. (2017) <http://www.cell.com/cell-reports/abstract/S2211-1247(17)31172-5>`__.
+
+This guide covers physical assembly and wiring. The latest CAD resources are
+available on Figshare:
+
+* `CAD models and technical drawings for manufactured rig parts
+  <https://figshare.com/articles/A_standardized_and_reproducible_method_to_measure_decision-making_in_mice_CAD_Drawings_for_items_linked_in_appendices_zip/11638362>`__
+* `CAD assembly of the complete behavioral rig
+  <https://figshare.com/articles/A_standardized_and_reproducible_method_to_measure_decision-making_in_mice_CAD_files_for_behavior_rig/11639973>`__
 
 
 Build and assembly
