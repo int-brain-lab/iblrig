@@ -354,14 +354,17 @@ Assembling the screen
 
 #. Place the cut filter between the screen and Fresnel lens film and re-center the screen as instructed above.
 
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| .. image:: img/behavior_rig_setup/image109.jpg                                                                                                                                        | .. image:: img/behavior_rig_setup/image107.jpg                                                                                                                                                                                                 |
-|    :width: 3.60417in                                                                                                                                                                  |    :width: 3.60417in                                                                                                                                                                                                                           |
-|    :height: 3.61111in                                                                                                                                                                 |    :height: 3.61111in                                                                                                                                                                                                                          |
-|                                                                                                                                                                                       |                                                                                                                                                                                                                                                |
-| *Right screen holder alignment (Right as viewed from front). The 3D-printed screen holder should be aligned precisely with the end of the perforated metal bar on the screen’s back.* | *Left screen holder alignment (Left as viewed from front). When the right screen holder is aligned (see other panel), you should see approx. 1.5mm of metal visible between the left 3D-printed screen holder and the screen’s black coating.* |
-+=======================================================================================================================================================================================+================================================================================================================================================================================================================================================+
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+.. figure:: img/behavior_rig_setup/image109.jpg
+   :width: 3.60417in
+   :height: 3.61111in
+
+   Right screen holder alignment (right as viewed from the front). The 3D-printed screen holder should be aligned precisely with the end of the perforated metal bar on the screen’s back.
+
+.. figure:: img/behavior_rig_setup/image107.jpg
+   :width: 3.60417in
+   :height: 3.61111in
+
+   Left screen holder alignment (left as viewed from the front). When the right screen holder is aligned (see the figure above), approximately 1.5 mm of metal should be visible between the left 3D-printed screen holder and the screen’s black coating.
 
 #. With the screen aligned in the screen holders, shift the fresnel lens laterally until it covers the screen. Note that the screen has asymmetric bezels - the left side bezel as viewed from the front is slightly larger than the right bezel. When properly aligned, only the bezel should be visible from the front (no LCD, see below).
 
@@ -383,10 +386,7 @@ Assembling the screen
 
    **Your assembly should look like this:**
 
-+--------------------------------------------------------------+-------+
-| |image16|\ |image17|                                         |       |
-+==============================================================+=======+
-+--------------------------------------------------------------+-------+
+|image16| |image17|
 
 #. Once the screen is firmly in place and all connection points are secured tightly to the breadboard, plug in the **9V** AC power cable to the Power supply IN of the adafruit driver board.
 
@@ -580,7 +580,7 @@ Installing the speaker
 
    .. image:: img/behavior_rig_setup/image9.jpg
       :width: 5.06771in
-      :height: 1.21766in
+      :height: 3.80078in
 
 #. Open an Internet browser and play `this video <https://www.youtube.com/watch?v=i3MgbEexSN0>`__. You should hear sound from the speaker.
 
@@ -805,11 +805,9 @@ Connect the rotary encoder module
 #. In Windows Device Manager, under ‘Ports (COM & LPT)’, find ‘USB Serial Device COMX’, where X is the number of the COMport. Note this down for the software install.
    After installing IBLRIG v8, verify the rotary encoder with the ``validate_iblrig`` hardware-validation command.
 
-..
-
-   .. image:: img/behavior_rig_setup/image81.png
-      :width: 4.84375in
-      :height: 5.17708in
+.. image:: img/behavior_rig_setup/image81.png
+   :width: 4.84375in
+   :height: 4.475in
 
 Connect the photodiode (frame2TTL)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -951,8 +949,8 @@ References
    :height: 2.16146in
 
 .. |image22| image:: img/behavior_rig_setup/image72.jpg
-   :width: 1.875in
-   :height: 1.51042in
+   :width: 3in
+   :height: 4in
 
 .. |image23| image:: img/behavior_rig_setup/image35.jpg
    :width: 1.58886in
