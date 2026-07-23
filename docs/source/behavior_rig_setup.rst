@@ -482,7 +482,7 @@ The mouse holder comprises seating for the mouse, a steering wheel/encoder assem
 
 |MouseHolderAssembly_new.jpg|\ |image23|\ |image24|
 
-**The mouse holder assembly.** Left: The mouse holder, seen from the front, shows the center bore that will accommodate the wheel assembly, as well as key attachment points to the KBM1/M breadboard. Center: The front of the holder shows the attachment point for the Fisso arm. Right: The side of the holder shows the attachment point for the head-fixation assembly.
+**The mouse holder assembly.** Top: The mouse holder, seen from the front, shows the center bore that will accommodate the wheel assembly, as well as key attachment points to the KBM1/M breadboard. Top right: The front of the holder shows the attachment point for the Fisso arm. Bottom: The side of the holder shows the attachment point for the head-fixation assembly.
 
 #. 3D-print the (a) mouse holder, (b) mouse cover, and (c) wheel coupler designs. Make sure to order from Shapeways and use the material specifications listed.
 
@@ -961,12 +961,12 @@ References
    :height: 4in
 
 .. |image23| image:: img/behavior_rig_setup/image35.jpg
-   :width: 1.58886in
-   :height: 2.77604in
+   :width: 2.8in
+   :height: 1.97889in
 
 .. |image24| image:: img/behavior_rig_setup/image39.jpg
-   :width: 2.12115in
-   :height: 2.78646in
+   :width: 2.8in
+   :height: 1.97889in
 
 .. |image25| image:: img/behavior_rig_setup/image14.jpg
    :width: 1.73958in
