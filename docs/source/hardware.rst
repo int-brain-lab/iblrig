@@ -6,3 +6,4 @@ Hardware Guide
 
    hardware_upgrading_xonar
    hardware_components_behavior
+   behavior_rig_setup
