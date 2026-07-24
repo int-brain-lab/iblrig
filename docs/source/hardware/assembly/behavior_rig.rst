@@ -1,5 +1,6 @@
-Behavioral training rig setup
-=============================
+***************************************
+Assembly of the Behavioral Training Rig
+***************************************
 
 This guide describes how to assemble and connect the standard IBL behavioral
 training rig used for the steering-wheel task.
@@ -7,11 +8,11 @@ training rig used for the steering-wheel task.
 .. important::
 
    This page covers the physical rig, wiring, and hardware checks. For current
-   IBLRIG v8 software installation and configuration, see :doc:`installation`.
-   For operating instructions, see :doc:`usage`.
+   IBLRIG v8 software installation and configuration, see :doc:`/installation`.
+   For operating instructions, see :doc:`/usage`.
 
 For parts, quantities, and purchasing information, see
-:doc:`hardware_components_behavior`.
+:doc:`/hardware/bom/behavior_rig`.
 
 Introduction
 ============
@@ -41,7 +42,7 @@ Apparatus
 
 The apparatus was designed to train head-fixed mice on the steering-wheel task and acquire behavioral data. This setup is not used to perform electrophysiological recording of brain activity.
 
-All the material used for the rig can be found in the :doc:`hardware_components_behavior`. Briefly, the setup comprises :
+All the material used for the rig can be found in the :doc:`/hardware/bom/behavior_rig`. Briefly, the setup comprises :
 
 -  a rig screen, with a Fresnel lens and polarising filter
 
@@ -182,7 +183,7 @@ Frame and components
 
 *The setup itself comprises a rig screen installed on two posts, a mouse holder with a steering wheel encoder and head-fixation assembly, and a water-delivery system. Here we describe the assembly of the frame required to hold these and other components together.*
 
-.. image:: img/behavior_rig_setup/image19.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_19.jpg
    :width: 6.5in
    :height: 5.20833in
 
@@ -213,13 +214,13 @@ Enclosure box
 
 #. Attach the other components to the rails at the position shown in the pictures below.
 
-.. figure:: img/behavior_rig_setup/image30.jpg
+.. figure:: ../../img/assembly_behavior/assembly_behavior_30.jpg
    :width: 48%
    :alt: Bpod, rotary encoder module, and Frame2TTL module
 
    Bpod, rotary encoder module, and Frame2TTL module.
 
-.. figure:: img/behavior_rig_setup/image54.jpg
+.. figure:: ../../img/assembly_behavior/assembly_behavior_54.jpg
    :width: 48%
    :alt: Valve and camera module
 
@@ -234,7 +235,7 @@ Enclosure box
 
 ..
 
-   .. image:: img/behavior_rig_setup/image98.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_98.jpg
       :width: 3.31928in
       :height: 3.81771in
 
@@ -265,7 +266,7 @@ Assembling the frame
 
 ..
 
-   .. image:: img/behavior_rig_setup/image3.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_3.jpg
       :width: 3.54542in
       :height: 3.51563in
 
@@ -324,7 +325,7 @@ Assembling the screen
 
 ..
 
-   .. image:: img/behavior_rig_setup/image29.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_29.jpg
       :width: 5.50702in
       :height: 2.80729in
 
@@ -344,7 +345,7 @@ Assembling the screen
 
 .. note::
 
-   Complete this step after installing IBLRIG v8 and configuring the display as described in :doc:`installation`. Turn the driver-board switch to **ON**.
+   Complete this step after installing IBLRIG v8 and configuring the display as described in :doc:`/installation`. Turn the driver-board switch to **ON**.
 
 #. Set the screen background to grey (RGB 128, 128, 128. See screen setup section that follows).
 
@@ -362,13 +363,13 @@ Assembling the screen
 
 #. Place the cut filter between the screen and Fresnel lens film and re-center the screen as instructed above.
 
-.. figure:: img/behavior_rig_setup/image109.jpg
+.. figure:: ../../img/assembly_behavior/assembly_behavior_109.jpg
    :width: 3.60417in
    :height: 3.61111in
 
    Right screen holder alignment (right as viewed from the front). The 3D-printed screen holder should be aligned precisely with the end of the perforated metal bar on the screen’s back.
 
-.. figure:: img/behavior_rig_setup/image107.jpg
+.. figure:: ../../img/assembly_behavior/assembly_behavior_107.jpg
    :width: 3.60417in
    :height: 3.61111in
 
@@ -378,7 +379,7 @@ Assembling the screen
 
 ..
 
-   .. image:: img/behavior_rig_setup/image95.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_95.jpg
       :width: 3.66176in
       :height: 2.75521in
 
@@ -388,7 +389,7 @@ Assembling the screen
 
 ..
 
-   .. image:: img/behavior_rig_setup/image96.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_96.jpg
       :width: 4.28472in
       :height: 3.21354in
 
@@ -421,7 +422,7 @@ Assembling the video camera setup
 
 ..
 
-   .. image:: img/behavior_rig_setup/image59.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_59.jpg
       :width: 2.2954in
       :height: 3.01563in
 
@@ -439,11 +440,11 @@ Assembling the video camera setup
 
 #. Screw the tripod adapter (FLIR ACC-01-0003) to the underside of the camera see Note below for which side is the bottom.
 
-.. image:: img/behavior_rig_setup/image73.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_73.jpg
    :width: 4.67188in
    :height: 2.00941in
 
-.. image:: img/behavior_rig_setup/image62.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_62.jpg
    :width: 1.59589in
    :height: 2.11979in
 
@@ -518,7 +519,7 @@ The mouse holder comprises seating for the mouse, a steering wheel/encoder assem
 
 ..
 
-   .. image:: img/behavior_rig_setup/image77.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_77.jpg
       :width: 3in
       :height: 3.45833in
 
@@ -554,7 +555,7 @@ Installing the speaker
 
 #. Find or make the two marks on the back of the screen as shown below. They are centered at 10.4cm from the screen edge.
 
-.. image:: img/behavior_rig_setup/image34.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_34.jpg
    :width: 5.90625in
    :height: 3.58333in
 
@@ -570,13 +571,13 @@ Installing the speaker
 
 ..
 
-   .. image:: img/behavior_rig_setup/image113.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_113.jpg
       :width: 1.59375in
       :height: 1.875in
 
 #. Connect the speaker, **12V** power adapter, 3.5mm stereo cable and BNC-to-wire adapter to the audio amplifier board as shown below. Make sure to observe polarity of the speaker and BNC connector (black is negative):
 
-.. image:: img/behavior_rig_setup/image110.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_110.jpg
    :width: 3.55729in
    :height: 3.55729in
 
@@ -586,7 +587,7 @@ Installing the speaker
 
 ..
 
-   .. image:: img/behavior_rig_setup/image9.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_9.jpg
       :width: 5.06771in
       :height: 3.80078in
 
@@ -673,7 +674,7 @@ The camera is connected to other devices though a JST GPIO connector (a white ad
 
 The general purpose of each pin of the GPIO connector can be found in the table below.
 
-.. image:: img/behavior_rig_setup/image32.png
+.. image:: ../../img/assembly_behavior/assembly_behavior_32.png
    :width: 6.87358in
    :height: 3.11632in
 
@@ -697,7 +698,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image16.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_16.png
       :width: 0.88979in
       :height: 0.83854in
 
@@ -729,7 +730,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image24.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_24.png
       :width: 1.67188in
       :height: 1.40615in
 
@@ -743,7 +744,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image37.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_37.png
       :width: 2.84896in
       :height: 1.99213in
 
@@ -751,7 +752,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image12.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_12.png
       :width: 3.16453in
       :height: 3.50174in
 
@@ -763,7 +764,7 @@ The table below displays which ports are used in the setup:
 
    Note that the purple and the other black wire of the GPIO connector are already in use.
 
-   .. image:: img/behavior_rig_setup/image10.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_10.png
       :width: 2.73438in
       :height: 2.58626in
 
@@ -775,7 +776,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image36.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_36.png
       :width: 2.49479in
       :height: 2.57567in
 
@@ -783,7 +784,7 @@ The table below displays which ports are used in the setup:
 
 ..
 
-   .. image:: img/behavior_rig_setup/image41.png
+   .. image:: ../../img/assembly_behavior/assembly_behavior_41.png
       :width: 4.68701in
       :height: 2.51563in
 
@@ -802,7 +803,7 @@ Connect the rotary encoder module
 
 ..
 
-   .. image:: img/behavior_rig_setup/image97.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_97.jpg
       :width: 2.6751in
       :height: 1.99479in
 
@@ -813,7 +814,7 @@ Connect the rotary encoder module
 #. In Windows Device Manager, under ‘Ports (COM & LPT)’, find ‘USB Serial Device COMX’, where X is the number of the COMport. Note this down for the software install.
    After installing IBLRIG v8, verify the rotary encoder with the ``validate_iblrig`` hardware-validation command.
 
-.. image:: img/behavior_rig_setup/image81.png
+.. image:: ../../img/assembly_behavior/assembly_behavior_81.png
    :width: 4.84375in
    :height: 4.475in
 
@@ -830,7 +831,7 @@ Connect the photodiode (frame2TTL)
 
 #. Later, when you run the task, make sure the Frame2TTL covers the whole flashing square.
 
-.. image:: img/behavior_rig_setup/image74.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_74.jpg
    :width: 3.88021in
    :height: 2.90797in
 
@@ -855,7 +856,7 @@ Connect the environmental sensor
 
 ..
 
-   .. image:: img/behavior_rig_setup/image23.jpg
+   .. image:: ../../img/assembly_behavior/assembly_behavior_23.jpg
       :width: 2.33498in
       :height: 1.75521in
 
@@ -870,11 +871,11 @@ Finished product
 
    *Congratulations! You have built the hardware for an IBL rig! Your finished product should look something like this:*
 
-.. image:: img/behavior_rig_setup/image111.jpg
+.. image:: ../../img/assembly_behavior/assembly_behavior_111.jpg
    :width: 6.43229in
    :height: 4.82422in
 
-Next, install and configure IBLRIG v8 as described in :doc:`installation`.
+Next, install and configure IBLRIG v8 as described in :doc:`/installation`.
 
 Hardware troubleshooting
 ========================
@@ -900,142 +901,142 @@ References
    *The purpose of the Fresnel lenses is to ensure that the intensity is homogeneous across the screen when viewed from a specific location (e.g. the mouse’s head). To avoid pixel aliasing, the rig screen and Fresnel lens must be separated by ~1 mm, which is achieved by custom 3D printed screen mounts.*
 
 
-.. |MouseHolderAssembly_new.jpg| image:: img/behavior_rig_setup/image51.jpg
+.. |MouseHolderAssembly_new.jpg| image:: ../../img/assembly_behavior/assembly_behavior_51.jpg
    :width: 2.48438in
    :height: 2.42791in
 
-.. |copperspoutguide.jpg| image:: img/behavior_rig_setup/image100.jpg
+.. |copperspoutguide.jpg| image:: ../../img/assembly_behavior/assembly_behavior_100.jpg
    :width: 4.59437in
    :height: 1.82813in
 
-.. |image10| image:: img/behavior_rig_setup/image1.jpg
+.. |image10| image:: ../../img/assembly_behavior/assembly_behavior_1.jpg
    :width: 3.88021in
    :height: 3.84997in
 
-.. |image11| image:: img/behavior_rig_setup/image44.jpg
+.. |image11| image:: ../../img/assembly_behavior/assembly_behavior_44.jpg
    :width: 2.67708in
    :height: 1.92201in
 
-.. |image12| image:: img/behavior_rig_setup/image88.jpg
+.. |image12| image:: ../../img/assembly_behavior/assembly_behavior_88.jpg
    :width: 2.28125in
    :height: 1.87179in
 
-.. |image13| image:: img/behavior_rig_setup/image108.jpg
+.. |image13| image:: ../../img/assembly_behavior/assembly_behavior_108.jpg
    :width: 2.625in
    :height: 3.65625in
 
-.. |image14| image:: img/behavior_rig_setup/image79.jpg
+.. |image14| image:: ../../img/assembly_behavior/assembly_behavior_79.jpg
    :width: 3.39427in
    :height: 1.78646in
 
-.. |image15| image:: img/behavior_rig_setup/image17.png
+.. |image15| image:: ../../img/assembly_behavior/assembly_behavior_17.png
    :width: 0.84896in
    :height: 0.84896in
 
-.. |image16| image:: img/behavior_rig_setup/image69.jpg
+.. |image16| image:: ../../img/assembly_behavior/assembly_behavior_69.jpg
    :width: 2.95833in
    :height: 2.54167in
 
-.. |image17| image:: img/behavior_rig_setup/image46.jpg
+.. |image17| image:: ../../img/assembly_behavior/assembly_behavior_46.jpg
    :width: 2.97396in
    :height: 2.55824in
 
-.. |image18| image:: img/behavior_rig_setup/image84.jpg
+.. |image18| image:: ../../img/assembly_behavior/assembly_behavior_84.jpg
    :width: 2.99479in
    :height: 3.15285in
 
-.. |image19| image:: img/behavior_rig_setup/image45.jpg
+.. |image19| image:: ../../img/assembly_behavior/assembly_behavior_45.jpg
    :width: 3.21875in
    :height: 3.14324in
 
-.. |image20| image:: img/behavior_rig_setup/image28.jpg
+.. |image20| image:: ../../img/assembly_behavior/assembly_behavior_28.jpg
    :width: 2.27604in
    :height: 1.70703in
 
-.. |image21| image:: img/behavior_rig_setup/image94.jpg
+.. |image21| image:: ../../img/assembly_behavior/assembly_behavior_94.jpg
    :width: 1.61916in
    :height: 2.16146in
 
-.. |image22| image:: img/behavior_rig_setup/image72.jpg
+.. |image22| image:: ../../img/assembly_behavior/assembly_behavior_72.jpg
    :width: 3in
    :height: 4in
 
-.. |image23| image:: img/behavior_rig_setup/image35.jpg
+.. |image23| image:: ../../img/assembly_behavior/assembly_behavior_35.jpg
    :width: 2.8in
    :height: 1.97889in
 
-.. |image24| image:: img/behavior_rig_setup/image39.jpg
+.. |image24| image:: ../../img/assembly_behavior/assembly_behavior_39.jpg
    :width: 2.8in
    :height: 1.97889in
 
-.. |image25| image:: img/behavior_rig_setup/image14.jpg
+.. |image25| image:: ../../img/assembly_behavior/assembly_behavior_14.jpg
    :width: 1.73958in
    :height: 1.80957in
 
-.. |image26| image:: img/behavior_rig_setup/image80.jpg
+.. |image26| image:: ../../img/assembly_behavior/assembly_behavior_80.jpg
    :width: 3.40104in
    :height: 2.54821in
 
-.. |image27| image:: img/behavior_rig_setup/image53.jpg
+.. |image27| image:: ../../img/assembly_behavior/assembly_behavior_53.jpg
    :width: 3.38021in
    :height: 2.54022in
 
-.. |image28| image:: img/behavior_rig_setup/image61.jpg
+.. |image28| image:: ../../img/assembly_behavior/assembly_behavior_61.jpg
    :width: 1.45749in
    :height: 1.32813in
 
-.. |image29| image:: img/behavior_rig_setup/image40.jpg
+.. |image29| image:: ../../img/assembly_behavior/assembly_behavior_40.jpg
    :width: 1.18694in
    :height: 1.31771in
 
-.. |image3| image:: img/behavior_rig_setup/image20.jpg
+.. |image3| image:: ../../img/assembly_behavior/assembly_behavior_20.jpg
    :width: 3.44271in
    :height: 3.30814in
 
-.. |image30| image:: img/behavior_rig_setup/image91.jpg
+.. |image30| image:: ../../img/assembly_behavior/assembly_behavior_91.jpg
    :width: 2.17708in
    :height: 1.70833in
 
-.. |image31| image:: img/behavior_rig_setup/image76.jpg
+.. |image31| image:: ../../img/assembly_behavior/assembly_behavior_76.jpg
    :width: 1.61454in
    :height: 2.14063in
 
-.. |image32| image:: img/behavior_rig_setup/image50.jpg
+.. |image32| image:: ../../img/assembly_behavior/assembly_behavior_50.jpg
    :width: 2.10938in
    :height: 2.10938in
 
-.. |image33| image:: img/behavior_rig_setup/image89.jpg
+.. |image33| image:: ../../img/assembly_behavior/assembly_behavior_89.jpg
    :width: 2.16146in
    :height: 2.89209in
 
-.. |image34| image:: img/behavior_rig_setup/image86.jpg
+.. |image34| image:: ../../img/assembly_behavior/assembly_behavior_86.jpg
    :width: 2.40572in
    :height: 2.31771in
 
-.. |image35| image:: img/behavior_rig_setup/image27.jpg
+.. |image35| image:: ../../img/assembly_behavior/assembly_behavior_27.jpg
    :width: 2.57813in
    :height: 2.32557in
 
-.. |image4| image:: img/behavior_rig_setup/image13.jpg
+.. |image4| image:: ../../img/assembly_behavior/assembly_behavior_13.jpg
    :width: 3.9in
    :height: 2.75787in
 
-.. |image5| image:: img/behavior_rig_setup/image85.jpg
+.. |image5| image:: ../../img/assembly_behavior/assembly_behavior_85.jpg
    :width: 3.19271in
    :height: 2.40728in
 
-.. |image6| image:: img/behavior_rig_setup/image93.jpg
+.. |image6| image:: ../../img/assembly_behavior/assembly_behavior_93.jpg
    :width: 3.19339in
    :height: 2.40104in
 
-.. |image7| image:: img/behavior_rig_setup/image64.jpg
+.. |image7| image:: ../../img/assembly_behavior/assembly_behavior_64.jpg
    :width: 3.29167in
    :height: 2.47621in
 
-.. |image8| image:: img/behavior_rig_setup/image105.jpg
+.. |image8| image:: ../../img/assembly_behavior/assembly_behavior_105.jpg
    :width: 3.09375in
    :height: 2.60417in
 
-.. |image9| image:: img/behavior_rig_setup/image66.jpg
+.. |image9| image:: ../../img/assembly_behavior/assembly_behavior_66.jpg
    :width: 1.89063in
    :height: 3.83426in

@@ -42,7 +42,7 @@ Upgrade Procedure
    While the adapter itself is not needed anymore we will continue using the BNC cable.
    Leave the other end of the BNC cable plugged into the Bpod as it is.
 
-   .. figure:: img/amp2x15_labels.png
+   .. figure:: ../img/amp2x15_labels.png
       :width: 100%
       :class: with-border
 
@@ -51,7 +51,7 @@ Upgrade Procedure
 2. Unplug the 3.5 mm audio cable from the Xonar AE sound card on the backside of the rig's computer.
    Leave the other end of the 3.5 mm audio cable connected to the amplifier board.
 
-   .. figure:: img/xonar_labels.png
+   .. figure:: ../img/xonar_labels.png
       :width: 100%
       :class: with-border
 
@@ -65,7 +65,7 @@ Upgrade Procedure
    * the Ethernet cable connects to one of the Bpod's Module ports.
      Warning: Bpod uses identical connectors for its Behavior ports - do not mix them up!
 
-   .. figure:: img/hifi_labels.png
+   .. figure:: ../img/hifi_labels.png
       :width: 100%
       :class: with-border
 
