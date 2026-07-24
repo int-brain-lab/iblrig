@@ -1,5 +1,5 @@
-Components: Behavior Rig
-------------------------
+Bill of Materials: Behavior Rig
+-------------------------------
 
 .. csv-table:: Rig Frame
    :name: hardware_components_rig_frame

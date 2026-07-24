@@ -10,7 +10,7 @@
    installation
    usage
    reference
-   hardware
+   hardware/index
    developer_guide
    faq
    deprecation_notes
