@@ -2,36 +2,36 @@ Bill of Materials: Behavior Rig
 -------------------------------
 
 .. csv-table:: Rig Frame
-   :name: bom_behaviorrig_frame
-   :file: bom_behaviorrig_frame.csv
+   :name: bom_behavior_rig_frame
+   :file: bom_behavior_rig_frame.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Mouser Holder
-   :name: bom_behaviormouse_holder
-   :file: bom_behaviormouse_holder.csv
+   :name: bom_behavior_mouse_holder
+   :file: bom_behavior_mouse_holder.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Reward Delivery System
-   :name: bom_behaviorreward_delivery_system
-   :file: bom_behaviorreward_delivery_system.csv
+   :name: bom_behavior_reward_delivery_system
+   :file: bom_behavior_reward_delivery_system.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Bpod
-   :name: bom_behaviorbpod
-   :file: bom_behaviorbpod.csv
+   :name: bom_behavior_bpod
+   :file: bom_behavior_bpod.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Video
-   :name: bom_behaviorvideo
-   :file: bom_behaviorvideo.csv
+   :name: bom_behavior_video
+   :file: bom_behavior_video.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
@@ -42,15 +42,15 @@ Bill of Materials: Behavior Rig
        as it has a cutoff below 850 nm - the peak wavelength of the IR light source.
 
 .. csv-table:: Sound
-   :name: bom_behaviorsound
-   :file: bom_behaviorsound.csv
+   :name: bom_behavior_sound
+   :file: bom_behavior_sound.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Stimulus Display
-   :name: bom_behaviordisplay
-   :file: bom_behaviordisplay.csv
+   :name: bom_behavior_display
+   :file: bom_behavior_display.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
@@ -63,15 +63,15 @@ Bill of Materials: Behavior Rig
        accordingly: 9V, 2A, 18W, barrel jack (2.1 mm ID, 5.5 mm OD), center positive.
 
 .. csv-table:: Enclosure
-   :name: bom_behaviorenclosure
-   :file: bom_behaviorenclosure.csv
+   :name: bom_behavior_enclosure
+   :file: bom_behavior_enclosure.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Screws and Bolts
-   :name: bom_behaviorscrews
-   :file: bom_behaviorscrews.csv
+   :name: bom_behavior_screws
+   :file: bom_behavior_screws.csv
    :header-rows: 1
    :widths: 1 15 5 10 10 59
    :delim: ;
