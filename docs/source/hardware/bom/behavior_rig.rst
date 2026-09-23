@@ -2,36 +2,36 @@ Bill of Materials: Behavior Rig
 -------------------------------
 
 .. csv-table:: Rig Frame
-   :name: hardware_components_rig_frame
-   :file: hardware_components_rig_frame.csv
+   :name: bom_behaviorrig_frame
+   :file: bom_behaviorrig_frame.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Mouser Holder
-   :name: hardware_components_mouse_holder
-   :file: hardware_components_mouse_holder.csv
+   :name: bom_behaviormouse_holder
+   :file: bom_behaviormouse_holder.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Reward Delivery System
-   :name: hardware_components_reward_delivery_system
-   :file: hardware_components_reward_delivery_system.csv
+   :name: bom_behaviorreward_delivery_system
+   :file: bom_behaviorreward_delivery_system.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Bpod
-   :name: hardware_components_bpod
-   :file: hardware_components_bpod.csv
+   :name: bom_behaviorbpod
+   :file: bom_behaviorbpod.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Video
-   :name: hardware_components_video
-   :file: hardware_components_video.csv
+   :name: bom_behaviorvideo
+   :file: bom_behaviorvideo.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
@@ -42,15 +42,15 @@ Bill of Materials: Behavior Rig
        as it has a cutoff below 850 nm - the peak wavelength of the IR light source.
 
 .. csv-table:: Sound
-   :name: hardware_components_sound
-   :file: hardware_components_sound.csv
+   :name: bom_behaviorsound
+   :file: bom_behaviorsound.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Stimulus Display
-   :name: hardware_components_display
-   :file: hardware_components_display.csv
+   :name: bom_behaviordisplay
+   :file: bom_behaviordisplay.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
@@ -63,15 +63,15 @@ Bill of Materials: Behavior Rig
        accordingly: 9V, 2A, 18W, barrel jack (2.1 mm ID, 5.5 mm OD), center positive.
 
 .. csv-table:: Enclosure
-   :name: hardware_components_enclosure
-   :file: hardware_components_enclosure.csv
+   :name: bom_behaviorenclosure
+   :file: bom_behaviorenclosure.csv
    :header-rows: 1
    :widths: 1 20 20 59
    :delim: ;
 
 .. csv-table:: Screws and Bolts
-   :name: hardware_components_screws
-   :file: hardware_components_screws.csv
+   :name: bom_behaviorscrews
+   :file: bom_behaviorscrews.csv
    :header-rows: 1
    :widths: 1 15 5 10 10 59
    :delim: ;
