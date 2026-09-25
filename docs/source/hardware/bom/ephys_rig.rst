@@ -98,11 +98,6 @@ Bill of Materials: Ephys Rig
    :widths: 1 20 20 59
    :delim: ;
 
-.. [#PXIe-1071] Accessories: 1x IEC Power Cord
-.. [#PXIe-8381] Accessories: 1x MXI-Express Cable, 3m (782317-03); 1x PCIe-8381 PCI Express Host (782361-01)
-.. [#dove-tail-mount] To be glued onto probe (unless probe with cap)
-.. [#janelia-contact] markus.klement@mpfi.org
-
 .. csv-table:: Micromanipulator
    :name: bom_ephys_micromanipulator
    :file: bom_ephys_micromanipulator.csv
