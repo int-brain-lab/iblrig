@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.PlotWidget
+===================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: PlotWidget
+   :parts: 1
+
+|
+
+.. autoclass:: PlotWidget
+   :members:
+   :undoc-members:

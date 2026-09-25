@@ -1,0 +1,6 @@
+iblrig.upgrade\_iblrig.upgrade
+==============================
+
+.. currentmodule:: iblrig.upgrade_iblrig
+
+.. autofunction:: upgrade

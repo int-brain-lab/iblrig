@@ -1,0 +1,6 @@
+iblrig.commands.dir\_path
+=========================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: dir_path

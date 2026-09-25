@@ -1,0 +1,13 @@
+iblrig.frame2ttl.Frame2TTL
+==========================
+
+.. currentmodule:: iblrig.frame2ttl
+
+.. inheritance-diagram:: Frame2TTL
+   :parts: 1
+
+|
+
+.. autoclass:: Frame2TTL
+   :members:
+   :undoc-members:

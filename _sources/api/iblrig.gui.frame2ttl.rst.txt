@@ -1,0 +1,15 @@
+iblrig.gui.frame2ttl
+====================
+
+.. automodule:: iblrig.gui.frame2ttl
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Frame2TTLCalibrationDialog
+      Frame2TTLCalibrationTarget
+   

@@ -1,0 +1,15 @@
+iblrig\_tasks.\_iblrig\_tasks\_habituationChoiceWorld
+=====================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_habituationChoiceWorld
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+ 
+   task
+   

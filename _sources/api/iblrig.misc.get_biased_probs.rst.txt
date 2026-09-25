@@ -1,0 +1,6 @@
+iblrig.misc.get\_biased\_probs
+==============================
+
+.. currentmodule:: iblrig.misc
+
+.. autofunction:: get_biased_probs

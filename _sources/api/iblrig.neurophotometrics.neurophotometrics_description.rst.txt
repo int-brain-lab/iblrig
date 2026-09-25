@@ -1,0 +1,6 @@
+iblrig.neurophotometrics.neurophotometrics\_description
+=======================================================
+
+.. currentmodule:: iblrig.neurophotometrics
+
+.. autofunction:: neurophotometrics_description

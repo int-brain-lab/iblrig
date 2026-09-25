@@ -1,0 +1,6 @@
+iblrig.video\_pyspin.camera\_log
+================================
+
+.. currentmodule:: iblrig.video_pyspin
+
+.. autofunction:: camera_log

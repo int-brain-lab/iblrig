@@ -1,0 +1,6 @@
+iblrig.raw\_data\_loaders.concat\_bpod\_dataframes
+==================================================
+
+.. currentmodule:: iblrig.raw_data_loaders
+
+.. autofunction:: concat_bpod_dataframes

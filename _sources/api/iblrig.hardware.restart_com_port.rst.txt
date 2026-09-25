@@ -1,0 +1,6 @@
+iblrig.hardware.restart\_com\_port
+==================================
+
+.. currentmodule:: iblrig.hardware
+
+.. autofunction:: restart_com_port

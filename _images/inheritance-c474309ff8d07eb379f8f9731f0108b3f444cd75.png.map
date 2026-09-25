@@ -1,0 +1,10 @@
+<map id="inheritance157f72df1a" name="inheritance157f72df1a">
+<area shape="rect" id="node1" title="QAbstractItemView(parent: Optional[QWidget] = None)" alt="" coords="504,18,587,32"/>
+<area shape="rect" id="node9" title="QTableView(parent: Optional[QWidget] = None)" alt="" coords="614,18,669,32"/>
+<area shape="rect" id="node2" title="QAbstractScrollArea(parent: Optional[QWidget] = None)" alt="" coords="392,18,477,32"/>
+<area shape="rect" id="node3" title="QFrame(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="324,18,365,32"/>
+<area shape="rect" id="node4" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="253,18,297,32"/>
+<area shape="rect" id="node5" title="QObject(parent: Optional[QObject] = None)" alt="" coords="175,4,217,18"/>
+<area shape="rect" id="node7" title="QPaintDevice()" alt="" coords="165,31,226,46"/>
+<area shape="rect" id="node10" href="#iblrig.gui.online_plots.TrialsTableView" target="_top" title="A table view that shows a logarithmic x&#45;grid in one column" alt="" coords="696,18,765,32"/>
+</map>

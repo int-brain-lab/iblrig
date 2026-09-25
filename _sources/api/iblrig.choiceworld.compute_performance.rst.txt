@@ -1,0 +1,6 @@
+iblrig.choiceworld.compute\_performance
+=======================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: compute_performance

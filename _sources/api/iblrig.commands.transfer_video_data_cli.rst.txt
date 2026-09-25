@@ -1,0 +1,6 @@
+iblrig.commands.transfer\_video\_data\_cli
+==========================================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: transfer_video_data_cli

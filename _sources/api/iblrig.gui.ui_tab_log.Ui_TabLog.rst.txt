@@ -1,0 +1,13 @@
+iblrig.gui.ui\_tab\_log.Ui\_TabLog
+==================================
+
+.. currentmodule:: iblrig.gui.ui_tab_log
+
+.. inheritance-diagram:: Ui_TabLog
+   :parts: 1
+
+|
+
+.. autoclass:: Ui_TabLog
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.tools.get\_inheritors
+============================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: get_inheritors

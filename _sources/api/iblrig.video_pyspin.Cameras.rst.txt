@@ -1,0 +1,13 @@
+iblrig.video\_pyspin.Cameras
+============================
+
+.. currentmodule:: iblrig.video_pyspin
+
+.. inheritance-diagram:: Cameras
+   :parts: 1
+
+|
+
+.. autoclass:: Cameras
+   :members:
+   :undoc-members:

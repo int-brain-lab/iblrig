@@ -1,0 +1,6 @@
+iblrig.video.prepare\_video\_session\_cmd
+=========================================
+
+.. currentmodule:: iblrig.video
+
+.. autofunction:: prepare_video_session_cmd

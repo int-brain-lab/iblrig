@@ -1,0 +1,13 @@
+iblrig.pydantic\_definitions.TrialDataModel
+===========================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. inheritance-diagram:: TrialDataModel
+   :parts: 1
+
+|
+
+.. autoclass:: TrialDataModel
+   :members:
+   :undoc-members:

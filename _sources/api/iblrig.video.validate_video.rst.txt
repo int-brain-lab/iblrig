@@ -1,0 +1,6 @@
+iblrig.video.validate\_video
+============================
+
+.. currentmodule:: iblrig.video
+
+.. autofunction:: validate_video

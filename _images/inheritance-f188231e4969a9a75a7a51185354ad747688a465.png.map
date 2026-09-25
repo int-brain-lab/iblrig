@@ -1,0 +1,8 @@
+<map id="inheritancebac81faa87" name="inheritancebac81faa87">
+<area shape="rect" id="node1" href="#iblrig.hifi.HiFi" target="_top" title="HiFi" alt="" coords="700,27,763,49"/>
+<area shape="rect" id="node2" href="iblrig.serial_singleton.SerialSingleton.html#iblrig.serial_singleton.SerialSingleton" target="_top" title="SerialSingleton" alt="" coords="553,27,658,49"/>
+<area shape="rect" id="node3" href="https://docs.python.org/3/library/io.html#io.IOBase" target="_top" title="The abstract base class for all I/O classes." alt="" coords="5,48,68,70"/>
+<area shape="rect" id="node6" href="https://docs.python.org/3/library/io.html#io.RawIOBase" target="_top" title="Base class for raw binary I/O." alt="" coords="138,48,222,70"/>
+<area shape="rect" id="node7" title="Serial port class POSIX implementation. Serial port configuration is" alt="" coords="447,27,510,49"/>
+<area shape="rect" id="node8" title="Serial port base class. Provides __init__ function and properties to" alt="" coords="309,48,389,70"/>
+</map>

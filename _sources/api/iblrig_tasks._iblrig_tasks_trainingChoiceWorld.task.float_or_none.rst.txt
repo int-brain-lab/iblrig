@@ -1,0 +1,6 @@
+iblrig\_tasks.\_iblrig\_tasks\_trainingChoiceWorld.task.float\_or\_none
+=======================================================================
+
+.. currentmodule:: iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task
+
+.. autofunction:: float_or_none

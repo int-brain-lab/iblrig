@@ -1,0 +1,27 @@
+iblrig.video
+============
+
+.. automodule:: iblrig.video
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      install_pyspin
+      install_spinnaker
+      prepare_video_session_cmd
+      validate_video
+      validate_video_cmd
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      CameraSession
+      CameraSessionNetworked
+   

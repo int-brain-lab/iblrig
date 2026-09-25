@@ -1,0 +1,37 @@
+iblrig.gui.online\_plots
+========================
+
+.. automodule:: iblrig.gui.online_plots
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      is_alf_path
+      online_plots_cli
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BpodWidget
+      Colors
+      DefaultSettings
+      EngagedCriterion
+      FunctionWidget
+      OnlinePlotsModel
+      OnlinePlotsView
+      PlotWidget
+      ResponseTimeDelegate
+      SingleBarChartWidget
+      StateMeshItem
+      StimulusDelegate
+      TrialsTableModel
+      TrialsTableView
+      TrialsWidget
+   

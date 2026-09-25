@@ -1,0 +1,5 @@
+<map id="inheritance3765eaa9bb" name="inheritance3765eaa9bb">
+<area shape="rect" id="node1" href="#iblrig.base_tasks.OSCClient" target="_top" title="Handles communication to Bonsai using a UDP Client" alt="" coords="323,5,409,31"/>
+<area shape="rect" id="node2" title="Simple OSC client that automatically builds :class:`OscMessage` from arguments" alt="" coords="141,5,275,31"/>
+<area shape="rect" id="node3" title="OSC client to send :class:`OscMessage` or :class:`OscBundle` via UDP" alt="" coords="5,5,93,31"/>
+</map>

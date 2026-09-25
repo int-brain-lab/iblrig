@@ -1,0 +1,6 @@
+iblrig.video\_pyspin.process\_camera
+====================================
+
+.. currentmodule:: iblrig.video_pyspin
+
+.. autofunction:: process_camera

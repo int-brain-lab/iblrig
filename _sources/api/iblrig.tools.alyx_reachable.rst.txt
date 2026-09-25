@@ -1,0 +1,6 @@
+iblrig.tools.alyx\_reachable
+============================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: alyx_reachable

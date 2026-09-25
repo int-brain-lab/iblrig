@@ -1,0 +1,6 @@
+iblrig.path\_helper.get\_local\_and\_remote\_paths
+==================================================
+
+.. currentmodule:: iblrig.path_helper
+
+.. autofunction:: get_local_and_remote_paths

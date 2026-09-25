@@ -1,0 +1,13 @@
+iblrig.transfer\_experiments.NeurophotometricsCopier
+====================================================
+
+.. currentmodule:: iblrig.transfer_experiments
+
+.. inheritance-diagram:: NeurophotometricsCopier
+   :parts: 1
+
+|
+
+.. autoclass:: NeurophotometricsCopier
+   :members:
+   :undoc-members:

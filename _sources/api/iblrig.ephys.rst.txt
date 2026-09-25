@@ -1,0 +1,15 @@
+iblrig.ephys
+============
+
+.. automodule:: iblrig.ephys
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      neuropixel24_micromanipulator_coordinates
+      prepare_ephys_session
+      prepare_ephys_session_cmd
+   

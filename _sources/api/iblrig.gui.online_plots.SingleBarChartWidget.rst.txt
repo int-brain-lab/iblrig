@@ -1,0 +1,13 @@
+iblrig.gui.online\_plots.SingleBarChartWidget
+=============================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. inheritance-diagram:: SingleBarChartWidget
+   :parts: 1
+
+|
+
+.. autoclass:: SingleBarChartWidget
+   :members:
+   :undoc-members:

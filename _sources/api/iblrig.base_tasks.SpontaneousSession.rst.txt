@@ -1,0 +1,13 @@
+iblrig.base\_tasks.SpontaneousSession
+=====================================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: SpontaneousSession
+   :parts: 1
+
+|
+
+.. autoclass:: SpontaneousSession
+   :members:
+   :undoc-members:

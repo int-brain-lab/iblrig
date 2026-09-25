@@ -1,0 +1,13 @@
+iblrig.base\_choice\_world.TrainingChoiceWorldTrialData
+=======================================================
+
+.. currentmodule:: iblrig.base_choice_world
+
+.. inheritance-diagram:: TrainingChoiceWorldTrialData
+   :parts: 1
+
+|
+
+.. autoclass:: TrainingChoiceWorldTrialData
+   :members:
+   :undoc-members:

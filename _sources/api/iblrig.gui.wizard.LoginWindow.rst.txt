@@ -1,0 +1,13 @@
+iblrig.gui.wizard.LoginWindow
+=============================
+
+.. currentmodule:: iblrig.gui.wizard
+
+.. inheritance-diagram:: LoginWindow
+   :parts: 1
+
+|
+
+.. autoclass:: LoginWindow
+   :members:
+   :undoc-members:

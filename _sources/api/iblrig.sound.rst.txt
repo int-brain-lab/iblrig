@@ -1,0 +1,15 @@
+iblrig.sound
+============
+
+.. automodule:: iblrig.sound
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      configure_sound_card
+      format_sound
+      make_sound
+   

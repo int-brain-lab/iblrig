@@ -1,0 +1,13 @@
+iblrig.gui.validation.SystemValidationDialog
+============================================
+
+.. currentmodule:: iblrig.gui.validation
+
+.. inheritance-diagram:: SystemValidationDialog
+   :parts: 1
+
+|
+
+.. autoclass:: SystemValidationDialog
+   :members:
+   :undoc-members:

@@ -1,0 +1,15 @@
+iblrig\_tasks.\_iblrig\_tasks\_biasedChoiceWorld
+================================================
+
+.. automodule:: iblrig_tasks._iblrig_tasks_biasedChoiceWorld
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :nosignatures:
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+ 
+   task
+   

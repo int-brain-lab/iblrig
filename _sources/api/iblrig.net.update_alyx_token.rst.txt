@@ -1,0 +1,6 @@
+iblrig.net.update\_alyx\_token
+==============================
+
+.. currentmodule:: iblrig.net
+
+.. autofunction:: update_alyx_token

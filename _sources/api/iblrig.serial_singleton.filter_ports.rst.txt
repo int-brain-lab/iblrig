@@ -1,0 +1,6 @@
+iblrig.serial\_singleton.filter\_ports
+======================================
+
+.. currentmodule:: iblrig.serial_singleton
+
+.. autofunction:: filter_ports

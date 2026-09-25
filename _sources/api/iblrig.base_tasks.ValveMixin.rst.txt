@@ -1,0 +1,13 @@
+iblrig.base\_tasks.ValveMixin
+=============================
+
+.. currentmodule:: iblrig.base_tasks
+
+.. inheritance-diagram:: ValveMixin
+   :parts: 1
+
+|
+
+.. autoclass:: ValveMixin
+   :members:
+   :undoc-members:

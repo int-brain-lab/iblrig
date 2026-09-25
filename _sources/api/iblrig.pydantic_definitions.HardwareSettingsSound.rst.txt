@@ -1,0 +1,13 @@
+iblrig.pydantic\_definitions.HardwareSettingsSound
+==================================================
+
+.. currentmodule:: iblrig.pydantic_definitions
+
+.. inheritance-diagram:: HardwareSettingsSound
+   :parts: 1
+
+|
+
+.. autoclass:: HardwareSettingsSound
+   :members:
+   :undoc-members:

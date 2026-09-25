@@ -1,0 +1,6 @@
+iblrig.video\_pyspin.acquisition\_ok
+====================================
+
+.. currentmodule:: iblrig.video_pyspin
+
+.. autofunction:: acquisition_ok

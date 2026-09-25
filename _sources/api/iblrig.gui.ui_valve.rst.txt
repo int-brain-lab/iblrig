@@ -1,0 +1,14 @@
+iblrig.gui.ui\_valve
+====================
+
+.. automodule:: iblrig.gui.ui_valve
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Ui_valve
+   

@@ -1,0 +1,6 @@
+iblrig.tools.get\_number
+========================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: get_number

@@ -1,0 +1,6 @@
+iblrig.gui.online\_plots.online\_plots\_cli
+===========================================
+
+.. currentmodule:: iblrig.gui.online_plots
+
+.. autofunction:: online_plots_cli

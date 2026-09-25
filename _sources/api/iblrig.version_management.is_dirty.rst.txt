@@ -1,0 +1,6 @@
+iblrig.version\_management.is\_dirty
+====================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: is_dirty

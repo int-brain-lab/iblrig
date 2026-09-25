@@ -1,0 +1,6 @@
+iblrig.hifi.HiFiException
+=========================
+
+.. currentmodule:: iblrig.hifi
+
+.. autoexception:: HiFiException

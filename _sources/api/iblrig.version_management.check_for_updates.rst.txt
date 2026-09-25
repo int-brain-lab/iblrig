@@ -1,0 +1,6 @@
+iblrig.version\_management.check\_for\_updates
+==============================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: check_for_updates

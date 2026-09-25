@@ -1,0 +1,7 @@
+<map id="inheritance7e0366943a" name="inheritance7e0366943a">
+<area shape="rect" id="node1" href="https://docs.python.org/3/library/abc.html#abc.ABC" target="_top" title="Helper class that provides a standard way to create an ABC using" alt="" coords="5,5,73,29"/>
+<area shape="rect" id="node2" href="iblrig.base_tasks.BaseSession.html#iblrig.base_tasks.BaseSession" target="_top" title="Abstract base class for all sessions." alt="" coords="119,5,218,29"/>
+<area shape="rect" id="node4" href="iblrig.base_tasks.EmptySession.html#iblrig.base_tasks.EmptySession" target="_top" title="EmptySession" alt="" coords="263,5,372,29"/>
+<area shape="rect" id="node3" href="iblrig.video.CameraSession.html#iblrig.video.CameraSession" target="_top" title="CameraSession" alt="" coords="418,5,534,29"/>
+<area shape="rect" id="node5" href="#iblrig.video.CameraSessionNetworked" target="_top" title="CameraSessionNetworked" alt="" coords="579,5,763,29"/>
+</map>

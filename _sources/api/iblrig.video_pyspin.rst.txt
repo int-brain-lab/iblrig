@@ -1,0 +1,30 @@
+iblrig.video\_pyspin
+====================
+
+.. automodule:: iblrig.video_pyspin
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      acquisition_ok
+      camera_log
+      enable_camera_trigger
+      get_enumeration_pointer
+      get_node
+      process_camera
+      reset_all_cameras
+      select_line
+      set_line_mode
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Cameras
+   

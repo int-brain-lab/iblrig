@@ -1,0 +1,6 @@
+iblrig.commands.flush
+=====================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: flush

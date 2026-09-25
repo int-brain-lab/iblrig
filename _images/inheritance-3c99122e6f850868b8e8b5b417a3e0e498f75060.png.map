@@ -1,0 +1,4 @@
+<map id="inheritancebd502f8ae8" name="inheritancebd502f8ae8">
+<area shape="rect" id="node1" href="#iblrig.tools.InputThread" target="_top" title="A thread that reads input from stdin and invokes a callback function for each line read." alt="" coords="125,5,225,31"/>
+<area shape="rect" id="node2" href="https://docs.python.org/3/library/threading.html#threading.Thread" target="_top" title="A class that represents a thread of control." alt="" coords="5,5,77,31"/>
+</map>

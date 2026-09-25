@@ -1,0 +1,6 @@
+iblrig.choiceworld.draw\_training\_contrast
+===========================================
+
+.. currentmodule:: iblrig.choiceworld
+
+.. autofunction:: draw_training_contrast

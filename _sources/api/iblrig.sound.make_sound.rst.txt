@@ -1,0 +1,6 @@
+iblrig.sound.make\_sound
+========================
+
+.. currentmodule:: iblrig.sound
+
+.. autofunction:: make_sound

@@ -1,0 +1,25 @@
+iblrig.gui.tab\_data
+====================
+
+.. automodule:: iblrig.gui.tab_data
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+   
+      sizeof_fmt
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      Column
+      DataItemDelegate
+      DataWorker
+      TabData
+   

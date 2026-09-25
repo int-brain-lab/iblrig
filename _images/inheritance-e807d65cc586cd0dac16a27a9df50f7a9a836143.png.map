@@ -1,0 +1,9 @@
+<map id="inheritance8726c57f59" name="inheritance8726c57f59">
+<area shape="rect" id="node1" title="**Bases:** :class:`object`" alt="" coords="326,4,401,21"/>
+<area shape="rect" id="node2" title="**Bases:** :class:`GraphicsItem &lt;pyqtgraph.GraphicsItem&gt;`, :class:`QtWidgets.QGraphicsObject`" alt="" coords="441,21,525,39"/>
+<area shape="rect" id="node4" title="**Bases:** :class:`GraphicsObject &lt;pyqtgraph.GraphicsObject&gt;`" alt="" coords="558,21,648,39"/>
+<area shape="rect" id="node3" title="QGraphicsObject(parent: Optional[QGraphicsItem] = None)" alt="" coords="318,38,408,55"/>
+<area shape="rect" id="node8" href="#iblrig.gui.online_plots.StateMeshItem" target="_top" title="A graphical item for displaying a color mesh that represents Bpod states." alt="" coords="681,21,764,39"/>
+<area shape="rect" id="node5" title="QGraphicsItem(parent: Optional[QGraphicsItem] = None)" alt="" coords="203,20,285,38"/>
+<area shape="rect" id="node7" title="QObject(parent: Optional[QObject] = None)" alt="" coords="218,54,270,72"/>
+</map>

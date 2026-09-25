@@ -1,0 +1,7 @@
+<map id="inheritance33c5f08f59" name="inheritance33c5f08f59">
+<area shape="rect" id="node1" title="QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="539,30,609,53"/>
+<area shape="rect" id="node7" href="#iblrig.gui.tools.SettingsDialog" target="_top" title="SettingsDialog" alt="" coords="654,30,763,53"/>
+<area shape="rect" id="node2" title="QWidget(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())" alt="" coords="421,30,495,53"/>
+<area shape="rect" id="node3" title="QObject(parent: Optional[QObject] = None)" alt="" coords="291,6,360,30"/>
+<area shape="rect" id="node5" title="QPaintDevice()" alt="" coords="275,52,377,76"/>
+</map>

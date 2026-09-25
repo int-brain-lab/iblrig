@@ -1,0 +1,23 @@
+iblrig.base\_choice\_world
+==========================
+
+.. automodule:: iblrig.base_choice_world
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :nosignatures:
+      :toctree:
+      :template: custom-class-template.rst
+   
+      ActiveChoiceWorldSession
+      ActiveChoiceWorldTrialData
+      BiasedChoiceWorldSession
+      BiasedChoiceWorldTrialData
+      ChoiceWorldSession
+      ChoiceWorldTrialData
+      HabituationChoiceWorldSession
+      HabituationChoiceWorldTrialData
+      TrainingChoiceWorldSession
+      TrainingChoiceWorldTrialData
+   

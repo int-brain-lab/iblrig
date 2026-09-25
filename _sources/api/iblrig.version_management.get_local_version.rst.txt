@@ -1,0 +1,6 @@
+iblrig.version\_management.get\_local\_version
+==============================================
+
+.. currentmodule:: iblrig.version_management
+
+.. autofunction:: get_local_version

@@ -1,0 +1,6 @@
+iblrig.session\_creator.draw\_block\_len
+========================================
+
+.. currentmodule:: iblrig.session_creator
+
+.. autofunction:: draw_block_len

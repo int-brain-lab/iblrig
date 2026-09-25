@@ -1,0 +1,6 @@
+iblrig.commands.remove\_bonsai\_layouts
+=======================================
+
+.. currentmodule:: iblrig.commands
+
+.. autofunction:: remove_bonsai_layouts

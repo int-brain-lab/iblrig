@@ -1,0 +1,6 @@
+iblrig.tools.get\_anydesk\_id
+=============================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: get_anydesk_id

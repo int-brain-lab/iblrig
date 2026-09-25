@@ -1,0 +1,13 @@
+iblrig.transfer\_experiments.CopyState
+======================================
+
+.. currentmodule:: iblrig.transfer_experiments
+
+.. inheritance-diagram:: CopyState
+   :parts: 1
+
+|
+
+.. autoclass:: CopyState
+   :members:
+   :undoc-members:

@@ -1,0 +1,6 @@
+iblrig.tools.ask\_user
+======================
+
+.. currentmodule:: iblrig.tools
+
+.. autofunction:: ask_user
