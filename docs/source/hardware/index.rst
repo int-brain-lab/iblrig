@@ -5,5 +5,4 @@ Hardware Guide
    :maxdepth: 2
 
    upgrading_xonar
-   assembly/index
    bom/index
