@@ -1,0 +1,14 @@
+Qty;Supplier;Product #;Description
+1;`imec <https://www.neuropixels.org/>`_;`PRB_1_4_0480_1_C <https://www.neuropixels.org/order>`_;Box of 5 Neuropixels 1.0 probes
+2;`imec <https://www.neuropixels.org/>`_;`HS_1000 <https://www.neuropixels.org/order>`_;Neuropixels 1.0 headstage
+2;`imec <https://www.neuropixels.org/>`_;`CBL_1000 <https://www.neuropixels.org/order>`_;Neuropixels 1.0 cable
+1;`imec <https://www.neuropixels.org/>`_;`PXIe_1000 <https://www.neuropixels.org/order>`_;Neuropixels 1.0 PXIe acquisition system
+1;`imec <https://www.neuropixels.org/>`_;`HST_1000 <https://www.neuropixels.org/order>`_;Neuropixels 1.0 Headstage Test Dongle
+1;`NI <https://www.ni.com/>`_;`781368-01 <https://www.ni.com/en/shop/hardware/pxi-chassis/model-pxie-1071#781368-01>`_;PXIe-1071 Chassis [#PXIe-1071]_
+1;`NI <https://www.ni.com/>`_;`782362-01 <https://www.ni.com/en/shop/hardware/pxi-controllers/model-pxie-8381#782362-01>`_;PXIe-8381 Remote Control Module [#PXIe-8381]_
+1;`NI <https://www.ni.com/>`_;`781052-01 <https://www.ni.com/en/shop/hardware/voltage/model-pxie-6341#781052-01>`_;PXIe-6341 Multifunction I/O Module
+1;`NI <https://www.ni.com/>`_;`777643-01 <https://www.ni.com/en/shop/hardware/connectors/model-bnc-2110#777643-01>`_;BNC-2110 Terminal Block
+1;`NI <https://www.ni.com/>`_;`192061-02 <https://www.ni.com/en/shop/hardware/cables/model-shc68-68-epm#192061-02>`_;SHC68-68-EPM Multifunction Cable, 2m
+2;Janelia;`J007778 <https://drive.google.com/file/d/1f1LyLne5FDa_BZiKbWrQYc30VhLYyjVb>`_;Neuropixel Dove Tail Probe Holder [#janelia-contact]_
+2;Janelia;`J007869 <https://drive.google.com/open?id=1FIjb2UtJo4zKlYon8bd_oujcHGUPftSf>`_;Neuropixel Dove Tail Mount [#janelia-contact]_ [#dove-tail-mount]_
+1;;various versions;Neuropixel probe holder box

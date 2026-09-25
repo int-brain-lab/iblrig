@@ -70,6 +70,16 @@ Bill of Materials: Ephys Rig
    :widths: 1 20 20 59
    :delim: ;
 
+.. [#qualia-discontinued] The Qualia driver board has been discontinued - we are
+   actively looking for a replacement. As an alternative, you can use the
+   `HDMI 10" LCD Screen Kit <https://shop.pimoroni.com/products/hdmi-10-lcd-screen-kit-1024x768>`_
+   by `Pimoroni <https://shop.pimoroni.com/>`_ with an HDMI to DisplayPort cable
+   and a 5 V, 1 A micro-USB power supply, replacing the first four items in the
+   table above.
+.. [#qualia-psu] This is a power supply for use in North America. If you are in
+   a different region, choose a power supply accordingly: 9V, 2A, 18W, barrel
+   jack (2.1 mm ID, 5.5 mm OD), center positive.
+
 .. csv-table:: Sound
    :name: bom_ephys_sound
    :file: bom_ephys_sound.csv
@@ -81,10 +91,36 @@ Bill of Materials: Ephys Rig
    different region, choose a power supply accordingly: 12V, 2A, 24W, barrel
    jack (2.1 mm ID, 5.5 mm OD), center positive.
 
+.. csv-table:: Neuropixel
+   :name: bom_ephys_neuropixel
+   :file: bom_ephys_neuropixel.csv
+   :header-rows: 1
+   :widths: 1 20 20 59
+   :delim: ;
+
+.. [#PXIe-1071] Accessories: 1x IEC Power Cord
+.. [#PXIe-8381] Accessories: 1x MXI-Express Cable, 3m (782317-03); 1x PCIe-8381 PCI Express Host (782361-01)
+.. [#dove-tail-mount] To be glued onto probe (unless probe with cap)
+.. [#janelia-contact] markus.klement@mpfi.org
+
+.. csv-table:: Micromanipulator
+   :name: bom_ephys_micromanipulator
+   :file: bom_ephys_micromanipulator.csv
+   :header-rows: 1
+   :widths: 1 20 20 59
+   :delim: ;
+
 ..
    .. csv-table:: Enclosure
       :name: bom_ephys_enclosure
       :file: bom_ephys_enclosure.csv
+      :header-rows: 1
+      :widths: 1 20 20 59
+      :delim: ;
+
+   .. csv-table:: Microscope
+      :name: bom_ephys_microscope
+      :file: bom_ephys_microscope.csv
       :header-rows: 1
       :widths: 1 20 20 59
       :delim: ;
@@ -95,5 +131,3 @@ Bill of Materials: Ephys Rig
    :header-rows: 1
    :widths: 1 15 5 10 10 59
    :delim: ;
-
-TODO: Neuropixel, Micromanipulator, Enclosure, Microscope
