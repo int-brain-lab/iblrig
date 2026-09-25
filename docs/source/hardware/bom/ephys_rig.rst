@@ -110,20 +110,19 @@ Bill of Materials: Ephys Rig
    :widths: 1 20 20 59
    :delim: ;
 
-..
-   .. csv-table:: Enclosure
-      :name: bom_ephys_enclosure
-      :file: bom_ephys_enclosure.csv
-      :header-rows: 1
-      :widths: 1 20 20 59
-      :delim: ;
+.. csv-table:: Enclosure
+   :name: bom_ephys_enclosure
+   :file: bom_ephys_enclosure.csv
+   :header-rows: 1
+   :widths: 1 20 20 59
+   :delim: ;
 
-   .. csv-table:: Microscope
-      :name: bom_ephys_microscope
-      :file: bom_ephys_microscope.csv
-      :header-rows: 1
-      :widths: 1 20 20 59
-      :delim: ;
+.. csv-table:: Microscope
+   :name: bom_ephys_microscope
+   :file: bom_ephys_microscope.csv
+   :header-rows: 1
+   :widths: 1 20 20 59
+   :delim: ;
 
 .. csv-table:: Screws and Bolts
    :name: bom_ephys_screws
