@@ -5,3 +5,4 @@ Bill of Materials
    :maxdepth: 2
 
    Behavior Rig <behavior_rig>
+   Ephys Rig <ephys_rig>
