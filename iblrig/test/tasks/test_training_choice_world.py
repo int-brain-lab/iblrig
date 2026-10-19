@@ -237,7 +237,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                     expected_contrasts = [0, 0.0625, 0.125, 0.25, 1.0]
             np.testing.assert_equal(actual_contrasts, expected_contrasts)
 
-    def test_acquisition_description(self):
+    def test_experiment_description(self):
         actual_description = self.task.experiment_description
         expected_description = {
             'sync': {
