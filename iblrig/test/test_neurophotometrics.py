@@ -6,7 +6,7 @@ from iblrig.neurophotometrics import neurophotometrics_description
 
 class TestExperimentDescription(unittest.TestCase):
     def test_neurophotometrics_description(self):
-        # tests the generation of the acquisition description
+        # tests the generation of the experiment description
         dt = datetime.datetime.fromisoformat('2024-10-11T11:11:00')
 
         # for bpod based sync

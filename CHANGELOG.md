@@ -1,6 +1,10 @@
 Changelog
 =========
 
+UNRELEASED
+----------
+* changed: renamed keyword `acquisition_description` to `experiment_description` in `initialize_experiment` of copier classes; the old keyword is deprecated and will be removed in a future release
+
 8.29.5
 ------
 * added: trainingChoiceWorld_c0_CW and trainingPhaseChoiceWorld_c0_CW task variants that always reward zero-contrast trials after CW movements
