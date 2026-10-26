@@ -3,7 +3,17 @@ Changelog
 
 UNRELEASED
 ----------
+* added: Neuropixel coordinate registration tool for NP2.4
+* added: Online Plots are stored as PNG and added to Alyx as a Session Note
+* added: Parameter to define grouping variable for Online Plots
+* added: `FRAMECLOCK_CHANNEL` hardware setting for Neurophotometrics
+* changed: Refactored methods for creating sound waveforms
+* changed: Updated debiasing routine for readability (no functional changes)
+* changed: Refactoring of GUI code
+* changed: Refactoring of `path_helper` module
 * changed: renamed keyword `acquisition_description` to `experiment_description` in `initialize_experiment` of copier classes; the old keyword is deprecated and will be removed in a future release
+
+-------------------------------
 
 8.29.5
 ------

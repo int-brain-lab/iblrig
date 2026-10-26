@@ -1,7 +1,12 @@
 import datetime
 import unittest
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from unittest.mock import patch
 
+from iblrig.constants import BASE_PATH
 from iblrig.neurophotometrics import neurophotometrics_description
+from iblrig.path_helper import _load_settings_yaml
 
 
 class TestExperimentDescription(unittest.TestCase):
@@ -27,9 +32,18 @@ class TestExperimentDescription(unittest.TestCase):
         self.assertDictEqual(dexpected, d)
 
         # for daqami sync
-        d = neurophotometrics_description(
-            rois=['G0', 'G1'], locations=['SI', 'VTA'], sync_channel=1, start_time=dt, sync_mode='daqami'
-        )
+        settings_dict = _load_settings_yaml(BASE_PATH / 'settings' / 'hardware_settings_template.yaml')
+        with patch('iblrig.path_helper._load_settings_yaml', return_value=settings_dict), NamedTemporaryFile() as fp:
+            settings_dict['device_neurophotometrics'] = {
+                'BONSAI_EXECUTABLE': Path(fp.name),
+                'BONSAI_WORKFLOW': Path('devices', 'neurophotometrics', 'FP3002.bonsai'),
+                'BONSAI_WORKFLOW_DAQ': Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai'),
+                'COM_NEUROPHOTOMETRY': None,
+                'FRAMECLOCK_CHANNEL': 'AI7',
+            }
+            d = neurophotometrics_description(
+                rois=['G0', 'G1'], locations=['SI', 'VTA'], sync_channel=1, start_time=dt, sync_mode='daqami'
+            )
         dexpected = {
             'devices': {
                 'neurophotometrics': {

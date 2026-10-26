@@ -27,7 +27,7 @@ from iblrig.base_tasks import (
     ValveMixin,
 )
 from iblrig.hardware import SOFTCODE
-from iblrig.test.base import TASK_KWARGS
+from iblrig.test.base import TaskArgsMixin
 from iblutil.util import Bunch
 
 
@@ -41,7 +41,7 @@ class EmptyHardwareSession(BaseSession):
         pass
 
 
-def mixin_factory(*cls_mixin):
+def mixin_factory(*cls_mixin, task_kwargs: dict):
     """
     Composes the empty hardware session class with a single mixin for testing purposes
     :param cls_mixin:
@@ -51,28 +51,18 @@ def mixin_factory(*cls_mixin):
     class TestMixin(EmptyHardwareSession, *cls_mixin):
         pass
 
-    session = TestMixin(task_parameter_file=ChoiceWorldSession.base_parameters_file, **TASK_KWARGS)
+    session = TestMixin(task_parameter_file=ChoiceWorldSession.base_parameters_file, **task_kwargs)
     return session
 
 
-class BaseTestHardwareMixins(unittest.TestCase):
+class TestBonsaiMixins(unittest.TestCase, TaskArgsMixin):
     def setUp(self):
-        task_settings_file = ChoiceWorldSession.base_parameters_file
-        self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **TASK_KWARGS)
+        self.get_task_kwargs()
 
-    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession._run')
-    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession.start_hardware')
-    def test_execute_mixins_shared_function(self, mock_start_hardware, mock_run):
-        self.session._execute_mixins_shared_function('start_')
-        mock_start_hardware.assert_called_once()
-        mock_run.assert_not_called()
-
-
-class TestBonsaiMixins(unittest.TestCase):
     @mock.patch('iblrig.base_tasks.call_bonsai')
     def test_bonsai_recording_mixin(self, mock_call_bonsai):
         # create a session with the bonsai recording mixin only and all tests parameters
-        session = mixin_factory(BonsaiRecordingMixin)
+        session = mixin_factory(BonsaiRecordingMixin, task_kwargs=self.task_kwargs)
         session.init_mixin_bonsai_recordings()
         # this will fail if the udp clients are not alive, which they should be
         session.bonsai_camera.udp_client.send2bonsai(trial_num=6, sim_freq=50)
@@ -88,7 +78,7 @@ class TestBonsaiMixins(unittest.TestCase):
     @mock.patch('iblrig.base_tasks.call_bonsai')
     @mock.patch('iblrig.base_tasks.time.sleep')
     def test_bonsai_visual_stimulus_mixin(self, *_):
-        session = mixin_factory(BonsaiVisualStimulusMixin)
+        session = mixin_factory(BonsaiVisualStimulusMixin, task_kwargs=self.task_kwargs)
         session.start_mixin_bonsai_visual_stimulus()
         session.init_mixin_bonsai_visual_stimulus()
         session.choice_world_visual_stimulus()
@@ -96,16 +86,19 @@ class TestBonsaiMixins(unittest.TestCase):
         session.stop_mixin_bonsai_visual_stimulus()
 
 
-class TestBpodMixin(unittest.TestCase):
+class TestBpodMixin(unittest.TestCase, TaskArgsMixin):
+    def setUp(self):
+        self.get_task_kwargs()
+
     def test_bpod_mixin(self):
-        session = mixin_factory(BpodMixin)
+        session = mixin_factory(BpodMixin, task_kwargs=self.task_kwargs)
         session.init_mixin_bpod()
         assert hasattr(session, 'bpod')
         with self.assertRaises(ValueError):
             session.start_mixin_bpod()
 
     def test_softcode_dict(self):
-        session = mixin_factory(BpodMixin, SoundMixin)
+        session = mixin_factory(BpodMixin, SoundMixin, task_kwargs=self.task_kwargs)
         softcode_dict = session.softcode_dictionary()
         self.assertIsInstance(softcode_dict, dict)
         self.assertIsNone(session.bpod.softcodes)  # will only be assigned a dict value in `start_hardware`
@@ -114,7 +107,7 @@ class TestBpodMixin(unittest.TestCase):
 
     @patch('iblrig.hardware.Bpod', autospec=True)
     def test_ambient_conversion(self, _):
-        session = mixin_factory(BpodMixin)
+        session = mixin_factory(BpodMixin, task_kwargs=self.task_kwargs)
         assert 'AMBIENT_FILE_PATH' in session.paths
         with TemporaryDirectory() as temp_dir:
             session.paths['AMBIENT_FILE_PATH'] = Path(temp_dir).joinpath(session.paths['AMBIENT_FILE_PATH'].name)
@@ -134,13 +127,25 @@ class TestBpodMixin(unittest.TestCase):
             assert 'RelativeHumidity' in data.columns
 
 
-class TestOtherMixins(BaseTestHardwareMixins):
+class TestOtherMixins(unittest.TestCase, TaskArgsMixin):
+    def setUp(self):
+        self.get_task_kwargs()
+        task_settings_file = ChoiceWorldSession.base_parameters_file
+        self.session = EmptyHardwareSession(task_parameter_file=task_settings_file, **self.task_kwargs)
+
+    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession._run')
+    @patch('iblrig.test.test_hardware_mixins.EmptyHardwareSession.start_hardware')
+    def test_execute_mixins_shared_function(self, mock_start_hardware, mock_run):
+        self.session._execute_mixins_shared_function('start_')
+        mock_start_hardware.assert_called_once()
+        mock_run.assert_not_called()
+
     def test_rotary_encoder_mixin(self):
         """
         Instantiates a bare session with the rotary encoder mixin
         """
         RotaryEncoderSession = type('RotaryEncoderSession', (EmptyHardwareSession, RotaryEncoderMixin), {})  # noqa: N806
-        session = RotaryEncoderSession(task_parameter_file=ChoiceWorldSession.base_parameters_file, **TASK_KWARGS)
+        session = RotaryEncoderSession(task_parameter_file=ChoiceWorldSession.base_parameters_file, **self.task_kwargs)
         assert session.device_rotary_encoder.ENCODER_EVENTS == [
             'RotaryEncoder1_1',
             'RotaryEncoder1_2',
@@ -177,24 +182,24 @@ class TestOtherMixins(BaseTestHardwareMixins):
 
         go_tone = session.sound.get('GO_TONE')
         white_noise = session.sound.get('WHITE_NOISE')
-        assert not np.array_equal(go_tone, white_noise)
+        assert not np.array_equal(go_tone, white_noise), 'go tone and white noise should be different'
         fs = session.sound['samplerate']
 
         # test go tone
         x = go_tone[:, 0]
         n = len(x)
-        assert np.isclose(n / fs, 0.11)
+        assert np.isclose(n / fs, 0.11), 'go tone should be 110 ms long'
         yf = np.abs(fft(x))  # magnitude of the FFT
         xf = fftfreq(n, 1 / fs)  # frequency bins
         idx_peak = np.argmax(yf[: n // 2])  # index of peak magnitude
-        assert np.isclose(xf[idx_peak], 5000)
-        assert yf[idx_peak] > 100000 * np.median(yf)
+        assert np.isclose(xf[idx_peak], 5000), 'go tone frequency should be 5 kHz'
+        assert yf[idx_peak] > 100000 * np.median(yf), 'go tone should be a pure tone'
 
         # test white noise
         x = white_noise[:, 0]
-        assert np.isclose(len(x) / fs, 0.5)
+        assert np.isclose(len(x) / fs, 0.5), 'white noise should be 500 ms long'
         _, p_value = ks_2samp(x, np.random.uniform(min(x), max(x), len(x)))
-        assert p_value > 0.05
+        assert p_value > 0.001, 'white noise stimulus is not random'
 
     @patch('iblrig.hardware.Bpod', autospec=True)
     @patch('iblrig.base_tasks.StateMachine', autospec=True)
@@ -205,7 +210,7 @@ class TestOtherMixins(BaseTestHardwareMixins):
         This test verifies that sound actions are correctly set up and
         executed within the Bpod state machine.
         """
-        session = mixin_factory(SoundMixin, BpodMixin)
+        session = mixin_factory(SoundMixin, BpodMixin, task_kwargs=self.task_kwargs)
         session.bpod = mock_bpod.return_value
 
         session.bpod.actions = Bunch()

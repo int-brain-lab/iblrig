@@ -162,7 +162,7 @@ def alyx_reachable() -> bool:
     bool
         True if Alyx can be connected to, False otherwise.
     """
-    settings: RigSettings = load_pydantic_yaml(RigSettings)
+    settings = load_pydantic_yaml(RigSettings)
     if settings.ALYX_URL is not None:
         return internet_available(host=settings.ALYX_URL.host, port=443, timeout=1, force_update=True)
     return False

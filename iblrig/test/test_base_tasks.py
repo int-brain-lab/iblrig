@@ -60,7 +60,7 @@ class TestExtractorTypes(BaseTestCases.CommonTestTask):
     """
 
     def test_overriden_extractor_types(self):
-        self.get_task_kwargs(tmpdir=False)
+        self.get_task_kwargs()
         sess = EmptyHardwareSession(**self.task_kwargs)
         self.assertEqual(sess.experiment_description['tasks'][0][sess.protocol_name]['extractors'], ['Tutu', 'Tata'])
 

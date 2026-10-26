@@ -24,9 +24,10 @@ device_screen:
   SCREEN_LUX_DATE: null  # optional
   SCREEN_LUX_VALUE: null  # optional
 device_sound:
-  OUTPUT: sysdefault  # harp, hifi, xonar or sysdefault
+  OUTPUT: sysdefault  # harp, hifi, xonar, or sysdefault
   COM_SOUND: null
   AMP_TYPE: null  # harp or AMP2X15
+  DEFAULT_CHANNELS: stereo  # stereo, left, or right
 device_microphone:
   BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai
 device_valve:

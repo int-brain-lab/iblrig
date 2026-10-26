@@ -392,16 +392,23 @@ class RotaryEncoderModule(PybpodRotaryEncoderModule):
         self.close()
 
 
-def sound_device_factory(output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] = 'sysdefault', samplerate: int | None = None):
+def sound_device_factory(
+    output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] = 'sysdefault',
+    samplerate: int | None = None,
+    channel_config: Literal['stereo', 'left', 'right'] = 'stereo',
+):
     """
     Will import, configure, and return sounddevice module to play sounds using onboard sound card.
 
     Parameters
     ----------
-    output
-        defaults to "sysdefault", should be 'xonar' or 'harp'
-    samplerate
-        audio sample rate, defaults to 44100
+    output : str
+        Defaults to "sysdefault", should be 'xonar', 'harp' or 'hifi'.
+    samplerate : int, optional
+        Sample rate override, defaults to None.
+    channel_config : str, optional
+        Preferred channel configuration, defaults to 'stereo'.
+        Will be ignored for 'xonar' output.
     """
     match output:
         case 'xonar':
@@ -416,16 +423,16 @@ def sound_device_factory(output: Literal['xonar', 'harp', 'hifi', 'sysdefault'] 
             samplerate = samplerate if samplerate is not None else 96000
             sd.default.samplerate = samplerate
             sd.default.channels = 2
-            channels = 'stereo'
+            channels = channel_config
         case 'hifi':
             samplerate = samplerate if samplerate is not None else 192000
-            channels = 'stereo'
+            channels = channel_config
         case 'sysdefault':
             samplerate = samplerate if samplerate is not None else 44100
             sd.default.latency = 'low'
             sd.default.channels = 2
             sd.default.samplerate = samplerate
-            channels = 'stereo'
+            channels = channel_config
         case _:
             raise ValueError()
     return sd, samplerate, channels

@@ -11,9 +11,6 @@ requires-python = "==3.10.*"
 license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
-    # WARNING: DEPENDENCIES ARE MANAGED THROUGH PDM.
-    # Please refer to https://pdm-project.org/en/latest/usage/dependency/ for details.
-    #
     # IBL packages
     "iblatlas>=1.0.0",
     "ibllib>=3.4.3",
@@ -22,7 +19,7 @@ dependencies = [
     "iblqt>=0.8.2",
     "ONE-api>=3.5.2",
     "tycmd-wrapper>=0.2.1",
-    "ibl-photometry==0.1.1",
+    "ibl-photometry>=0.1.2",
     #
     # Everything else
     "annotated-types>=0.7.0",
@@ -72,6 +69,7 @@ start_photometry_task   = 'iblrig.neurophotometrics:initialize_subject_cli'
 convert_uis             = "iblrig.gui.tools:convert_uis"
 validate_iblrig         = "iblrig.hardware_validation:run_all_validators_cli"
 validate_video          = "iblrig.video:validate_video_cmd"
+neuropixel_coordinates  = "iblrig.gui.ui_micromanipulator:main"
 
 
 [tool.pdm.version]
@@ -112,6 +110,7 @@ typing = [
     "types-requests>=2.32.4.20250611",
     "types-python-dateutil>=2.9.0.20250516",
     "types-pyserial>=3.5.0.20250326",
+    "pandas-stubs>=2.3.3.260113",
 ]
 ci = [
     "pytest-github-actions-annotate-failures>=0.3.0",
