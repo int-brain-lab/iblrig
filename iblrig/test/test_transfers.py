@@ -23,7 +23,14 @@ from ibllib.tests.fixtures.utils import populate_raw_spikeglx
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
 from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import (
+    BehaviorCopier,
+    CopyState,
+    EphysCopier,
+    NeurophotometricsCopier,
+    SessionCopier,
+    VideoCopier,
+)
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 logger = logging.getLogger(__name__)
@@ -480,6 +487,19 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         with self.assertLogs('iblrig.transfer_experiments', 'ERROR') as lg:
             self.assertFalse(sc.copy_snapshots())
         self.assertTrue(lg.output[-1].endswith('_old/snapshot_00.jpeg'))
+
+
+class TestInitializeExperiment(unittest.TestCase):
+    def test_deprecated_acquisition_description(self):
+        """Test that the deprecated `acquisition_description` keyword warns and is written as experiment description."""
+        description = {'devices': {'cameras': {'left': {'collection': 'raw_video_data'}}}, 'version': '1.0.0'}
+        copier_kwargs = {SessionCopier: {}, VideoCopier: {}, EphysCopier: {'nprobes': 0}, NeurophotometricsCopier: {}}
+        for copier_class, kwargs in copier_kwargs.items():
+            with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
+                copier = copier_class(session_path=temp_dir)
+                with self.assertWarns(DeprecationWarning):
+                    copier.initialize_experiment(acquisition_description=description, **kwargs)
+                self.assertEqual(description, session_params.read_params(copier.file_experiment_description))
 
 
 class TestBuildGlobPattern(unittest.TestCase):

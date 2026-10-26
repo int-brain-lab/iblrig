@@ -6,6 +6,7 @@ import shutil
 import socket
 import traceback
 import uuid
+import warnings
 from datetime import datetime, timedelta
 from enum import IntEnum
 from os.path import samestat
@@ -340,21 +341,36 @@ class SessionCopier:
                 self.session_path.joinpath('transfer_me.flag').unlink()
         return status
 
-    def initialize_experiment(self, acquisition_description=None, overwrite=True):
+    def initialize_experiment(
+        self,
+        experiment_description: dict | None = None,
+        overwrite: bool = True,
+        *,
+        acquisition_description: dict | None = None,
+    ) -> None:
         """
-        Copy acquisition description yaml to the server and local transfers folder.
+        Copy experiment description yaml to the server and local transfers folder.
 
         Parameters
         ----------
-        acquisition_description : dict
+        experiment_description : dict
             The data to write to the experiment.description.yaml file.
         overwrite : bool
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
+        acquisition_description : dict
+            Deprecated, use `experiment_description` instead.
         """
-        if acquisition_description is None:
-            acquisition_description = self.experiment_description
+        if acquisition_description is not None:
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if experiment_description is None:
+            experiment_description = self.experiment_description
 
-        assert acquisition_description
+        assert experiment_description
 
         # First attempt to add the remote description stub to the _device folder on the remote session
         if not self.remote_subjects_folder:
@@ -365,7 +381,7 @@ class SessionCopier:
                 session_params.read_params(remote_stub_file) if remote_stub_file.exists() and not overwrite else {}
             )
             try:
-                merged_description = session_params.merge_params(previous_description, acquisition_description)
+                merged_description = session_params.merge_params(previous_description, experiment_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
                 for f in remote_stub_file.parent.glob(remote_stub_file.stem + '.status_*'):
                     f.unlink()
@@ -383,7 +399,7 @@ class SessionCopier:
             else {}
         )
         session_params.write_yaml(
-            self.file_experiment_description, session_params.merge_params(previous_description, acquisition_description)
+            self.file_experiment_description, session_params.merge_params(previous_description, experiment_description)
         )
         log.info(f'Written data to local session at : {self.file_experiment_description}.')
 
@@ -423,13 +439,13 @@ class VideoCopier(SessionCopier):
     assert_connect_on_init = True
 
     def create_video_stub(self, config, collection='raw_video_data'):
-        acquisition_description = self.config2stub(config, collection)
-        session_params.write_params(self.session_path, acquisition_description)
+        experiment_description = self.config2stub(config, collection)
+        session_params.write_params(self.session_path, experiment_description)
 
     @staticmethod
     def config2stub(config: dict, collection: str = 'raw_video_data') -> dict:
         """
-        Generate acquisition description stub from a camera config dict.
+        Generate experiment description stub from a camera config dict.
 
         Parameters
         ----------
@@ -441,23 +457,31 @@ class VideoCopier(SessionCopier):
         Returns
         -------
         dict
-            An acquisition description file stub.
+            An experiment description file stub.
         """
         cameras = {}
         for label, settings in filter(lambda itms: itms[0] != 'BONSAI_WORKFLOW', config.items()):
             settings_mod = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
             cameras[label] = dict(collection=collection, **settings_mod)
-        acq_desc = {'devices': {'cameras': cameras}, 'version': '1.0.0'}
-        return acq_desc
+        return {'devices': {'cameras': cameras}, 'version': '1.0.0'}
 
-    def initialize_experiment(self, acquisition_description=None, **kwargs):
-        if not acquisition_description:
-            # creates the acquisition description stub if not found, and then read it
+    def initialize_experiment(
+        self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
+    ) -> None:
+        if acquisition_description is not None:
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if not experiment_description:
+            # creates the experiment description stub if not found, and then read it
             if not self.file_experiment_description.exists():
                 raise FileNotFoundError(self.file_experiment_description)
-            acquisition_description = session_params.read_params(self.file_experiment_description)
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+            experiment_description = session_params.read_params(self.file_experiment_description)
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
@@ -564,22 +588,37 @@ class EphysCopier(SessionCopier):
     tag = 'ephys'
     assert_connect_on_init = True
 
-    def initialize_experiment(self, acquisition_description=None, nprobes=None, main_sync=True, **kwargs):
-        if not acquisition_description:
-            acquisition_description = {'devices': {'neuropixel': {}}}
-            neuropixel = acquisition_description['devices']['neuropixel']
+    def initialize_experiment(
+        self,
+        experiment_description: dict | None = None,
+        nprobes: int | None = None,
+        main_sync: bool = True,
+        *,
+        acquisition_description: dict | None = None,
+        **kwargs,
+    ) -> None:
+        if acquisition_description is not None:
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if not experiment_description:
+            experiment_description = {'devices': {'neuropixel': {}}}
+            neuropixel = experiment_description['devices']['neuropixel']
             if nprobes is None:
                 nprobes = len(list(self.session_path.glob('**/*.ap.bin')))
             for n in range(nprobes):
                 name = f'probe{n:02}'
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'sync', 'nidq.yaml')
-            acquisition_description = acquisition_description if neuropixel else {}
+            experiment_description = experiment_description if neuropixel else {}
             if main_sync:
-                acquisition_description.update(session_params.read_params(sync_file))
+                experiment_description.update(session_params.read_params(sync_file))
 
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
         # once the session folders have been initialized, create the probe folders
         (ephys_path := self.session_path.joinpath('raw_ephys_data')).mkdir(exist_ok=True)
         for n in range(nprobes):
@@ -619,10 +658,19 @@ class NeurophotometricsCopier(SessionCopier):
         if self.file_experiment_description.exists() and self.experiment_description is None:
             self._experiment_description = session_params.read_params(self.file_experiment_description)
 
-    def initialize_experiment(self, acquisition_description=None, **kwargs):
-        assert acquisition_description is not None, 'No acquisition description provided'
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+    def initialize_experiment(
+        self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
+    ) -> None:
+        if acquisition_description is not None:
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        assert experiment_description is not None, 'No experiment description provided'
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
         self.session_path.joinpath('transfer_me.flag').touch()
 
     def _copy_collections(self) -> bool:

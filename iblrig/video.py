@@ -439,7 +439,7 @@ class CameraSession(EmptySession):
         # Save the stub files locally and in the remote repo for future copy script to use
         assert self.status is net.base.ExpStatus.INITIALIZED
         self.paths['SESSION_RAW_DATA_FOLDER'].mkdir(parents=True, exist_ok=True)
-        self.copier.initialize_experiment(acquisition_description=self.experiment_description)
+        self.copier.initialize_experiment(experiment_description=self.experiment_description)
         video_pyspin.enable_camera_trigger(enable=False)
         self._status = net.base.ExpStatus.RUNNING
         self.logger.info('To terminate video acquisition, please stop and close Bonsai workflow.')

@@ -11,7 +11,7 @@ from iblrig.path_helper import _load_settings_yaml
 
 class TestExperimentDescription(unittest.TestCase):
     def test_neurophotometrics_description(self):
-        # tests the generation of the acquisition description
+        # tests the generation of the experiment description
         dt = datetime.datetime.fromisoformat('2024-10-11T11:11:00')
 
         # for bpod based sync
