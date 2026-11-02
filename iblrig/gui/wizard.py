@@ -145,10 +145,8 @@ class RigWizardModel:
     file_hardware_settings: Path | str | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(
-            HardwareSettings, filename=self.file_hardware_settings, do_raise=True
-        )
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, filename=self.file_hardware_settings, do_raise=True)
 
         self.free_reward_time = Valve(self.hardware_settings.device_valve).free_reward_time_sec
 

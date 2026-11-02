@@ -3,6 +3,7 @@ import asyncio
 import contextlib
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -216,9 +217,9 @@ def validate_video_cmd():
     parser.add_argument('camera_name', help='name of the camera (default: left)', nargs='?', default='left', type=str)
     args = parser.parse_args()
 
-    hwsettings: HardwareSettings = load_pydantic_yaml(HardwareSettings)
+    hw_settings = load_pydantic_yaml(HardwareSettings)
     file_path = Path(args.video_path)
-    configuration = hwsettings.device_cameras.get(args.configuration, None)
+    configuration = hw_settings.device_cameras.get(args.configuration, None)
     camera = configuration.get(args.camera_name, None) if configuration is not None else None
 
     if not file_path.exists():
@@ -401,7 +402,7 @@ class CameraSession(EmptySession):
                 new_file = self.paths['SESSION_RAW_DATA_FOLDER'].joinpath('_ibl_log.info-acquisition.log')
                 new_file.parent.mkdir(parents=True, exist_ok=True)
                 self.logger.debug('Moving log file: %s -> %s', file_handler.baseFilename, new_file)
-                Path(file_handler.baseFilename).replace(new_file)
+                shutil.move(file_handler.baseFilename, new_file)
 
     @property
     def cameras(self):
@@ -438,7 +439,7 @@ class CameraSession(EmptySession):
         # Save the stub files locally and in the remote repo for future copy script to use
         assert self.status is net.base.ExpStatus.INITIALIZED
         self.paths['SESSION_RAW_DATA_FOLDER'].mkdir(parents=True, exist_ok=True)
-        self.copier.initialize_experiment(acquisition_description=self.experiment_description)
+        self.copier.initialize_experiment(experiment_description=self.experiment_description)
         video_pyspin.enable_camera_trigger(enable=False)
         self._status = net.base.ExpStatus.RUNNING
         self.logger.info('To terminate video acquisition, please stop and close Bonsai workflow.')

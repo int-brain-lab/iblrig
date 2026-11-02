@@ -1,12 +1,13 @@
 import argparse
-import string
 
 import numpy as np
 
-from iblatlas import atlas
+import iblatlas.atlas
+from ibllib.ephys.spikes import create_insertion
 from iblrig.base_tasks import EmptySession
 from iblrig.transfer_experiments import EphysCopier
 from iblutil.util import setup_logger
+from one.webclient import no_cache as no_cache_context
 
 
 def prepare_ephys_session_cmd():
@@ -37,40 +38,146 @@ def prepare_ephys_session(subject_name: str, nprobes: int = 2):
     copier.initialize_experiment(nprobes=nprobes)
 
 
-def neuropixel24_micromanipulator_coordinates(ref_shank, pname, ba=None, shank_spacings_um=(0, 200, 400, 600)):
+def neuropixel24_micromanipulator_coordinates(
+    ref_shank: dict,
+    pname: str,
+    ba: iblatlas.atlas.BrainAtlas | None = None,
+    shank_spacings_um: tuple[float, ...] = (0, 250, 500, 750),
+) -> dict[str, dict]:
     """
-    Provide the micro-manipulator coordinates of the first shank.
+    Calculate micro-manipulator coordinates for all shanks of a Neuropixel 2.4 probe based on a reference shank.
 
-    This function returns the relative coordinates of all shanks, labeled as probe01a, probe01b, etc.
+    This function computes the spatial coordinates for each shank of a multi-shank Neuropixel 2.4 probe
+    relative to a reference shank. It accounts for the physical spacing between shanks and calculates
+    the brain entry points and depths for each shank using a brain atlas. The shanks are labeled with
+    letters (a, b, c, d) appended to the probe name.
 
-    :param ref_shank: dictionary with keys x, y, z, phi, theta, depth, roll
-    example: {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 0 + 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
-    :param pname: str
-    :param ba: brain atlas object
-    :param shank_spacings_um: list of shank spacings in micrometers
-    :return:
+    Parameters
+    ----------
+    ref_shank : dict
+        Dictionary containing the reference shank coordinates with the following keys:
+        - 'x' : float
+            Lateral position in micrometers
+        - 'y' : float
+            Anterior-posterior position in micrometers
+        - 'z' : float
+            Dorsal-ventral position in micrometers
+        - 'phi' : float
+            Azimuth angle in degrees (rotation around z-axis)
+        - 'theta' : float
+            Polar angle in degrees (tilt from vertical)
+        - 'depth' : float
+            Insertion depth in micrometers
+        - 'roll' : float
+            Roll angle in degrees
+        Example: {'x': 2594.2, 'y': -3123.7, 'z': -711, 'phi': 15, 'theta': 15, 'depth': 1250.4, 'roll': 0}
+    pname : str
+        Base name for the probe (e.g., 'probe01'). Shank letters will be appended to this name in multi-shanks situations
+    ba : atlas.BrainAtlas, optional
+        Brain atlas object used for coordinate transformations and brain entry calculations.
+        If None, a iblatlas.atlas.BrainAtlas instance will be created. Default is None.
+    shank_spacings_um : tuple of float, optional
+        Spacing distances in micrometers for each shank relative to the reference shank.
+        Default is (0, 250, 500, 750) for a 4-shank probe.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping shank names to their coordinate dictionaries. Each key is a string
+        combining the probe name with a shank letter (e.g., 'probe01a', 'probe01b'). Each value
+        is a dictionary containing the calculated coordinates with keys: 'x', 'y', 'z', 'phi',
+        'theta', 'depth', and 'roll'.
     """
-    # this only works if the roll is 0, ie. the probe is facing upwards
-    assert ref_shank['roll'] == 0
-    ba = atlas.NeedlesAtlas() if ba is None else ba
+    shank_order = 'abcd'
+
+    ba = iblatlas.atlas.NeedlesAtlas() if ba is None else ba
     trajectories = {}
+
     for i, d in enumerate(shank_spacings_um):
-        x = ref_shank['x'] + np.sin(ref_shank['phi'] / 180 * np.pi) * d
-        y = ref_shank['y'] - np.cos(ref_shank['phi'] / 180 * np.pi) * d
+        dx = np.sin((ref_shank['phi']) / 180 * np.pi) * d
+        dy = -np.cos((ref_shank['phi']) / 180 * np.pi) * d
+        # apply the roll transformation
+        dx, dy, dz = iblatlas.atlas.rodrigues_rotation(
+            v=np.array([dx, dy, 0]),  # vector to rotate
+            k=np.array(iblatlas.atlas.sph2cart(1, ref_shank['theta'], ref_shank['phi'])),  # rotation axis
+            theta=ref_shank['roll'] * np.pi / 180,
+        )
         shank = {
-            'x': x,
-            'y': y,
-            'z': np.nan,
+            'x': ref_shank['x'] + dx,
+            'y': ref_shank['y'] + dy,
+            'z': ref_shank['z'] + dz,
             'phi': ref_shank['phi'],
             'theta': ref_shank['theta'],
             'depth': ref_shank['depth'],
-            'roll': 0,
+            'roll': ref_shank['roll'],
         }
-        insertion = atlas.Insertion.from_dict(shank, brain_atlas=ba)
-        xyz_entry = atlas.Insertion.get_brain_entry(insertion.trajectory, ba)
+        insertion = iblatlas.atlas.Insertion.from_dict(shank, brain_atlas=ba)
+        xyz_entry = iblatlas.atlas.Insertion.get_brain_entry(insertion.trajectory, ba)
         if i == 0:
             xyz_ref = xyz_entry
         shank['z'] = xyz_entry[2] * 1e6
+        # right now we keep the original x, y coordinates
+        # shank['x'] = xyz_entry[0] * 1e6
+        # shank['y'] = xyz_entry[1] * 1e6
         shank['depth'] = ref_shank['depth'] + (xyz_entry[2] - xyz_ref[2]) * 1e6
-        trajectories[f'{pname}{string.ascii_lowercase[i]}'] = shank
+        trajectories[f'{pname}{shank_order[i]}'] = shank
     return trajectories
+
+
+def register_micromanipulator_coordinates(
+    alyx, eid: str, trajectories: dict[str, dict] | None = None, metadata: dict | None = None
+) -> tuple[dict[str, dict], dict[str, dict]]:
+    """
+    Register micro-manipulator coordinates for probe trajectories in the Alyx database.
+
+    This function creates or updates probe insertion and trajectory records in Alyx based on
+    micro-manipulator coordinates. For each probe trajectory, it creates a probe insertion
+    record and associates it with a trajectory record containing the spatial coordinates.
+    If a trajectory already exists for a given probe insertion, it updates the existing record;
+    otherwise, it creates a new one.
+
+    Parameters
+    ----------
+    alyx : one.webclient.AlyxClient
+        An authenticated Alyx client instance used to communicate with the Alyx REST API.
+    eid : str
+        Experiment ID (session UUID) to which the probe insertions belong.
+    trajectories : dict of str to dict, optional
+        Dictionary mapping probe names to their trajectory coordinate dictionaries.
+        Each trajectory dictionary should contain keys such as 'x', 'y', 'z', 'phi',
+        'theta', 'depth', and 'roll'. If None, an empty dictionary is used. Default is None.
+    metadata : dict, optional
+        Metadata dictionary for the probe insertion containing information such as
+        'neuropixelVersion', 'fileName', and 'serial'. If None, defaults to
+        {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1}. Default is None.
+
+    Returns
+    -------
+    tuple of (dict, dict)
+        A tuple containing two dictionaries:
+        - rest_insertions : dict
+            Dictionary mapping probe names to their created probe insertion records from Alyx.
+        - rest_trajectories : dict
+            Dictionary mapping probe names to their created or updated trajectory records from Alyx.
+    """
+    # if we do not have access to the fileName or any of the metadata, it will be patched later
+    metadata = {'neuropixelVersion': 'NP2.4', 'fileName': None, 'serial': -1} if metadata is None else metadata
+    rest_trajectories = {}
+    rest_insertions = {}
+    with no_cache_context(alyx):
+        traj_extra = {}
+        for pname, traj in trajectories.items():
+            _, rest_insertions[pname] = create_insertion(alyx, metadata, pname, eid=eid)
+            pid = rest_insertions[pname]['id']
+            traj_extra['probe_insertion'] = pid
+            traj_extra['chronic_insertion'] = None
+            traj_extra['provenance'] = 'Micro-manipulator'
+            traj_extra['coordinate_system'] = 'Needles-Allen'
+            rest_trajectory = alyx.rest('trajectories', 'list', probe_insertion=pid, provenance='Micro-manipulator')
+            if len(rest_trajectory) == 0:
+                rest_trajectories[pname] = alyx.rest('trajectories', 'create', data=traj | traj_extra)
+            else:
+                rest_trajectories[pname] = alyx.rest(
+                    'trajectories', 'update', id=rest_trajectory[0]['id'], data=traj | traj_extra
+                )
+    return rest_insertions, rest_trajectories
