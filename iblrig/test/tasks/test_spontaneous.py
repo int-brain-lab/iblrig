@@ -14,6 +14,7 @@ class Spontaneous(IntegrationFullRuns):
         self.task.run()
         file_settings = self.task.paths.SESSION_RAW_DATA_FOLDER.joinpath('_iblrig_taskSettings.raw.json')
         self.read_and_assert_json_settings(file_settings)
+        assert self.task.paths.SESSION_FOLDER.joinpath('transfer_me.flag').exists(), 'transfer_me.flag not found'
 
 
 class SpontaneousBpod(IntegrationFullRuns):

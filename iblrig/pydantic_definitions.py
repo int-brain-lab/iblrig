@@ -12,6 +12,7 @@ from pydantic import (
     DirectoryPath,
     Field,
     FilePath,
+    NonNegativeInt,
     PlainSerializer,
     PositiveFloat,
     PositiveInt,
@@ -112,8 +113,9 @@ class HardwareSettingsRotaryEncoder(BunchModel):
 
 
 class HardwareSettingsScreen(BunchModel):
-    DISPLAY_IDX: int = Field(ge=0, le=1)  # -1 = Default, 0 = First, 1 = Second, 2 = Third, etc
-    SCREEN_FREQ_TARGET: int = Field(gt=0)
+    DISPLAY_IDX: NonNegativeInt
+    SCREEN_RESOLUTION: tuple[PositiveInt, PositiveInt] = (2048, 1536)
+    SCREEN_FREQ_TARGET: PositiveInt
     SCREEN_FREQ_TEST_DATE: date | None = None
     SCREEN_FREQ_TEST_STATUS: str | None = None
     SCREEN_LUX_DATE: date | None = None
@@ -124,6 +126,7 @@ class HardwareSettingsSound(BunchModel):
     OUTPUT: Literal['harp', 'xonar', 'hifi', 'sysdefault']
     COM_SOUND: str | None = None
     AMP_TYPE: Literal['harp', 'AMP2X15'] | None = None
+    DEFAULT_CHANNELS: Literal['stereo', 'left', 'right'] = 'stereo'
     # ATTENUATION_DB: float = Field(default=0, le=0)
 
 
@@ -170,6 +173,7 @@ class HardwareSettingsNeurophotometrics(BunchModel):
     BONSAI_WORKFLOW: Path = Path('devices', 'neurophotometrics', 'FP3002.bonsai')
     BONSAI_WORKFLOW_DAQ: Path = Path('devices', 'neurophotometrics', 'FP3002_daq.bonsai')
     COM_NEUROPHOTOMETRY: str | None = None
+    FRAMECLOCK_CHANNEL: str | None = None
 
 
 class HardwareSettingsCameraWorkflow(BunchModel):

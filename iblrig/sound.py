@@ -103,7 +103,7 @@ def make_sound(
     duration: float = 0.1,
     amplitude: float = 1,
     fade: float = 0.01,
-    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R'] = 'L+TTL',
+    chans: Literal['mono', 'L', 'R', 'stereo', 'L+TTL', 'TTL+R', 'left', 'right'] = 'L+TTL',
     gain_db: float = 0.0,
 ) -> np.ndarray:
     """
@@ -114,7 +114,7 @@ def make_sound(
     rate : int, optional
         Sampling rate in Hz. Default is 44100.
     frequency : float, optional
-        Frequency of the tone in Hz. If -1, generates white noise. Default is 5000.
+        Frequency of the tone in Hz. Negative values will result in white noise. Default is 5000.
     duration : float, optional
         Duration of the sound in seconds. Default is 0.1.
     amplitude : float, optional
@@ -138,7 +138,7 @@ def make_sound(
     np.ndarray
         The generated sound waveform, shape (samples,) for mono or (samples, 2) for stereo.
     """
-    if frequency == -1:
+    if frequency < 0:
         tone = amplitude * np.random.rand(int(rate * duration)) * (10 ** (gain_db / 20))
     else:
         tone = sine_stimulus(d=duration, f=frequency, fs=rate, amplitude=amplitude, d_fade=fade, gain_db=gain_db)
@@ -150,9 +150,9 @@ def make_sound(
     match chans:
         case 'mono':
             sound = tone
-        case 'L':
+        case chans if chans in ['L', 'left']:
             sound = np.column_stack((tone, null))
-        case 'R':
+        case chans if chans in ['R', 'right']:
             sound = np.column_stack((null, tone))
         case 'stereo':
             sound = np.column_stack((tone, tone))

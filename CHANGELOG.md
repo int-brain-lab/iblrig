@@ -1,16 +1,56 @@
 Changelog
 =========
 
-8.30.0
+UNRELEASED
+----------
+* added: Neuropixel coordinate registration tool for NP2.4
+* added: Online Plots are stored as PNG and added to Alyx as a Session Note
+* added: Parameter to define grouping variable for Online Plots
+* added: `FRAMECLOCK_CHANNEL` hardware setting for Neurophotometrics
+* changed: Refactored methods for creating sound waveforms
+* changed: Updated debiasing routine for readability (no functional changes)
+* changed: Refactoring of GUI code
+* changed: Refactoring of `path_helper` module
+* changed: renamed keyword `acquisition_description` to `experiment_description` in `initialize_experiment` of copier classes; the old keyword is deprecated and will be removed in a future release
+* changed: disentangle order of states in `HabituationChoiceWorldSession`
+* fixed: ITI durations in `ChoiceWorldSession` and `HabituationChoiceWorldSession`
+
+-------------------------------
+
+8.29.5
 ------
-* disentangle order of states in `HabituationChoiceWorldSession`
-* fix ITI durations in `ChoiceWorldSession` and `HabituationChoiceWorldSession`
+* added: trainingChoiceWorld_c0_CW and trainingPhaseChoiceWorld_c0_CW task variants that always reward zero-contrast trials after CW movements
+* fixed: unregistered sessions could not be transferred to the local lab server
+
+8.29.4
+------
+* fixed: zero-contrast trials in TrainingChoiceWorld and TrainingPhaseChoiceWorld were always rewarded on the left.
+* fixed: crashed sessions could not be transferred when they contained invalid timestamps.
+* fixed: removed upper bound from DISPLAY_IDX parameter
+
+8.29.3
+------
+* fixed: crash when trying to set Status LED on Bpods that don't support it
+
+8.29.2
+------
+* changed: allow free-form subject when Alyx URL is not set
+* fixed: new SCREEN_RESOLUTION setting for non-standard screens (fixes screen detection during Frame2TTL calibration)
+* fixed: buggy frame2ttl calibration for firmware version 4+
+* fixed: missing import in iblpybpod-no-gui
+
+8.29.1
+------
+* fixed: jitter in Gabor stimulus of passive task
+* fixed: passive & spontaneous tasks were failing to be transferred to the local lab server
 
 8.29.0
 ------
 * added: GUI settings for changing MAIN_SYNC
 * fixed: Stop/Pause button not always working for UDP sessions
 * changed: use UV for packaging
+
+-------------------------------
 
 8.28.2
 ------

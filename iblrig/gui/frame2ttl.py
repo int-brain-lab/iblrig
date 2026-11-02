@@ -38,7 +38,11 @@ class Frame2TTLCalibrationDialog(QtWidgets.QDialog, Ui_frame2ttl):
 
         # start calibration of light value (use timer to allow for drawing of target)
         self.uiLabelLightValue.setText('calibrating ...')
-        self.target = Frame2TTLCalibrationTarget(self, color=QtGui.QColorConstants.White)
+        self.target = Frame2TTLCalibrationTarget(
+            self,
+            color=QtGui.QColorConstants.White,
+            screen_resolution=hardware_settings.device_screen.SCREEN_RESOLUTION,
+        )
         QTimer.singleShot(self._waitForScreen, self._calibrateLight)
 
     def _calibrateLight(self):
@@ -75,6 +79,7 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
         parent: QWidget | None = None,
         color: QtGui.QColor = QtGui.QColorConstants.White,
         screen_index: int | None = None,
+        screen_resolution: tuple[int, int] = (2048, 1536),
         width: int | None = None,
         height: int | None = None,
         rel_pos_x: float = 1.33,
@@ -87,14 +92,14 @@ class Frame2TTLCalibrationTarget(QtWidgets.QDialog):
         if screen_index is None:
             for idx, screen in enumerate(QtWidgets.QApplication.screens()):
                 screen_index = idx
-                if screen.size().width() == 2048 and screen.size().height() == 1536:
+                if screen.size().width() == screen_resolution[0] and screen.size().height() == screen_resolution[1]:
                     break
             else:  # if no break statement occurred, i.e. no iPad screen was found
                 screen_index = 0
                 screen = QtWidgets.QApplication.screens()[0]
                 log.warning(
-                    f'Could not identify iPad screen (2048x1536) - defaulting to Screen {screen_index} '
-                    f'({screen.geometry().width()}x{screen.geometry().height()}).'
+                    f'Could not identify screen ({screen_resolution[0]}x{screen_resolution[1]}) - '
+                    f'defaulting to Screen {screen_index} ({screen.geometry().width()}x{screen.geometry().height()}).'
                 )
 
         # convert relative parameters (used in bonsai scripts) to width and height

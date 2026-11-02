@@ -628,7 +628,10 @@ class ValidatorFrame2TTL(ValidatorSerial):
             app = QApplication([])
 
         # show calibration target
-        calibration_target = Frame2TTLCalibrationTarget(color=QColorConstants.Black)
+        calibration_target = Frame2TTLCalibrationTarget(
+            color=QColorConstants.Black,
+            screen_resolution=self.hardware_settings.device_screen.SCREEN_RESOLUTION,
+        )
         sleep(0.1)  # allow for screen to update
 
         # Define state-machine

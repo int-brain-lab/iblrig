@@ -6,13 +6,15 @@ import shutil
 import socket
 import traceback
 import uuid
+import warnings
 from datetime import datetime, timedelta
 from enum import IntEnum
 from os.path import samestat
 from pathlib import Path
 
+import pandas as pd
+
 import ibllib.pipes.misc
-import iblphotometry.io as fpio
 import one.alf.path as alfiles
 from ibllib.io import raw_data_loaders, session_params
 from ibllib.pipes.misc import sleepless
@@ -172,7 +174,7 @@ class SessionCopier:
             self.initialize_experiment()
         if self.state == CopyState.NOT_REGISTERED:  # the session hasn't even been initialized: copy the stub to the remote
             log.info(f'{self.state}, {self.session_path}')
-            # self.initialize_experiment()
+            self.initialize_experiment()
         if self.state == CopyState.PENDING:  # the session is ready for copy
             log.info(f'{self.state}, {self.session_path}')
             self.copy_collections()
@@ -339,21 +341,43 @@ class SessionCopier:
                 self.session_path.joinpath('transfer_me.flag').unlink()
         return status
 
-    def initialize_experiment(self, acquisition_description=None, overwrite=True):
+    def initialize_experiment(
+        self,
+        experiment_description: dict | None = None,
+        overwrite: bool = True,
+        *,
+        acquisition_description: dict | None = None,
+    ) -> None:
         """
-        Copy acquisition description yaml to the server and local transfers folder.
+        Copy experiment description yaml to the server and local transfers folder.
 
         Parameters
         ----------
-        acquisition_description : dict
+        experiment_description : dict
             The data to write to the experiment.description.yaml file.
         overwrite : bool
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
-        """
-        if acquisition_description is None:
-            acquisition_description = self.experiment_description
+        acquisition_description : dict
+            Deprecated, use `experiment_description` instead.
 
-        assert acquisition_description
+        Raises
+        ------
+        TypeError
+            If both `experiment_description` and `acquisition_description` are passed.
+        """
+        if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                FutureWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if experiment_description is None:
+            experiment_description = self.experiment_description
+
+        assert experiment_description
 
         # First attempt to add the remote description stub to the _device folder on the remote session
         if not self.remote_subjects_folder:
@@ -364,7 +388,7 @@ class SessionCopier:
                 session_params.read_params(remote_stub_file) if remote_stub_file.exists() and not overwrite else {}
             )
             try:
-                merged_description = session_params.merge_params(previous_description, acquisition_description)
+                merged_description = session_params.merge_params(previous_description, experiment_description)
                 session_params.write_yaml(remote_stub_file, merged_description)
                 for f in remote_stub_file.parent.glob(remote_stub_file.stem + '.status_*'):
                     f.unlink()
@@ -382,7 +406,7 @@ class SessionCopier:
             else {}
         )
         session_params.write_yaml(
-            self.file_experiment_description, session_params.merge_params(previous_description, acquisition_description)
+            self.file_experiment_description, session_params.merge_params(previous_description, experiment_description)
         )
         log.info(f'Written data to local session at : {self.file_experiment_description}.')
 
@@ -422,13 +446,13 @@ class VideoCopier(SessionCopier):
     assert_connect_on_init = True
 
     def create_video_stub(self, config, collection='raw_video_data'):
-        acquisition_description = self.config2stub(config, collection)
-        session_params.write_params(self.session_path, acquisition_description)
+        experiment_description = self.config2stub(config, collection)
+        session_params.write_params(self.session_path, experiment_description)
 
     @staticmethod
     def config2stub(config: dict, collection: str = 'raw_video_data') -> dict:
         """
-        Generate acquisition description stub from a camera config dict.
+        Generate experiment description stub from a camera config dict.
 
         Parameters
         ----------
@@ -440,23 +464,33 @@ class VideoCopier(SessionCopier):
         Returns
         -------
         dict
-            An acquisition description file stub.
+            An experiment description file stub.
         """
         cameras = {}
         for label, settings in filter(lambda itms: itms[0] != 'BONSAI_WORKFLOW', config.items()):
             settings_mod = {k.lower(): v for k, v in settings.items() if v is not None and k != 'INDEX'}
             cameras[label] = dict(collection=collection, **settings_mod)
-        acq_desc = {'devices': {'cameras': cameras}, 'version': '1.0.0'}
-        return acq_desc
+        return {'devices': {'cameras': cameras}, 'version': '1.0.0'}
 
-    def initialize_experiment(self, acquisition_description=None, **kwargs):
-        if not acquisition_description:
-            # creates the acquisition description stub if not found, and then read it
+    def initialize_experiment(
+        self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
+    ) -> None:
+        if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                FutureWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if not experiment_description:
+            # creates the experiment description stub if not found, and then read it
             if not self.file_experiment_description.exists():
                 raise FileNotFoundError(self.file_experiment_description)
-            acquisition_description = session_params.read_params(self.file_experiment_description)
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+            experiment_description = session_params.read_params(self.file_experiment_description)
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
 
 
 class BehaviorCopier(SessionCopier):
@@ -508,6 +542,32 @@ class BehaviorCopier(SessionCopier):
                         shutil.rmtree(self.remote_session_path)  # remove likely dud
                     return False
                 trials, bpod_data = load_task_jsonable(jsonable)
+
+                # For unknown reasons, pybpod sometimes crashes, leaving the last trial with an invalid timestamp.
+                # We fix this by dropping the last trial from the jsonable.
+                try:
+                    trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                    datetime.today() + trial_duration  # this will trigger an OverflowError on invalid trial durations
+                except OverflowError:
+                    log.warning(f'Last trial of session has invalid time stamp - dropping trial from {jsonable.name} ...')
+                    jsonable_lines = jsonable.read_text().splitlines()
+                    jsonable_patched = jsonable.with_suffix('.patched')
+                    jsonable_patched.write_text('\n'.join(jsonable_lines[:-1]) + '\n')
+                    try:  # patching should be trivial, but let's make sure we don't botch the file by accident
+                        original_trials = trials.copy()
+                        original_bpod_data = bpod_data.copy()
+                        trials, bpod_data = load_task_jsonable(jsonable_patched)
+                        assert len(trials) == len(original_trials) - 1
+                        assert bpod_data == original_bpod_data[:-1]
+                    except Exception as e:  # abort! abort!
+                        jsonable_patched.unlink()
+                        log.error(f'Failed to patch {jsonable.name} - aborting', exc_info=e)
+                        return False
+                    else:  # all good - rename the original file and proceed with copy
+                        jsonable.rename(jsonable.with_suffix('.jsonable.original'))
+                        jsonable_patched.rename(jsonable)
+                        trial_duration = timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+
                 ntrials = trials.shape[0]
                 # We have the case where the session hard crashed.
                 # Patch the settings file to wrap the session and continue the copying.
@@ -519,8 +579,7 @@ class BehaviorCopier(SessionCopier):
                 raw_settings['NTRIALS_CORRECT'] = int(trials['trial_correct'].sum())
                 raw_settings['TOTAL_WATER_DELIVERED'] = int(trials['reward_amount'].sum())
                 # cast the timestamp in a datetime object and add the session length to it
-                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f')
-                end_time += timedelta(seconds=bpod_data[-1]['Trial end timestamp'])
+                end_time = datetime.strptime(raw_settings['SESSION_START_TIME'], '%Y-%m-%dT%H:%M:%S.%f') + trial_duration
                 raw_settings['SESSION_END_TIME'] = end_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
                 with open(settings_file, 'w') as fid:
                     json.dump(raw_settings, fid)
@@ -538,22 +597,39 @@ class EphysCopier(SessionCopier):
     tag = 'ephys'
     assert_connect_on_init = True
 
-    def initialize_experiment(self, acquisition_description=None, nprobes=None, main_sync=True, **kwargs):
-        if not acquisition_description:
-            acquisition_description = {'devices': {'neuropixel': {}}}
-            neuropixel = acquisition_description['devices']['neuropixel']
+    def initialize_experiment(
+        self,
+        experiment_description: dict | None = None,
+        nprobes: int | None = None,
+        main_sync: bool = True,
+        *,
+        acquisition_description: dict | None = None,
+        **kwargs,
+    ) -> None:
+        if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                FutureWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        if not experiment_description:
+            experiment_description = {'devices': {'neuropixel': {}}}
+            neuropixel = experiment_description['devices']['neuropixel']
             if nprobes is None:
                 nprobes = len(list(self.session_path.glob('**/*.ap.bin')))
             for n in range(nprobes):
                 name = f'probe{n:02}'
                 neuropixel[name] = {'collection': f'raw_ephys_data/{name}', 'sync_label': 'imec_sync'}
             sync_file = BASE_PATH.joinpath('iblrig', 'device_descriptions', 'sync', 'nidq.yaml')
-            acquisition_description = acquisition_description if neuropixel else {}
+            experiment_description = experiment_description if neuropixel else {}
             if main_sync:
-                acquisition_description.update(session_params.read_params(sync_file))
+                experiment_description.update(session_params.read_params(sync_file))
 
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
         # once the session folders have been initialized, create the probe folders
         (ephys_path := self.session_path.joinpath('raw_ephys_data')).mkdir(exist_ok=True)
         for n in range(nprobes):
@@ -593,10 +669,21 @@ class NeurophotometricsCopier(SessionCopier):
         if self.file_experiment_description.exists() and self.experiment_description is None:
             self._experiment_description = session_params.read_params(self.file_experiment_description)
 
-    def initialize_experiment(self, acquisition_description=None, **kwargs):
-        assert acquisition_description is not None, 'No acquisition description provided'
-        self._experiment_description = acquisition_description
-        super().initialize_experiment(acquisition_description=acquisition_description, **kwargs)
+    def initialize_experiment(
+        self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
+    ) -> None:
+        if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
+            warnings.warn(
+                '`acquisition_description` is deprecated, use `experiment_description` instead',
+                FutureWarning,
+                stacklevel=2,
+            )
+            experiment_description = acquisition_description
+        assert experiment_description is not None, 'No experiment description provided'
+        self._experiment_description = experiment_description
+        super().initialize_experiment(experiment_description=experiment_description, **kwargs)
         self.session_path.joinpath('transfer_me.flag').touch()
 
     def _copy_collections(self) -> bool:
@@ -637,8 +724,8 @@ class NeurophotometricsCopier(SessionCopier):
             case 'bpod':
                 # copy the digital inputs file
                 csv_digital_inputs = neurophotometrics_session_path.joinpath('digital_inputs.csv')
-                digital_inputs_df = fpio.read_digital_inputs_csv(csv_digital_inputs, validate=True)
-                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt'))
+                digital_inputs_df = pd.read_csv(csv_digital_inputs)
+                digital_inputs_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt'))
             case 'daqami':
                 # find the daqami files that correspond to the current acquisition
                 session_date = subject_ini_time.date().strftime('%Y-%m-%d')
@@ -680,15 +767,8 @@ class NeurophotometricsCopier(SessionCopier):
                 remote_sync_path.mkdir(exist_ok=True, parents=True)
                 shutil.copy(daqami_file, remote_sync_path.joinpath('_mcc_DAQdata.raw.tdms'))
 
-            # digital outputs file
-            # csv_digital_outputs = neurophotometrics_session_folder / 'digital_outputs.csv'
-            # digital_outputs_df = fpio.read_digital_outputs_csv(csv_digital_outputs, validate=True)
-            # digital_outputs_df.to_parquet(remote_photometry_path / '_neurophotometrics_fpData.digitalOutputs.pqt')
-
-        # explicitly with the data from the experiment description file
-        raw_photometry_df = fpio.from_raw_neurophotometrics_file_to_raw_df(csv_raw_photometry, validate=False)
-        cols = neurophotometrics_description['fibers'].keys()
-        raw_photometry_df = fpio.validate_neurophotometrics_df(raw_photometry_df, data_columns=cols)
+        # read neurophotometrics file
+        raw_photometry_df = pd.read_csv(csv_raw_photometry)
         raw_photometry_df.to_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
 
         # TODO why are we explicitly copying this file?

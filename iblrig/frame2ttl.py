@@ -179,7 +179,8 @@ class Frame2TTL(SerialSingleton):
                         success = False
                 self._calibrate_light = None
         else:
-            value = self.query(query='L' if condition == 'light' else 'D', data_specifier='<h')[0]
+            format_str = '<h' if self.fw_version <= 3 else '<i'
+            value = self.query(query='L' if condition == 'light' else 'D', data_specifier=format_str)[0]
             # TODO: check if readings are sufficiently different
 
         log.debug(f'Suggested value for {condition} threshold: {value}{self.unit_str}')

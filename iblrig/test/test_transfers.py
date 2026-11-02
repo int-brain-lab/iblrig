@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import random
 import tempfile
@@ -17,11 +18,19 @@ import iblrig.neurophotometrics
 import iblrig.path_helper
 import iblrig.raw_data_loaders
 from ibllib.io import session_params
+from ibllib.io.raw_data_loaders import load_settings
 from ibllib.tests.fixtures.utils import populate_raw_spikeglx
-from iblphotometry.io import validate_neurophotometrics_df, validate_neurophotometrics_digital_inputs
 from iblrig.path_helper import HardwareSettings, load_pydantic_yaml
+from iblrig.raw_data_loaders import load_task_jsonable
 from iblrig.test.base import TASK_KWARGS
-from iblrig.transfer_experiments import BehaviorCopier, CopyState, EphysCopier, SessionCopier, VideoCopier
+from iblrig.transfer_experiments import (
+    BehaviorCopier,
+    CopyState,
+    EphysCopier,
+    NeurophotometricsCopier,
+    SessionCopier,
+    VideoCopier,
+)
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session
 
 logger = logging.getLogger(__name__)
@@ -98,16 +107,20 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
 
         # creating fake digital_inputs.csv
         cols_dtypes = dict(
-            ChannelName=str, Channel='int8', AlwaysTrue='bool', SystemTimestamp='float64', ComputerTimestamp='float64'
+            ChannelName=str,
+            Channel='int8',
+            AlwaysTrue='bool',
+            SystemTimestamp='float64',
+            ComputerTimestamp='float64',
         )
         cols = list(cols_dtypes.keys())
         digital_inputs_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             digital_inputs_df[col] = digital_inputs_df[col].astype(dtype)
 
-        digital_inputs_df = validate_neurophotometrics_digital_inputs(digital_inputs_df)
-        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv', index=False, header=False)
+        digital_inputs_df.to_csv(neurophotometrics_folder / 'digital_inputs.csv')
 
+        # creating fake photometry data file
         cols_dtypes = dict(
             FrameCounter='int64',
             SystemTimestamp='float64',
@@ -116,17 +129,13 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
             Region1G='float64',
             Region2G='float64',
         )
-
-        # creating fake photometry data file
         cols = list(cols_dtypes.keys())
         raw_photometry_df = pd.DataFrame(np.random.randn(10, len(cols)), columns=cols)
         for col, dtype in cols_dtypes.items():
             raw_photometry_df[col] = raw_photometry_df[col].astype(dtype)
 
-        raw_photometry_df = validate_neurophotometrics_df(raw_photometry_df)
         (neurophotometrics_folder / 'raw_photometry').mkdir(exist_ok=True)
         raw_photometry_df.to_csv(neurophotometrics_folder / 'raw_photometry' / 'raw_photometry.csv', index=False)
-
         logger.info('Created fake photometry data in %s', neurophotometrics_folder)
         return neurophotometrics_folder
 
@@ -157,15 +166,77 @@ class TestIntegrationTransferExperimentsPhotometry(TestIntegrationTransferExperi
         # check that the correct data was copied
         remote_photometry_path = copier.remote_session_path.joinpath('raw_photometry_data')
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.channels.csv').exists()
-        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalIntputs.pqt').exists()
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
         assert remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt').exists()
+        # check raw data
         data_raw_local = pd.read_csv(local_photometry_path.joinpath('raw_photometry', 'raw_photometry.csv'))
         data_raw_remote = pd.read_parquet(remote_photometry_path.joinpath('_neurophotometrics_fpData.raw.pqt'))
         pd.testing.assert_frame_equal(data_raw_local, data_raw_remote, check_dtype=False)
+        # check digital inputs data
+        assert remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt').exists()
+        data_digital_inputs_local = pd.read_csv(local_photometry_path.joinpath('digital_inputs.csv'))
+        data_digital_inputs_remote = pd.read_parquet(
+            remote_photometry_path.joinpath('_neurophotometrics_fpData.digitalInputs.pqt')
+        )
+        pd.testing.assert_frame_equal(data_digital_inputs_local, data_digital_inputs_remote, check_dtype=False)
 
 
 class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase):
     """This test emulates the `transfer_data` command as run on the rig."""
+
+    def _create_session_with_invalid_last_timestamp(self, ntrials=50):
+        """Helper: create a hard-crash session with an overflow timestamp on the last trial."""
+        session = _create_behavior_session(ntrials=ntrials, hard_crash=True, kwargs=self.session_kwargs)
+        jsonable_path = next(session.paths.SESSION_FOLDER.rglob('_iblrig_taskData.raw.jsonable'))
+        lines = jsonable_path.read_text().splitlines()
+        last = json.loads(lines[-1])
+        last['behavior_data']['Trial end timestamp'] = 1e308
+        lines[-1] = json.dumps(last)
+        jsonable_path.write_text('\n'.join(lines))
+        return session, jsonable_path, lines
+
+    def test_behavior_copy_invalid_last_timestamp(self):
+        """When pybpod crashes, the last trial may have an overflow timestamp. The copier should drop it and recover."""
+        ntrials = 50
+        session, jsonable_path, _ = self._create_session_with_invalid_last_timestamp(ntrials)
+        sc = BehaviorCopier(
+            session_path=session.paths.SESSION_FOLDER,
+            remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
+        )
+        self.assertTrue(sc.copy_collections())
+
+        # verify the patched settings reflect ntrials - 1
+        settings = load_settings(session.paths.SESSION_FOLDER, task_collection='raw_task_data_00')
+        self.assertEqual(settings['NTRIALS'], ntrials - 1)
+        # verify the jsonable was rewritten without the corrupted last trial
+        # the original (corrupted) file is kept as .jsonable.original; no stray .patched file should remain
+        self.assertTrue(jsonable_path.with_suffix('.jsonable.original').exists())
+        self.assertFalse(jsonable_path.with_suffix('.patched').exists())
+        trials_rewritten, bpod_rewritten = load_task_jsonable(jsonable_path)
+        self.assertEqual(len(trials_rewritten), ntrials - 1)
+        self.assertLess(bpod_rewritten[-1]['Trial end timestamp'], 1e308)
+
+    def test_behavior_copy_invalid_last_timestamp_patch_failure(self):
+        """If the patched jsonable fails verification the copy should abort, leaving the original file intact."""
+        ntrials = 50
+        session, jsonable_path, lines = self._create_session_with_invalid_last_timestamp(ntrials)
+        sc = BehaviorCopier(
+            session_path=session.paths.SESSION_FOLDER,
+            remote_subjects_folder=session.paths.REMOTE_SUBJECT_FOLDER,
+        )
+
+        def _fail_on_patched(path):
+            if str(path).endswith('.patched'):
+                raise RuntimeError('read failure')
+            return load_task_jsonable(path)
+
+        with mock.patch('iblrig.transfer_experiments.load_task_jsonable', side_effect=_fail_on_patched):
+            result = sc.copy_collections()
+        self.assertFalse(result)
+
+        # original jsonable must be untouched; no stray .patched file should remain
+        self.assertFalse(jsonable_path.with_suffix('.patched').exists())
+        self.assertEqual(jsonable_path.read_text(), '\n'.join(lines))
 
     def test_behavior_copy_complete_session(self):
         """
@@ -416,6 +487,31 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
         with self.assertLogs('iblrig.transfer_experiments', 'ERROR') as lg:
             self.assertFalse(sc.copy_snapshots())
         self.assertTrue(lg.output[-1].endswith('_old/snapshot_00.jpeg'))
+
+
+class TestInitializeExperiment(unittest.TestCase):
+    description = {'devices': {'cameras': {'left': {'collection': 'raw_video_data'}}}, 'version': '1.0.0'}
+    copier_kwargs = {SessionCopier: {}, VideoCopier: {}, EphysCopier: {'nprobes': 0}, NeurophotometricsCopier: {}}
+
+    def test_deprecated_acquisition_description(self):
+        """Test that the deprecated `acquisition_description` keyword warns and is written as experiment description."""
+        for copier_class, kwargs in self.copier_kwargs.items():
+            with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
+                copier = copier_class(session_path=temp_dir)
+                with self.assertWarns(FutureWarning):
+                    copier.initialize_experiment(acquisition_description=self.description, **kwargs)
+                self.assertEqual(self.description, session_params.read_params(copier.file_experiment_description))
+
+    def test_both_descriptions_raises(self):
+        """Test that passing both `acquisition_description` and `experiment_description` raises and writes nothing."""
+        for copier_class, kwargs in self.copier_kwargs.items():
+            with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
+                copier = copier_class(session_path=temp_dir)
+                with self.assertRaises(TypeError):
+                    copier.initialize_experiment(
+                        experiment_description=self.description, acquisition_description=self.description, **kwargs
+                    )
+                self.assertFalse(copier.file_experiment_description.exists())
 
 
 class TestBuildGlobPattern(unittest.TestCase):

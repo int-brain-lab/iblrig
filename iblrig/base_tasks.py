@@ -16,6 +16,7 @@ import signal
 import sys
 import time
 import traceback
+import warnings
 import weakref
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -47,7 +48,7 @@ from iblutil.io.net.base import ExpMessage
 from iblutil.spacer import Spacer
 from iblutil.util import Bunch, flatten, setup_logger
 from one.alf.io import next_num_folder
-from one.api import ONE, OneAlyx
+from one.api import ONE, One, OneAlyx
 from pybpodapi.protocol import StateMachine
 
 OSC_CLIENT_IP = '127.0.0.1'
@@ -257,11 +258,11 @@ class BaseSession(ABC):
         iblrig_settings: dict | None = None,
         **_,
     ):
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, file_hardware_settings)
         if hardware_settings is not None:
             self.hardware_settings.update(hardware_settings)
             HardwareSettings.model_validate(self.hardware_settings)
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, file_iblrig_settings)
         if iblrig_settings is not None:
             self.iblrig_settings.update(iblrig_settings)
             RigSettings.model_validate(self.iblrig_settings)
@@ -366,17 +367,12 @@ class BaseSession(ABC):
             *   SETTINGS_FILE_PATH: contains the task settings
                 `C:\iblrigv8_data\mainenlab\Subjects\SWC_043\2019-01-01\001\raw_task_data_00\_iblrig_taskSettings.raw.json`
         """
-        rig_computer_paths = path_helper.get_local_and_remote_paths(
-            local_path=self.iblrig_settings.iblrig_local_data_path,
-            remote_path=self.iblrig_settings.iblrig_remote_data_path,
-            lab=self.iblrig_settings.ALYX_LAB,
-            iblrig_settings=self.iblrig_settings,
-        )
+        rig_computer_paths = path_helper.get_local_and_remote_paths(iblrig_settings=self.iblrig_settings)
         paths = Bunch({'IBLRIG_FOLDER': BASE_PATH})
         paths.BONSAI = BONSAI_EXE
         paths.VISUAL_STIM_FOLDER = BASE_PATH.joinpath('visual_stim')
-        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths['local_subjects_folder']
-        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths['remote_subjects_folder']
+        paths.LOCAL_SUBJECT_FOLDER = rig_computer_paths.local_subjects_folder
+        paths.REMOTE_SUBJECT_FOLDER = rig_computer_paths.remote_subjects_folder
         # initialize the session path
         date_folder = paths.LOCAL_SUBJECT_FOLDER.joinpath(
             self.session_info.SUBJECT_NAME, self.session_info.SESSION_START_TIME[:10]
@@ -589,11 +585,11 @@ class BaseSession(ABC):
         log.debug(f'Trial data dumped to `{self.paths["DATA_FILE_PATH"].name}`')
 
     @property
-    def one(self):
+    def one(self) -> OneAlyx | One | None:
         """ONE getter."""
         if self._one is None:
             if self.iblrig_settings['ALYX_URL'] is None:
-                return
+                return None
             info_str = (
                 f'alyx client with user name {self.iblrig_settings["ALYX_USER"]} '
                 + f'and url: {self.iblrig_settings["ALYX_URL"]}'
@@ -611,13 +607,13 @@ class BaseSession(ABC):
                 log.error('could not connect to ' + info_str)
         return self._one
 
-    def register_to_alyx(self):
+    def register_to_alyx(self) -> dict | None:
         """
         Registers the session to Alyx.
 
         This registers the session using the IBLRegistrationClient class.  This uses the settings
         file(s) and experiment description file to extract the session data.  This may be called
-        any number of times and if the session record already exists in Alyx it will be updated.
+        any number of times, and if the session record already exists in Alyx it will be updated.
         If session registration fails, it will be done before extraction in the ibllib pipeline.
 
         Note that currently the subject weight is registered once and only once.  The recorded
@@ -634,40 +630,46 @@ class BaseSession(ABC):
 
         Returns
         -------
-        dict
+        dict or None
             The registered session record.
 
         See Also
         --------
         :external+iblenv:meth:`ibllib.oneibl.registration.IBLRegistrationClient.register_session` - The registration method.
         """
+        if self.iblrig_settings.ALYX_URL is None:
+            log.warning('ALYX_URL not set - session will not be registered to Alyx')
+            return
         if self.session_info['SUBJECT_NAME'] in ('iblrig_test_subject', 'test', 'test_subject'):
             log.warning('Not registering test subject to Alyx')
-            return
+            return None
         if not self.one or self.one.offline:
-            return
+            return None
         try:
             client = IBLRegistrationClient(self.one)
-            ses, _ = client.register_session(self.paths.SESSION_FOLDER, register_reward=False)
-        except Exception:
-            log.error(traceback.format_exc())
-            log.error('Could not register session to Alyx')
-            return
+            session, _ = client.register_session(self.paths['SESSION_FOLDER'], register_reward=False)
+        except Exception as e:
+            log.error('Could not register session to Alyx', exc_info=e)
+            return None
+
         # add the water administration if there was water administered
         try:
             if self.session_info['TOTAL_WATER_DELIVERED']:
-                wa = client.register_water_administration(
-                    self.session_info.SUBJECT_NAME,
+                water_administration_record = client.register_water_administration(
+                    self.session_info['SUBJECT_NAME'],
                     self.session_info['TOTAL_WATER_DELIVERED'] / 1000,
-                    session=ses['url'][-36:],
+                    session=session['url'][-36:],
                     water_type=self.task_params.get('REWARD_TYPE', None),
                 )
-                log.info(f'Water administered registered in Alyx database: {ses["subject"]}, {wa["water_administered"]}mL')
-        except Exception:
-            log.error(traceback.format_exc())
-            log.error('Could not register water administration to Alyx')
-            return
-        return ses
+                log.info(
+                    f'Water administered registered in Alyx database: {session["subject"]},'
+                    f'{water_administration_record["water_administered"]}mL'
+                )
+        except Exception as e:
+            log.error('Could not register water administration to Alyx', exc_info=e)
+            return None
+
+        return session
 
     def _execute_mixins_shared_function(self, pattern: str) -> None:
         """
@@ -729,6 +731,7 @@ class BaseSession(ABC):
 
         signal.signal(signal.SIGINT, self.stop)
         self._run()  # runs the specific task logic i.e. trial loop etc...
+        self.paths['SESSION_FOLDER'].joinpath('transfer_me.flag').touch()  # ensure that the transfer_me.flag is created
 
         # post task instructions
         log.critical('Graceful exit')
@@ -1182,6 +1185,14 @@ class SoundMixin(BaseSession, HasBpod):
     """Sound interface methods for state machine."""
 
     def init_mixin_sound(self):
+        # deprecation warning for Xonar sound card
+        if self.hardware_settings.device_sound['OUTPUT'] == 'xonar':
+            warnings.warn(
+                'Support for Xonar sound card is deprecated and will be removed in future versions.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         self.sound = Bunch({'GO_TONE': None, 'WHITE_NOISE': None})
         sound_output = self.hardware_settings.device_sound['OUTPUT']
 
@@ -1196,7 +1207,10 @@ class SoundMixin(BaseSession, HasBpod):
 
         # sound device sd is actually the module soundevice imported above.
         # not sure how this plays out when referenced outside of this python file
-        self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(output=sound_output)
+        self.sound['sd'], self.sound['samplerate'], self.sound['channels'] = sound_device_factory(
+            output=sound_output,
+            channel_config=self.hardware_settings.device_sound.DEFAULT_CHANNELS,
+        )
         # Create sounds and output actions of state machine
         self.sound['GO_TONE'] = iblrig.sound.make_sound(
             rate=self.sound['samplerate'],
@@ -1336,7 +1350,7 @@ class NetworkSession(BaseSession):
             raise ex
 
     @property
-    def one(self):
+    def one(self) -> OneAlyx | One:
         """Return ONE instance.
 
         Unlike super class getter, this method will always instantiate ONE, allowing subclasses to update with an Alyx

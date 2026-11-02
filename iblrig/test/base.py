@@ -9,17 +9,20 @@ import tempfile
 import unittest
 from functools import partial
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 import ibllib.pipes.dynamic_pipeline
 import iblrig
 from ibllib.io.extractors.base import protocol2extractor
 from ibllib.tests import TEST_DB  # noqa
-from one.api import ONE
+from iblrig.base_tasks import BaseSession
+from one.api import ONE, OneAlyx
 
 PATH_FIXTURES = Path(__file__).parent.joinpath('fixtures')
 
-TASK_KWARGS = {
+TASK_KWARGS: dict[str, Any] = {
     'file_iblrig_settings': 'iblrig_settings_template.yaml',
     'file_hardware_settings': 'hardware_settings_template.yaml',
     'subject': 'iblrig_test_subject',
@@ -33,8 +36,11 @@ TASK_KWARGS = {
 
 
 class TaskArgsMixin:
-    task_kwargs = {}
-    _tmp = None
+    task_kwargs: dict[str, Any] = {}
+    _tmp: TemporaryDirectory
+    tmp: Path
+
+    def addCleanup(self, function, /, *args, **kwargs) -> None: ...  # noqa: N802
 
     @staticmethod
     def create_task_kwargs(tmpdir=True):
@@ -54,26 +60,16 @@ class TaskArgsMixin:
             tmpdir = tempfile.TemporaryDirectory()
         if tmpdir:
             p = Path(tmpdir.name if isinstance(tmpdir, tempfile.TemporaryDirectory) else tmpdir)
-            task_kwargs['iblrig_settings'].update(iblrig_remote_data_path=None, iblrig_local_data_path=p)
+            task_kwargs['iblrig_settings'].update(
+                iblrig_remote_data_path=None, iblrig_local_data_path=p, ALYX_URL=TEST_DB['base_url']
+            )
         return task_kwargs, tmpdir
 
-    def get_task_kwargs(self, tmpdir=True):
-        """
-        Copy task keyword arguments and create a temporary directory.
-
-        Parameters
-        ----------
-        tmpdir : bool, tempfile.TemporaryDirectory, pathlib.Path
-            An optional temporary directory to add to kwargs as iblrig settings local data path.
-            If False, the default location is used. If True, a new tempdir is created and added to
-            teardown routine.
-
-        """
-        self.task_kwargs, tmp = self.create_task_kwargs(tmpdir)
-        if tmp:
-            self.tmp = Path(tmp.name if isinstance(tmp, tempfile.TemporaryDirectory) else tmp)
-            if isinstance(tmp, tempfile.TemporaryDirectory):
-                self.addCleanup(tmp.cleanup)
+    def get_task_kwargs(self):
+        """Copy task keyword arguments and create a temporary directory."""
+        self.task_kwargs, tmp = self.create_task_kwargs()
+        self.tmp = Path(tmp.name)
+        self.addCleanup(tmp.cleanup)
         self.addCleanup(self.cleanup_handlers)
 
     @staticmethod
@@ -95,7 +91,7 @@ class BaseTestCases:
     """
 
     class CommonTestTask(unittest.TestCase, TaskArgsMixin):
-        task = None
+        task: BaseSession
 
         def read_and_assert_json_settings(self, json_file):
             with open(json_file) as fp:
@@ -123,7 +119,7 @@ class BaseTestCases:
                 pdf_out = Path(inspect.getfile(self.task.__class__)).parent.joinpath('state_machine_graph')
                 self.task.get_graphviz_task(output_file=pdf_out, view=False)
 
-        def test_acquisition_description(self) -> None:
+        def test_experiment_description(self) -> None:
             # This makes sure that the task has a defined set of extractors
             description_task = self.task.experiment_description['tasks'][0][self.task.protocol_name]
             # there are 2 ways to define extractors, either in the `extractor_tasks` property, in which
@@ -145,9 +141,9 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
     the full registration / run / register results cycle
     """
 
+    one_temp_dir: TemporaryDirectory
     create_subject = True
-    _tmp = None  # a temporary directory
-    one = None
+    one: OneAlyx
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -156,7 +152,7 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         have completed
         :return:
         """
-        cls.one_temp_dir = tempfile.TemporaryDirectory()
+        cls.one_temp_dir = TemporaryDirectory()
         with patch('one.params.iopar.getfile', new=partial(get_file, cls.one_temp_dir.name)):
             cls.one = ONE(**TEST_DB, mode='remote')
         cls.task_kwargs, cls._tmp = TaskArgsMixin.create_task_kwargs()
@@ -169,8 +165,7 @@ class IntegrationFullRuns(BaseTestCases.CommonTestTask):
         if cls.create_subject and cls.one:
             cls.one.alyx.rest('subjects', 'delete', id=cls.task_kwargs['subject'])
         cls.cleanup_handlers()
-        if cls._tmp:
-            cls._tmp.cleanup()
+        cls._tmp.cleanup()
         cls.one_temp_dir.cleanup()
 
 

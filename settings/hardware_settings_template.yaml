@@ -17,15 +17,17 @@ device_rotary_encoder:
   COM_ROTARY_ENCODER: null
 device_screen:
   DISPLAY_IDX: 1
+  SCREEN_RESOLUTION: [2048, 1536]
   SCREEN_FREQ_TARGET: 60
   SCREEN_FREQ_TEST_DATE: null  # optional
   SCREEN_FREQ_TEST_STATUS: null  # optional
   SCREEN_LUX_DATE: null  # optional
   SCREEN_LUX_VALUE: null  # optional
 device_sound:
-  OUTPUT: sysdefault  # harp, hifi, xonar or sysdefault
+  OUTPUT: sysdefault  # harp, hifi, xonar, or sysdefault
   COM_SOUND: null
   AMP_TYPE: null  # harp or AMP2X15
+  DEFAULT_CHANNELS: stereo  # stereo, left, or right
 device_microphone:
   BONSAI_WORKFLOW: devices/microphone/record_mic.bonsai
 device_valve:

@@ -1,11 +1,44 @@
+import contextlib
+import importlib
+import inspect
+import pkgutil
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pandas as pd
+import pytest
 
 from iblrig import choiceworld
-from iblrig.test.base import BaseTestCases
+from iblrig.base_choice_world import TrainingChoiceWorldSession as _BaseTrainingSession
+from iblrig.test.base import BaseTestCases, TaskArgsMixin
 from iblrig.test.tasks.test_biased_choice_world_family import get_fixtures
 from iblrig_tasks._iblrig_tasks_trainingChoiceWorld.task import Session as TrainingChoiceWorldSession
+from iblrig_tasks._iblrig_tasks_trainingChoiceWorld_c0_CW.task import Session as TrainingChoiceWorldC0CWSession
 from iblrig_tasks._iblrig_tasks_trainingPhaseChoiceWorld.task import Session as TrainingPhaseChoiceWorldSession
+
+
+def _all_subclasses(cls):
+    for sub in cls.__subclasses__():
+        yield sub
+        yield from _all_subclasses(sub)
+
+
+# Import every module from every importable iblrig_* top-level package, so that
+# __subclasses__() is fully populated at collection time regardless of which
+# project_extraction-style packages are installed. We discover the packages directly
+# from sys.path rather than from distribution metadata (top_level.txt), which is not
+# emitted by modern pyproject/editable installs.
+for _mod in pkgutil.iter_modules():
+    if not (_mod.ispkg and _mod.name.startswith('iblrig_')):
+        continue
+    with contextlib.suppress(Exception):
+        _pkg = importlib.import_module(_mod.name)
+        for _mod_info in pkgutil.walk_packages(_pkg.__path__, _pkg.__name__ + '.'):
+            with contextlib.suppress(Exception):
+                importlib.import_module(_mod_info.name)
+
+_TRAINING_C0_CW_CLASSES = [TrainingChoiceWorldC0CWSession] + list(_all_subclasses(TrainingChoiceWorldC0CWSession))
+_TRAINING_CW_CLASSES = list(set(_all_subclasses(_BaseTrainingSession)) - set(_TRAINING_C0_CW_CLASSES))
 
 
 class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
@@ -93,6 +126,50 @@ class TestTrainingPhaseChoiceWorld(BaseTestCases.CommonTestInstantiateTask):
                     assert trials_table.debias_trial.sum() == 0
 
 
+@pytest.mark.parametrize('session_class', _TRAINING_CW_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
+def test_zero_contrast_position_is_balanced(session_class, tmp_path):
+    """Regression test: zero-contrast trials must be assigned left/right with equal probability."""
+    task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
+    sig = inspect.signature(session_class.__init__)
+    phase_kwarg = {'training_level': 4} if 'training_level' in sig.parameters else {'training_phase': 4}
+    task = session_class(**task_kwargs, **phase_kwarg)
+    task.create_session()
+
+    np.random.seed(0)
+    trial_fixtures = get_fixtures()
+    for _ in range(2000):
+        task.next_trial()
+        task.trial_completed(trial_fixtures['correct'])
+
+    zero_trials = task.trials_table[(task.trials_table.index < task.trial_num) & (task.trials_table.contrast == 0)]
+    positions = zero_trials['position'].values
+    assert len(positions) > 0, 'No zero-contrast trials were generated'
+    frac_left = np.mean(positions < 0)
+    assert 0.4 < frac_left < 0.6, f'Zero-contrast trials imbalanced: frac_left={frac_left:.2f}'
+
+
+@pytest.mark.parametrize('session_class', _TRAINING_C0_CW_CLASSES, ids=lambda c: c.__module__.split('.')[-2])
+def test_zero_contrast_position_is_left(session_class, tmp_path):
+    """Regression test: zero-contrast trials must be assigned left for TrainingChoiceWorldC0CW (and child classes)."""
+    task_kwargs, _ = TaskArgsMixin.create_task_kwargs(tmpdir=tmp_path)
+    sig = inspect.signature(session_class.__init__)
+    phase_kwarg = {'training_level': 4} if 'training_level' in sig.parameters else {'training_phase': 4}
+    task = session_class(**task_kwargs, **phase_kwarg)
+    task.create_session()
+
+    np.random.seed(0)
+    trial_fixtures = get_fixtures()
+    for _ in range(2000):
+        task.next_trial()
+        task.trial_completed(trial_fixtures['correct'])
+
+    zero_trials = task.trials_table[(task.trials_table.index < task.trial_num) & (task.trials_table.contrast == 0)]
+    positions = zero_trials['position'].values
+    assert len(positions) > 0, 'No zero-contrast trials were generated'
+    frac_left = np.mean(positions < 0)
+    assert frac_left == 1, f'Zero-contrast trials assigned to wrong side: frac_left={frac_left:.2f}'
+
+
 class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
     @classmethod
     def setUpClass(cls):
@@ -105,6 +182,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
         self.task.create_session()
 
     def test_task(self):
+        np.random.seed(42)
         for i_trial in range(1300):
             original_phase = self.task.training_phase
             self.task.next_trial()
@@ -160,7 +238,7 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
                     expected_contrasts = [0, 0.0625, 0.125, 0.25, 1.0]
             np.testing.assert_equal(actual_contrasts, expected_contrasts)
 
-    def test_acquisition_description(self):
+    def test_experiment_description(self):
         actual_description = self.task.experiment_description
         expected_description = {
             'sync': {
@@ -187,3 +265,131 @@ class TestInstantiationTraining(BaseTestCases.CommonTestInstantiateTask):
             'tasks': [{'_iblrig_tasks_trainingChoiceWorld': {'collection': 'raw_task_data_00'}}],
         }
         self.assertEqual(actual_description, actual_description | expected_description)
+
+
+class TestDebiasing:
+    original_normal = np.random.normal
+    normal_value = 0.0
+
+    @pytest.fixture
+    def mock_session(self):
+        with patch('iblrig.base_choice_world.TrainingChoiceWorldSession') as mock_session:
+            instance = mock_session.return_value
+        instance.task_params = TrainingChoiceWorldSession.read_task_parameter_files()
+        instance.next_trial = MagicMock(side_effect=lambda: TrainingChoiceWorldSession.next_trial(instance))
+        instance._map_signed_contrast_to_position = MagicMock(
+            side_effect=lambda c: TrainingChoiceWorldSession._map_signed_contrast_to_position(instance, c)
+        )
+        instance.trials_table = TrainingChoiceWorldSession.TrialDataModel.preallocate_dataframe(100)
+        instance.trial_num = -1
+        instance.training_phase = 1
+        instance.trials_table.contrast = 0.5  # 50% contrast
+        instance.trials_table.trial_correct = False  # incorrect trial
+        instance.trials_table.response_side = 1  # rightward movement
+        instance.next_trial()
+        return instance
+
+    def test_debias_flag(self, mock_session):
+        """Debiasing can be controlled by the DEBIAS task parameter"""
+        assert 'DEBIAS' in mock_session.task_params
+        mock_session.task_params['DEBIAS'] = False
+        for _ in range(10):
+            mock_session.next_trial()
+            assert not mock_session.trials_table.debias_trial[mock_session.trial_num]
+        mock_session.task_params['DEBIAS'] = True
+        for _ in range(10):
+            mock_session.next_trial()
+            assert mock_session.trials_table.debias_trial[mock_session.trial_num]
+
+    def test_first_trial(self, mock_session):
+        """The first trial should never be debiased."""
+        assert mock_session.trial_num == 0
+        assert not mock_session.trials_table.debias_trial[0]
+        for _ in range(10):
+            mock_session.next_trial()
+            assert mock_session.trials_table.debias_trial[mock_session.trial_num]
+
+    def test_training_phase(self, mock_session):
+        """Only training phases 0 to 4 should have debias trials."""
+        for training_phase in range(6):
+            mock_session.training_phase = training_phase
+            mock_session.next_trial()
+            if training_phase < 5:
+                assert mock_session.trials_table.debias_trial[mock_session.trial_num]
+            else:
+                assert not mock_session.trials_table.debias_trial[mock_session.trial_num]
+
+    def test_debias_conditions(self, mock_session):
+        """Debias trials should only occur after an incorrect, high-contrast go trial."""
+        mock_session.trials_table.contrast = 0.5
+        mock_session.trials_table.trial_correct = False
+        mock_session.next_trial()
+        assert mock_session.trials_table.debias_trial[mock_session.trial_num]  # high-contrast incorrect trial
+        mock_session.trials_table.contrast = 0.499
+        mock_session.trials_table.trial_correct = False
+        mock_session.next_trial()
+        assert not mock_session.trials_table.debias_trial[mock_session.trial_num]  # low-contrast incorrect trial
+        mock_session.trials_table.contrast = 0.5
+        mock_session.trials_table.trial_correct = True
+        mock_session.next_trial()
+        assert not mock_session.trials_table.debias_trial[mock_session.trial_num]  # high-contrast correct trial
+        mock_session.trials_table.contrast = 0.5
+        mock_session.trials_table.trial_correct = False
+        mock_session.trials_table.response_side = 0
+        assert not mock_session.trials_table.debias_trial[mock_session.trial_num]  # high-contrast no-go trial
+
+    @pytest.fixture
+    def mock_normal(self):
+        def side_effect(*args, **kwargs):
+            result = self.original_normal(*args, **kwargs)
+            self.normal_value = result
+            return result
+
+        with patch('iblrig.base_choice_world.np.random.normal', side_effect=side_effect) as normal:
+            yield normal
+
+    def test_debiasing_logic(self, mock_normal, mock_session):
+        """Debiasing should take into account the previous 10 trials with valid responses, excluding no-go trials."""
+        mock_session.trials_table.loc[0, 'position'] = mock_session.task_params['STIM_POSITIONS'][0]
+        mock_session.trials_table.response_side = pd.NA
+        mock_session.trials_table.trial_correct = pd.NA
+        mock_session.draw_next_trial_info = MagicMock(
+            side_effect=lambda *args, **kwargs: TrainingChoiceWorldSession.draw_next_trial_info(mock_session, *args, **kwargs)
+        )
+        for trial_num in range(1, len(mock_session.trials_table)):
+            # simulate the previous trial's outcome, store to trials_table
+            prev_stimulus_pos = mock_session.trials_table.position[trial_num - 1]
+            prev_response_side = np.random.choice([-1, 0, 1], p=[0.2, 0.1, 0.7])  # biased towards rightward responses
+            prev_correct = prev_response_side == -1 * np.sign(prev_stimulus_pos)
+            mock_session.trials_table.loc[trial_num - 1, 'response_side'] = prev_response_side
+            mock_session.trials_table.loc[trial_num - 1, 'trial_correct'] = prev_correct
+
+            # get the next trial
+            mock_normal.reset_mock()
+            mock_session.next_trial()
+            assert mock_session.trial_num == trial_num
+
+            # do not debias if the previous response was correct, no-go or if the contrast was below 0.5
+            previous_trial = mock_session.trials_table.iloc[trial_num - 1]
+            skip_debias = previous_trial.trial_correct or previous_trial.response_side == 0 or previous_trial.contrast < 0.5
+            if skip_debias:
+                mock_normal.assert_not_called()
+                assert not mock_session.trials_table.debias_trial[trial_num], 'the trial should not be marked as a debias trial'
+                continue
+
+            # calculate the proportion of rightward responses based on the last 10 valid responses
+            responses = mock_session.trials_table.response_side[:trial_num]
+            considered_responses = responses[responses != 0].tail(10)
+            rightward_proportion = (considered_responses == 1).mean()
+
+            # the position of the stimulus is drawn from a normal distribution centered on rightward_proportion
+            # i.e. if there is a bias towards moving the stimulus to one side, the stimulus will more likely appear on that side,
+            # so the subject has to move it to the other side
+            assert mock_normal.call_args[0][0] == rightward_proportion, 'Mean of normal dist should match rightward proportion'
+            assert mock_normal.call_args[0][1] == 0.5, 'standard deviation should be 0.5'
+            next_stim_on_right = self.normal_value >= 0.5
+            expected_position = mock_session.task_params['STIM_POSITIONS'][next_stim_on_right]
+            actual_position = mock_session.trials_table.position[trial_num]
+            assert actual_position == expected_position
+
+            assert mock_session.trials_table.debias_trial[trial_num], 'the trial should be marked as a debias trial'

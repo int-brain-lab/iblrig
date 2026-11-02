@@ -145,10 +145,8 @@ class RigWizardModel:
     file_hardware_settings: Path | str | None = None
 
     def __post_init__(self):
-        self.iblrig_settings: RigSettings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
-        self.hardware_settings: HardwareSettings = load_pydantic_yaml(
-            HardwareSettings, filename=self.file_hardware_settings, do_raise=True
-        )
+        self.iblrig_settings = load_pydantic_yaml(RigSettings, filename=self.file_iblrig_settings, do_raise=True)
+        self.hardware_settings = load_pydantic_yaml(HardwareSettings, filename=self.file_hardware_settings, do_raise=True)
 
         self.free_reward_time = Valve(self.hardware_settings.device_valve).free_reward_time_sec
 
@@ -432,7 +430,9 @@ class RigWizard(QMainWindow, Ui_wizard):
             self.uiPushButtonLogIn.released.connect(lambda w=self.uiLineEditUser: self._log_in_or_out(username=w.text()))
         else:
             self.uiLineEditUser.setPlaceholderText('')
+            self.uiLineEditUser.setEnabled(False)
             self.uiPushButtonLogIn.setEnabled(False)
+            self.uiComboSubject.setEditable(True)
 
         # tools
         self.uiPushFlush.clicked.connect(self.flush)
@@ -1307,7 +1307,7 @@ class RigWizard(QMainWindow, Ui_wizard):
         try:
             bpod = Bpod(self.hardware_settings['device_bpod']['COM_BPOD'], skip_initialization=True)
             bpod.set_status_led(is_toggled)
-        except (OSError, BpodErrorException, AttributeError):
+        except (OSError, BpodErrorException, AttributeError, IndexError):
             self.uiPushStatusLED.setChecked(False)
             self.uiPushStatusLED.setStyleSheet('')
 
