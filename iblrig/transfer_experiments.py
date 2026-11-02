@@ -370,7 +370,7 @@ class SessionCopier:
                 raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=2,
             )
             experiment_description = acquisition_description
@@ -480,7 +480,7 @@ class VideoCopier(SessionCopier):
                 raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=2,
             )
             experiment_description = acquisition_description
@@ -611,7 +611,7 @@ class EphysCopier(SessionCopier):
                 raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=2,
             )
             experiment_description = acquisition_description
@@ -677,7 +677,7 @@ class NeurophotometricsCopier(SessionCopier):
                 raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=2,
             )
             experiment_description = acquisition_description

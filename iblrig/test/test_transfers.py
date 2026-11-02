@@ -498,7 +498,7 @@ class TestInitializeExperiment(unittest.TestCase):
         for copier_class, kwargs in self.copier_kwargs.items():
             with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
                 copier = copier_class(session_path=temp_dir)
-                with self.assertWarns(DeprecationWarning):
+                with self.assertWarns(FutureWarning):
                     copier.initialize_experiment(acquisition_description=self.description, **kwargs)
                 self.assertEqual(self.description, session_params.read_params(copier.file_experiment_description))
 
