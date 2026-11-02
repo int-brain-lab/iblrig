@@ -1,9 +1,16 @@
+"""Neurophotometrics FP3002 fiber photometry hardware integration.
+
+This module provides utilities for configuring, starting, and managing Neurophotometrics
+FP3002 fiber photometry recordings within iblrig sessions. It handles Bonsai workflow
+launching, hardware settings validation, brain region lookups, and data transfer.
+"""
+
 import argparse
 import logging
 import re
-from collections.abc import Iterable
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 import iblrig.path_helper
 from iblatlas.atlas import BrainRegions
@@ -16,15 +23,15 @@ from iblutil.util import setup_logger
 _logger = logging.getLogger(__name__)
 
 
-def start_neurophotometrics_cli():
-    # helper function that is registered in the pyproject.toml to be called from the command line
+def start_neurophotometrics_cli() -> None:
+    """CLI entry point for starting the neurophotometrics FP3002 recording."""
     args = _start_neurophotometrics_parser()
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
     start_neurophotometrics(**vars(args))
 
 
-def _start_neurophotometrics_parser() -> argparse.ArgumentParser:
+def _start_neurophotometrics_parser() -> argparse.Namespace:
     # accompanying parser. Single use function, TODO to be removed
     parser = argparse.ArgumentParser(
         prog='neurophotometrics',
@@ -48,10 +55,24 @@ def _start_neurophotometrics_parser() -> argparse.ArgumentParser:
 
 
 def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daqami'] = 'bpod'):
-    # starts the neurophotometrics device / bonsai workflow
+    """
+    Start the neurophotometrics FP3002 device and launch the appropriate Bonsai workflow.
 
+    Creates a timestamped output folder under ``local_data_folder/neurophotometrics/`` and
+    launches the Bonsai workflow configured for the chosen synchronization mode.
+
+    Parameters
+    ----------
+    debug : bool, optional
+        Unused; reserved for future debug logging. Default: False.
+    sync_mode : {'bpod', 'daqami'}, optional
+        Synchronization mode. 'bpod' uses FP3002 digital inputs; 'daqami' uses an external
+        DAQ (the user is prompted to start the DAQ before Bonsai launches). Default: 'bpod'.
+    """
     # settings
     hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+    if hardware_settings.device_neurophotometrics is None:
+        raise ValueError('device_neurophotometrics is not configured in hardware_settings.yaml')
     settings = hardware_settings.device_neurophotometrics
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
 
@@ -94,19 +115,21 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
     )
 
 
-def initialize_subject_cli():
-    # helper function that is registered in the pyproject.toml to be called from the command line
+def initialize_subject_cli() -> None:
+    """CLI entry point for preparing a neurophotometrics subject session."""
     args = _initialize_subject_parser()
     debug_level = 'DEBUG' if args.debug else 'INFO'
     setup_logger(name='iblrig', level=debug_level)
     init_neurophotometrics_subject(**vars(args))
 
 
-def _initialize_subject_parser() -> argparse.ArgumentParser:
-    """
-    Command line interface for preparing a neurophotometrics session on the photometry computer.
-    start_photometry_task --subject Mickey --rois G0 G1 --location NBM SI
-    :return:
+def _initialize_subject_parser() -> argparse.Namespace:
+    """Parse arguments for the initialize_subject CLI command.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed arguments: subject, rois, locations, debug, sync_channel, sync_mode.
     """
     parser = argparse.ArgumentParser(
         prog='start_photometry_recording',
@@ -159,7 +182,12 @@ def _initialize_subject_parser() -> argparse.ArgumentParser:
 
 
 def init_neurophotometrics_subject(
-    subject: str, rois: Iterable[str], locations: Iterable[str], sync_channel: int = 1, sync_mode='bpod', **kwargs
+    subject: str,
+    rois: Sequence[str],
+    locations: Sequence[str],
+    sync_channel: int = 1,
+    sync_mode: Literal['bpod', 'daqami'] = 'bpod',
+    **kwargs,
 ) -> NeurophotometricsCopier:
     """
     Initialize a neurophotometrics behavior session.
@@ -171,19 +199,19 @@ def init_neurophotometrics_subject(
     Parameters
     ----------
     subject : str
-        The name of the session_stub for this session.
-    rois : Iterable[str]
+        The subject nickname.
+    rois : Sequence[str]
         List of ROIs to be recorded.
-    locations : Iterable[str]
-        List of brain locations to be recorded.
+    locations : Sequence[str]
+        List of brain locations (Allen brain acronyms) corresponding to each ROI.
     sync_channel : int, optional
-        Channel to use for syncing photometry and digital inputs, by default 1
-    kwargs : dict, optional
-        Additional keyword arguments to be passed to the NeurophotometricsCopier.neurophotometrics_description method.
+        Channel to use for syncing photometry and digital inputs. Default: 1.
+    sync_mode : {'bpod', 'daqami'}, optional
+        Synchronization mode. Default: 'bpod'.
 
     Returns
     -------
-     NeurophotometricsCopier
+    NeurophotometricsCopier
         An instance of the NeurophotometricsCopier class initialized with the provided session details.
     """
     # generate acquisition description from input arguments
@@ -201,7 +229,7 @@ def init_neurophotometrics_subject(
     # inferring session number
     folders = list(subject_date_folder.glob('*/'))
     # filter to only those folders that are three numbers (and nothing else)
-    session_folders = [folder for folder in folders if re.match(r'\d{3}', folder.name) and folder.is_dir()]
+    session_folders = [folder for folder in folders if re.fullmatch(r'\d{3}', folder.name) and folder.is_dir()]
 
     # this is continuously incrementing. A problem that UDP based communiction between the rigs and the
     # neurophotometrics computer can fix.
@@ -219,21 +247,14 @@ def init_neurophotometrics_subject(
 
 
 def _validate_neurophotometrics_description(
-    subject=None,
-    rois=None,
-    locations=None,
-    sync_channel=None,
-    sync_mode=None,
+    rois: Sequence[str],
+    locations: Sequence[str],
+    sync_channel: int,
+    sync_mode: Literal['bpod', 'daqami'],
 ):
-    """Helper function to validate the output of the CLI parser, or programmatic u
-
-    Args:
-        subject (_type_, optional): _description_. Defaults to None.
-        rois (_type_, optional): _description_. Defaults to None.
-        locations (_type_, optional): _description_. Defaults to None.
-        sync_channel (_type_, optional): _description_. Defaults to None.
-        sync_mode (_type_, optional): _description_. Defaults to None.
-    """
+    """Helper function to validate the output of the CLI parser, or programmatic use."""
+    if rois is None or locations is None or sync_channel is None or sync_mode is None:
+        return
     # verify if brain regions are valid allen acronyms
     regions = BrainRegions()
     for location in locations:
@@ -244,8 +265,7 @@ def _validate_neurophotometrics_description(
     if sync_mode == 'bpod':
         assert sync_channel in (0, 1), 'sync channel must be either 0 or 1'
     if sync_mode == 'daqami':
-        assert sync_channel in (0, 1, 2, 3, 4, 5, 6), 'sync channel must be between 0 and 6'
-        # actually now - placed the frame clock on DI0 so it should exclude 0
+        assert sync_channel in (1, 2, 3, 4, 5, 6), 'sync channel must be between 1 and 6 (DI0 is reserved for the frame clock)'
 
     # assert compatible shapes
     assert len(rois) == len(locations), 'The number of ROIs and locations must be the same.'
@@ -263,62 +283,72 @@ def _validate_neurophotometrics_description(
 
 
 def neurophotometrics_description(
-    rois: Iterable[str],
-    locations: Iterable[str],
+    rois: Sequence[str],
+    locations: Sequence[str],
     sync_channel: int,
-    start_time: datetime = None,
-    sync_label: str = None,
-    sync_mode: str = 'bpod',
+    start_time: datetime | None = None,
+    sync_label: str | None = None,
+    sync_mode: Literal['bpod', 'daqami'] = 'bpod',
     collection: str = 'raw_photometry_data',
     validate: bool = True,
-) -> dict:
+) -> dict[str, Any]:
     """
-    Create the `neurophotometrics` description part for the specified parameters.
+    Build the ``neurophotometrics`` section of an experiment description dictionary.
 
     Parameters
     ----------
-    rois: list of strings
-        List of ROIs
-    locations: list of strings
-        List of brain regions
-    sync_channel: int
-        Channel number for sync
-    start_time: datetime.datetime, optional
-        Date and time of the recording
-    sync_label: str, optional
-        Label for the sync channel
-    sync_mode, str, opional
-        defines the sync mode (e.g. using the FP3002 inputs as sync inputs, or as outputs to sync the DAQ)
+    rois : Sequence[str]
+        ROI names, e.g. ['G0', 'G1', 'R0']. Each must be unique.
+    locations : Sequence[str]
+        Allen brain acronym for each ROI, in the same order as `rois`.
+    sync_channel : int
+        FP3002 digital input channel used for synchronisation.
+    start_time : datetime, optional
+        Recording start time. Defaults to now.
+    sync_label : str, optional
+        Sync label written into the description (e.g. 'bnc1out'). Omitted if None.
+    sync_mode : {'bpod', 'daqami'}, optional
+        Synchronisation mode. 'bpod' uses FP3002 digital inputs; 'daqami' uses an
+        external DAQ and adds a ``sync_metadata`` block. Default: 'bpod'.
+    collection : str, optional
+        ALF collection name for the photometry data. Default: 'raw_photometry_data'.
+    validate : bool, optional
+        If True, validate ROIs, locations, and sync channel before building the dict.
+        Default: True.
 
     Returns
     -------
     dict
-        Description of the neurophotometrics data
+        Experiment description dict with a ``devices.neurophotometrics`` key.
 
+    Examples
+    --------
+    Bpod sends sync pulses to the FP3002:
 
-    Example where bpod sends sync to the neurophotometrics:
-    -------
+    .. code-block:: yaml
+
         neurophotometrics:
             fibers:
-            - roi: G0
-                location: VTA
-            - roi: G1
-                location: DR
+                G0:
+                    location: VTA
+                G1:
+                    location: DR
             collection: raw_photometry_data
             sync_label: bnc1out
             sync_channel: 1
             datetime: 2024-09-19T14:13:18.749259
             sync_mode: bpod
 
+    DAQ records frame times and sync:
 
-    Example where a DAQ records frame times and sync:
-    -------
+    .. code-block:: yaml
+
         neurophotometrics:
             fibers:
-            - roi: G0
-                location: VTA
-            - roi: G1
-                location: DR
+                G0:
+                    location: VTA
+                G1:
+                    location: DR
             collection: raw_photometry_data
             sync_channel: 1
             datetime: 2024-09-19T14:13:18.749259
@@ -327,14 +357,13 @@ def neurophotometrics_description(
                 acquisition_software: daqami
                 collection: raw_photometry_data
                 frameclock_channel: 0
-
     """
     if validate:
         _validate_neurophotometrics_description(rois=rois, locations=locations, sync_channel=sync_channel, sync_mode=sync_mode)
 
     # generate description
     date_time = datetime.now() if start_time is None else start_time
-    description = {
+    description: dict[str, Any] = {
         'sync_channel': sync_channel,
         'datetime': date_time.isoformat(),
         'collection': collection,
@@ -350,6 +379,8 @@ def neurophotometrics_description(
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
             hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+            if hardware_settings.device_neurophotometrics is None:
+                raise ValueError('device_neurophotometrics is not configured in hardware_settings.yaml')
             settings = hardware_settings.device_neurophotometrics
             experiment_description = {'devices': {'neurophotometrics': description}}
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
