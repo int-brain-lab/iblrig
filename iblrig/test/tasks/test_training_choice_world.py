@@ -277,6 +277,9 @@ class TestDebiasing:
             instance = mock_session.return_value
         instance.task_params = TrainingChoiceWorldSession.read_task_parameter_files()
         instance.next_trial = MagicMock(side_effect=lambda: TrainingChoiceWorldSession.next_trial(instance))
+        instance._map_signed_contrast_to_position = MagicMock(
+            side_effect=lambda c: TrainingChoiceWorldSession._map_signed_contrast_to_position(instance, c)
+        )
         instance.trials_table = TrainingChoiceWorldSession.TrialDataModel.preallocate_dataframe(100)
         instance.trial_num = -1
         instance.training_phase = 1
