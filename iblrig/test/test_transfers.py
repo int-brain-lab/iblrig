@@ -490,16 +490,28 @@ class TestIntegrationTransferExperiments(TestIntegrationTransferExperimentsBase)
 
 
 class TestInitializeExperiment(unittest.TestCase):
+    description = {'devices': {'cameras': {'left': {'collection': 'raw_video_data'}}}, 'version': '1.0.0'}
+    copier_kwargs = {SessionCopier: {}, VideoCopier: {}, EphysCopier: {'nprobes': 0}, NeurophotometricsCopier: {}}
+
     def test_deprecated_acquisition_description(self):
         """Test that the deprecated `acquisition_description` keyword warns and is written as experiment description."""
-        description = {'devices': {'cameras': {'left': {'collection': 'raw_video_data'}}}, 'version': '1.0.0'}
-        copier_kwargs = {SessionCopier: {}, VideoCopier: {}, EphysCopier: {'nprobes': 0}, NeurophotometricsCopier: {}}
-        for copier_class, kwargs in copier_kwargs.items():
+        for copier_class, kwargs in self.copier_kwargs.items():
             with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
                 copier = copier_class(session_path=temp_dir)
                 with self.assertWarns(DeprecationWarning):
-                    copier.initialize_experiment(acquisition_description=description, **kwargs)
-                self.assertEqual(description, session_params.read_params(copier.file_experiment_description))
+                    copier.initialize_experiment(acquisition_description=self.description, **kwargs)
+                self.assertEqual(self.description, session_params.read_params(copier.file_experiment_description))
+
+    def test_both_descriptions_raises(self):
+        """Test that passing both `acquisition_description` and `experiment_description` raises and writes nothing."""
+        for copier_class, kwargs in self.copier_kwargs.items():
+            with self.subTest(copier_class.__name__), tempfile.TemporaryDirectory() as temp_dir:
+                copier = copier_class(session_path=temp_dir)
+                with self.assertRaises(TypeError):
+                    copier.initialize_experiment(
+                        experiment_description=self.description, acquisition_description=self.description, **kwargs
+                    )
+                self.assertFalse(copier.file_experiment_description.exists())
 
 
 class TestBuildGlobPattern(unittest.TestCase):

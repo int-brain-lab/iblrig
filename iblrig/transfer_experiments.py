@@ -359,8 +359,15 @@ class SessionCopier:
             If true, overwrite any existing file with the new one, otherwise, update the existing file.
         acquisition_description : dict
             Deprecated, use `experiment_description` instead.
+
+        Raises
+        ------
+        TypeError
+            If both `experiment_description` and `acquisition_description` are passed.
         """
         if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
                 DeprecationWarning,
@@ -469,6 +476,8 @@ class VideoCopier(SessionCopier):
         self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
     ) -> None:
         if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
                 DeprecationWarning,
@@ -598,6 +607,8 @@ class EphysCopier(SessionCopier):
         **kwargs,
     ) -> None:
         if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
                 DeprecationWarning,
@@ -662,6 +673,8 @@ class NeurophotometricsCopier(SessionCopier):
         self, experiment_description: dict | None = None, *, acquisition_description: dict | None = None, **kwargs
     ) -> None:
         if acquisition_description is not None:
+            if experiment_description is not None:
+                raise TypeError('pass either `experiment_description` or `acquisition_description`, not both')
             warnings.warn(
                 '`acquisition_description` is deprecated, use `experiment_description` instead',
                 DeprecationWarning,
