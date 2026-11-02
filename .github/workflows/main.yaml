@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]
+        os: ["ubuntu-24.04", "windows-latest"]
         python-version: ["3.10"]
     steps:
       - name: Checkout iblrig repo
@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --no-default-groups --group test --group ci --extra project-extraction
       - name: Install required libraries (Ubuntu only)
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libportaudio2 libegl1 libxkbcommon-x11-0
