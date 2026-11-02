@@ -1,0 +1,18 @@
+name: Changelog
+
+on:
+  pull_request:
+    branches: [iblrigv8]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require a CHANGELOG.md section for the current version
+        run: |
+          version=$(sed -nE "s/^__version__ = '(.+)'.*/\1/p" iblrig/__init__.py)
+          if [ -z "$version" ] || ! grep -qxF "$version" CHANGELOG.md; then
+            echo "::error file=CHANGELOG.md::no section for version '$version'"
+            exit 1
+          fi
