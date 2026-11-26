@@ -51,7 +51,7 @@ def start_neurophotometrics(debug: bool = False, sync_mode: Literal['bpod', 'daq
     # starts the neurophotometrics device / bonsai workflow
 
     # settings
-    hardware_settings: HardwareSettings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+    hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
     settings = hardware_settings.device_neurophotometrics
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
 
@@ -186,8 +186,8 @@ def init_neurophotometrics_subject(
      NeurophotometricsCopier
         An instance of the NeurophotometricsCopier class initialized with the provided session details.
     """
-    # generate acquisition description from input arguments
-    acquisition_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode)
+    # generate experiment description from input arguments
+    experiment_description = neurophotometrics_description(rois, locations, sync_channel, sync_mode=sync_mode)
 
     # constructing the stub name
     iblrig_paths = iblrig.path_helper.get_local_and_remote_paths()
@@ -214,7 +214,7 @@ def init_neurophotometrics_subject(
     copier = NeurophotometricsCopier(session_path=session_path, remote_subjects_folder=iblrig_paths['remote_subjects_folder'])
 
     # initializing the experiment - creates the folders
-    copier.initialize_experiment(acquisition_description=acquisition_description)
+    copier.initialize_experiment(experiment_description=experiment_description)
     return copier
 
 
@@ -349,11 +349,13 @@ def neurophotometrics_description(
         case 'bpod':
             return {'devices': {'neurophotometrics': description}}
         case 'daqami':
+            hardware_settings = iblrig.path_helper.load_pydantic_yaml(HardwareSettings)
+            settings = hardware_settings.device_neurophotometrics
             experiment_description = {'devices': {'neurophotometrics': description}}
             experiment_description['devices']['neurophotometrics']['sync_metadata'] = dict(
                 acquisition_software='daqami',
                 collection='raw_photometry_data',
-                frameclock_channel='AI7',
+                frameclock_channel=settings.FRAMECLOCK_CHANNEL,
             )
             return experiment_description
         case _:

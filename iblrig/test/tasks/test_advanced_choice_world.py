@@ -9,7 +9,7 @@ from iblrig_tasks._iblrig_tasks_advancedChoiceWorld.task import Session as Advan
 class TestDefaultParameters(BaseTestCases.CommonTestTask):
     def test_params_yaml(self):
         # just make sure the parameter file is
-        self.get_task_kwargs(tmpdir=False)
+        self.get_task_kwargs()
         task = AdvancedChoiceWorldSession(**self.task_kwargs)
         self.assertEqual(12, task.df_contingencies.shape[0])
         self.assertEqual(task.task_params['PROBABILITY_LEFT'], 0.5)
