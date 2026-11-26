@@ -32,6 +32,91 @@ from pybpodapi.protocol import StateMachine
 
 log = logging.getLogger(__name__)
 
+
+def get_exit_state_timer(sma: StateMachine) -> float:
+    """
+    Return the timer of the state that ends the trial, i.e. the state whose ``Tup`` event transitions to ``'exit'``.
+
+    Bpod indexes ``state_timers`` by position in the state machine's manifest, not by the number of calls to ``add_state``.
+    Hence, the exit state cannot be assumed to be the last state added. Instead, it is identified by its timer transition: for
+    a state transitioning to ``'exit'`` on ``Tup``, Bpod stores ``NaN`` in ``state_timer_matrix``.
+
+    The exit state(s) must raise BNC1 (i.e., set it to a value > 0), as this event marks the end of the trial in the recorded
+    data. This is only verified if the state machine has a hardware description (i.e., a connected Bpod). A warning is logged
+    if any state transitions to ``'exit'`` on an event other than ``Tup``, as the trial may then end without passing through
+    the exit state(s). A warning is also logged if the timer of the exit state(s) is not 0.5 s.
+
+    Parameters
+    ----------
+    sma : StateMachine
+        The state machine to inspect.
+
+    Returns
+    -------
+    float
+        The timer (in seconds) of the state(s) transitioning to ``'exit'`` on ``Tup``. Several such states are fine as long as
+        they share the same timer.
+
+    Raises
+    ------
+    ValueError
+        If there is no state transitioning to ``'exit'`` on ``Tup``, if such states have differing timers (in both cases the
+        duration of the last state, and hence the ITI, cannot be determined), or if any of them does not raise BNC1.
+    """
+    # Identify exit states. Raise ValueError if none were found.
+    exit_states = [i for i in range(len(sma.manifest)) if math.isnan(sma.state_timer_matrix[i])]
+    if not exit_states:
+        raise ValueError("The state machine has no state transitioning to 'exit' on 'Tup'")
+
+    # Check that all exit states raise BNC1. Raise a ValueError if not.
+    # Without a hardware description (i.e., no Bpod connected, as in some tests) the check is skipped.
+    if (channels := sma.hardware.channels) is not None:
+        bnc1_code = channels.output_channel_names.index('BNC1')
+        if missing := [
+            sma.manifest[i]
+            for i in exit_states
+            if not any(code == bnc1_code and value > 0 for code, value in sma.output_matrix[i])
+        ]:
+            raise ValueError(f"States transitioning to 'exit' on 'Tup' must raise BNC1: {missing}")
+
+    # Collect state timer values. Raise a ValueError if several exit states have different timer values.
+    timers = {sma.manifest[i]: float(sma.state_timers[i]) for i in exit_states}
+    if len(set(timers.values())) > 1:
+        raise ValueError(f"States transitioning to 'exit' on 'Tup' have differing timers: {timers}")
+    (exit_state_timer,) = set(timers.values())
+
+    # A transition to 'exit' on any other event ends the trial without passing through the exit state(s)
+    transition_matrices = (
+        sma.input_matrix,
+        sma.global_timers.start_matrix,
+        sma.global_timers.end_matrix,
+        sma.global_counters.matrix,
+        sma.conditions.matrix,
+    )
+
+    def transitions_to_exit(transitions) -> bool:
+        # for the events GlobalTimerTrig and GlobalTimerCancel, pybpod stores an int instead of a list of transitions
+        return isinstance(transitions, list) and any(math.isnan(destination) for _, destination in transitions)
+
+    if early_exit_states := [
+        name for i, name in enumerate(sma.manifest) if any(transitions_to_exit(matrix[i]) for matrix in transition_matrices)
+    ]:
+        log.warning(
+            "State(s) %s transition to 'exit' on an event other than 'Tup'. The trial may end without raising BNC1, and the ITI "
+            'will not be as intended.',
+            early_exit_states,
+        )
+
+    # The exit state should last 0.5 s: the remainder of the ITI is handled by the host (see ChoiceWorldSession._run)
+    if exit_state_timer != 0.5:
+        log.warning(
+            "ATTENTION: The last state ('%s') had a duration of %0.1f s. It should be exactly 0.5 s.",
+            "', '".join(timers),
+            exit_state_timer,
+        )
+    return exit_state_timer
+
+
 NTRIALS_INIT = 2000
 NBLOCKS_INIT = 100
 
@@ -256,6 +341,9 @@ class ChoiceWorldSession(
             self.next_trial()
             sma = self.get_state_machine_trial(trial_number)
 
+            # determine the duration of the exit state (also validates the state machine before the trial is run)
+            iti_exit_state = get_exit_state_timer(sma)
+
             # Waiting for camera / initial delay will be handled just prior to the first trial
             # This is done here to allow for backward compatibility with unadapted tasks
             if trial_number == 0:
@@ -302,11 +390,8 @@ class ChoiceWorldSession(
             self.bpod.run_state_machine(sma)  # Locks until state machine 'exit' is reached
             time_last_trial_end = time.perf_counter()
 
-            # The ITI duration is partially handled by Bpod within the last state of the state machine.
-            # This state should have a duration of 0.5 seconds (see explanation below).
-            iti_last_trial = sma.state_timers[sma.total_states_added - 1]
-            if iti_last_trial != 0.5:
-                log.warning('ATTENTION: The last state had a duration of %0.1f s. It should be exactly 0.5 s.', iti_last_trial)
+            # The ITI duration is partially handled by Bpod within the last state of the state machine (see explanation above).
+            iti_last_trial = iti_exit_state
 
             # handle pause event
             if self.paused and trial_number < (self.task_params.NTRIALS - 1):
