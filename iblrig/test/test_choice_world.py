@@ -396,7 +396,7 @@ class TestGetExitStateTimer:
 
     def test_no_exit_state(self, sma):
         add_states(sma, [('a', 1.0, 'a')])
-        with pytest.raises(ValueError, match=r"no state transitioning"):
+        with pytest.raises(ValueError, match=r'no state transitioning'):
             get_exit_state_timer(sma)
 
     def test_multiple_exit_states_differing_timers(self, sma):
