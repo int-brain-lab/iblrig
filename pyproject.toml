@@ -12,14 +12,14 @@ license = { file = "LICENSE" }
 readme = "README.md"
 dependencies = [
     # IBL packages
-    "iblatlas>=1.0.0",
-    "ibllib>=3.4.3",
+    "iblatlas>=1.3.1",
+    "ibllib>=4.1.1",
     "iblpybpod-no-gui>=3.1.2",
     "iblutil>=1.20.0",
     "iblqt>=0.8.2",
-    "ONE-api>=3.5.2",
-    "tycmd-wrapper>=0.2.1",
-    "ibl-photometry>=0.1.2",
+    "ONE-api>=3.6.2",
+    "tycmd-wrapper>=0.4.1",
+    "ibl-photometry>=0.3.4",
     #
     # Everything else
     "annotated-types>=0.7.0",
