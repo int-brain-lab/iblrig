@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+from qtpy.QtCore import QThreadPool
 
 import iblrig.gui.online_plots as op
 
@@ -22,10 +23,13 @@ class TestOnlinePlots:
 
         yield task_file_renamed
 
+        # the model fetches the session string in a QThreadPool worker; make sure it has finished before objects are destroyed
+        QThreadPool.globalInstance().waitForDone()
         temp_dir.cleanup()
 
     def test_during_task(self, task_file, qtbot):
         view = op.OnlinePlotsView(task_file.parent, live=True)
+        qtbot.addWidget(view)
         model = view.model
         assert hasattr(model, 'jsonableWatcher')
         assert Path(model.jsonableWatcher.files()[0]) == task_file
@@ -43,10 +47,12 @@ class TestOnlinePlots:
 
     def test_from_existing_file(self, task_file, qtbot):
         view = op.OnlinePlotsView(task_file)
+        qtbot.addWidget(view)
         assert view.model._n_trials > 0
 
     def test_colors(self, task_file, qtbot):
         view = op.OnlinePlotsView(task_file.parent, live=True)
+        qtbot.addWidget(view)
         model = view.model
         model._trial_data['response_time'] = 1
         model._seconds_elapsed = 0
