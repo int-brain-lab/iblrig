@@ -12,6 +12,8 @@ UNRELEASED
 * changed: Refactoring of GUI code
 * changed: Refactoring of `path_helper` module
 * changed: renamed keyword `acquisition_description` to `experiment_description` in `initialize_experiment` of copier classes; the old keyword is deprecated and will be removed in a future release
+* changed: disentangle order of states in `HabituationChoiceWorldSession`
+* fixed: ITI durations in `ChoiceWorldSession` and `HabituationChoiceWorldSession`
 
 -------------------------------
 
