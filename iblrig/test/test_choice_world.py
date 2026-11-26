@@ -263,7 +263,7 @@ class TestITI:
             session.trial_num = mocker.MagicMock()
             session.movement_left = mocker.MagicMock()
             session.movement_right = mocker.MagicMock()
-            session.interactive = mocker.MagicMock()
+            session.interactive = False  # a truthy mock would spawn the online plots subprocess (unpicklable on Windows)
             session.paths = mocker.MagicMock()
 
             # Restore real methods
